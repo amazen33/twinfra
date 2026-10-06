@@ -1,0 +1,7 @@
+# Merge with Module 2's existing config-features owner; enabling is a separate gate.
+data:
+  kubernetes.podspec-persistent-volume-claim: enabled
+  kubernetes.podspec-securitycontext: enabled
+  kubernetes.podspec-nodeselector: enabled
+  kubernetes.podspec-tolerations: enabled
+  kubernetes.podspec-runtimeclassname: enabled

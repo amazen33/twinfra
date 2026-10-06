@@ -1,0 +1,30 @@
+# Generated public reference by tools/render_module4b.py.
+- op: test
+  path: /metadata/name
+  value: secure-function
+- op: test
+  path: /spec/http/0/plugins/1/name
+  value: openid-connect
+- op: replace
+  path: /spec/http/0/plugins
+  value:
+  - name: proxy-rewrite
+    enable: true
+    config:
+      uri: /
+      host: secure-function.workload-apps.svc.cluster.local
+      headers:
+        remove:
+        - X-ID-Token
+        - X-Userinfo
+        - X-Access-Token
+        - X-Raw-ID-Token
+        - X-Refresh-Token
+        - X-User
+        - X-Groups
+- op: add
+  path: /spec/http/0/plugin_config_name
+  value: vcloud-oidc
+- op: add
+  path: /spec/http/0/plugin_config_namespace
+  value: platform-services

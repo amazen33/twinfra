@@ -1,0 +1,60 @@
+# Promtool synthetic-series tests; this is configuration, not a Kubernetes manifest.
+rule_files:
+  - ../module-3/observability/rules.yaml
+evaluation_interval: 1m
+tests:
+  - name: pipeline failure fires after hold time
+    interval: 1m
+    input_series:
+      - series: 'tekton_pipelines_controller_pipelinerun_duration_seconds_count{namespace="workload-apps",pipeline="vcloud-ci",status="failed"}'
+        values: '0 1+0x20'
+      - series: 'up{job="tekton-pipelines-controller"}'
+        values: '1+0x20'
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: VCloudPipelineFailed
+        exp_alerts:
+          - exp_labels: {severity: warning}
+            exp_annotations:
+              summary: A vCloud delivery pipeline failed
+              description: Inspect the failed PipelineRun before retrying; Argo CD has not received a new digest.
+  - name: successful pipelines produce no failure or scrape alert
+    interval: 1m
+    input_series:
+      - series: 'tekton_pipelines_controller_pipelinerun_duration_seconds_count{namespace="workload-apps",pipeline="vcloud-ci",status="success"}'
+        values: '0+1x20'
+      - series: 'up{job="tekton-pipelines-controller"}'
+        values: '1+0x20'
+    alert_rule_test:
+      - {eval_time: 12m, alertname: VCloudPipelineFailed, exp_alerts: []}
+      - {eval_time: 12m, alertname: VCloudTektonMetricsMissing, exp_alerts: []}
+  - name: missing metrics fires
+    interval: 1m
+    alert_rule_test:
+      - eval_time: 11m
+        alertname: VCloudTektonMetricsMissing
+        exp_alerts:
+          - exp_labels: {job: tekton-pipelines-controller, severity: warning}
+            exp_annotations: {summary: Tekton metrics target is missing or unavailable}
+  - name: Argo drift is reported after 15 minutes
+    interval: 1m
+    input_series:
+      - series: 'argocd_app_info{name="vcloud-delivery",sync_status="OutOfSync",health_status="Healthy"}'
+        values: '1+0x20'
+    alert_rule_test:
+      - eval_time: 16m
+        alertname: VCloudArgoOutOfSync
+        exp_alerts:
+          - exp_labels: {name: vcloud-delivery, sync_status: OutOfSync, health_status: Healthy, severity: warning}
+            exp_annotations: {summary: vCloud workload remains out of sync}
+  - name: unhealthy Argo workload fires after 10 minutes
+    interval: 1m
+    input_series:
+      - series: 'argocd_app_info{name="vcloud-delivery",sync_status="Synced",health_status="Degraded"}'
+        values: '1+0x20'
+    alert_rule_test:
+      - eval_time: 11m
+        alertname: VCloudArgoUnhealthy
+        exp_alerts:
+          - exp_labels: {name: vcloud-delivery, sync_status: Synced, health_status: Degraded, severity: critical}
+            exp_annotations: {summary: vCloud workload health needs attention}

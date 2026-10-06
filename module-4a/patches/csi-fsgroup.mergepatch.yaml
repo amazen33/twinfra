@@ -1,0 +1,6 @@
+spec:
+  fsGroupPolicy: File
+  requiresRepublish: true
+  tokenRequests:
+  - audience: openbao
+    expirationSeconds: 600

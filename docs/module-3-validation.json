@@ -1,0 +1,197 @@
+{
+  "status": "passed",
+  "resources": 43,
+  "nodeExceptionExpansion": false,
+  "triggerSchemaLimit": "Upstream Triggers schemas preserve unknown fields; exact trigger structure is additionally audited here.",
+  "liveAcceptance": {
+    "OCIImageBuildAndRegistryPublication": "not executed; Docker/BuildKit runtime unavailable on this Windows workspace",
+    "GitHubWebhookHMACAndBranchProtection": "not executed",
+    "KubernetesControllerAdmissionAndCIExecution": "not executed",
+    "CSIWorkspaceSchedulingAndRetention": "not executed",
+    "BuilderMTLSAndRegistryCA": "not executed",
+    "ArgoReconciliationDriftAndRollback": "not executed",
+    "PrometheusScrapingGrafanaAndAlertmanagerRouting": "not executed",
+    "ImageSigningSBOMProvenanceAndAdmission": "not implemented by this baseline; production artifact-trust gate"
+  },
+  "schemaValidation": "Summary: 43 resources found in 12 files - Valid: 43, Invalid: 0, Errors: 0, Skipped: 0",
+  "schemaReproducibility": 8,
+  "versions": {
+    "tektonPipelines": "1.17.0",
+    "tektonTriggers": "0.37.1",
+    "buildkit": "0.33.1",
+    "prometheusOperator": "0.94.1",
+    "argocd": "3.5.3",
+    "kubernetes": "1.36.5"
+  },
+  "renderedSHA256": {
+    "module-3/manifests/network.yaml": "1ccb6f87a895e994861045eb0935a784e1786677575e2675d0d60ab973d289c2",
+    "module-3/manifests/observability.yaml": "a17770e428a6bd8ebe0cab9f3cc0ac3e1134494adc2611c04db62c94a5cb4304",
+    "module-3/manifests/pipeline.yaml": "d58653e2c9ed6498f0dba46848a9ae23373f939313396af9110f9c7454d13610",
+    "module-3/manifests/rbac.yaml": "79643ea215d9da37fc0f87d1bec09cd1e3dca4146af8ac0035ff13a61e8d2517",
+    "module-3/manifests/tasks.yaml": "7cc1b916d9756d6528b4d2db616183ea8700105b1f346254106a469ad250632e",
+    "module-3/manifests/tekton-namespace.yaml": "51d4f89c934585146b7b09873b202a5d478c6c3f3c1a023947e1b7316358fcf0",
+    "module-3/manifests/triggers.yaml": "8a7ef34f5b73c10d2b06c6cc60d295c19945c0bf5f1dc7594c450a680036d660",
+    "module-3/argocd/application.yaml": "18d55af9e488fe9c141e12ed3201f9723c800932d18494d04f4a9e279c21304a",
+    "module-3/gitops/network.yaml": "16bc5d4c1df2f41330ab5684c4e7940049b572f6ac3f97f4f57ab8b387ce1351",
+    "module-3/gitops/serviceaccount.yaml": "296aaa9e6a420e4003a4aad7e3b5a91ae8e8bfc9a04236a6431a939c2dfc2c8b",
+    "module-3/gitops/workload.yaml": "e30151e428729566ebf90deb4816e6d92d5b797666314ca79653c3cb73c551fb",
+    "module-3/examples/pipelinerun.yaml": "21ad4a834291e36ad443bcd8dbb5bd4b8ec874a45d376f43d085b269a2b848c8"
+  },
+  "module": 3,
+  "date": "2026-10-06",
+  "scope": "Offline schema/security validation, executable Git/application tests and Prometheus alert-rule tests; no live deployment",
+  "executionEnvironment": "Windows, Python 3.14.5, Git for Windows Bash, native Helm/kubeconform/promtool; Linux OCI build not executed",
+  "branch": "codex/module-3-gitops",
+  "baseCommit": "49848feb7fd58870650c919928297509af3f243a",
+  "publication": "Snapshot of local validation before publication; GitHub commit/check records establish delivery status. No live deployment.",
+  "regressionRefresh": {
+    "date": "2026-10-06",
+    "reason": "Modules 4a and 4b add their offline gates to the Tekton test runtime; the 137 earlier tests and 5 alert scenarios passed again"
+  },
+  "tests": {
+    "hostBootstrapRegression": {
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0,
+      "command": "python tests/test_bootstrap.py --bash <bash> --cloud-schema .tools/cloud-config-schema.json --yq <yq> --kubeconform <kubeconform> --render-dir .tools/rendered"
+    },
+    "module2Regression": {
+      "passed": 54,
+      "failed": 0,
+      "skipped": 0,
+      "command": "make SITE=module-2/site-values.example.yaml validate test"
+    },
+    "module3ContractsAndGit": {
+      "passed": 37,
+      "failed": 0,
+      "skipped": 0,
+      "command": "make module3-test",
+      "realExecution": "Local bare Git repositories exercise exact checkout, restricted commit/push, replay no-op, stale-main rejection and preservation of a concurrent remote commit; publisher runs the actual trusted verifier and kubeconform",
+      "mockedExecution": "Only BuildKit daemon response/OCI digest output is mocked; no registry publication. The fresh build checkout and Git operations are real"
+    },
+    "applicationHTTP": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "command": "python -m unittest discover -s module-3/app -p 'test_app.py' -v",
+      "realExecution": "Includes an actual local HTTP request to the application"
+    },
+    "total": {
+      "passed": 137,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "prometheusAlerts": {
+    "status": "passed",
+    "rules": 4,
+    "testScenarios": 5,
+    "tool": "promtool 3.15.0",
+    "command": "make module3-alerts",
+    "scenarios": [
+      "pipeline failure fires after hold",
+      "healthy pipeline produces no alert",
+      "absent metrics fires",
+      "Argo out-of-sync hold",
+      "Argo unhealthy hold"
+    ]
+  },
+  "schemaSummary": {
+    "resources": 43,
+    "files": 12,
+    "valid": 43,
+    "invalid": 0,
+    "errors": 0,
+    "skipped": 0,
+    "command": "make module3-validate",
+    "schemaLocations": "Local Module 3 and Module 2 schemas only; no missing-schema skip"
+  },
+  "additionalChecks": {
+    "taskPodSecurity": "Passed independent projection through the original frozen node/pod contract; no new exception",
+    "generatedResourceDrift": "Passed tools/render_module3.py --check",
+    "CRDSchemaReproducibility": "Eight schemas reproduced from checksum-locked upstream CRDs",
+    "linuxToolchainStaging": "Four official Linux amd64 tool archives checksum-verified and binaries staged; binaries not executed on Windows",
+    "controllerReleaseIntegration": "Metrics service selector/http-metrics port 9090 and core interceptor TLS port 8443 checked against pinned upstream release files",
+    "sourceIsolation": "Build Task uses a fresh exact-commit checkout; test workspace Git configuration is never consulted with build credentials",
+    "credentialScan": "No high-confidence private-key, AWS, GitHub or Slack credential matches",
+    "lineEndings": "LF source/schema files verified",
+    "ignoredArtifacts": "Tool caches, builds, Python caches and real site values excluded",
+    "documentation": {
+      "localLinksChecked": 21,
+      "codeFences": "balanced",
+      "module1Regression": "17 ADRs / 64 local links / parsed Mermaid 37 nodes, 69 edges"
+    }
+  },
+  "approvedNodeArtifactsSHA256": {
+    "security/node-exceptions.json": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+    "docs/node-agent-inventory.json": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81"
+  },
+  "requiredBeforeEnablement": [
+    "Publish reviewed Module 3 to protected main; seed/protect gitops/prod",
+    "Build/publish immutable ci-tooling:1.0.0 and bootstrap app image or wait for the first real promotion",
+    "Accept pinned/mirrored controllers and restricted generated Pod security",
+    "Provide vetted dynamic vcloud-ci-csi StorageClass and workspace cleanup policy",
+    "Accept isolated rootless mTLS BuildKit VM and its registry/network trust",
+    "Provision the six documented secrets through OpenBao and accept branch-scoped token rotation",
+    "Run server-side admission and real webhook/build/promotion/Argo/monitoring acceptance"
+  ],
+  "deliveredFilesSHA256": {
+    ".gitattributes": "bc0935ae048667c57e104a90094087d7bddc0f642a385eae46ace87c6aa6cb86",
+    "Makefile": "384bf7200eb07172bfa6ae627eaa60e4a2c3751150d2da39c657d18303810828",
+    "README.md": "d78624c0a276836a2fc2347ef01f5f300b114d1650d6ace8b4d7d92234278d8f",
+    "docs/adr-0020-module-3-delivery.md": "3d06e1697b1fe08e226b9ea662016d3c2a47837840c8c68361a929a336e4bb03",
+    "docs/module-1-validation.json": "fc1010330393ac1a44adb3e23963a8ee6ec27f58c4a71e2d4f4475179708a6b9",
+    "docs/module-2-validation.json": "4ec73f2ea628022664e0ba55be47737920c24568a7d8f425856a0c44017c1daa",
+    "docs/node-agent-inventory.json": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81",
+    "docs/pre-push-validation.json": "9c2bb62d38377587c3a92d798c42e04da3ef75b7fe547fcc9224f0fce3633df1",
+    "docs/validation-results.json": "938237aec76129f79637c2444a460ee2d02218aee7ed7b7cf36fe9f2d3c311b1",
+    "module-3/README.md": "0220065e796ee9a94063743f4e6b991501b0f206f9a626babd64ed74941f6c7b",
+    "module-3/app/.dockerignore": "1da3a93780f57bbc3f5178eb2866b97c9cd37a0a9ec2d03e17c17c4440617606",
+    "module-3/app/Dockerfile": "aa5b52bbca49a7d402560b59c45422971dca95b2679121670101578167cf0aff",
+    "module-3/app/app.py": "bc9b3a721e8cac675287d14f61bfb044286e1d1240aab443300147bc97dc904a",
+    "module-3/app/test_app.py": "020d9318503ba6fae3c535adad161cca1b05aea4be976958965e28bd9c28031b",
+    "module-3/argocd/application.yaml": "18d55af9e488fe9c141e12ed3201f9723c800932d18494d04f4a9e279c21304a",
+    "module-3/artifacts.lock.json": "22e60a713f36162e192327ec48f05204f0f9dfa93486ca16b986df5aca1f0e74",
+    "module-3/controller-config/feature-flags.patch.json": "9801794b0513e6799479b51a48b8cdfd75887c53c37aad534c2398e5583a796c",
+    "module-3/controller-config/observability.patch.json": "0779ffd8a91ba5270b22ee12e278473be70dfbe46e725e2e28fe59081323fdf2",
+    "module-3/examples/pipelinerun.yaml": "21ad4a834291e36ad443bcd8dbb5bd4b8ec874a45d376f43d085b269a2b848c8",
+    "module-3/gitops/network.yaml": "16bc5d4c1df2f41330ab5684c4e7940049b572f6ac3f97f4f57ab8b387ce1351",
+    "module-3/gitops/serviceaccount.yaml": "296aaa9e6a420e4003a4aad7e3b5a91ae8e8bfc9a04236a6431a939c2dfc2c8b",
+    "module-3/gitops/workload.yaml": "e30151e428729566ebf90deb4816e6d92d5b797666314ca79653c3cb73c551fb",
+    "module-3/images/ci-tooling.Dockerfile": "49ce80ad0456a4ea003146c3fb499f47429b85dd6c00d9fd19e1b4d4cdc4c3e0",
+    "module-3/images/ci-tooling.Dockerfile.dockerignore": "2d879dd22f7e5461fc700095867c1016d714a5b02cc47e4874f302789e579df1",
+    "module-3/manifests/network.yaml": "1ccb6f87a895e994861045eb0935a784e1786677575e2675d0d60ab973d289c2",
+    "module-3/manifests/observability.yaml": "a17770e428a6bd8ebe0cab9f3cc0ac3e1134494adc2611c04db62c94a5cb4304",
+    "module-3/manifests/pipeline.yaml": "d58653e2c9ed6498f0dba46848a9ae23373f939313396af9110f9c7454d13610",
+    "module-3/manifests/rbac.yaml": "79643ea215d9da37fc0f87d1bec09cd1e3dca4146af8ac0035ff13a61e8d2517",
+    "module-3/manifests/tasks.yaml": "7cc1b916d9756d6528b4d2db616183ea8700105b1f346254106a469ad250632e",
+    "module-3/manifests/tekton-namespace.yaml": "51d4f89c934585146b7b09873b202a5d478c6c3f3c1a023947e1b7316358fcf0",
+    "module-3/manifests/triggers.yaml": "8a7ef34f5b73c10d2b06c6cc60d295c19945c0bf5f1dc7594c450a680036d660",
+    "module-3/observability/rules.yaml": "55a4daa594fe638dbee0746791921125779b9e67459fd1a2c3be9e67d9068f55",
+    "module-3/runtime/askpass.py": "da99633e1e0a90696310b69bcb0d3453b9dd384d1446241a34fda88d00357227",
+    "module-3/runtime/runner.py": "87992b5d0815fd5d619427c71db9955e22d0fb0f4db237cf26a93029bbd6590f",
+    "module-3/runtime/validate_workload.py": "b36a64e23340176a2de0f8e7497fa6dd330060ec4b138a96ed42fc033699f7e2",
+    "module-3/schemas/monitoring.coreos.com/prometheusrule_v1.json": "54437b9e981ebd5f6983d40fa5fdd996a232e8b36585f05ce29ee093c625bf88",
+    "module-3/schemas/monitoring.coreos.com/servicemonitor_v1.json": "610cba99ecc0e53a695da2bf8dbee7d2cf52b0a500c742141120d4fc1df263ca",
+    "module-3/schemas/tekton.dev/pipeline_v1.json": "e15b6605f4cf5b663eaa5e7b19317997a75f1b79eb5d44ab023593e1e903f8ec",
+    "module-3/schemas/tekton.dev/pipelinerun_v1.json": "4fd405b098d7a1428ee2524bd1af4e7ebd6cfb0f8bb649e913d8d7cb57cbd63c",
+    "module-3/schemas/tekton.dev/task_v1.json": "3e03b398bc8926f502ae30370671fad8bfd6ec9e84894afed77c350884d9b1b5",
+    "module-3/schemas/triggers.tekton.dev/eventlistener_v1beta1.json": "0ee55bde378e64b2e668f729f46ff8a3b0c0ec6e75f0cbcb4e95c0a05ec1afb4",
+    "module-3/schemas/triggers.tekton.dev/triggerbinding_v1beta1.json": "bc4336794e559ae688f7f71c88971a9ad6ea2cf21a059003f592bb286229e0aa",
+    "module-3/schemas/triggers.tekton.dev/triggertemplate_v1beta1.json": "b867f4cbbe1d57ea5835443c592ef2126266a500325cac504169a37b33bf5192",
+    "module-3/toolchain.lock.json": "4c8f7f474c7206d646f30f81d54a8ecd44acaee5a3c2b7d4f14af6f02b2cee46",
+    "module-3/vendor/LICENSE-Apache-2.0.txt": "f096c31ac0fb2e66df5b7ec20049741ae15accd50c8cd4d100b4db6c9353f6aa",
+    "module-3/vendor/pipeline-crds.yaml.gz": "bea20cfec5e4317130886964aad58ecc019bc46af032b127acfbbec49bc2d78d",
+    "module-3/vendor/prometheusrule-crd.yaml.gz": "fb3509ae980c420e381abe6cff940ce0181a69eb4b085a6f7a340ff1364096a9",
+    "module-3/vendor/servicemonitor-crd.yaml.gz": "270982e788e114aa7abe70655ab4b86117f34add7e63e65df1706dc4dd448927",
+    "module-3/vendor/triggers-crds.yaml.gz": "6ddd2af8e9fc357f8ad90ee7a61ca0564bdbd0949442168f30c404d330653a70",
+    "security/node-exceptions.json": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+    "tests/module3-alerts.test.yaml": "d8df2911a31ae8a35705778902d0c3e640e1ea0e2cba4f6425cbb9e40a69c8ea",
+    "tests/test_module3.py": "bdaa7d42756bf6bcd539cbcabe836cd309a7d16316d49efb76da709a5100a3a9",
+    "tools/check_module3_cluster.py": "c5a291414dbbf5a96d85edcfee116b25d3a3122290be8d47bfaa77c2ba857eba",
+    "tools/manifest_contract.py": "cbf03b547cca9fe6476954ff72b90f060a45394b32bbac7dfdbee605fe9af7ce",
+    "tools/module3.py": "c63abedb34f3b31b6df9aabc083b2fbc16112b1995e38cd9db3f7047cd3eb5b2",
+    "tools/render_module3.py": "7153d971d4d5d92b2af4db54a435bab31659a9c39f80d4fa5baca2b0063d9c76",
+    "tools/stage_module3_toolchain.py": "8c7697a3dfe5645e7ac3f5807ab3699f01c406ae1588d6ab6c196a9bec43f0d6"
+  }
+}

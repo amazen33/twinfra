@@ -1,0 +1,12 @@
+{
+  "plugin_name": "postgresql-database-plugin",
+  "allowed_roles": [
+    "vcloud-app-readonly",
+    "vcloud-validation"
+  ],
+  "connection_url": "postgresql://{{username}}:{{password}}@vcloud-postgres-rw.platform-services.svc.cluster.local:5432/vcloud?sslmode=verify-full&sslrootcert=/openbao/trust/postgres/ca.crt",
+  "username": "openbao_manager",
+  "password_authentication": "scram-sha-256",
+  "username_template": "{{ printf \"vcloud_dyn_%s\" (random 20) }}",
+  "verify_connection": true
+}

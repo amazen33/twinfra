@@ -1,0 +1,102 @@
+{
+  "versions": {
+    "tektonPipelines": "1.17.0",
+    "tektonTriggers": "0.37.1",
+    "buildkit": "0.33.1",
+    "prometheusOperator": "0.94.1",
+    "argocd": "3.5.3",
+    "kubernetes": "1.36.5"
+  },
+  "sources": [
+    {
+      "url": "https://github.com/tektoncd/pipeline/releases/download/v1.17.0/release.yaml",
+      "upstreamSHA256": "93ee4eda6978be24e7c04e410b059008099f059e8eea078d560d9f69944ff349",
+      "file": "module-3/vendor/pipeline-crds.yaml.gz",
+      "format": "CRDs extracted from pinned upstream release, gzip mtime=0"
+    },
+    {
+      "url": "https://github.com/tektoncd/triggers/releases/download/v0.37.1/release.yaml",
+      "upstreamSHA256": "2cd6305d35112165b4826325902b4f65cdddebcaebf223747530e2353f179268",
+      "file": "module-3/vendor/triggers-crds.yaml.gz",
+      "format": "CRDs extracted from pinned upstream release, gzip mtime=0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.94.1/example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml",
+      "upstreamSHA256": "31bdff398b54ac2bc993a33f5dcb0472792a77104a6a609d264c8f1f17829769",
+      "file": "module-3/vendor/servicemonitor-crd.yaml.gz",
+      "format": "CRDs extracted from pinned upstream release, gzip mtime=0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.94.1/example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml",
+      "upstreamSHA256": "8e29b30e9353d593821ba4e61dc189ed7b3c4cf50a665e95d8c3d3aad3c4d484",
+      "file": "module-3/vendor/prometheusrule-crd.yaml.gz",
+      "format": "CRDs extracted from pinned upstream release, gzip mtime=0"
+    }
+  ],
+  "apis": [
+    {
+      "kind": "EventListener",
+      "apiVersion": "triggers.tekton.dev/v1beta1",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "Pipeline",
+      "apiVersion": "tekton.dev/v1",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "PipelineRun",
+      "apiVersion": "tekton.dev/v1",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "PrometheusRule",
+      "apiVersion": "monitoring.coreos.com/v1",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "ServiceMonitor",
+      "apiVersion": "monitoring.coreos.com/v1",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "Task",
+      "apiVersion": "tekton.dev/v1",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "TriggerBinding",
+      "apiVersion": "triggers.tekton.dev/v1beta1",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "TriggerTemplate",
+      "apiVersion": "triggers.tekton.dev/v1beta1",
+      "served": true,
+      "deprecated": false
+    }
+  ],
+  "filesSHA256": {
+    "module-3/schemas/monitoring.coreos.com/prometheusrule_v1.json": "54437b9e981ebd5f6983d40fa5fdd996a232e8b36585f05ce29ee093c625bf88",
+    "module-3/schemas/monitoring.coreos.com/servicemonitor_v1.json": "610cba99ecc0e53a695da2bf8dbee7d2cf52b0a500c742141120d4fc1df263ca",
+    "module-3/schemas/tekton.dev/pipelinerun_v1.json": "4fd405b098d7a1428ee2524bd1af4e7ebd6cfb0f8bb649e913d8d7cb57cbd63c",
+    "module-3/schemas/tekton.dev/pipeline_v1.json": "e15b6605f4cf5b663eaa5e7b19317997a75f1b79eb5d44ab023593e1e903f8ec",
+    "module-3/schemas/tekton.dev/task_v1.json": "3e03b398bc8926f502ae30370671fad8bfd6ec9e84894afed77c350884d9b1b5",
+    "module-3/schemas/triggers.tekton.dev/eventlistener_v1beta1.json": "0ee55bde378e64b2e668f729f46ff8a3b0c0ec6e75f0cbcb4e95c0a05ec1afb4",
+    "module-3/schemas/triggers.tekton.dev/triggerbinding_v1beta1.json": "bc4336794e559ae688f7f71c88971a9ad6ea2cf21a059003f592bb286229e0aa",
+    "module-3/schemas/triggers.tekton.dev/triggertemplate_v1beta1.json": "b867f4cbbe1d57ea5835443c592ef2126266a500325cac504169a37b33bf5192",
+    "module-3/vendor/pipeline-crds.yaml.gz": "bea20cfec5e4317130886964aad58ecc019bc46af032b127acfbbec49bc2d78d",
+    "module-3/vendor/prometheusrule-crd.yaml.gz": "fb3509ae980c420e381abe6cff940ce0181a69eb4b085a6f7a340ff1364096a9",
+    "module-3/vendor/servicemonitor-crd.yaml.gz": "270982e788e114aa7abe70655ab4b86117f34add7e63e65df1706dc4dd448927",
+    "module-3/vendor/triggers-crds.yaml.gz": "6ddd2af8e9fc357f8ad90ee7a61ca0564bdbd0949442168f30c404d330653a70",
+    "module-3/vendor/LICENSE-Apache-2.0.txt": "f096c31ac0fb2e66df5b7ec20049741ae15accd50c8cd4d100b4db6c9353f6aa",
+    "module-3/toolchain.lock.json": "4c8f7f474c7206d646f30f81d54a8ecd44acaee5a3c2b7d4f14af6f02b2cee46"
+  }
+}

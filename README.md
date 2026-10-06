@@ -75,9 +75,44 @@ with [rendered reference YAML](module-2/manifests/README.md),
 the [Makefile](Makefile), and [static validation evidence](docs/module-2-validation.json).
 It uses vCloud / amazen33/vCloud throughout; physical and live acceptance remain explicit gates.
 
-The [pre-push validation record](docs/pre-push-validation.json) records the complete
-2026-10-06 artifact checks. Live Ubuntu, GPU and cluster acceptance is still pending.
+The [pre-push validation record](docs/pre-push-validation.json) preserves the Module
+-1/1/2 checks for commit `8615b0c` (PR #1). Live Ubuntu, GPU and cluster acceptance
+is still pending; Module 3 has its own current validation record below.
+
+## Module 3: end-to-end GitOps
+
+The [Module 3 runbook](module-3/README.md) provides complete Tekton Tasks, Pipeline,
+PipelineRun and authenticated push triggers, Argo CD Applications, Prometheus scrape
+and alert hooks, and a Grafana dashboard. Protected-main builds promote source tags
+and immutable digests to `gitops/prod`; Argo reconciles the new `vcloud-api` workload.
+Restricted CI Pods use an external mTLS builder and per-run CSI workspaces.
+Run `make module3-validate module3-test module3-alerts`; see
+[validation evidence](docs/module-3-validation.json).
+
+## Module 4a: OpenBao secrets
+
+The [OpenBao runbook](module-4a/README.md) provides database/KV backend configuration,
+scoped Kubernetes authentication, paired CSI file mounts, an optional static Secret
+cache, and a three-step curl/psql lease/revocation test. Run
+`make module4a-validate module4a-test`; see [evidence](docs/module-4a-validation.json).
+CSI node installation requires its own reviewed approval; live integration remains pending.
+
+## Module 4b: Keycloak IAM and API security
+
+The [IAM runbook](module-4b/README.md) provides a public Keycloak realm/client reference,
+APISIX OIDC plugin and identity ingress, an owned-route integration patch, API-server
+OIDC arguments and narrow group RBAC. Run `make module4b-validate module4b-test`; see
+[evidence](docs/module-4b-validation.json). Live import, login and cluster acceptance remain pending.
 
 ## GitHub Actions tests
 
-Pull requests and main-branch pushes run the [CI workflow](.github/workflows/pr-tests.yaml), including a regression of merged PR #1. The [CI guide](docs/github-actions-tests.md) explains historical PR reruns, module coverage and evidence artifacts.
+Pull requests and main-branch pushes run the [CI workflow](.github/workflows/pr-tests.yaml), including regressions of merged PRs #1 and #2. The [CI guide](docs/github-actions-tests.md) explains historical PR reruns, module coverage and evidence artifacts.
+
+## Module 5b: disabled hybrid GPU reference
+
+[Module 5b](module-5b/README.md) adds DeepSeek planning, a private Knative/vLLM
+example, Kueue/MultiKueue queues and a feature-gated Spinifex SigV4 capacity bridge.
+Region `vcloud-hpc-1` and `vcloud.io/offload-target` preserve the platform identity.
+Offloading stays disabled, quotas and deployment replicas stay zero, and live
+GPU/site acceptance remains pending. See [ADR 0023](docs/adr-0023-module-5b-hybrid-hpc.md)
+and the [hybrid flow](module-5b/docs/hybrid-topology.md).

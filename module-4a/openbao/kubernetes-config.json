@@ -1,0 +1,4 @@
+{
+  "kubernetes_host": "https://kubernetes.default.svc:443",
+  "disable_local_ca_jwt": false
+}

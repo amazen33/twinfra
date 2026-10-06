@@ -1,0 +1,40 @@
+groups:
+- name: vcloud.hpc.pressure
+  interval: 30s
+  rules:
+  - record: vcloud:hpc_cpu_saturation_ratio
+    expr: 1 - avg by(cluster) (rate(node_cpu_seconds_total{mode="idle",cluster="vCloud-prod-01"}[5m]))
+  - record: vcloud:hpc_gpu_saturation_ratio
+    expr: max by(cluster) (DCGM_FI_DEV_GPU_UTIL{cluster="vCloud-prod-01"}) / 100
+  - record: vcloud:hpc_memory_limit_ratio
+    expr: sum by(cluster) (container_memory_working_set_bytes{namespace="hpc-compute",cluster="vCloud-prod-01",container!="",container!="POD"})
+      / sum by(cluster) (kube_pod_container_resource_limits{namespace="hpc-compute",cluster="vCloud-prod-01",resource="memory",unit="byte"})
+  - alert: VCloudHPCBurstCandidate
+    expr: (vcloud:hpc_cpu_saturation_ratio > 0.85 or vcloud:hpc_gpu_saturation_ratio
+      > 0.85 or vcloud:hpc_memory_limit_ratio >= 0.85) and on(cluster) (sum by(cluster)
+      (kueue_pending_workloads{cluster="vCloud-prod-01",cluster_queue="spinifex-hpc-burst"})
+      > 0)
+    for: 5m
+    labels:
+      severity: info
+      queue: spinifex-hpc-burst
+    annotations:
+      summary: Reserved HPC demand may need capacity; bridge refetches quota and fresh
+        metrics before any action
+  - alert: VCloudHPCReferenceUnexpectedlyEnabled
+    expr: vcloud_spinifex_offload_enabled == 1
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: Disabled reference offload flag was enabled; inspect all independent
+        acceptance gates
+  - alert: VCloudHPCReconciliationNeedsReview
+    expr: vcloud_spinifex_reconciliation_uncertain > 0 or vcloud_spinifex_reconciliation_expired
+      > 0 or increase(vcloud_spinifex_reconciliation_failures[10m]) > 0
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: Capacity outcome or cleanup requires operator reconciliation; quota
+        stays charged

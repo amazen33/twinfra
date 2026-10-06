@@ -1,11 +1,10 @@
 {
   "module": 1,
-  "date": "2026-10-06",
   "scope": "architecture documentation only",
   "status": "passed",
   "adrCount": 17,
   "markdownFilesChecked": 21,
-  "localLinksChecked": 58,
+  "localLinksChecked": 69,
   "uniquePrimarySourceURLs": 38,
   "checks": {
     "adrCoverageAndStructure": "passed",
@@ -68,6 +67,7 @@
     "docs/adrs/README.md": "0c3e35affabfd7c43934819c59a93843d939515ee134948de29553293217ef72",
     "docs/module-1-topology.md": "2feae78ef6410bd0f725625f1d70d435b03e8da8840be385a4c1e2e3ed1be8c1",
     "docs/module-1-summary.md": "d7e3fb11b7af1d29e358c495180e77cc1187e7e9ae4b36c6247f4a471661792f",
-    "README.md": "9509ad5563716aae25e28324c3cedf9b7a03e2de30c45545c08509512c2f11bd"
-  }
+    "README.md": "d78624c0a276836a2fc2347ef01f5f300b114d1650d6ace8b4d7d92234278d8f"
+  },
+  "date": "2026-10-06"
 }

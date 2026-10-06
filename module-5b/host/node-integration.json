@@ -1,0 +1,24 @@
+{
+  "enabled": false,
+  "nativeService": "spinifex-daemon.service",
+  "nativeCommand": ["/usr/local/bin/spx", "service", "spinifex", "start"],
+  "spinifexVersion": "1.21.0",
+  "intendedHostOS": "Ubuntu 24.04",
+  "hostCompatibilityAccepted": false,
+  "currentUpstreamInstallerDocumentedOS": ["Ubuntu 26.04", "Debian 13"],
+  "placement": "dedicated infrastructure hosts; Kubernetes GPU workers inside accepted guests",
+  "publicOverlay": "spinifex-public-overlay.toml",
+  "sensitiveNativeConfiguration": "runtime tmpfs supplied by the existing site owner; never stored in Git",
+  "requiresIndependentAcceptance": [
+    "Ubuntu 24.04 source/binary compatibility or an accepted dedicated-host OS",
+    "br-wan routing, OVN/IPsec and site firewall ownership",
+    "KVM/VFIO/IOMMU GPU and PCI group isolation",
+    "native daemon capabilities and /dev/kvm, /dev/vfio, /dev/net/tun access",
+    "H100 eight-GPU p5.48xlarge physical inventory, VRAM and fabric evidence",
+    "A100 four-GPU PCIe profile mapping; no substitution of eight-GPU SXM p4de",
+    "Ubuntu 24.04 guest image with Kubernetes 1.36.5, Cilium, GPU runtime and CSI parity",
+    "private TLS/SigV4 EC2, EKS and STS API negative tests",
+    "dataset staging, credential rotation, whole-job placement and verified lease cleanup"
+  ],
+  "existingKubernetesNodeExceptionExpanded": false
+}

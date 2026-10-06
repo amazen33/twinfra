@@ -1,0 +1,190 @@
+{
+  "versions": {
+    "spinifex": "1.21.0",
+    "spinifexCommit": "dd9c9666f260959f0145441838b82e328b4eb4be",
+    "kueue": "0.20.0",
+    "jobset": "0.12.0",
+    "vllm": "0.31.0",
+    "boto3": "1.43.108",
+    "kubernetes": "1.36.5",
+    "knative": "1.23.0"
+  },
+  "sources": [
+    {
+      "url": "https://github.com/kubernetes-sigs/kueue/releases/download/v0.20.0/manifests.yaml",
+      "upstreamSHA256": "cc43e751842904b5227af934e57942a4dd0b94b22692718969cbbdb7116c093e",
+      "file": "module-5b/vendor/kueue-crds.yaml.gz",
+      "sourceSHA256": "29cf9bc2adb40d96d7565be4768e5232e411cfc9ed887f005513c94d85d18938",
+      "format": "selected CRDs extracted from verified release; gzip mtime=0"
+    },
+    {
+      "url": "https://github.com/kubernetes-sigs/jobset/releases/download/v0.12.0/manifests.yaml",
+      "upstreamSHA256": "a41aaf12dd0b7b0a3d626b8d6107f32c3dc889d7e7830adc46b8cdb77a8963bb",
+      "file": "module-5b/vendor/jobset-crds.yaml.gz",
+      "sourceSHA256": "5b8deed5f9bd4cff8722d782917abffa863ad7bbdcd4dfd31180a6ba7938c383",
+      "format": "selected CRDs extracted from verified release; gzip mtime=0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mulgadc/spinifex/dd9c9666f260959f0145441838b82e328b4eb4be/cmd/spinifex/cmd/templates/spinifex.toml",
+      "file": "module-5b/vendor/spinifex.toml.gz",
+      "sourceSHA256": "b6fbbb6b6066f312e880d50b4bc522fc25c1b0f7e5dcc3876258aadf0f40b356",
+      "format": "unmodified upstream file; gzip mtime=0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mulgadc/spinifex/dd9c9666f260959f0145441838b82e328b4eb4be/cmd/spinifex/cmd/templates/awsgw.toml",
+      "file": "module-5b/vendor/awsgw.toml.gz",
+      "sourceSHA256": "eeed6a51ed52dc9db2844a68fd4cfda99b67ef6eb0937b70ae8944e5a71d2389",
+      "format": "unmodified upstream file; gzip mtime=0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mulgadc/spinifex/dd9c9666f260959f0145441838b82e328b4eb4be/build/systemd/spinifex-daemon.service",
+      "file": "module-5b/vendor/spinifex-daemon.service.gz",
+      "sourceSHA256": "cb6383aff40227d5d4ec748efd63bcd760af50508fdace65891a973f062f6fc6",
+      "format": "unmodified upstream file; gzip mtime=0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mulgadc/spinifex/dd9c9666f260959f0145441838b82e328b4eb4be/spinifex/instancetypes/definitions.go",
+      "file": "module-5b/vendor/definitions.go.gz",
+      "sourceSHA256": "c0cd9d849b4e4f1dc8e53bf3c8b28218aae3603815acb46775429a6d23b622e0",
+      "format": "unmodified upstream file; gzip mtime=0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mulgadc/spinifex/dd9c9666f260959f0145441838b82e328b4eb4be/tests/integration/run_instances_clienttoken_test.go",
+      "file": "module-5b/vendor/run_instances_clienttoken_test.go.gz",
+      "sourceSHA256": "7096b4840d8665c37821ba79779212c420651ab5b3b68aee244d75064db85397",
+      "format": "unmodified upstream file; gzip mtime=0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mulgadc/spinifex/dd9c9666f260959f0145441838b82e328b4eb4be/LICENSE",
+      "file": "module-5b/vendor/LICENSE.gz",
+      "sourceSHA256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+      "format": "unmodified upstream file; gzip mtime=0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/knative/serving/knative-v1.23.0/config/core/configmaps/features.yaml",
+      "file": "module-5b/vendor/knative-features.yaml.gz",
+      "sourceSHA256": "6ce92030ba96457c4be087285f020494e73ab286e32ba971e2c6a0a6e4e35ee9",
+      "format": "unmodified upstream file; gzip mtime=0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/kubernetes-sigs/kueue/v0.20.0/LICENSE",
+      "file": "module-5b/vendor/LICENSE-Apache-2.0.txt.gz",
+      "sourceSHA256": "e4fc8a66ee0d461aa3a115980f1e081dcb6d153618fa5415ed79912ecef6efbd",
+      "format": "unmodified upstream file; gzip mtime=0"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/mutatingwebhookconfiguration.json",
+      "file": "module-5b/schemas/mutatingwebhookconfiguration_v1.json",
+      "sourceSHA256": "1ba2e70597ad0d467250beb82ef8075a6a60f67c79f9960e80909672ac399028",
+      "format": "unmodified Kubernetes 1.36.5 strict schema"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/validatingwebhookconfiguration.json",
+      "file": "module-5b/schemas/validatingwebhookconfiguration_v1.json",
+      "sourceSHA256": "d4e6e151843df3fb5e9ea7f10d31b6eb67496ab9789571f91b3e59dec8ad51f0",
+      "format": "unmodified Kubernetes 1.36.5 strict schema"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/apiservice.json",
+      "file": "module-5b/schemas/apiservice_v1.json",
+      "sourceSHA256": "dfa3fce0ecd5de37245f63baef181b0d06b4197ae9b094c9cc75592e1023d338",
+      "format": "unmodified Kubernetes 1.36.5 strict schema"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/kubernetes/kubernetes/v1.36.5/api/openapi-spec/v3/apis__apiextensions.k8s.io__v1_openapi.json",
+      "file": "module-5b/vendor/kubernetes-apiextensions-openapi.json.gz",
+      "sourceSHA256": "1c7dd621bece6661867bcc29471f774a46b36c02567d59815c7c72f6d08aa512",
+      "format": "unmodified Kubernetes 1.36.5 OpenAPI v3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/job.json",
+      "file": "module-5b/schemas/job_v1.json",
+      "sourceSHA256": "edcd3b8017ad204da5cb94562dd31f038f121e9a81931204d9983edd3fa7604c",
+      "format": "unmodified Kubernetes 1.36.5 strict schema; identical CI checksum lock"
+    }
+  ],
+  "apis": [
+    {
+      "kind": "AdmissionCheck",
+      "apiVersion": "kueue.x-k8s.io/v1beta2",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "ClusterQueue",
+      "apiVersion": "kueue.x-k8s.io/v1beta2",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "LocalQueue",
+      "apiVersion": "kueue.x-k8s.io/v1beta2",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "MultiKueueCluster",
+      "apiVersion": "kueue.x-k8s.io/v1beta2",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "MultiKueueConfig",
+      "apiVersion": "kueue.x-k8s.io/v1beta2",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "ResourceFlavor",
+      "apiVersion": "kueue.x-k8s.io/v1beta2",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "Topology",
+      "apiVersion": "kueue.x-k8s.io/v1beta2",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "Workload",
+      "apiVersion": "kueue.x-k8s.io/v1beta2",
+      "served": true,
+      "deprecated": false
+    },
+    {
+      "kind": "JobSet",
+      "apiVersion": "jobset.x-k8s.io/v1alpha2",
+      "served": true,
+      "deprecated": false
+    }
+  ],
+  "filesSHA256": {
+    "module-5b/vendor/awsgw.toml.gz": "98beabe1a98574fbe63583eca1b74907d47a8e72eafb4b4e7f023ca8397512a3",
+    "module-5b/vendor/definitions.go.gz": "fbcdeb1c7a8b229433028aa8ecf7e784d167534c5274e16a99542f56d2053248",
+    "module-5b/vendor/jobset-crds.yaml.gz": "0c03335f94601dd240aec36bf68e4afb9cdc797b427189b45ead2d3f7e6aa179",
+    "module-5b/vendor/knative-features.yaml.gz": "579c5c302af20fe659125141c4aeb71973ba58d3cbc0a4b590d2d3ea519266b4",
+    "module-5b/vendor/kueue-0.20.0.tgz": "aeba5f3d61028df0736c0ee93f3925997a56d995e79ba129aeceda5541eae1c3",
+    "module-5b/vendor/kueue-crds.yaml.gz": "7987a02e4d02b5be0e66901f6ec0d7b6776976fa8d3d9c230f97171f6dc467be",
+    "module-5b/vendor/LICENSE-Apache-2.0.txt.gz": "7f356a280d409cd264d6b777166f283576dd14935bfcf121efa022c4ac211bc4",
+    "module-5b/vendor/LICENSE.gz": "7a19272cffc1e804ce00d04ca1629e5405089d84c5ddb058b22c8e4b16dff55b",
+    "module-5b/vendor/run_instances_clienttoken_test.go.gz": "c83eb4c5c8d303ecb2857ebfbcc469bbb2556660efd500e975a0ffd927bd7dd4",
+    "module-5b/vendor/spinifex-daemon.service.gz": "82cbdce8110ec40086958ed2858e48e6478d79ed1296139077666dde18949440",
+    "module-5b/vendor/spinifex.toml.gz": "f2ef4c3327f623963fe15da7f8cb99f2b92ccf6e316e1ccafa8b87f2ee6b8fda",
+    "module-5b/schemas/jobset.x-k8s.io/jobset_v1alpha2.json": "8831346787ec83c78493e64c441a34e2c61433bde08bbb5db4d9d93af084ee76",
+    "module-5b/schemas/kueue.x-k8s.io/admissioncheck_v1beta2.json": "380c4bea6c765ecb649c7f449c7066a9a056a7abdb16a0f02a254884bf68411e",
+    "module-5b/schemas/kueue.x-k8s.io/clusterqueue_v1beta2.json": "81d9824396ed4f52985994c60e0b93ec286735ecc7a03559417bdca3ce1d837d",
+    "module-5b/schemas/kueue.x-k8s.io/localqueue_v1beta2.json": "3459b82e643e29622824e3014e08562ef5b89edc3787fa68ac20fefa0434a7b0",
+    "module-5b/schemas/kueue.x-k8s.io/multikueuecluster_v1beta2.json": "57cce3cf912f2c5577adb20b0b0e0d7e94c0cc23c701a8287e0988f3c72a948c",
+    "module-5b/schemas/kueue.x-k8s.io/multikueueconfig_v1beta2.json": "6d349743201abf7dd852eab07ef0ed0e4d01f0be9c1b53c760d4224a2b1598d0",
+    "module-5b/schemas/kueue.x-k8s.io/resourceflavor_v1beta2.json": "2f6b54e439c5913c84942e3e74cd3918dc37a06b90c901a4b4c02e0020e9c7ad",
+    "module-5b/schemas/kueue.x-k8s.io/topology_v1beta2.json": "b54fbb1c174ef72d405209cb28b0fb530afe6c14f744622889b5e1d09ac42af0",
+    "module-5b/schemas/kueue.x-k8s.io/workload_v1beta2.json": "2d406f16d62c2e341c8beea5784ce9c1f8fd7b0e51ef6f7f2f9c0c8bae27b14f",
+    "module-5b/schemas/mutatingwebhookconfiguration_v1.json": "1ba2e70597ad0d467250beb82ef8075a6a60f67c79f9960e80909672ac399028",
+    "module-5b/schemas/validatingwebhookconfiguration_v1.json": "d4e6e151843df3fb5e9ea7f10d31b6eb67496ab9789571f91b3e59dec8ad51f0",
+    "module-5b/schemas/apiservice_v1.json": "dfa3fce0ecd5de37245f63baef181b0d06b4197ae9b094c9cc75592e1023d338",
+    "module-5b/vendor/kubernetes-apiextensions-openapi.json.gz": "e3b6080e6c6b73a597ce4484ff3ab80809bfe8111e00ceed8c48f12a525a5cfb",
+    "module-5b/schemas/customresourcedefinition_v1.json": "5a4b660feb2583fb3e9f0abc743a252a4e40312ea019a6ea52faccd2f2969700",
+    "module-5b/schemas/job_v1.json": "edcd3b8017ad204da5cb94562dd31f038f121e9a81931204d9983edd3fa7604c"
+  }
+}

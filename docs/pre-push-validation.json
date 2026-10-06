@@ -1,7 +1,8 @@
 {
   "date": "2026-10-06",
   "status": "passed",
-  "scope": "pre-push local artifact and offline guardrail validation",
+  "scope": "historical Module -1/1/2 pre-push artifact and offline guardrail validation; hashes refer to the tested commit, not later worktrees",
+  "testedCommit": "8615b0c18a8977cd4a3775387df5024912b42227",
   "branch": "codex/module-2-bootstrap",
   "baseCommit": "68ff749518efc0b9ba90bdca8eb0a1e351edd204",
   "executionEnvironment": "Windows; Git for Windows Bash; no live Ubuntu or Kubernetes deployment",

@@ -1,0 +1,37 @@
+# Generated Prometheus configuration; not a Kubernetes API object.
+groups:
+- name: vcloud.delivery
+  rules:
+  - alert: VCloudPipelineFailed
+    expr: sum(increase(tekton_pipelines_controller_pipelinerun_duration_seconds_count{namespace="workload-apps",pipeline="vcloud-ci",status=~"[Ff]ailed|failure"}[15m]))
+      > 0
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: A vCloud delivery pipeline failed
+      description: Inspect the failed PipelineRun before retrying; Argo CD has not
+        received a new digest.
+  - alert: VCloudArgoOutOfSync
+    expr: argocd_app_info{name="vcloud-delivery",sync_status!="Synced"} == 1
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: vCloud workload remains out of sync
+  - alert: VCloudArgoUnhealthy
+    expr: argocd_app_info{name="vcloud-delivery",health_status=~"Degraded|Missing|Unknown"}
+      == 1
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      summary: vCloud workload health needs attention
+  - alert: VCloudTektonMetricsMissing
+    expr: absent(up{job="tekton-pipelines-controller"}) or max(up{job="tekton-pipelines-controller"})
+      == 0
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: Tekton metrics target is missing or unavailable

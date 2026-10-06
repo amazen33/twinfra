@@ -1,0 +1,62 @@
+# Reviewed installer values only; the Module 5b Application does not install controllers.
+enableAlphaAPIs: false
+enableKueueViz: false
+enablePrometheus: false
+enableMutatingAdmissionPolicy: false
+controllerManager:
+  hostNetwork: false
+  replicas: 1
+  featureGates:
+    - name: MultiKueue
+      enabled: true
+    - name: MultiKueueManagerQuotaAutomation
+      enabled: false
+  manager:
+    image:
+      repository: registry.vcloud.example.com/registry.k8s.io/kueue/kueue
+      tag: v0.20.0
+      pullPolicy: IfNotPresent
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      runAsGroup: 65532
+      fsGroup: 65532
+      seccompProfile:
+        type: RuntimeDefault
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: [ALL]
+  imagePullSecrets:
+    - name: vcloud-registry-pull
+managerConfig:
+  controllerManagerConfigYaml: |
+    apiVersion: config.kueue.x-k8s.io/v1beta2
+    kind: Configuration
+    health:
+      healthProbeBindAddress: :8081
+    metrics:
+      bindAddress: :8443
+    webhook:
+      port: 9443
+    leaderElection:
+      leaderElect: true
+      resourceName: c1f6bfd2.kueue.x-k8s.io
+    manageJobsWithoutQueueName: false
+    managedJobsNamespaceSelector:
+      matchLabels:
+        vcloud.io/offload-target: spinifex-hpc
+    integrations:
+      frameworks:
+        - batch/job
+        - jobset.x-k8s.io/jobset
+    waitForPodsReady:
+      enable: true
+      timeout: 5m
+      recoveryTimeout: 2m
+      blockAdmission: true
+      requeuingStrategy:
+        backoffLimitCount: 3
+        backoffBaseSeconds: 30
+        backoffMaxSeconds: 300

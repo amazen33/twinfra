@@ -1,0 +1,38 @@
+# Generated public reference by tools/render_module4b.py.
+apiVersion: apisix.apache.org/v2
+kind: ApisixPluginConfig
+metadata:
+  name: vcloud-oidc
+  namespace: platform-services
+  labels:
+    app.kubernetes.io/part-of: vcloud
+spec:
+  ingressClassName: apisix
+  plugins:
+  - name: openid-connect
+    enable: true
+    config:
+      client_id: vcloud-function
+      discovery: https://auth.vcloud.example.com/realms/vcloud/.well-known/openid-configuration
+      bearer_only: true
+      use_jwks: true
+      ssl_verify: true
+      unauth_action: deny
+      accept_none_alg: false
+      accept_unsupported_alg: false
+      token_signing_alg_values_expected: RS256
+      required_scopes:
+      - function.read
+      realm: vcloud
+      claim_validator:
+        issuer:
+          valid_issuers:
+          - https://auth.vcloud.example.com/realms/vcloud
+        audience:
+          required: true
+          match_with_client_id: true
+      set_access_token_header: true
+      access_token_in_authorization_header: true
+      set_id_token_header: false
+      set_userinfo_header: false
+      set_refresh_token_header: false

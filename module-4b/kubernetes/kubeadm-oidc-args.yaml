@@ -1,0 +1,17 @@
+# Generated public reference by tools/render_module4b.py.
+- name: oidc-issuer-url
+  value: https://auth.vcloud.example.com/realms/vcloud
+- name: oidc-client-id
+  value: vcloud-kubernetes
+- name: oidc-username-claim
+  value: sub
+- name: oidc-username-prefix
+  value: 'keycloak:'
+- name: oidc-groups-claim
+  value: groups
+- name: oidc-groups-prefix
+  value: 'keycloak:'
+- name: oidc-signing-algs
+  value: RS256
+- name: oidc-ca-file
+  value: /etc/kubernetes/pki/keycloak-ca.crt

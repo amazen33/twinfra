@@ -1,0 +1,91 @@
+# Generated least-privilege group bindings.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vcloud-cluster-observer
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - nodes
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vcloud-keycloak-cluster-observers
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: keycloak:/vcloud/cluster-observers
+roleRef:
+  kind: ClusterRole
+  apiGroup: rbac.authorization.k8s.io
+  name: vcloud-cluster-observer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vcloud-workload-reader
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - pods
+  - services
+  - events
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  - cronjobs
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vcloud-keycloak-workload-readers
+  namespace: workload-apps
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: keycloak:/vcloud/workload-readers
+roleRef:
+  kind: ClusterRole
+  apiGroup: rbac.authorization.k8s.io
+  name: vcloud-workload-reader
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vcloud-keycloak-hpc-readers
+  namespace: hpc-compute
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: keycloak:/vcloud/hpc-readers
+roleRef:
+  kind: ClusterRole
+  apiGroup: rbac.authorization.k8s.io
+  name: vcloud-workload-reader

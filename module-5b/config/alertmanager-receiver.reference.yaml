@@ -1,0 +1,25 @@
+# Integrate into the existing Alertmanager owner's receivers and route.routes.
+# Preserve the owner's default route and other receivers. Never apply with kubectl.
+receiver:
+  name: vcloud-hpc-capacity
+  webhook_configs:
+    - url: https://vcloud-spinifex-bridge.hpc-compute.svc.cluster.local:8443/hooks/alerts
+      send_resolved: false
+      max_alerts: 10
+      http_config:
+        follow_redirects: false
+        tls_config:
+          ca_file: /etc/alertmanager/vcloud-hpc/ca.crt
+          cert_file: /etc/alertmanager/vcloud-hpc/tls.crt
+          key_file: /etc/alertmanager/vcloud-hpc/tls.key
+          server_name: vcloud-spinifex-bridge.hpc-compute.svc.cluster.local
+route:
+  receiver: vcloud-hpc-capacity
+  matchers:
+    - alertname="VCloudHPCBurstCandidate"
+    - cluster="vCloud-prod-01"
+    - queue="spinifex-hpc-burst"
+  group_by: [cluster, queue]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 10m

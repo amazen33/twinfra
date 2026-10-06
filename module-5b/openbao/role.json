@@ -1,0 +1,9 @@
+{
+  "bound_service_account_names": ["vcloud-spinifex-bridge"],
+  "bound_service_account_namespaces": ["hpc-compute"],
+  "audience": "openbao",
+  "token_policies": ["vcloud-spinifex"],
+  "token_ttl": "10m",
+  "token_max_ttl": "15m",
+  "token_no_default_policy": true
+}

@@ -22,6 +22,8 @@ OPTIONAL = {
                  'tests/module3-alerts.test.yaml', 'module-3/app/test_app.py'],
     'module-4a': ['tools/module4a.py', 'tools/render_module4a.py', 'tests/test_module4a.py'],
     'module-4b': ['tools/module4b.py', 'tools/render_module4b.py', 'tests/test_module4b.py'],
+    'module-5b': ['tools/module5b.py', 'tools/render_module5b.py', 'tests/test_module5b.py',
+                  'tests/module5b-alerts.test.yaml', 'module-5b/reference-profile.json'],
 }
 
 
@@ -144,16 +146,20 @@ def main():
         run('module2-validate', [python, 'tools/module2.py', '--site', 'module-2/site-values.example.yaml',
                                 '--helm', binaries['helm'], '--kubeconform', binaries['kubeconform'], 'validate'])
         run('module2-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_module2.py', '-v'], unit=True)
-        for module, stem in [('module-3', 'module3'), ('module-4a', 'module4a'), ('module-4b', 'module4b')]:
+        for module, stem in [('module-3', 'module3'), ('module-4a', 'module4a'), ('module-4b', 'module4b'), ('module-5b', 'module5b')]:
             if report['modules'][module] == 'not_present_in_revision':
                 print(module + ': absent from historical revision', flush=True)
                 continue
-            run(stem + '-validate', [python, f'tools/{stem}.py', '--kubeconform', binaries['kubeconform']])
+            options = ['--helm', binaries['helm']] if stem == 'module5b' else []
+            run(stem + '-validate', [python, f'tools/{stem}.py', '--kubeconform', binaries['kubeconform'], *options])
             run(stem + '-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests', '-p', f'test_{stem}.py', '-v'], unit=True)
             if stem == 'module3':
                 run('app-tests', [python, '-m', 'unittest', 'discover', '-s', 'module-3/app', '-p', 'test_app.py', '-v'], unit=True)
                 run('alert-rules', [binaries['promtool'], 'check', 'rules', 'module-3/observability/rules.yaml'])
                 run('alert-tests', [binaries['promtool'], 'test', 'rules', 'tests/module3-alerts.test.yaml'])
+            if stem == 'module5b':
+                run('hpc-alert-rules', [binaries['promtool'], 'check', 'rules', 'module-5b/observability/rules.yaml'])
+                run('hpc-alert-tests', [binaries['promtool'], 'test', 'rules', 'tests/module5b-alerts.test.yaml'])
         report['status'] = 'passed'
         return 0
     except (ValueError, RuntimeError, OSError) as error:

@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcloud-secrets-consumer
+  namespace: workload-apps
+  labels:
+    app.kubernetes.io/part-of: vcloud
+    vcloud.io/module: 4a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vcloud-secrets-consumer
+  template:
+    metadata:
+      labels:
+        app: vcloud-secrets-consumer
+    spec:
+      serviceAccountName: vcloud-secrets-client
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: consumer
+        image: registry.vcloud.example.com/vcloud/openbao-verifier:1.0.0
+        imagePullPolicy: IfNotPresent
+        command:
+        - sleep
+        - infinity
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        readinessProbe:
+          exec:
+            command:
+            - python3
+            - /opt/vcloud/check-csi.py
+          periodSeconds: 10
+        volumeMounts:
+        - name: scratch
+          mountPath: /tmp
+      volumes:
+      - name: scratch
+        emptyDir:
+          medium: Memory
+          sizeLimit: 16Mi
