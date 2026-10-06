@@ -101,6 +101,15 @@ class Controls(unittest.TestCase):
             with self.subTest(output=output), self.assertRaises(ValueError):
                 checks.require_complete_tests(output)
 
+    def test_fresh_workspace_has_empty_schema_cache(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            checks.prepare_workspace(source)
+            cache = source / '.tools/schema-cache'
+            self.assertTrue(cache.is_dir())
+            self.assertEqual(list(cache.iterdir()), [])
+            checks.prepare_workspace(source)
+
     def test_every_artifact_is_https_sha256_locked(self):
         lock = json.loads((ROOT / 'toolchain.lock.json').read_text())
         for artifact in lock['artifacts'].values():

@@ -48,6 +48,12 @@ def require_complete_tests(output):
     return int(match[1])
 
 
+def prepare_workspace(source):
+    # Existing host tests pass -cache to kubeconform. It requires the directory
+    # to exist even when every schema is provided locally by the CI wrapper.
+    (source / '.tools/schema-cache').mkdir(parents=True, exist_ok=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, required=True)
@@ -96,6 +102,7 @@ def main():
         python = sys.executable
         run('ssot-drift', [python, 'tools/render_ssot.py', '--check'])
         run('cloud-init-drift', [python, 'tools/render_cloud_init.py', '--check'])
+        prepare_workspace(source)
         rendered = source / '.tools/rendered'
         run('host-fixtures', [python, 'tests/test_bootstrap.py', '--bash', binaries['bash'],
                               '--render-dir', rendered, '--render-only'])
