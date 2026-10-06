@@ -1,0 +1,22 @@
+# Replace EVERY documentation address/node with the real site. Keep secrets out of this file.
+# An internal Git mirror must contain the exact amazen33/vCloud release below.
+site:
+  referenceOnly: true # Change only after editing and inspecting the real site.
+  nodeName: vcloud-node-01
+  apiHost: 192.0.2.10
+  adminCIDR: 192.0.2.0/24
+  registryCIDRs: [192.0.2.20/32]
+  gitCIDRs: [192.0.2.21/32]
+  dnsCIDRs: [192.0.2.53/32]
+  identityCIDRs: [192.0.2.22/32]
+  devices: [eth0]
+# Single-VM acceptance profile: NO claim of database HA or node-independent recovery.
+database:
+  instances: 1
+  antiAffinityType: preferred
+storage:
+  volumes:
+    - {name: function-data, node: vcloud-node-01, path: /var/lib/vcloud/local-pv/function, size: 1Gi, uid: 65532, gid: 65532, namespace: workload-apps, claim: function-data, mode: ReadOnlyMany}
+    - {name: postgres-1, node: vcloud-node-01, path: /var/lib/vcloud/local-pv/postgres-1, size: 20Gi, uid: 26, gid: 26, namespace: platform-services, claim: vcloud-postgres-1, mode: ReadWriteOnce}
+# Set readiness flags only after configuring/inspecting the pinned dependency profile.
+# The live preflight independently checks CRDs, deployments, feature flags and TLS secrets.

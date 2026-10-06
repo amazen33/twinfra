@@ -1,0 +1,489 @@
+{
+  "date": "2026-10-06",
+  "status": "passed",
+  "scope": "pre-push local artifact and offline guardrail validation",
+  "branch": "codex/module-2-bootstrap",
+  "baseCommit": "68ff749518efc0b9ba90bdca8eb0a1e351edd204",
+  "executionEnvironment": "Windows; Git for Windows Bash; no live Ubuntu or Kubernetes deployment",
+  "tests": {
+    "hostBootstrap": {
+      "passed": 42,
+      "failed": 0,
+      "skipped": 0,
+      "command": "python tests/test_bootstrap.py --bash <bash> --cloud-schema .tools/cloud-config-schema.json --yq <yq> --kubeconform <kubeconform> --render-dir .tools/rendered"
+    },
+    "module2": {
+      "passed": 54,
+      "failed": 0,
+      "skipped": 0,
+      "command": "make SITE=module-2/site-values.example.yaml validate test"
+    },
+    "total": {
+      "passed": 96,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "schemaValidation": {
+    "host": {
+      "valid": 46,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "singleVMComplete": {
+      "valid": 80,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "checkedInReference": {
+      "valid": 56,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "threeNodeComplete": {
+      "valid": 82,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "threeNodeFoundation": {
+      "valid": 51,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "overlap": "These profiles share resources; counts are not additive."
+  },
+  "additionalChecks": {
+    "bashSyntax": "passed",
+    "shellcheckStyleSeverity": "passed",
+    "ssotGeneration": "passed",
+    "cloudInitGenerationAndEmbeddedSource": "passed",
+    "cloudInitUpstreamSchemas": "passed for both variants",
+    "offlineBundleChecksums": "passed",
+    "CRDSchemaReproducibility": "10 passed",
+    "helmStrictLint": "host Cilium/NVIDIA and Module 2 foundation/Cilium/APISIX passed",
+    "referenceRenderReproducibility": "7 files matched rendered bytes exactly",
+    "architecture": "17 component ADRs, local links and Mermaid flow checks passed",
+    "approvedNodeExceptionIntegrity": "passed; frozen approval bytes preserved",
+    "credentialScan": "no high-confidence private-key, AWS, GitHub or Slack credential matches",
+    "lineEndings": "LF text enforced for Windows/Ubuntu hash consistency",
+    "ignoredArtifacts": ".tools, .build, Python caches and real site values excluded"
+  },
+  "toolVersions": {
+    "python": "3.14.5",
+    "bash": "5.3.15",
+    "helm": "3.22.0",
+    "kubeconform": "0.8.0",
+    "shellcheck": "0.11.0",
+    "make": "4.4.1"
+  },
+  "approvedNodePolicySHA256": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+  "originalNodeInventorySHA256": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81",
+  "liveAcceptance": "Not executed: Ubuntu install/reboot, GPU/HugePages probes, Kubernetes/Cilium datapath, physical Local PV vetting, dependency installations, TLS/authentication, PostgreSQL scaling and HPC/fabric acceptance.",
+  "releasePublication": "No protected deployment tag or internal Git mirror is published by these checks. Configure a reviewed exact revision and mirror before live GitOps acceptance.",
+  "checkDetails": [
+    {
+      "name": "host Cilium strict Helm lint",
+      "status": "passed",
+      "command": [
+        "E:\\vCloud\\.tools\\helm\\windows-amd64\\helm.exe",
+        "lint",
+        "--strict",
+        "E:\\vCloud\\.tools\\cilium-1.20.2.tgz",
+        "--namespace",
+        "kube-system",
+        "--kube-version",
+        "1.36.5",
+        "--values",
+        "E:\\vCloud\\.tools\\rendered\\cilium-values.yaml"
+      ],
+      "summary": "==> Linting E:\\vCloud\\.tools\\cilium-1.20.2.tgz\n\n1 chart(s) linted, 0 chart(s) failed"
+    },
+    {
+      "name": "host Cilium render",
+      "status": "passed",
+      "command": [
+        "E:\\vCloud\\.tools\\helm\\windows-amd64\\helm.exe",
+        "template",
+        "cilium",
+        "E:\\vCloud\\.tools\\cilium-1.20.2.tgz",
+        "--namespace",
+        "kube-system",
+        "--kube-version",
+        "1.36.5",
+        "--values",
+        "E:\\vCloud\\.tools\\rendered\\cilium-values.yaml"
+      ],
+      "summary": "rendered"
+    },
+    {
+      "name": "host NVIDIA strict Helm lint",
+      "status": "passed",
+      "command": [
+        "E:\\vCloud\\.tools\\helm\\windows-amd64\\helm.exe",
+        "lint",
+        "--strict",
+        "E:\\vCloud\\.tools\\nvidia-device-plugin-0.20.1.tgz",
+        "--namespace",
+        "kube-system",
+        "--kube-version",
+        "1.36.5",
+        "--set",
+        "runtimeClassName=nvidia",
+        "--set",
+        "gfd.enabled=false",
+        "--set",
+        "nfd.enabled=false",
+        "--set",
+        "image.repository=registry.vcloud.example.com/nvcr.io/nvidia/k8s-device-plugin",
+        "--set",
+        "image.tag=v0.20.1"
+      ],
+      "summary": "==> Linting E:\\vCloud\\.tools\\nvidia-device-plugin-0.20.1.tgz\n[INFO] Chart.yaml: icon is recommended\n\n1 chart(s) linted, 0 chart(s) failed"
+    },
+    {
+      "name": "host NVIDIA render",
+      "status": "passed",
+      "command": [
+        "E:\\vCloud\\.tools\\helm\\windows-amd64\\helm.exe",
+        "template",
+        "nvidia-device-plugin",
+        "E:\\vCloud\\.tools\\nvidia-device-plugin-0.20.1.tgz",
+        "--namespace",
+        "kube-system",
+        "--kube-version",
+        "1.36.5",
+        "--set",
+        "runtimeClassName=nvidia",
+        "--set",
+        "gfd.enabled=false",
+        "--set",
+        "nfd.enabled=false",
+        "--set",
+        "image.repository=registry.vcloud.example.com/nvcr.io/nvidia/k8s-device-plugin",
+        "--set",
+        "image.tag=v0.20.1"
+      ],
+      "summary": "rendered"
+    },
+    {
+      "name": "NVIDIA MPS removal",
+      "status": "passed",
+      "command": [
+        "E:\\vCloud\\.tools\\yq\\yq.exe",
+        "eval",
+        "select(.kind != \"DaemonSet\" or .metadata.name != \"nvidia-device-plugin-mps-control-daemon\")",
+        "E:\\vCloud\\.tools\\rendered\\nvidia-raw.yaml"
+      ],
+      "summary": "rendered"
+    },
+    {
+      "name": "host strict schemas",
+      "status": "passed",
+      "command": [
+        "E:\\vCloud\\.tools\\kubeconform\\kubeconform.exe",
+        "-strict",
+        "-summary",
+        "-kubernetes-version",
+        "1.36.5",
+        "-cache",
+        "E:\\vCloud\\.tools\\schema-cache",
+        "E:\\vCloud\\manifests\\foundation.yaml",
+        "E:\\vCloud\\.tools\\rendered\\cilium-rendered.yaml",
+        "E:\\vCloud\\.tools\\rendered\\nvidia-rendered.yaml",
+        "E:\\vCloud\\.tools\\rendered\\smoke-base.yaml",
+        "E:\\vCloud\\.tools\\rendered\\smoke-allowed.yaml",
+        "E:\\vCloud\\.tools\\rendered\\smoke-denied.yaml",
+        "E:\\vCloud\\.tools\\rendered\\smoke-hugepages.yaml",
+        "E:\\vCloud\\.tools\\rendered\\smoke-gpu.yaml",
+        "E:\\vCloud\\.tools\\rendered\\runtimeclass.yaml"
+      ],
+      "summary": "Summary: 46 resources found in 9 files - Valid: 46, Invalid: 0, Errors: 0, Skipped: 0"
+    },
+    {
+      "name": "approved node and workload contract",
+      "status": "passed",
+      "command": [
+        "C:\\Python314\\python.exe",
+        "tools/check_manifest_contract.py",
+        "--inventory",
+        "docs/node-agent-audit.json",
+        "E:\\vCloud\\manifests\\foundation.yaml",
+        "E:\\vCloud\\.tools\\rendered\\cilium-rendered.yaml",
+        "E:\\vCloud\\.tools\\rendered\\nvidia-rendered.yaml",
+        "E:\\vCloud\\.tools\\rendered\\smoke-base.yaml",
+        "E:\\vCloud\\.tools\\rendered\\smoke-allowed.yaml",
+        "E:\\vCloud\\.tools\\rendered\\smoke-denied.yaml",
+        "E:\\vCloud\\.tools\\rendered\\smoke-hugepages.yaml",
+        "E:\\vCloud\\.tools\\rendered\\smoke-gpu.yaml",
+        "E:\\vCloud\\.tools\\rendered\\runtimeclass.yaml"
+      ],
+      "summary": "SSoT contract: passed; 0 findings"
+    },
+    {
+      "name": "Module 2 foundation strict Helm lint",
+      "status": "passed",
+      "command": [
+        "E:\\vCloud\\.tools\\helm\\windows-amd64\\helm.exe",
+        "lint",
+        "E:\\vCloud\\module-2\\chart",
+        "--strict",
+        "--namespace",
+        "platform-services",
+        "--kube-version",
+        "1.36.5",
+        "--values",
+        "E:\\vCloud\\.build\\module-2\\effective-values.yaml"
+      ],
+      "summary": "==> Linting E:\\vCloud\\module-2\\chart\n[INFO] Chart.yaml: icon is recommended\n\n1 chart(s) linted, 0 chart(s) failed"
+    },
+    {
+      "name": "Module 2 Cilium strict Helm lint",
+      "status": "passed",
+      "command": [
+        "E:\\vCloud\\.tools\\helm\\windows-amd64\\helm.exe",
+        "lint",
+        "E:\\vCloud\\module-2\\vendor\\cilium-1.20.2.tgz",
+        "--strict",
+        "--namespace",
+        "kube-system",
+        "--kube-version",
+        "1.36.5",
+        "--values",
+        "E:\\vCloud\\.build\\module-2\\cilium-values.yaml"
+      ],
+      "summary": "==> Linting E:\\vCloud\\module-2\\vendor\\cilium-1.20.2.tgz\n\n1 chart(s) linted, 0 chart(s) failed"
+    },
+    {
+      "name": "Module 2 APISIX strict Helm lint",
+      "status": "passed",
+      "command": [
+        "E:\\vCloud\\.tools\\helm\\windows-amd64\\helm.exe",
+        "lint",
+        "E:\\vCloud\\module-2\\vendor\\apisix-2.18.0.tgz",
+        "--strict",
+        "--namespace",
+        "platform-services",
+        "--kube-version",
+        "1.36.5",
+        "--values",
+        "E:\\vCloud\\.build\\module-2\\apisix-values.yaml"
+      ],
+      "summary": "==> Linting E:\\vCloud\\module-2\\vendor\\apisix-2.18.0.tgz\n\n1 chart(s) linted, 0 chart(s) failed"
+    },
+    {
+      "name": "checked-in reference strict schemas",
+      "status": "passed",
+      "command": [
+        "E:\\vCloud\\.tools\\kubeconform\\kubeconform.exe",
+        "-strict",
+        "-summary",
+        "-kubernetes-version",
+        "1.36.5",
+        "-schema-location",
+        "E:\\vCloud\\module-2\\schemas\\{{.Group}}\\{{.ResourceKind}}_{{.ResourceAPIVersion}}.json",
+        "-schema-location",
+        "E:\\vCloud\\module-2\\schemas\\{{.ResourceKind}}_{{.ResourceAPIVersion}}.json",
+        "E:\\vCloud\\module-2\\manifests\\apisix-dependency.yaml",
+        "E:\\vCloud\\module-2\\manifests\\database.yaml",
+        "E:\\vCloud\\module-2\\manifests\\function.yaml",
+        "E:\\vCloud\\module-2\\manifests\\gitops-children.yaml",
+        "E:\\vCloud\\module-2\\manifests\\gitops-root.yaml",
+        "E:\\vCloud\\module-2\\manifests\\network.yaml",
+        "E:\\vCloud\\module-2\\manifests\\storage.yaml",
+        "E:\\vCloud\\module-2\\values\\apisix-serviceaccount.yaml"
+      ],
+      "summary": "Summary: 56 resources found in 8 files - Valid: 56, Invalid: 0, Errors: 0, Skipped: 0"
+    },
+    {
+      "name": "reference render reproducibility",
+      "status": "passed",
+      "files": 7,
+      "comparison": "exact bytes"
+    },
+    {
+      "name": "three-node foundation strict schemas",
+      "status": "passed",
+      "command": [
+        "E:\\vCloud\\.tools\\kubeconform\\kubeconform.exe",
+        "-strict",
+        "-summary",
+        "-kubernetes-version",
+        "1.36.5",
+        "-schema-location",
+        "E:\\vCloud\\module-2\\schemas\\{{.Group}}\\{{.ResourceKind}}_{{.ResourceAPIVersion}}.json",
+        "-schema-location",
+        "E:\\vCloud\\module-2\\schemas\\{{.ResourceKind}}_{{.ResourceAPIVersion}}.json",
+        "E:\\vCloud\\.build\\module-2-production\\foundation.yaml"
+      ],
+      "summary": "Summary: 51 resources found in 1 file - Valid: 51, Invalid: 0, Errors: 0, Skipped: 0"
+    },
+    {
+      "name": "three-node complete semantic and schema audit",
+      "status": "passed",
+      "evidence": {
+        "status": "passed",
+        "resources": 82,
+        "schemaValidation": "Summary: 82 resources found in 3 files - Valid: 82, Invalid: 0, Errors: 0, Skipped: 0",
+        "acceptedNodeExceptions": [
+          "DaemonSet/kube-system/cilium",
+          "DaemonSet/kube-system/cilium-envoy",
+          "Deployment/kube-system/cilium-operator"
+        ],
+        "physicalLocalPVVetting": "required before apply",
+        "liveTests": "not run by static validation",
+        "renderedSHA256": {
+          "cilium.yaml": "06bd5a4c26d51dfb90036067538782d6eaed1f4ba10635368cecff00c73478ee",
+          "foundation.yaml": "67f8ed8a657a37651cd8084dd89dba555cd09b99afc1d7d2f8eca90710931b89",
+          "apisix-dependency.yaml": "f81aec6280e75ae9b9f368609a1d3b136088ca05d06ad86fea355a73fe7fce6d"
+        }
+      }
+    },
+    {
+      "name": "Mermaid topology parse and flows",
+      "status": "passed",
+      "command": [
+        "C:/Program Files/nodejs/node.exe",
+        ".tools/module-1-doc-checks/check-mermaid.mjs"
+      ],
+      "summary": "{\"status\":\"passed\",\"parser\":\"mermaid\",\"version\":\"11.12.0\",\"diagramCount\":1,\"inventory\":[{\"type\":\"flowchart-v2\",\"nodes\":37,\"edges\":69,\"requiredFlowChecks\":\"passed\"}]}"
+    },
+    {
+      "name": "component ADRs and documentation links",
+      "status": "passed",
+      "command": [
+        "C:\\Python314\\python.exe",
+        ".tools/check-module-1-docs.py"
+      ],
+      "summary": "{\"status\": \"passed\", \"adrCount\": 17, \"markdownFilesChecked\": 21, \"localLinksChecked\": 58, \"uniquePrimarySourceURLs\": 38, \"mermaid\": {\"status\": \"passed\", \"parser\": \"mermaid\", \"version\": \"11.12.0\", \"diagramCount\": 1, \"inventory\": [{\"type\": \"flowchart-v2\", \"nodes\": 37, \"edges\": 69, \"requiredFlowChecks\": \"passed\"}]}}"
+    }
+  ],
+  "filesSHA256": {
+    ".gitattributes": "6bd8b099199de5123e1ee6fb73884ce28121443191a1e89885bf9be539874e70",
+    ".gitignore": "8ad5a4cc4a89914d7fc4d82c8b95c9883c7c6ee3247df61354d9b69a2b958361",
+    "00-setup-ubuntu-host.sh": "36502fff0383354d67e64f034873953b350a0c1ad9d469ebbdd737119835f220",
+    "LICENSE": "a320818c9cbb9a60636e31690347f4142ddec9da7fe81f11407952620fad45f2",
+    "Makefile": "5de3dbb06cf9566ac7a13f642668dbcce6e2d43b02cadc292e80b7f7546ac523",
+    "README.md": "9509ad5563716aae25e28324c3cedf9b7a03e2de30c45545c08509512c2f11bd",
+    "cloud-init.template.yaml": "1550dd9dbb84f2b440eacc088a6d62447c2774124007a04e7aa499fe3b2b98de",
+    "docs/adr-0001-node-host-mounts.md": "49782a6f1ca104db11922dafc2a6825d81a1ac6766cdd97b05ab7762adaa2433",
+    "docs/adr-0019-module-2-bootstrap.md": "b368e60d268c7db5a494c86289cfc51ca0b2b7ce73b0fd98fc8208c260519dfa",
+    "docs/adrs/0002-kubernetes.md": "c056d138632d49cb896a44c6c1456de53652204cf3db96a91e0ac4904d5be850",
+    "docs/adrs/0003-knative-serving.md": "77ea96317a457f3bcee54fac1c06b2b21ba864d834d9ab96c46f04a83e08a376",
+    "docs/adrs/0004-cloudnativepg.md": "6248c684ba6cbeb5c1e6352beec970cd14e7701811ef00ac575a6ee58f30956d",
+    "docs/adrs/0005-pgvector.md": "3b880ce612ddef4669fc4f66625b7d37e86723e3f6559969a3d4caa513eb0b56",
+    "docs/adrs/0006-apisix.md": "625cc6fad91d02838b7cc48744ff45d25e817a46a31603a158d4f4e915c6d54b",
+    "docs/adrs/0007-argocd.md": "46d22fe16f85768d85d17246319320617dfdc91dde63eb8ac19a55f06821da8f",
+    "docs/adrs/0008-tekton.md": "d50f0414947bcab767bc7dc5e62716bedce4e03904eb924c3c75b47afe371fb0",
+    "docs/adrs/0009-prometheus.md": "c42fd2faa9cb109fb6b43b4dd7785cbf3aa2601db7ca4bdc31b419d776a35baa",
+    "docs/adrs/0010-grafana.md": "ec7c315f85cdf8f7d3b2ba53a2b83fadb01f4ab26be64c561f4445d6c03a5fb4",
+    "docs/adrs/0011-opentelemetry.md": "96fe9cc8c51bd58e8e117f6c792dcb9ee8cd3b7dedc663feb9419459b6940f07",
+    "docs/adrs/0012-openbao.md": "3e648548b81ac0ee7290056491c68bcbe4665e660b923d7a266261865ade29df",
+    "docs/adrs/0013-keycloak.md": "b54de6920048091450a6bdfc3e893e22c8447464f06bc4f690eb3e16add6e601",
+    "docs/adrs/0014-kafka.md": "72bc3bcba5e71bd28839e6908ab776ba11215d917e2c121b6ac21540f87e8ed1",
+    "docs/adrs/0015-strimzi.md": "abcd214fe6b1bfc151b20e44c5619bf84a661d5f62f75d75a51309a4db5a77c5",
+    "docs/adrs/0016-vllm.md": "9a890bc9bed1858d0aee33806d5c656ced50f4dc82bfc9fad5f8eb8d9cdc660e",
+    "docs/adrs/0017-langchain.md": "82839bdbfb6e69fea35884dcfc6d8f5a7ed140efb0f7a2a234fc72b589713404",
+    "docs/adrs/0018-spinifex.md": "8cf7a263105f366fede91fc09bd24701c939cfa6ef044c40625f2f3cb38a4ce0",
+    "docs/adrs/README.md": "0c3e35affabfd7c43934819c59a93843d939515ee134948de29553293217ef72",
+    "docs/module-1-summary.md": "d7e3fb11b7af1d29e358c495180e77cc1187e7e9ae4b36c6247f4a471661792f",
+    "docs/module-1-topology.md": "2feae78ef6410bd0f725625f1d70d435b03e8da8840be385a4c1e2e3ed1be8c1",
+    "docs/module-1-validation.json": "eb126982d91d72e800ea3761a13de9a6e19517716e92ec511cb367261b878bef",
+    "docs/module-2-validation.json": "3dbc96720f1971122de43c655cf8b73a418323dc4bdf0edbfe3e42353fbb0d44",
+    "docs/module-minus-1.md": "d84738a7b90ed9c78b720e16a3ab833751e1aba4f7af29b636670b0d9bf4e6b5",
+    "docs/node-agent-audit.json": "4d54c51f4c182b733ac604493f4fca6c6a07e977998cb31d1c2ce3607ba04999",
+    "docs/node-agent-inventory.json": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81",
+    "docs/validation-results.json": "aa714d9f7f772125c5d58a0ae7eab82ba0e51877fd9cc67b3ed95991383c58c3",
+    "docs/validation.md": "01af1df6d7f1fbdd16e6874dcffc2f9db1bcc3c4e655dc00d42b78e20b1315cc",
+    "host.env.example": "ff9230eb5c7f60383f6f2480c4e3c9e36034264c8538341973bd4fe9afd1f0d3",
+    "manifests/foundation.yaml": "c3f3b0aea6232bf7f4938d8aaa2319ac2c6e7063095522681cdaefd5c2c28161",
+    "module-2/README.md": "6efc3e775ef7864dd6cad36343a43c22fd704355dd1c234e361d95c7981b5f16",
+    "module-2/artifacts.lock.json": "e45e3a755e2bc61a07d9689fc9571c464afa3a883f3ac3ffeac73789535d9317",
+    "module-2/chart/.helmignore": "0f2066992b625195aae55dc1037b9efc8c8df1cd313aba33d90752a8d822c86e",
+    "module-2/chart/Chart.yaml": "a33a9dbe72f904a1f51d51c002a52f6d0057182c8744058b94cce6bbfebd9963",
+    "module-2/chart/files/function.py": "f5637ce7558cf4775c011f367d2b36251b7497bc38a4de39d6806d0504fdebc4",
+    "module-2/chart/files/scaler.py": "a82514ba6f5a9fe193e8062571aec77f28600d908f895eb333a4026deb516b75",
+    "module-2/chart/templates/database.yaml": "ebf572b307d2bd9793b282f517b04423266cc5e7624838e91ddf6719a7104b44",
+    "module-2/chart/templates/function.yaml": "0299182f9750284cb580e716314053595835f6f63efaae29191b0730df0bb78d",
+    "module-2/chart/templates/gateway.yaml": "f88cbd4f2039f73f88e6511e8ee66378bf485c895904b0bcfd978b18d1bde2a4",
+    "module-2/chart/templates/gitops.yaml": "d3b55600319177b2f19b52a5ad06eee5059ce8784f6b8027967d6c7720d27c14",
+    "module-2/chart/templates/network.yaml": "7ad8fde630e56ece7dd63429d33097d20253a05a22ea0d4ef3f09282dac23589",
+    "module-2/chart/templates/storage.yaml": "baf025009c2a45fa5d1e850260e596b467d2b0e571acf318848cd2de70792208",
+    "module-2/chart/values.yaml": "f24ca06cdcf70b91939760b5956ee207ea773dff275352b8ac1b90684547badd",
+    "module-2/images/apisix.Dockerfile": "62e1967973d638a6b79265d9b5e0fdb7dc340d95371e1c880e0f050092f125b5",
+    "module-2/images/postgresql-pgvector.Dockerfile": "508d2f0924f099862586dc60e674412e907c500bff3f5cf1882f0fd6ad42b044",
+    "module-2/manifests/README.md": "60a1ddd1f24a32a6bc5a8f70bc3daacfd68d25aa93483aded6a7dc2a58dd470a",
+    "module-2/manifests/apisix-dependency.yaml": "f81aec6280e75ae9b9f368609a1d3b136088ca05d06ad86fea355a73fe7fce6d",
+    "module-2/manifests/database.yaml": "e8017c5db5d8055e7d3bdbd6746c03b43e1875743bc082a7ccbcff0452fbf7a7",
+    "module-2/manifests/function.yaml": "a9e41c4ff7115c4e63c943ef25acedb2b4099fc6086250282d4893b818230f88",
+    "module-2/manifests/gitops-children.yaml": "875058961cb97d05c6d53573e8ecc600c1e7ffde354067ed42ef770fca58dda9",
+    "module-2/manifests/gitops-root.yaml": "249c875fa2672e87d25eae61ec97a028f7d1b614c4ef4aa0caf236957f40b8fb",
+    "module-2/manifests/network.yaml": "b4b14bb20f8bf0d07a8bad36cffb63da4c675dc770cda633c39e3f31ca3a196c",
+    "module-2/manifests/storage.yaml": "14a4b48a17110647d9920a94f44afe2b6e17f78f9301aaf4472e4a09a5b28982",
+    "module-2/schemas/apisix.apache.org/apisixroute_v2.json": "dd8f8930b97c35022ec3c7f72be4333ed61f84796b6d7f415dd69bc4a0d5cb59",
+    "module-2/schemas/apisix.apache.org/apisixtls_v2.json": "0189893739475cb3a91f763fa47371ad69b9df4b566856d5b399fb91e1f868c7",
+    "module-2/schemas/apisix.apache.org/apisixupstream_v2.json": "3b82dc2296f43ae835e5473c489677c0dcee66eac9559097dd3c5c3654b2f5df",
+    "module-2/schemas/argoproj.io/application_v1alpha1.json": "629761579fc0c8cca507b7613b536bea3644ad979fcaa3b1c12a66fe48f5f6a2",
+    "module-2/schemas/argoproj.io/appproject_v1alpha1.json": "60dda8f76ad689a6760288c662facd4634220f98605a087c25aed16355a9be2e",
+    "module-2/schemas/autoscaling.k8s.io/verticalpodautoscaler_v1.json": "47f551b36d34e8ceed10922edf8ad4f296de8d7503574aad8e8c10207a6521e9",
+    "module-2/schemas/cilium.io/ciliumclusterwidenetworkpolicy_v2.json": "309f9b47a9ee348b6206b63ec771aba67ca24202c7ff5f3d3e3e2e193bde09bd",
+    "module-2/schemas/cilium.io/ciliumnetworkpolicy_v2.json": "4f2bf31ca382754036525c81c18b70abf9686b9d523e5c7a1a17c54da692b25b",
+    "module-2/schemas/clusterrole_v1.json": "5b35631b2aa7e349269562742607d2e54fe5922ee5bf1579a1eceb58ce86f206",
+    "module-2/schemas/clusterrolebinding_v1.json": "114a4db87e6bf7c81b49fd1b32b57ccb7e1f052de891c70e3ed3c0b375e82cc5",
+    "module-2/schemas/configmap_v1.json": "14bf6e296c189e0414464c734c384a53dd2e0aae12589b030340f6079e7473b4",
+    "module-2/schemas/cronjob_v1.json": "68b59db21e59a2e4979e7e808142d5223dd4f333649cee4624f0d9411ca4b5d6",
+    "module-2/schemas/daemonset_v1.json": "24d42e64c146bf0f1f2d8ca15fd7c837eaf42b1bf332f05d840bb2420e6c56a8",
+    "module-2/schemas/deployment_v1.json": "cd8f028559c39fb3de4078e2ab10302ba5be95503d67fb02bae556f096d2755d",
+    "module-2/schemas/namespace_v1.json": "99301bb4ecb85094c9708ee076b5bdcc23465a1352dd0f1d9189e39d2fbeeac3",
+    "module-2/schemas/networkpolicy_v1.json": "ad5b450751102335d51cbaca737a46d75396666ba59b5139f3420e56550251fb",
+    "module-2/schemas/persistentvolume_v1.json": "0acc793acc615fd1340d98f7f7f8091140a3150dfd2dcbefd9b58a6d8154c7be",
+    "module-2/schemas/persistentvolumeclaim_v1.json": "0e83188a756b9df1cc719f98c7fafa558bcc9bf1da83039c8e1c31cd398ef6e9",
+    "module-2/schemas/poddisruptionbudget_v1.json": "b298454a08f8ff1266c3e62b0e8ed6c4aab9b7882ecc9ff6eb13999ca88a7b6f",
+    "module-2/schemas/postgresql.cnpg.io/cluster_v1.json": "e8addf7e2b3cd9f506ce09ed5eb4666f8e2e91a54a9551c1ff204fdd2ea2ce27",
+    "module-2/schemas/role_v1.json": "106f50305e0ab4a40d1f0226b145c7d810d9132b7a0ccd51bc30f04d86111897",
+    "module-2/schemas/rolebinding_v1.json": "d9b50842abde1f24dd16bdf266cb144184cf4672a628d0ee16ebc723ec7ecf79",
+    "module-2/schemas/secret_v1.json": "65f5a6945bbe766eef8292e5aa45c7b62d98c275af45a51652d26b0426cc3c55",
+    "module-2/schemas/service_v1.json": "67995b5af5be6b179c6ce8833864282e901f1ba0f604d97a67e57f1d93db2deb",
+    "module-2/schemas/serviceaccount_v1.json": "dd71e8bcb8514b858b41757f8c52389440d40ffe5631880cc7f3dce6afab64b5",
+    "module-2/schemas/serving.knative.dev/service_v1.json": "6cfef4626910dab0781b29c275fa4dec9e29c6876bf5e2400a0c07c67bbe0d2d",
+    "module-2/schemas/storageclass_v1.json": "861cd2cad6e752b0d361e4946438f1d22e6e8ab0acad194c2a5dc50dc9242a4c",
+    "module-2/site-values.example.yaml": "3acb4675ef3b3a16ab1007d684b0ae4042af8f6c4fb6ced4881634cfcc5a3cb0",
+    "module-2/values/apisix-serviceaccount.yaml": "82aa9c47c0797d07582014adeb7f1ff0a60e4aa2320410763cae063c38b583b6",
+    "module-2/values/apisix.yaml": "3134fd62b717986bb5dd2d422f3b6f00e2428901dd48a4e6e5bd0727a09f74d3",
+    "module-2/values/cilium.yaml": "776bead1135b0d9a86b1f29b9a811fa011250b0e4e901d9d5ce3985762a9faa6",
+    "module-2/values/knative-features.patch.json": "1d23710dee1d42b82197909634fbb821e78f8bcf814202d87c08a5c95e4cfe88",
+    "module-2/values/knative-network.patch.json": "c8d6a29891177a859e7e4a4c8eff118fa360ce932a2200465b76af78f13f4315",
+    "module-2/vendor/LICENSE-Apache-2.0.txt": "f096c31ac0fb2e66df5b7ec20049741ae15accd50c8cd4d100b4db6c9353f6aa",
+    "module-2/vendor/apisix-2.18.0.tgz": "f8e4332be34b080832fdc368b9c3e1c17df55c481d4d0ee2be116fe97fe0b77e",
+    "module-2/vendor/apisix-crds.yaml.gz": "f3abcaa3db7f199b7a3bc427d31088b34356bb46c083c958114f063c499add6b",
+    "module-2/vendor/apisix-tls-crd.yaml.gz": "f4ce82ae6d45d7d2419bf12070123d5b7060c2249ddca227f13678d6328c77fa",
+    "module-2/vendor/apisix-upstream-crd.yaml.gz": "dcfca08e33145fef7d0180de5645a38f9309814cb5161c7568f8ea1425d6bb47",
+    "module-2/vendor/argocd-crd.yaml.gz": "c75b9df269cccf3fde5e137700a266d6c52882250b275e24484e768fba98941b",
+    "module-2/vendor/argocd-project-crd.yaml.gz": "1279ed9d4922b691a9316deefb105b3b586620cc217e9c7c91f678782e5f28bc",
+    "module-2/vendor/cilium-1.20.2.tgz": "b2afd87b7f75f875f92a14559f14f59b7babbb479d968e3fd625a20bf30ec20e",
+    "module-2/vendor/cilium-crd.yaml.gz": "c0365cd78061c861af776ce321d5605544df2acfa222c39b1c5595db7cf41714",
+    "module-2/vendor/cilium-host-crd.yaml.gz": "2800b596db2312b03d5531f4a7124f2fa3c56cb8bc44a88dddc7a5010003402d",
+    "module-2/vendor/cnpg-crds.yaml.gz": "34b5891cc6886f6e03d229aa96834f99b43e37d6e32093f0fff22175a249184a",
+    "module-2/vendor/knative-crds.yaml.gz": "9c2a0c5776af54666396a11ab1b03241a5e8455f7cdaec88bfdcf7532d76a9bd",
+    "module-2/vendor/vpa-crds.yaml.gz": "e5fd612e8c72847e42ff3dfd7c6e60514079e1a926d675a79b84e7f09a3851e8",
+    "security/node-exceptions.json": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+    "tests/requirements.txt": "670a9264b1da9b9ac9cc1c37bef5e5022c8d0bfeb9668751c92da84cbe159ecc",
+    "tests/test_bootstrap.py": "b253f1e5d9c9582f83daf11bd664358c1855a50ce8eb71b10ab883af78335b32",
+    "tests/test_module2.py": "6ea5f45a13859154f53e6cf02f3d1405f5ba33d9ed6ec4b3862d1ef97cca6ab5",
+    "tools/build_module2_schemas.py": "c2c33f319a644cf05634b5f11dfc9004411b76525bbdbd15fc6d6c108f04a731",
+    "tools/check_manifest_contract.py": "eb6c3b3b62cc221d0310cb0f464a7e5d0e5b45db4a257ae7b65a2f91c2005608",
+    "tools/helm_node_guard.py": "5ad150e58150cc830bfc617f43a3224a0ac9c2616e4ffe2bdccf56915bac7932",
+    "tools/manifest_contract.py": "cbf03b547cca9fe6476954ff72b90f060a45394b32bbac7dfdbee605fe9af7ce",
+    "tools/module2.py": "0291661b95081636127bb605d9caba696fae1413680c05188abe6cc16c881aeb",
+    "tools/render_cloud_init.py": "8e8637401bae7c6cebca952559a1d8d8d7d7e2647bc4e25f68ab06a69e5bf700",
+    "tools/render_ssot.py": "fcbc83bf108ca0dcb4ed25a807a688e89bb69036c2aaa093ab2d149ca619d5f8",
+    "user-data-remote.yaml": "f562d41cdac457e2a04f7c5f72b55922f3d90da5269149775e7a7b084045a732",
+    "user-data.yaml": "8844d421e80fdc07738e9baf7791713ec70b220a5eea398a4cfd3397c3f6ae52",
+    "user-data.yaml.gz": "1f712a10b35b1bb362cbb9bdef0b3751dd2e62e3a036e20c29e66aca56626246",
+    "vcloud-ssot.yaml": "9a429b9dd60feea6001ebd3b961a4a8c863c294a181aa4529505311297133fd1"
+  }
+}

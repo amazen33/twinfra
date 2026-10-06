@@ -1,0 +1,73 @@
+{
+  "module": 1,
+  "date": "2026-10-06",
+  "scope": "architecture documentation only",
+  "status": "passed",
+  "adrCount": 17,
+  "markdownFilesChecked": 21,
+  "localLinksChecked": 58,
+  "uniquePrimarySourceURLs": 38,
+  "checks": {
+    "adrCoverageAndStructure": "passed",
+    "indexCoverage": "passed",
+    "localLinks": "passed",
+    "codeFenceBalance": "passed",
+    "ssotIdentity": "passed",
+    "approvedNodePolicyIntegrity": "passed"
+  },
+  "mermaid": {
+    "status": "passed",
+    "parser": "mermaid",
+    "version": "11.12.0",
+    "diagramCount": 1,
+    "inventory": [
+      {
+        "type": "flowchart-v2",
+        "nodes": 37,
+        "edges": 69,
+        "requiredFlowChecks": "passed"
+      }
+    ]
+  },
+  "kubeconform": {
+    "status": "not_applicable",
+    "newKubernetesManifests": 0,
+    "reason": "Module 1 adds documentation, not deployment manifests"
+  },
+  "liveAcceptance": "not executed",
+  "implementationGates": [
+    "component version/CRD schema matrix",
+    "namespace and security profiles",
+    "CSI/object storage and certificates",
+    "Knative internal encryption suitability",
+    "guarded PostgreSQL read-capacity adapter",
+    "trace backend",
+    "artifact verification",
+    "Spinifex admission/capacity adapter"
+  ],
+  "approvedNodePolicySHA256": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+  "originalNodeInventorySHA256": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81",
+  "filesSHA256": {
+    "docs/adrs/0002-kubernetes.md": "c056d138632d49cb896a44c6c1456de53652204cf3db96a91e0ac4904d5be850",
+    "docs/adrs/0003-knative-serving.md": "77ea96317a457f3bcee54fac1c06b2b21ba864d834d9ab96c46f04a83e08a376",
+    "docs/adrs/0004-cloudnativepg.md": "6248c684ba6cbeb5c1e6352beec970cd14e7701811ef00ac575a6ee58f30956d",
+    "docs/adrs/0005-pgvector.md": "3b880ce612ddef4669fc4f66625b7d37e86723e3f6559969a3d4caa513eb0b56",
+    "docs/adrs/0006-apisix.md": "625cc6fad91d02838b7cc48744ff45d25e817a46a31603a158d4f4e915c6d54b",
+    "docs/adrs/0007-argocd.md": "46d22fe16f85768d85d17246319320617dfdc91dde63eb8ac19a55f06821da8f",
+    "docs/adrs/0008-tekton.md": "d50f0414947bcab767bc7dc5e62716bedce4e03904eb924c3c75b47afe371fb0",
+    "docs/adrs/0009-prometheus.md": "c42fd2faa9cb109fb6b43b4dd7785cbf3aa2601db7ca4bdc31b419d776a35baa",
+    "docs/adrs/0010-grafana.md": "ec7c315f85cdf8f7d3b2ba53a2b83fadb01f4ab26be64c561f4445d6c03a5fb4",
+    "docs/adrs/0011-opentelemetry.md": "96fe9cc8c51bd58e8e117f6c792dcb9ee8cd3b7dedc663feb9419459b6940f07",
+    "docs/adrs/0012-openbao.md": "3e648548b81ac0ee7290056491c68bcbe4665e660b923d7a266261865ade29df",
+    "docs/adrs/0013-keycloak.md": "b54de6920048091450a6bdfc3e893e22c8447464f06bc4f690eb3e16add6e601",
+    "docs/adrs/0014-kafka.md": "72bc3bcba5e71bd28839e6908ab776ba11215d917e2c121b6ac21540f87e8ed1",
+    "docs/adrs/0015-strimzi.md": "abcd214fe6b1bfc151b20e44c5619bf84a661d5f62f75d75a51309a4db5a77c5",
+    "docs/adrs/0016-vllm.md": "9a890bc9bed1858d0aee33806d5c656ced50f4dc82bfc9fad5f8eb8d9cdc660e",
+    "docs/adrs/0017-langchain.md": "82839bdbfb6e69fea35884dcfc6d8f5a7ed140efb0f7a2a234fc72b589713404",
+    "docs/adrs/0018-spinifex.md": "8cf7a263105f366fede91fc09bd24701c939cfa6ef044c40625f2f3cb38a4ce0",
+    "docs/adrs/README.md": "0c3e35affabfd7c43934819c59a93843d939515ee134948de29553293217ef72",
+    "docs/module-1-topology.md": "2feae78ef6410bd0f725625f1d70d435b03e8da8840be385a4c1e2e3ed1be8c1",
+    "docs/module-1-summary.md": "d7e3fb11b7af1d29e358c495180e77cc1187e7e9ae4b36c6247f4a471661792f",
+    "README.md": "9509ad5563716aae25e28324c3cedf9b7a03e2de30c45545c08509512c2f11bd"
+  }
+}

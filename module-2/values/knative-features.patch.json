@@ -1,0 +1,6 @@
+{
+  "data": {
+    "kubernetes.podspec-persistent-volume-claim": "enabled",
+    "kubernetes.podspec-securitycontext": "enabled"
+  }
+}

@@ -1,0 +1,169 @@
+---
+# Source: vcloud-foundation/templates/function.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata: {name: secure-function, namespace: workload-apps}
+automountServiceAccountToken: false
+---
+# Source: vcloud-foundation/templates/function.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: function-code, namespace: workload-apps}
+data:
+  function.py: |
+    """Small non-root function example; no directory listing or arbitrary file lookup."""
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    from pathlib import Path
+    
+    
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path == '/healthz':
+                body, code = b'ok\n', 200
+            elif self.path == '/':
+                try:
+                    with Path('/data/greeting.txt').open('rb') as stream:
+                        body, code = stream.read(4096), 200
+                except OSError:
+                    body, code = b'function data not available\n', 503
+            else:
+                body, code = b'not found\n', 404
+            self.send_response(code)
+            self.send_header('Content-Type', 'text/plain; charset=utf-8')
+            self.send_header('Content-Length', str(len(body)))
+            self.send_header('Cache-Control', 'no-store')
+            self.end_headers()
+            self.wfile.write(body)
+    
+        def log_message(self, *_):
+            pass # Never log tokens, request headers or untrusted URL payloads.
+    
+    
+    if __name__ == '__main__':
+        ThreadingHTTPServer(('0.0.0.0', 8080), Handler).serve_forever()
+---
+# Source: vcloud-foundation/templates/function.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: function-data
+  namespace: workload-apps
+  annotations: {argocd.argoproj.io/sync-options: "Prune=false,Delete=false"}
+spec:
+  accessModes: [ReadOnlyMany]
+  storageClassName: vcloud-local
+  resources: {requests: {storage: 1Gi}}
+---
+# Source: vcloud-foundation/templates/function.yaml
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: secure-function
+  namespace: workload-apps
+  labels: {networking.knative.dev/visibility: cluster-local}
+spec:
+  template:
+    metadata:
+      labels: {vcloud.io/function: secure-function}
+      annotations:
+        autoscaling.knative.dev/min-scale: "0"
+        autoscaling.knative.dev/max-scale: "1"
+        autoscaling.knative.dev/target: "10"
+        kubernetes.io/egress-bandwidth: 100M
+    spec:
+      serviceAccountName: secure-function
+      automountServiceAccountToken: false
+      containerConcurrency: 10
+      timeoutSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: function
+          image: "registry.vcloud.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e"
+          imagePullPolicy: IfNotPresent
+          command: [python, /app/function.py]
+          ports: [{name: http1, containerPort: 8080}]
+          env: [{name: PYTHONDONTWRITEBYTECODE, value: "1"}]
+          resources:
+            requests: {cpu: 100m, memory: 64Mi}
+            limits: {cpu: 500m, memory: 128Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          readinessProbe: {httpGet: {path: /healthz, port: 8080}}
+          volumeMounts:
+            - {name: data, mountPath: /data, readOnly: true}
+            - {name: code, mountPath: /app, readOnly: true}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: function-data, readOnly: true}
+        - name: code
+          configMap: {name: function-code, defaultMode: 292}
+        - name: tmp
+          emptyDir: {sizeLimit: 16Mi}
+---
+# Source: vcloud-foundation/templates/gateway.yaml
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata: {name: secure-function, namespace: platform-services}
+spec:
+  ingressClassName: apisix
+  http:
+    - name: function
+      match:
+        hosts: [api.vcloud.example.com]
+        paths: [/function]
+        methods: [GET]
+        exprs: [{subject: {scope: Variable, name: scheme}, op: Equal, value: https}]
+      backends:
+        - serviceName: kourier-internal
+          servicePort: 443
+          resolveGranularity: service
+      plugins:
+        - name: proxy-rewrite
+          enable: true
+          config: {uri: /, host: secure-function.workload-apps.svc.cluster.local}
+        - name: openid-connect
+          enable: true
+          config:
+            client_id: vcloud-function
+            client_secret: $ENV://APISIX_OIDC_CLIENT_SECRET
+            discovery: https://auth.vcloud.example.com/realms/vcloud/.well-known/openid-configuration
+            bearer_only: true
+            use_jwks: true
+            ssl_verify: true
+            unauth_action: deny
+            accept_none_alg: false
+            accept_unsupported_alg: false
+            claim_validator:
+              issuer: {valid_issuers: [https://auth.vcloud.example.com/realms/vcloud]}
+              audience: {required: true, match_with_client_id: true}
+---
+# Source: vcloud-foundation/templates/gateway.yaml
+apiVersion: apisix.apache.org/v2
+kind: ApisixTls
+metadata: {name: public-api, namespace: platform-services}
+spec:
+  ingressClassName: apisix
+  hosts: [api.vcloud.example.com]
+  secret: {name: apisix-gateway-tls, namespace: platform-services}
+---
+# Source: vcloud-foundation/templates/gateway.yaml
+# The route and Kourier backend are in the SAME namespace; CRD forbids cross-namespace backends.
+apiVersion: apisix.apache.org/v2
+kind: ApisixUpstream
+metadata: {name: kourier-internal, namespace: platform-services}
+spec:
+  ingressClassName: apisix
+  scheme: https
+  passHost: rewrite
+  upstreamHost: secure-function.workload-apps.svc.cluster.local
+  retries: 0
+  timeout: {connect: 5s, send: 65s, read: 65s}
+  tlsSecret: {name: knative-upstream-tls, namespace: platform-services}

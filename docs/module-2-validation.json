@@ -1,0 +1,174 @@
+{
+  "status": "passed",
+  "resources": 80,
+  "schemaValidation": "Summary: 80 resources found in 3 files - Valid: 80, Invalid: 0, Errors: 0, Skipped: 0",
+  "acceptedNodeExceptions": [
+    "DaemonSet/kube-system/cilium",
+    "DaemonSet/kube-system/cilium-envoy",
+    "Deployment/kube-system/cilium-operator"
+  ],
+  "physicalLocalPVVetting": "required before apply",
+  "liveTests": "not run by static validation",
+  "renderedSHA256": {
+    "cilium.yaml": "2b9182efba92b39d73a9a428a054c26d37b18952e8be8b1d2e408b951e1bdec4",
+    "foundation.yaml": "34c8ccc0ecbed77167eb3e8ca22aa80b66d6f1486e23ac2240f9fbbc48c6742d",
+    "apisix-dependency.yaml": "f81aec6280e75ae9b9f368609a1d3b136088ca05d06ad86fea355a73fe7fce6d"
+  },
+  "module": 2,
+  "date": "2026-10-06",
+  "scope": "static rendering, schema, semantic and executable guardrail checks",
+  "tests": {
+    "passed": 54,
+    "failed": 0,
+    "command": "make test",
+    "liveChecksMocked": "apply order and kubectl diff exit handling only; no API mutation"
+  },
+  "helmLint": {
+    "charts": 3,
+    "failed": 0,
+    "versions": [
+      "foundation 0.2.0",
+      "Cilium 1.20.2",
+      "APISIX 2.18.0"
+    ]
+  },
+  "additionalSchemaChecks": {
+    "checkedInReference": {
+      "valid": 56,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "threeNodeFoundation": {
+      "valid": 51,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "threeNodeSemanticAudit": {
+      "status": "passed",
+      "resourcesIncludingDependencies": 82
+    }
+  },
+  "offlineSchemas": {
+    "builtins": 17,
+    "crds": 10,
+    "reproducibility": "10 CRD schemas reproduced from locked gzip inputs",
+    "missingSchemas": "fail closed"
+  },
+  "makeDiffWrapper": {
+    "comparisonExit1": "make exit 0; review required",
+    "errorExit2": "make exit 2"
+  },
+  "ssotDriftCheck": "passed",
+  "approvedNodePolicySHA256": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+  "originalNodeInventorySHA256": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81",
+  "tools": {
+    "python": "3.14.5 (Windows static tests); Ubuntu needs 3.11+",
+    "helm": "3.22.0",
+    "kubeconform": "0.8.0",
+    "make": "4.4.1"
+  },
+  "liveAcceptance": {
+    "UbuntuHostInspection": "not executed",
+    "GPUContainer": "not executed",
+    "diskProvisioning": "not executed",
+    "controllerInstallations": "not executed",
+    "imageBuildsAndPublication": "not executed",
+    "repositoryPublication": "not executed",
+    "TLSAndAuthentication": "not executed",
+    "CiliumEnforcementAndSRIOVFabric": "not executed",
+    "KnativeActivationAndPostgreSQLScaling": "not executed"
+  },
+  "limitations": [
+    "reference addresses/disabled GitOps sync are deliberately non-deployable",
+    "bounded automatic CPU/RAM growth; no automatic reduction",
+    "experimental Knative internal TLS requires pinned-release acceptance",
+    "host policy enforcement needs a reviewed node label",
+    "primary Cilium policy does not establish protection for a direct secondary VF/RDMA fabric",
+    "Local PV capacity does not impose a filesystem quota; physical inspection and backup are separate gates"
+  ],
+  "documentation": {
+    "markdownFiles": 4,
+    "localLinks": 35,
+    "fences": "passed",
+    "referenceManifestReproducibility": "passed"
+  },
+  "deliveredFilesSHA256": {
+    "docs/adr-0019-module-2-bootstrap.md": "b368e60d268c7db5a494c86289cfc51ca0b2b7ce73b0fd98fc8208c260519dfa",
+    "Makefile": "5de3dbb06cf9566ac7a13f642668dbcce6e2d43b02cadc292e80b7f7546ac523",
+    "module-2/artifacts.lock.json": "e45e3a755e2bc61a07d9689fc9571c464afa3a883f3ac3ffeac73789535d9317",
+    "module-2/chart/Chart.yaml": "a33a9dbe72f904a1f51d51c002a52f6d0057182c8744058b94cce6bbfebd9963",
+    "module-2/chart/files/function.py": "f5637ce7558cf4775c011f367d2b36251b7497bc38a4de39d6806d0504fdebc4",
+    "module-2/chart/files/scaler.py": "a82514ba6f5a9fe193e8062571aec77f28600d908f895eb333a4026deb516b75",
+    "module-2/chart/templates/database.yaml": "ebf572b307d2bd9793b282f517b04423266cc5e7624838e91ddf6719a7104b44",
+    "module-2/chart/templates/function.yaml": "0299182f9750284cb580e716314053595835f6f63efaae29191b0730df0bb78d",
+    "module-2/chart/templates/gateway.yaml": "f88cbd4f2039f73f88e6511e8ee66378bf485c895904b0bcfd978b18d1bde2a4",
+    "module-2/chart/templates/gitops.yaml": "d3b55600319177b2f19b52a5ad06eee5059ce8784f6b8027967d6c7720d27c14",
+    "module-2/chart/templates/network.yaml": "7ad8fde630e56ece7dd63429d33097d20253a05a22ea0d4ef3f09282dac23589",
+    "module-2/chart/templates/storage.yaml": "baf025009c2a45fa5d1e850260e596b467d2b0e571acf318848cd2de70792208",
+    "module-2/chart/values.yaml": "f24ca06cdcf70b91939760b5956ee207ea773dff275352b8ac1b90684547badd",
+    "module-2/images/apisix.Dockerfile": "62e1967973d638a6b79265d9b5e0fdb7dc340d95371e1c880e0f050092f125b5",
+    "module-2/images/postgresql-pgvector.Dockerfile": "508d2f0924f099862586dc60e674412e907c500bff3f5cf1882f0fd6ad42b044",
+    "module-2/manifests/apisix-dependency.yaml": "f81aec6280e75ae9b9f368609a1d3b136088ca05d06ad86fea355a73fe7fce6d",
+    "module-2/manifests/database.yaml": "e8017c5db5d8055e7d3bdbd6746c03b43e1875743bc082a7ccbcff0452fbf7a7",
+    "module-2/manifests/function.yaml": "a9e41c4ff7115c4e63c943ef25acedb2b4099fc6086250282d4893b818230f88",
+    "module-2/manifests/gitops-children.yaml": "875058961cb97d05c6d53573e8ecc600c1e7ffde354067ed42ef770fca58dda9",
+    "module-2/manifests/gitops-root.yaml": "249c875fa2672e87d25eae61ec97a028f7d1b614c4ef4aa0caf236957f40b8fb",
+    "module-2/manifests/network.yaml": "b4b14bb20f8bf0d07a8bad36cffb63da4c675dc770cda633c39e3f31ca3a196c",
+    "module-2/manifests/README.md": "60a1ddd1f24a32a6bc5a8f70bc3daacfd68d25aa93483aded6a7dc2a58dd470a",
+    "module-2/manifests/storage.yaml": "14a4b48a17110647d9920a94f44afe2b6e17f78f9301aaf4472e4a09a5b28982",
+    "module-2/README.md": "6efc3e775ef7864dd6cad36343a43c22fd704355dd1c234e361d95c7981b5f16",
+    "module-2/schemas/apisix.apache.org/apisixroute_v2.json": "dd8f8930b97c35022ec3c7f72be4333ed61f84796b6d7f415dd69bc4a0d5cb59",
+    "module-2/schemas/apisix.apache.org/apisixtls_v2.json": "0189893739475cb3a91f763fa47371ad69b9df4b566856d5b399fb91e1f868c7",
+    "module-2/schemas/apisix.apache.org/apisixupstream_v2.json": "3b82dc2296f43ae835e5473c489677c0dcee66eac9559097dd3c5c3654b2f5df",
+    "module-2/schemas/argoproj.io/application_v1alpha1.json": "629761579fc0c8cca507b7613b536bea3644ad979fcaa3b1c12a66fe48f5f6a2",
+    "module-2/schemas/argoproj.io/appproject_v1alpha1.json": "60dda8f76ad689a6760288c662facd4634220f98605a087c25aed16355a9be2e",
+    "module-2/schemas/autoscaling.k8s.io/verticalpodautoscaler_v1.json": "47f551b36d34e8ceed10922edf8ad4f296de8d7503574aad8e8c10207a6521e9",
+    "module-2/schemas/cilium.io/ciliumclusterwidenetworkpolicy_v2.json": "309f9b47a9ee348b6206b63ec771aba67ca24202c7ff5f3d3e3e2e193bde09bd",
+    "module-2/schemas/cilium.io/ciliumnetworkpolicy_v2.json": "4f2bf31ca382754036525c81c18b70abf9686b9d523e5c7a1a17c54da692b25b",
+    "module-2/schemas/clusterrole_v1.json": "5b35631b2aa7e349269562742607d2e54fe5922ee5bf1579a1eceb58ce86f206",
+    "module-2/schemas/clusterrolebinding_v1.json": "114a4db87e6bf7c81b49fd1b32b57ccb7e1f052de891c70e3ed3c0b375e82cc5",
+    "module-2/schemas/configmap_v1.json": "14bf6e296c189e0414464c734c384a53dd2e0aae12589b030340f6079e7473b4",
+    "module-2/schemas/cronjob_v1.json": "68b59db21e59a2e4979e7e808142d5223dd4f333649cee4624f0d9411ca4b5d6",
+    "module-2/schemas/daemonset_v1.json": "24d42e64c146bf0f1f2d8ca15fd7c837eaf42b1bf332f05d840bb2420e6c56a8",
+    "module-2/schemas/deployment_v1.json": "cd8f028559c39fb3de4078e2ab10302ba5be95503d67fb02bae556f096d2755d",
+    "module-2/schemas/namespace_v1.json": "99301bb4ecb85094c9708ee076b5bdcc23465a1352dd0f1d9189e39d2fbeeac3",
+    "module-2/schemas/networkpolicy_v1.json": "ad5b450751102335d51cbaca737a46d75396666ba59b5139f3420e56550251fb",
+    "module-2/schemas/persistentvolume_v1.json": "0acc793acc615fd1340d98f7f7f8091140a3150dfd2dcbefd9b58a6d8154c7be",
+    "module-2/schemas/persistentvolumeclaim_v1.json": "0e83188a756b9df1cc719f98c7fafa558bcc9bf1da83039c8e1c31cd398ef6e9",
+    "module-2/schemas/poddisruptionbudget_v1.json": "b298454a08f8ff1266c3e62b0e8ed6c4aab9b7882ecc9ff6eb13999ca88a7b6f",
+    "module-2/schemas/postgresql.cnpg.io/cluster_v1.json": "e8addf7e2b3cd9f506ce09ed5eb4666f8e2e91a54a9551c1ff204fdd2ea2ce27",
+    "module-2/schemas/role_v1.json": "106f50305e0ab4a40d1f0226b145c7d810d9132b7a0ccd51bc30f04d86111897",
+    "module-2/schemas/rolebinding_v1.json": "d9b50842abde1f24dd16bdf266cb144184cf4672a628d0ee16ebc723ec7ecf79",
+    "module-2/schemas/secret_v1.json": "65f5a6945bbe766eef8292e5aa45c7b62d98c275af45a51652d26b0426cc3c55",
+    "module-2/schemas/service_v1.json": "67995b5af5be6b179c6ce8833864282e901f1ba0f604d97a67e57f1d93db2deb",
+    "module-2/schemas/serviceaccount_v1.json": "dd71e8bcb8514b858b41757f8c52389440d40ffe5631880cc7f3dce6afab64b5",
+    "module-2/schemas/serving.knative.dev/service_v1.json": "6cfef4626910dab0781b29c275fa4dec9e29c6876bf5e2400a0c07c67bbe0d2d",
+    "module-2/schemas/storageclass_v1.json": "861cd2cad6e752b0d361e4946438f1d22e6e8ab0acad194c2a5dc50dc9242a4c",
+    "module-2/site-values.example.yaml": "3acb4675ef3b3a16ab1007d684b0ae4042af8f6c4fb6ced4881634cfcc5a3cb0",
+    "module-2/values/apisix-serviceaccount.yaml": "82aa9c47c0797d07582014adeb7f1ff0a60e4aa2320410763cae063c38b583b6",
+    "module-2/values/apisix.yaml": "3134fd62b717986bb5dd2d422f3b6f00e2428901dd48a4e6e5bd0727a09f74d3",
+    "module-2/values/cilium.yaml": "776bead1135b0d9a86b1f29b9a811fa011250b0e4e901d9d5ce3985762a9faa6",
+    "module-2/values/knative-features.patch.json": "1d23710dee1d42b82197909634fbb821e78f8bcf814202d87c08a5c95e4cfe88",
+    "module-2/values/knative-network.patch.json": "c8d6a29891177a859e7e4a4c8eff118fa360ce932a2200465b76af78f13f4315",
+    "module-2/vendor/apisix-2.18.0.tgz": "f8e4332be34b080832fdc368b9c3e1c17df55c481d4d0ee2be116fe97fe0b77e",
+    "module-2/vendor/apisix-crds.yaml.gz": "f3abcaa3db7f199b7a3bc427d31088b34356bb46c083c958114f063c499add6b",
+    "module-2/vendor/apisix-tls-crd.yaml.gz": "f4ce82ae6d45d7d2419bf12070123d5b7060c2249ddca227f13678d6328c77fa",
+    "module-2/vendor/apisix-upstream-crd.yaml.gz": "dcfca08e33145fef7d0180de5645a38f9309814cb5161c7568f8ea1425d6bb47",
+    "module-2/vendor/argocd-crd.yaml.gz": "c75b9df269cccf3fde5e137700a266d6c52882250b275e24484e768fba98941b",
+    "module-2/vendor/argocd-project-crd.yaml.gz": "1279ed9d4922b691a9316deefb105b3b586620cc217e9c7c91f678782e5f28bc",
+    "module-2/vendor/cilium-1.20.2.tgz": "b2afd87b7f75f875f92a14559f14f59b7babbb479d968e3fd625a20bf30ec20e",
+    "module-2/vendor/cilium-crd.yaml.gz": "c0365cd78061c861af776ce321d5605544df2acfa222c39b1c5595db7cf41714",
+    "module-2/vendor/cilium-host-crd.yaml.gz": "2800b596db2312b03d5531f4a7124f2fa3c56cb8bc44a88dddc7a5010003402d",
+    "module-2/vendor/cnpg-crds.yaml.gz": "34b5891cc6886f6e03d229aa96834f99b43e37d6e32093f0fff22175a249184a",
+    "module-2/vendor/knative-crds.yaml.gz": "9c2a0c5776af54666396a11ab1b03241a5e8455f7cdaec88bfdcf7532d76a9bd",
+    "module-2/vendor/LICENSE-Apache-2.0.txt": "f096c31ac0fb2e66df5b7ec20049741ae15accd50c8cd4d100b4db6c9353f6aa",
+    "module-2/vendor/vpa-crds.yaml.gz": "e5fd612e8c72847e42ff3dfd7c6e60514079e1a926d675a79b84e7f09a3851e8",
+    "tests/test_module2.py": "6ea5f45a13859154f53e6cf02f3d1405f5ba33d9ed6ec4b3862d1ef97cca6ab5",
+    "tools/build_module2_schemas.py": "c2c33f319a644cf05634b5f11dfc9004411b76525bbdbd15fc6d6c108f04a731",
+    "tools/helm_node_guard.py": "5ad150e58150cc830bfc617f43a3224a0ac9c2616e4ffe2bdccf56915bac7932",
+    "tools/module2.py": "0291661b95081636127bb605d9caba696fae1413680c05188abe6cc16c881aeb",
+    "module-2/chart/.helmignore": "0f2066992b625195aae55dc1037b9efc8c8df1cd313aba33d90752a8d822c86e"
+  }
+}

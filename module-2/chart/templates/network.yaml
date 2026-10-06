@@ -1,0 +1,325 @@
+{{- if has .Values.renderGroup (list "all" "network") }}
+{{- range $namespace := list "platform-services" "workload-apps" "hpc-compute" }}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: baseline-deny-all, namespace: {{ $namespace }}}
+spec:
+  endpointSelector: {}
+  ingress: []
+  egress: []
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: allow-internal-dns, namespace: {{ $namespace }}}
+spec:
+  endpointSelector: {}
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: kube-system
+            k8s:k8s-app: kube-dns
+      toPorts:
+        - ports: [{port: "53", protocol: UDP}, {port: "53", protocol: TCP}]
+          rules: {dns: [{matchPattern: "*"}]}
+{{- end }}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: apisix-entry-and-knative, namespace: platform-services}
+spec:
+  endpointSelector: {matchLabels: {k8s:app.kubernetes.io/name: {{ .Values.apisix.gatewayLabel }}}}
+  ingress:
+    - fromEntities: [world]
+      toPorts: [{ports: [{port: "9443", protocol: TCP}]}]
+  egress:
+    - toEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: {{ .Values.knative.namespace }}, k8s:app: 3scale-kourier-gateway}
+      toPorts: [{ports: [{port: {{ .Values.knative.gatewayTargetPort | quote }}, protocol: TCP}]}]
+    - toCIDR:
+{{ .Values.site.identityCIDRs | toYaml | indent 8 }}
+      toPorts: [{ports: [{port: "443", protocol: TCP}]}]
+    - toEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services, k8s:app.kubernetes.io/name: keycloak}
+      toPorts: [{ports: [{port: "443", protocol: TCP}, {port: "8443", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: keycloak-from-gateway, namespace: platform-services}
+spec:
+  endpointSelector: {matchLabels: {k8s:app.kubernetes.io/name: keycloak}}
+  ingress:
+    - fromEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services, k8s:app.kubernetes.io/name: {{ .Values.apisix.gatewayLabel }}}
+      toPorts: [{ports: [{port: "443", protocol: TCP}, {port: "8443", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: knative-system-peers, namespace: {{ .Values.knative.namespace }}}
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: k8s:app
+        operator: In
+        values: [controller, autoscaler, activator, webhook, net-kourier-controller, 3scale-kourier-gateway]
+  ingress:
+    - fromEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services}
+          matchExpressions:
+            - {key: k8s:app, operator: In, values: [controller, autoscaler, activator, webhook, net-kourier-controller, 3scale-kourier-gateway]}
+      toPorts:
+        - ports: [{port: "8080", protocol: TCP}, {port: "9090", protocol: TCP}, {port: "8443", protocol: TCP}, {port: "9443", protocol: TCP}, {port: "18000", protocol: TCP}, {port: {{ .Values.knative.activatorPort | quote }}, protocol: TCP}]
+    - fromEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services, k8s:app.kubernetes.io/name: {{ .Values.apisix.gatewayLabel }}}
+      toPorts: [{ports: [{port: {{ .Values.knative.gatewayTargetPort | quote }}, protocol: TCP}]}]
+    - fromEntities: [kube-apiserver]
+      toPorts: [{ports: [{port: "8443", protocol: TCP}]}]
+  egress:
+    - toEntities: [kube-apiserver]
+      toPorts: [{ports: [{port: "443", protocol: TCP}, {port: "6443", protocol: TCP}]}]
+    - toEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services}
+          matchExpressions:
+            - {key: k8s:app, operator: In, values: [controller, autoscaler, activator, webhook, net-kourier-controller, 3scale-kourier-gateway]}
+      toPorts:
+        - ports: [{port: "8080", protocol: TCP}, {port: "9090", protocol: TCP}, {port: "8443", protocol: TCP}, {port: "9443", protocol: TCP}, {port: "18000", protocol: TCP}, {port: {{ .Values.knative.activatorPort | quote }}, protocol: TCP}]
+    - toEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: workload-apps, k8s:vcloud.io/function: secure-function}
+      toPorts:
+        - ports: [{port: {{ .Values.knative.queueTLS | quote }}, protocol: TCP}, {port: "9090", protocol: TCP}, {port: "8022", protocol: TCP}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: function-from-knative-only, namespace: workload-apps}
+spec:
+  endpointSelector: {matchLabels: {k8s:vcloud.io/function: secure-function}}
+  ingress:
+    - fromEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: {{ .Values.knative.namespace }}}
+          matchExpressions:
+            - {key: k8s:app, operator: In, values: [activator, 3scale-kourier-gateway]}
+      toPorts: [{ports: [{port: {{ .Values.knative.queueTLS | quote }}, protocol: TCP}]}]
+    - fromEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: {{ .Values.knative.namespace }}, k8s:app: autoscaler}
+      toPorts: [{ports: [{port: "9090", protocol: TCP}, {port: "8022", protocol: TCP}]}]
+    - fromEntities: [host]
+      toPorts: [{ports: [{port: "8022", protocol: TCP}, {port: "8080", protocol: TCP}]}]
+  egress:
+    - toEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: {{ .Values.knative.namespace }}, k8s:app: autoscaler}
+      toPorts: [{ports: [{port: "8080", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: hpc-bounded-ssh-mpi, namespace: hpc-compute}
+spec:
+  endpointSelector:
+    matchLabels: {k8s:vcloud.io/hpc-ssh-mpi: enabled, k8s:vcloud.io/hpc-job-group: {{ .Values.hpc.jobGroup | quote }}}
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: hpc-compute
+            k8s:vcloud.io/hpc-ssh-mpi: enabled
+            k8s:vcloud.io/hpc-job-group: {{ .Values.hpc.jobGroup | quote }}
+      toPorts:
+        - ports:
+            - {port: "22", protocol: TCP}
+            - {port: "2222", protocol: TCP}
+            - {port: {{ .Values.hpc.mpiPortMin | quote }}, endPort: {{ .Values.hpc.mpiPortMax }}, protocol: TCP}
+  egress:
+    - toEndpoints:
+        - matchLabels:
+            k8s:io.kubernetes.pod.namespace: hpc-compute
+            k8s:vcloud.io/hpc-ssh-mpi: enabled
+            k8s:vcloud.io/hpc-job-group: {{ .Values.hpc.jobGroup | quote }}
+      toPorts:
+        - ports:
+            - {port: "22", protocol: TCP}
+            - {port: "2222", protocol: TCP}
+            - {port: {{ .Values.hpc.mpiPortMin | quote }}, endPort: {{ .Values.hpc.mpiPortMax }}, protocol: TCP}
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: postgres-peers-and-operator, namespace: platform-services}
+spec:
+  endpointSelector: {matchLabels: {k8s:vcloud.io/component: postgres}}
+  ingress:
+    - fromEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services, k8s:vcloud.io/component: postgres}
+      toPorts: [{ports: [{port: "5432", protocol: TCP}]}]
+    - fromEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services, k8s:app.kubernetes.io/name: cloudnative-pg}
+      toPorts: [{ports: [{port: "8000", protocol: TCP}]}]
+  egress:
+    - toEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services, k8s:vcloud.io/component: postgres}
+      toPorts: [{ports: [{port: "5432", protocol: TCP}]}]
+    - toEntities: [kube-apiserver]
+      toPorts: [{ports: [{port: "443", protocol: TCP}, {port: "6443", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: postgres-resource-scaler-api, namespace: platform-services}
+spec:
+  endpointSelector: {matchLabels: {k8s:vcloud.io/component: postgres-resource-scaler}}
+  egress:
+    - toEntities: [kube-apiserver]
+      toPorts: [{ports: [{port: "443", protocol: TCP}, {port: "6443", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: infrastructure-api-clients, namespace: platform-services}
+spec:
+  endpointSelector:
+    matchExpressions:
+      - {key: k8s:app.kubernetes.io/name, operator: In, values: [cloudnative-pg, apisix-ingress-controller, argocd-application-controller, vpa-recommender]}
+  egress:
+    - toEntities: [kube-apiserver]
+      toPorts: [{ports: [{port: "443", protocol: TCP}, {port: "6443", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: cnpg-webhook, namespace: platform-services}
+spec:
+  endpointSelector: {matchLabels: {k8s:app.kubernetes.io/name: cloudnative-pg}}
+  ingress:
+    - fromEntities: [kube-apiserver]
+      toPorts: [{ports: [{port: "9443", protocol: TCP}]}]
+  egress:
+    - toEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services, k8s:vcloud.io/component: postgres}
+      toPorts: [{ports: [{port: "8000", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: apisix-controller-config, namespace: platform-services}
+spec:
+  endpointSelector: {matchLabels: {k8s:app.kubernetes.io/name: apisix-ingress-controller}}
+  egress:
+    - toEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services, k8s:app.kubernetes.io/name: {{ .Values.apisix.gatewayLabel }}}
+      toPorts: [{ports: [{port: "9180", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: apisix-private-config-api, namespace: platform-services}
+spec:
+  endpointSelector: {matchLabels: {k8s:app.kubernetes.io/name: {{ .Values.apisix.gatewayLabel }}}}
+  ingress:
+    - fromEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services, k8s:app.kubernetes.io/name: apisix-ingress-controller}
+      toPorts: [{ports: [{port: "9180", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: argocd-git-mirror, namespace: platform-services}
+spec:
+  endpointSelector: {matchLabels: {k8s:app.kubernetes.io/name: argocd-repo-server}}
+  egress:
+    - toCIDR:
+{{ .Values.site.gitCIDRs | toYaml | indent 8 }}
+      toPorts: [{ports: [{port: "443", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: argocd-repository-rpc, namespace: platform-services}
+spec:
+  endpointSelector: {matchLabels: {k8s:app.kubernetes.io/name: argocd-application-controller}}
+  egress:
+    - toEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services, k8s:app.kubernetes.io/name: argocd-repo-server}
+      toPorts: [{ports: [{port: "8081", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: argocd-repository-from-controller, namespace: platform-services}
+spec:
+  endpointSelector: {matchLabels: {k8s:app.kubernetes.io/name: argocd-repo-server}}
+  ingress:
+    - fromEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services, k8s:app.kubernetes.io/name: argocd-application-controller}
+      toPorts: [{ports: [{port: "8081", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: argocd-cache-clients, namespace: platform-services}
+spec:
+  endpointSelector:
+    matchExpressions:
+      - {key: k8s:app.kubernetes.io/name, operator: In, values: [argocd-application-controller, argocd-repo-server]}
+  egress:
+    - toEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services, k8s:app.kubernetes.io/name: argocd-redis}
+      toPorts: [{ports: [{port: "6379", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: argocd-cache-server, namespace: platform-services}
+spec:
+  endpointSelector: {matchLabels: {k8s:app.kubernetes.io/name: argocd-redis}}
+  ingress:
+    - fromEndpoints:
+        - matchLabels: {k8s:io.kubernetes.pod.namespace: platform-services}
+          matchExpressions:
+            - {key: k8s:app.kubernetes.io/name, operator: In, values: [argocd-application-controller, argocd-repo-server]}
+      toPorts: [{ports: [{port: "6379", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: infrastructure-node-probes, namespace: platform-services}
+spec:
+  endpointSelector:
+    matchExpressions:
+      - {key: k8s:app.kubernetes.io/name, operator: In, values: [apisix, cloudnative-pg, argocd-application-controller, argocd-repo-server, argocd-redis, vpa-recommender]}
+  ingress:
+    - fromEntities: [host]
+      toPorts:
+        - ports: [{port: "7085", protocol: TCP}, {port: "9443", protocol: TCP}, {port: "8080", protocol: TCP}, {port: "8082", protocol: TCP}, {port: "8083", protocol: TCP}, {port: "6379", protocol: TCP}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: knative-node-probes, namespace: platform-services}
+spec:
+  endpointSelector:
+    matchExpressions:
+      - {key: k8s:app, operator: In, values: [controller, autoscaler, activator, webhook, net-kourier-controller, 3scale-kourier-gateway]}
+  ingress:
+    - fromEntities: [host]
+      toPorts:
+        - ports: [{port: "8080", protocol: TCP}, {port: "9090", protocol: TCP}, {port: "8443", protocol: TCP}, {port: "18000", protocol: TCP}, {port: "19000", protocol: TCP}, {port: "8012", protocol: TCP}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata: {name: postgres-node-probes, namespace: platform-services}
+spec:
+  endpointSelector: {matchLabels: {k8s:vcloud.io/component: postgres}}
+  ingress:
+    - fromEntities: [host]
+      toPorts: [{ports: [{port: "8000", protocol: TCP}]}]
+---
+apiVersion: cilium.io/v2
+kind: CiliumClusterwideNetworkPolicy
+metadata: {name: reviewed-node-host-firewall}
+spec:
+  # Enforce on a node ONLY after console access, audit-mode checks and peer routes are proved.
+  nodeSelector: {matchLabels: {vcloud.io/host-firewall-reviewed: "true"}}
+  ingress:
+    - fromCIDR: [{{ .Values.site.adminCIDR | quote }}]
+      toPorts: [{ports: [{port: "22", protocol: TCP}]}]
+    - fromEntities: [remote-node, kube-apiserver]
+      toPorts:
+        - ports: [{port: "6443", protocol: TCP}, {port: "2379", protocol: TCP}, {port: "2380", protocol: TCP}, {port: "10250", protocol: TCP}, {port: "4240", protocol: TCP}]
+    - fromCIDR: [{{ .Values.site.podCIDR | quote }}]
+      toPorts: [{ports: [{port: "6443", protocol: TCP}]}]
+  egress:
+    - toEntities: [remote-node, kube-apiserver]
+      toPorts:
+        - ports: [{port: "6443", protocol: TCP}, {port: "2379", protocol: TCP}, {port: "2380", protocol: TCP}, {port: "10250", protocol: TCP}, {port: "4240", protocol: TCP}]
+    - toCIDR: [{{ .Values.site.podCIDR | quote }}] # host administration/probes to its configured PodCIDR
+    - toCIDR:
+{{ concat .Values.site.registryCIDRs .Values.site.gitCIDRs .Values.site.identityCIDRs | toYaml | indent 8 }}
+      toPorts: [{ports: [{port: "443", protocol: TCP}]}]
+    - toCIDR:
+{{ .Values.site.dnsCIDRs | toYaml | indent 8 }}
+      toPorts: [{ports: [{port: "53", protocol: UDP}, {port: "53", protocol: TCP}]}]
+{{- end }}

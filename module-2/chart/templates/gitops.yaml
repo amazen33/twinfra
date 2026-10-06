@@ -1,0 +1,89 @@
+{{- if eq .Values.renderGroup "all" }}
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata: {name: vcloud, namespace: platform-services}
+spec:
+  sourceRepos: [{{ .Values.git.repoURL | quote }}]
+  destinations:
+    - {server: https://kubernetes.default.svc, namespace: platform-services}
+    - {server: https://kubernetes.default.svc, namespace: workload-apps}
+    - {server: https://kubernetes.default.svc, namespace: hpc-compute}
+  clusterResourceWhitelist:
+    - {group: "", kind: PersistentVolume}
+    - {group: storage.k8s.io, kind: StorageClass}
+    - {group: cilium.io, kind: CiliumClusterwideNetworkPolicy}
+  namespaceResourceWhitelist:
+    - {group: "", kind: ConfigMap}
+    - {group: "", kind: PersistentVolumeClaim}
+    - {group: "", kind: ServiceAccount}
+    - {group: rbac.authorization.k8s.io, kind: Role}
+    - {group: rbac.authorization.k8s.io, kind: RoleBinding}
+    - {group: cilium.io, kind: CiliumNetworkPolicy}
+    - {group: networking.k8s.io, kind: NetworkPolicy}
+    - {group: serving.knative.dev, kind: Service}
+    - {group: postgresql.cnpg.io, kind: Cluster}
+    - {group: autoscaling.k8s.io, kind: VerticalPodAutoscaler}
+    - {group: batch, kind: CronJob}
+    - {group: apisix.apache.org, kind: ApisixRoute}
+    - {group: apisix.apache.org, kind: ApisixUpstream}
+    - {group: apisix.apache.org, kind: ApisixTls}
+    - {group: argoproj.io, kind: Application}
+  orphanedResources: {warn: true}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vcloud-root
+  namespace: platform-services
+  annotations: {vcloud.io/canonical-repository: {{ .Values.git.upstream | quote }}}
+spec:
+  project: vcloud
+  destination: {server: https://kubernetes.default.svc, namespace: platform-services}
+  source:
+    repoURL: {{ .Values.git.repoURL | quote }}
+    targetRevision: {{ .Values.git.revision | quote }}
+    path: {{ .Values.git.path }}
+    helm:
+      releaseName: vcloud-foundation
+      valuesObject:
+{{ mergeOverwrite (deepCopy .Values) (dict "renderGroup" "children") | toYaml | indent 8 }}
+  syncPolicy:
+    automated: {enabled: {{ not .Values.site.referenceOnly }}, prune: false, selfHeal: true, allowEmpty: false}
+    syncOptions: [CreateNamespace=false]
+{{- end }}
+{{- if has .Values.renderGroup (list "all" "children") }}
+{{- range $group := list "storage" "network" "database" "function" }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vcloud-{{ $group }}
+  namespace: platform-services
+  annotations:
+    argocd.argoproj.io/sync-wave: {{ index (dict "storage" "-20" "network" "-10" "database" "0" "function" "10") $group | quote }}
+spec:
+  project: vcloud
+  destination: {server: https://kubernetes.default.svc, namespace: platform-services}
+  source:
+    repoURL: {{ $.Values.git.repoURL | quote }}
+    targetRevision: {{ $.Values.git.revision | quote }}
+    path: {{ $.Values.git.path }}
+    helm:
+      releaseName: vcloud-foundation
+      valuesObject:
+{{ mergeOverwrite (deepCopy $.Values) (dict "renderGroup" $group) | toYaml | indent 8 }}
+  syncPolicy:
+    automated: {enabled: {{ not $.Values.site.referenceOnly }}, prune: false, selfHeal: true, allowEmpty: false}
+    syncOptions: [CreateNamespace=false, RespectIgnoreDifferences=true]
+{{- if eq $group "database" }}
+  ignoreDifferences:
+    - group: postgresql.cnpg.io
+      kind: Cluster
+      name: {{ $.Values.database.name }}
+      namespace: platform-services
+      jsonPointers:
+        - /spec/resources
+        - /metadata/annotations/vcloud.io~1resources-last-scaled
+{{- end }}
+{{- end }}
+{{- end }}

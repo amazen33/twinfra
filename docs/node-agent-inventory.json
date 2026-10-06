@@ -1,0 +1,468 @@
+{
+  "status": "blocked",
+  "authorization": "none; static inspection only",
+  "violations": [
+    "DaemonSet/kube-system/cilium: forbidden hostPath volume(s)",
+    "DaemonSet/kube-system/cilium/cilium-agent: root execution not excluded; requires documented necessity",
+    "DaemonSet/kube-system/cilium/config: root execution not excluded; requires documented necessity",
+    "DaemonSet/kube-system/cilium/apply-sysctl-overwrites: root execution not excluded; requires documented necessity",
+    "DaemonSet/kube-system/cilium/clean-cilium-state: root execution not excluded; requires documented necessity",
+    "DaemonSet/kube-system/cilium/install-cni-binaries: root execution not excluded; requires documented necessity",
+    "DaemonSet/kube-system/cilium-envoy: forbidden hostPath volume(s)",
+    "DaemonSet/kube-system/cilium-envoy/cilium-envoy: root execution not excluded; requires documented necessity",
+    "DaemonSet/kube-system/nvidia-device-plugin: forbidden hostPath volume(s)",
+    "DaemonSet/kube-system/nvidia-device-plugin/nvidia-device-plugin-ctr: root execution not excluded; requires documented necessity"
+  ],
+  "resources": [
+    {
+      "resource": "DaemonSet/kube-system/cilium",
+      "hostNetwork": true,
+      "hostPID": false,
+      "containers": [
+        {
+          "name": "cilium-agent",
+          "image": "registry.vcloud.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+          "securityContext": {
+            "appArmorProfile": {
+              "type": "Unconfined"
+            },
+            "seccompProfile": {
+              "type": "Unconfined"
+            },
+            "seLinuxOptions": {
+              "level": "s0",
+              "type": "spc_t"
+            },
+            "capabilities": {
+              "add": [
+                "CHOWN",
+                "KILL",
+                "NET_ADMIN",
+                "NET_RAW",
+                "IPC_LOCK",
+                "SYS_MODULE",
+                "SYS_ADMIN",
+                "SYS_RESOURCE",
+                "DAC_OVERRIDE",
+                "FOWNER",
+                "SETGID",
+                "SETUID",
+                "SYSLOG"
+              ],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [
+            {
+              "name": "envoy-sockets",
+              "mountPath": "/var/run/cilium/envoy/sockets",
+              "readOnly": false
+            },
+            {
+              "mountPath": "/host/proc/sys/net",
+              "name": "host-proc-sys-net"
+            },
+            {
+              "mountPath": "/host/proc/sys/kernel",
+              "name": "host-proc-sys-kernel"
+            },
+            {
+              "name": "bpf-maps",
+              "mountPath": "/sys/fs/bpf",
+              "mountPropagation": "HostToContainer"
+            },
+            {
+              "name": "cilium-cgroup",
+              "mountPath": "/sys/fs/cgroup"
+            },
+            {
+              "name": "cilium-run",
+              "mountPath": "/var/run/cilium"
+            },
+            {
+              "name": "cilium-netns",
+              "mountPath": "/var/run/cilium/netns",
+              "mountPropagation": "HostToContainer"
+            },
+            {
+              "name": "etc-cni-netd",
+              "mountPath": "/host/etc/cni/net.d"
+            },
+            {
+              "name": "lib-modules",
+              "mountPath": "/lib/modules",
+              "readOnly": true
+            },
+            {
+              "name": "xtables-lock",
+              "mountPath": "/run/xtables.lock"
+            }
+          ]
+        },
+        {
+          "name": "config",
+          "image": "registry.vcloud.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+          "securityContext": {
+            "appArmorProfile": {
+              "type": "Unconfined"
+            },
+            "seccompProfile": {
+              "type": "Unconfined"
+            },
+            "capabilities": {
+              "add": [
+                "NET_ADMIN"
+              ],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": []
+        },
+        {
+          "name": "apply-sysctl-overwrites",
+          "image": "registry.vcloud.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+          "securityContext": {
+            "appArmorProfile": {
+              "type": "Unconfined"
+            },
+            "seccompProfile": {
+              "type": "Unconfined"
+            },
+            "seLinuxOptions": {
+              "level": "s0",
+              "type": "spc_t"
+            },
+            "capabilities": {
+              "add": [
+                "SYS_ADMIN",
+                "SYS_CHROOT",
+                "SYS_PTRACE"
+              ],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [
+            {
+              "name": "hostproc",
+              "mountPath": "/hostproc"
+            },
+            {
+              "name": "cni-path",
+              "mountPath": "/hostbin"
+            }
+          ]
+        },
+        {
+          "name": "clean-cilium-state",
+          "image": "registry.vcloud.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+          "securityContext": {
+            "appArmorProfile": {
+              "type": "Unconfined"
+            },
+            "seccompProfile": {
+              "type": "Unconfined"
+            },
+            "seLinuxOptions": {
+              "level": "s0",
+              "type": "spc_t"
+            },
+            "capabilities": {
+              "add": [
+                "NET_ADMIN",
+                "SYS_MODULE",
+                "SYS_ADMIN",
+                "SYS_RESOURCE"
+              ],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [
+            {
+              "name": "bpf-maps",
+              "mountPath": "/sys/fs/bpf"
+            },
+            {
+              "name": "cilium-cgroup",
+              "mountPath": "/sys/fs/cgroup",
+              "mountPropagation": "HostToContainer"
+            },
+            {
+              "name": "cilium-run",
+              "mountPath": "/var/run/cilium"
+            }
+          ]
+        },
+        {
+          "name": "install-cni-binaries",
+          "image": "registry.vcloud.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+          "securityContext": {
+            "appArmorProfile": {
+              "type": "Unconfined"
+            },
+            "seccompProfile": {
+              "type": "Unconfined"
+            },
+            "seLinuxOptions": {
+              "level": "s0",
+              "type": "spc_t"
+            },
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [
+            {
+              "name": "cni-path",
+              "mountPath": "/host/opt/cni/bin"
+            }
+          ]
+        }
+      ],
+      "hostPaths": [
+        {
+          "name": "cilium-run",
+          "hostPath": {
+            "path": "/var/run/cilium",
+            "type": "DirectoryOrCreate"
+          }
+        },
+        {
+          "name": "cilium-netns",
+          "hostPath": {
+            "path": "/var/run/netns",
+            "type": "DirectoryOrCreate"
+          }
+        },
+        {
+          "name": "bpf-maps",
+          "hostPath": {
+            "path": "/sys/fs/bpf",
+            "type": "DirectoryOrCreate"
+          }
+        },
+        {
+          "name": "hostproc",
+          "hostPath": {
+            "path": "/proc",
+            "type": "Directory"
+          }
+        },
+        {
+          "name": "cilium-cgroup",
+          "hostPath": {
+            "path": "/sys/fs/cgroup",
+            "type": "DirectoryOrCreate"
+          }
+        },
+        {
+          "name": "cni-path",
+          "hostPath": {
+            "path": "/opt/cni/bin",
+            "type": "DirectoryOrCreate"
+          }
+        },
+        {
+          "name": "etc-cni-netd",
+          "hostPath": {
+            "path": "/etc/cni/net.d",
+            "type": "DirectoryOrCreate"
+          }
+        },
+        {
+          "name": "lib-modules",
+          "hostPath": {
+            "path": "/lib/modules"
+          }
+        },
+        {
+          "name": "xtables-lock",
+          "hostPath": {
+            "path": "/run/xtables.lock",
+            "type": "FileOrCreate"
+          }
+        },
+        {
+          "name": "envoy-sockets",
+          "hostPath": {
+            "path": "/var/run/cilium/envoy/sockets",
+            "type": "DirectoryOrCreate"
+          }
+        },
+        {
+          "name": "host-proc-sys-net",
+          "hostPath": {
+            "path": "/proc/sys/net",
+            "type": "Directory"
+          }
+        },
+        {
+          "name": "host-proc-sys-kernel",
+          "hostPath": {
+            "path": "/proc/sys/kernel",
+            "type": "Directory"
+          }
+        }
+      ]
+    },
+    {
+      "resource": "DaemonSet/kube-system/cilium-envoy",
+      "hostNetwork": true,
+      "hostPID": false,
+      "containers": [
+        {
+          "name": "cilium-envoy",
+          "image": "registry.vcloud.example.com/quay.io/cilium/cilium-envoy:v1.37.6-1789133542-cbec91f666af0bf742da986d43832932dbb26b82@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+          "securityContext": {
+            "appArmorProfile": {
+              "type": "Unconfined"
+            },
+            "seLinuxOptions": {
+              "level": "s0",
+              "type": "spc_t"
+            },
+            "capabilities": {
+              "add": [
+                "NET_ADMIN",
+                "SYS_ADMIN"
+              ],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [
+            {
+              "name": "envoy-sockets",
+              "mountPath": "/var/run/cilium/envoy/sockets",
+              "readOnly": false
+            },
+            {
+              "name": "envoy-artifacts",
+              "mountPath": "/var/run/cilium/envoy/artifacts",
+              "readOnly": true
+            }
+          ]
+        }
+      ],
+      "hostPaths": [
+        {
+          "name": "envoy-sockets",
+          "hostPath": {
+            "path": "/var/run/cilium/envoy/sockets",
+            "type": "DirectoryOrCreate"
+          }
+        },
+        {
+          "name": "envoy-artifacts",
+          "hostPath": {
+            "path": "/var/run/cilium/envoy/artifacts",
+            "type": "DirectoryOrCreate"
+          }
+        }
+      ]
+    },
+    {
+      "resource": "Deployment/kube-system/cilium-operator",
+      "hostNetwork": true,
+      "hostPID": false,
+      "containers": [
+        {
+          "name": "cilium-operator",
+          "image": "registry.vcloud.example.com/quay.io/cilium/operator-generic:v1.20.2@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+          "securityContext": {
+            "seccompProfile": {
+              "type": "RuntimeDefault"
+            },
+            "allowPrivilegeEscalation": false,
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            },
+            "runAsGroup": 65532,
+            "runAsNonRoot": true,
+            "runAsUser": 65532
+          },
+          "hostMounts": []
+        }
+      ],
+      "hostPaths": []
+    },
+    {
+      "resource": "DaemonSet/kube-system/nvidia-device-plugin",
+      "hostNetwork": false,
+      "hostPID": false,
+      "containers": [
+        {
+          "name": "nvidia-device-plugin-ctr",
+          "image": "registry.vcloud.example.com/nvcr.io/nvidia/k8s-device-plugin:v0.20.1",
+          "securityContext": {
+            "allowPrivilegeEscalation": false,
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [
+            {
+              "name": "kubelet-device-plugins-dir",
+              "mountPath": "/var/lib/kubelet/device-plugins"
+            },
+            {
+              "name": "mps-shm",
+              "mountPath": "/dev/shm"
+            },
+            {
+              "name": "mps-root",
+              "mountPath": "/mps"
+            },
+            {
+              "name": "cdi-root",
+              "mountPath": "/var/run/cdi"
+            }
+          ]
+        }
+      ],
+      "hostPaths": [
+        {
+          "name": "kubelet-device-plugins-dir",
+          "hostPath": {
+            "path": "/var/lib/kubelet/device-plugins",
+            "type": "Directory"
+          }
+        },
+        {
+          "name": "mps-root",
+          "hostPath": {
+            "path": "/run/nvidia/mps",
+            "type": "DirectoryOrCreate"
+          }
+        },
+        {
+          "name": "mps-shm",
+          "hostPath": {
+            "path": "/run/nvidia/mps/shm"
+          }
+        },
+        {
+          "name": "cdi-root",
+          "hostPath": {
+            "path": "/var/run/cdi",
+            "type": "DirectoryOrCreate"
+          }
+        }
+      ]
+    }
+  ]
+}

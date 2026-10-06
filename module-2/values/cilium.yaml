@@ -1,0 +1,45 @@
+# Cilium 1.20.2 ONLY; the approved node-agent images/mounts/security remain unchanged.
+kubeProxyReplacement: true
+k8sServiceHost: 192.0.2.10 # renderer replaces from site.apiHost
+k8sServicePort: 6443
+containerRuntimeEndpoint: /run/containerd/containerd.sock
+cni:
+  binPath: /opt/cni/bin
+  confPath: /etc/cni/net.d
+  exclusive: false # Permit an separately reviewed Multus/SR-IOV chain; no VF is installed here.
+bpf:
+  masquerade: true
+  hostLegacyRouting: false
+  autoMount: {enabled: false}
+cgroup:
+  autoMount: {enabled: false}
+  hostRoot: /sys/fs/cgroup
+ipam: {mode: kubernetes}
+ipv4: {enabled: true}
+ipv6: {enabled: false}
+routingMode: native
+ipv4NativeRoutingCIDR: 10.42.0.0/16
+autoDirectNodeRoutes: false # The site must distribute native PodCIDR routes.
+devices: [eth0] # renderer replaces; verify every management/data interface
+cluster: {name: vcloud-prod-01}
+bandwidthManager: {enabled: true, bbr: false}
+hostFirewall: {enabled: true}
+policyEnforcementMode: default # Selected deny-all policies isolate core namespaces.
+allowLocalhost: policy # Host probes receive only the explicit endpoint-policy ports.
+image:
+  repository: registry.vcloud.example.com/quay.io/cilium/cilium
+envoy:
+  image:
+    repository: registry.vcloud.example.com/quay.io/cilium/cilium-envoy
+operator:
+  replicas: 1
+  image:
+    repository: registry.vcloud.example.com/quay.io/cilium/operator
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    runAsGroup: 65532
+    allowPrivilegeEscalation: false
+    capabilities: {drop: [ALL]}
+# Primary Cilium interfaces get policy enforcement. Direct secondary VF/RDMA traffic
+# can bypass this datapath: do not admit it without separate fabric/device policy review.

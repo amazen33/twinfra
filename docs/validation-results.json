@@ -1,0 +1,174 @@
+{
+  "date": "2026-10-06",
+  "workspace": "E:\\vCloud",
+  "execution_environment": "Windows; no live Ubuntu setup executed",
+  "kubernetes_version": "v1.36.5",
+  "cilium_version": "1.20.2",
+  "hugepages": {
+    "pages_2MiB": 128,
+    "pages_1GiB": 1
+  },
+  "checks": {
+    "offline_tests": {
+      "skipped": 0,
+      "failed": 0,
+      "passed": 42
+    },
+    "cloud_schema_sha256": "0c9ef307ce91444e2ae9366a3a56aeda4d047dd0a62ef99b3ef5bd7cfe12a001",
+    "bash_syntax": "passed",
+    "helm": {
+      "nvidia_device_plugin_chart": "0.20.1",
+      "cilium_chart": "1.20.2",
+      "lint": "passed",
+      "version": "3.22.0",
+      "render": "passed"
+    },
+    "kubeconform": {
+      "valid": 46,
+      "resources": 46,
+      "files": 9,
+      "invalid": 0,
+      "skipped": 0,
+      "version": "0.8.0",
+      "errors": 0
+    },
+    "shellcheck": {
+      "severity": "style",
+      "version": "0.11.0",
+      "status": "passed"
+    },
+    "cloud_init_schema": "both variants passed",
+    "ssot_generation": "passed; script defaults, identity checks and foundation outputs agree",
+    "core_workload_contract": "passed; no hostPaths, nonroot security contexts and exact registry image pins",
+    "node_agent_contract": {
+      "status": "passed",
+      "findings": 0,
+      "accepted_resources": 4,
+      "approved_policy": "security/node-exceptions.json",
+      "audit": "docs/node-agent-audit.json",
+      "original_reviewed_inventory": "docs/node-agent-inventory.json",
+      "approval": "Explicit user approval on 2026-10-05: Approve the documented node exception"
+    },
+    "post_renderers": "passed; real yq filters MPS; real kubeconform and embedded policy engine validate output and reject invalid resources",
+    "static_control_plane_contract": {
+      "status": "passed with mocked kubeadm and independent source-derived fixtures",
+      "real_ubuntu_dry_run": false,
+      "cases": "authorized layout; unapproved paths, writable certs, substituted images/capabilities, missing/duplicate/extra static Pods rejected"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "00-setup-ubuntu-host.sh",
+      "sha256": "36502fff0383354d67e64f034873953b350a0c1ad9d469ebbdd737119835f220",
+      "bytes": 97410
+    },
+    {
+      "path": "user-data.yaml",
+      "sha256": "8844d421e80fdc07738e9baf7791713ec70b220a5eea398a4cfd3397c3f6ae52",
+      "bytes": 114807
+    },
+    {
+      "path": "user-data.yaml.gz",
+      "sha256": "1f712a10b35b1bb362cbb9bdef0b3751dd2e62e3a036e20c29e66aca56626246",
+      "bytes": 27695
+    },
+    {
+      "path": "user-data-remote.yaml",
+      "sha256": "f562d41cdac457e2a04f7c5f72b55922f3d90da5269149775e7a7b084045a732",
+      "bytes": 4177
+    },
+    {
+      "path": "cloud-init.template.yaml",
+      "sha256": "1550dd9dbb84f2b440eacc088a6d62447c2774124007a04e7aa499fe3b2b98de",
+      "bytes": 2073
+    },
+    {
+      "path": "host.env.example",
+      "sha256": "ff9230eb5c7f60383f6f2480c4e3c9e36034264c8538341973bd4fe9afd1f0d3",
+      "bytes": 991
+    },
+    {
+      "path": "vcloud-ssot.yaml",
+      "sha256": "9a429b9dd60feea6001ebd3b961a4a8c863c294a181aa4529505311297133fd1",
+      "bytes": 1133
+    },
+    {
+      "path": "manifests/foundation.yaml",
+      "sha256": "c3f3b0aea6232bf7f4938d8aaa2319ac2c6e7063095522681cdaefd5c2c28161",
+      "bytes": 2363
+    },
+    {
+      "path": "tools/render_ssot.py",
+      "sha256": "fcbc83bf108ca0dcb4ed25a807a688e89bb69036c2aaa093ab2d149ca619d5f8",
+      "bytes": 5825
+    },
+    {
+      "path": "tools/render_cloud_init.py",
+      "sha256": "8e8637401bae7c6cebca952559a1d8d8d7d7e2647bc4e25f68ab06a69e5bf700",
+      "bytes": 3951
+    },
+    {
+      "path": "tools/check_manifest_contract.py",
+      "sha256": "eb6c3b3b62cc221d0310cb0f464a7e5d0e5b45db4a257ae7b65a2f91c2005608",
+      "bytes": 1915
+    },
+    {
+      "path": "tests/test_bootstrap.py",
+      "sha256": "b253f1e5d9c9582f83daf11bd664358c1855a50ce8eb71b10ab883af78335b32",
+      "bytes": 34780
+    },
+    {
+      "path": "docs/adr-0001-node-host-mounts.md",
+      "sha256": "49782a6f1ca104db11922dafc2a6825d81a1ac6766cdd97b05ab7762adaa2433",
+      "bytes": 6617
+    },
+    {
+      "path": "docs/node-agent-inventory.json",
+      "sha256": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81",
+      "bytes": 13376
+    },
+    {
+      "path": "security/node-exceptions.json",
+      "sha256": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+      "bytes": 22203
+    },
+    {
+      "path": "tools/manifest_contract.py",
+      "sha256": "cbf03b547cca9fe6476954ff72b90f060a45394b32bbac7dfdbee605fe9af7ce",
+      "bytes": 10283
+    },
+    {
+      "path": "docs/node-agent-audit.json",
+      "sha256": "4d54c51f4c182b733ac604493f4fca6c6a07e977998cb31d1c2ce3607ba04999",
+      "bytes": 24991
+    },
+    {
+      "path": "README.md",
+      "sha256": "9509ad5563716aae25e28324c3cedf9b7a03e2de30c45545c08509512c2f11bd",
+      "bytes": 4716
+    },
+    {
+      "path": "docs/module-minus-1.md",
+      "sha256": "d84738a7b90ed9c78b720e16a3ab833751e1aba4f7af29b636670b0d9bf4e6b5",
+      "bytes": 20163
+    },
+    {
+      "path": "docs/validation.md",
+      "sha256": "01af1df6d7f1fbdd16e6874dcffc2f9db1bcc3c4e655dc00d42b78e20b1315cc",
+      "bytes": 10554
+    }
+  ],
+  "live_gates": "Not run: actual Ubuntu 24.04 install/reboot, real kubeadm dry-run/etcd patch/init, API/Cilium native routes/datapath and CRDs, registry pulls, GPU passthrough/runtime, HugeTLB mmap, HPC/fabric/Slurm and application deployments",
+  "ssot_version": "2.2",
+  "cluster_name": "vCloud-prod-01",
+  "registry": "registry.vcloud.example.com",
+  "routing_mode": "native",
+  "bootstrap_gate": {
+    "status": "enabled for approved pinned profile",
+    "default_profile_allowed": true,
+    "unapproved_version_exit_code": 42,
+    "before_host_mutation": true,
+    "environment_bypass": false,
+    "scope": "Schema and exact node exception checked before Helm/kubectl apply and before kubeadm init"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "data": {
+    "cluster-local-domain-tls": "Enabled",
+    "system-internal-tls": "Enabled"
+  }
+}

@@ -1,0 +1,188 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: vcloud
+  namespace: platform-services
+spec:
+  sourceRepos:
+  - https://git.vcloud.example.com/amazen33/vCloud.git
+  destinations:
+  - server: https://kubernetes.default.svc
+    namespace: platform-services
+  - server: https://kubernetes.default.svc
+    namespace: workload-apps
+  - server: https://kubernetes.default.svc
+    namespace: hpc-compute
+  clusterResourceWhitelist:
+  - group: ''
+    kind: PersistentVolume
+  - group: storage.k8s.io
+    kind: StorageClass
+  - group: cilium.io
+    kind: CiliumClusterwideNetworkPolicy
+  namespaceResourceWhitelist:
+  - group: ''
+    kind: ConfigMap
+  - group: ''
+    kind: PersistentVolumeClaim
+  - group: ''
+    kind: ServiceAccount
+  - group: rbac.authorization.k8s.io
+    kind: Role
+  - group: rbac.authorization.k8s.io
+    kind: RoleBinding
+  - group: cilium.io
+    kind: CiliumNetworkPolicy
+  - group: networking.k8s.io
+    kind: NetworkPolicy
+  - group: serving.knative.dev
+    kind: Service
+  - group: postgresql.cnpg.io
+    kind: Cluster
+  - group: autoscaling.k8s.io
+    kind: VerticalPodAutoscaler
+  - group: batch
+    kind: CronJob
+  - group: apisix.apache.org
+    kind: ApisixRoute
+  - group: apisix.apache.org
+    kind: ApisixUpstream
+  - group: apisix.apache.org
+    kind: ApisixTls
+  - group: argoproj.io
+    kind: Application
+  orphanedResources:
+    warn: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vcloud-root
+  namespace: platform-services
+  annotations:
+    vcloud.io/canonical-repository: https://github.com/amazen33/vCloud.git
+spec:
+  project: vcloud
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: platform-services
+  source:
+    repoURL: https://git.vcloud.example.com/amazen33/vCloud.git
+    targetRevision: vcloud-module-2-v0.2.0
+    path: module-2/chart
+    helm:
+      releaseName: vcloud-foundation
+      valuesObject:
+        apisix:
+          clientId: vcloud-function
+          gatewayLabel: apisix
+          ingressClass: apisix
+          ingressControllerLabel: apisix-ingress-controller
+          issuer: https://auth.vcloud.example.com/realms/vcloud
+          profileReady: false
+          upstreamTLSSecret: knative-upstream-tls
+        baseDomain: vcloud.example.com
+        clusterName: vCloud-prod-01
+        database:
+          antiAffinityType: preferred
+          autoscaler:
+            allowDecrease: false
+            cooldownSeconds: 3600
+            enabled: true
+            maxCPU: '2'
+            maxMemory: 4Gi
+            minCPU: '1'
+            minChangeRatio: 1.25
+            minMemory: 2Gi
+            recommendationMaxAgeSeconds: 900
+          cpu: '1'
+          image: registry.vcloud.example.com/vcloud/postgresql-pgvector:18.6.0-pgvector0.8.2
+          instances: 1
+          memory: 2Gi
+          name: vcloud-postgres
+          size: 20Gi
+        dependencies:
+          argocdReady: false
+          cnpgReady: false
+          images:
+            apisix: []
+            apisix-ingress-controller: []
+            argocd-application-controller: []
+            argocd-redis: []
+            argocd-repo-server: []
+            cloudnative-pg: []
+            knative-serving: []
+            vpa-recommender: []
+          vpaReady: false
+        function:
+          image: registry.vcloud.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e
+          maxScale: 1
+          name: secure-function
+          routeHost: secure-function.workload-apps.svc.cluster.local
+        git:
+          mirrorReady: false
+          path: module-2/chart
+          repoURL: https://git.vcloud.example.com/amazen33/vCloud.git
+          revision: vcloud-module-2-v0.2.0
+          upstream: https://github.com/amazen33/vCloud.git
+        hpc:
+          jobGroup: bootstrap-demo
+          mpiPortMax: 10100
+          mpiPortMin: 10000
+          secondaryNetworksApproved: false
+        knative:
+          activatorPort: 8112
+          controllerProfileReady: false
+          gatewayPort: 443
+          gatewayTargetPort: 8443
+          internalTLSReady: false
+          kourierService: kourier-internal
+          namespace: platform-services
+          queueTLS: 8112
+        registry: registry.vcloud.example.com
+        renderGroup: children
+        site:
+          adminCIDR: 192.0.2.0/24
+          apiHost: 192.0.2.10
+          devices:
+          - eth0
+          dnsCIDRs:
+          - 192.0.2.53/32
+          gitCIDRs:
+          - 192.0.2.21/32
+          identityCIDRs:
+          - 192.0.2.22/32
+          nodeName: vcloud-node-01
+          podCIDR: 10.42.0.0/16
+          referenceOnly: true
+          registryCIDRs:
+          - 192.0.2.20/32
+        storage:
+          className: vcloud-local
+          volumes:
+          - claim: function-data
+            gid: 65532
+            mode: ReadOnlyMany
+            name: function-data
+            namespace: workload-apps
+            node: vcloud-node-01
+            path: /var/lib/vcloud/local-pv/function
+            size: 1Gi
+            uid: 65532
+          - claim: vcloud-postgres-1
+            gid: 26
+            mode: ReadWriteOnce
+            name: postgres-1
+            namespace: platform-services
+            node: vcloud-node-01
+            path: /var/lib/vcloud/local-pv/postgres-1
+            size: 20Gi
+            uid: 26
+  syncPolicy:
+    automated:
+      enabled: false
+      prune: false
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - CreateNamespace=false

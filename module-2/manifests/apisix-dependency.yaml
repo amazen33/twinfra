@@ -1,0 +1,544 @@
+---
+# Source: apisix/templates/etcd-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: etcd-apisix
+  namespace: platform-services
+type: Opaque
+data:
+  etcd-root-password: ""
+---
+# Source: apisix/templates/configmap.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apisix
+  namespace: platform-services
+data:
+  config.yaml: |-
+    #
+    # Licensed to the Apache Software Foundation (ASF) under one or more
+    # contributor license agreements.  See the NOTICE file distributed with
+    # this work for additional information regarding copyright ownership.
+    # The ASF licenses this file to You under the Apache License, Version 2.0
+    # (the "License"); you may not use this file except in compliance with
+    # the License.  You may obtain a copy of the License at
+    #
+    #     http://www.apache.org/licenses/LICENSE-2.0
+    #
+    # Unless required by applicable law or agreed to in writing, software
+    # distributed under the License is distributed on an "AS IS" BASIS,
+    # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    # See the License for the specific language governing permissions and
+    # limitations under the License.
+    #
+    apisix:
+      enable_admin: true
+      enable_ipv6: false
+      enable_server_tokens: false
+      ssl:
+        enable: true
+        listen:
+        - port: 9443
+        ssl_cert: /etc/vcloud-gateway-tls/tls.crt
+        ssl_cert_key: /etc/vcloud-gateway-tls/tls.key
+        ssl_protocols: TLSv1.2 TLSv1.3
+        ssl_trusted_certificate: /etc/vcloud-ca/ca.crt
+    deployment:
+      admin:
+        admin_api_mtls:
+          admin_ssl_ca_cert: /etc/vcloud-ca/ca.crt
+          admin_ssl_cert: /etc/vcloud-admin-tls/tls.crt
+          admin_ssl_cert_key: /etc/vcloud-admin-tls/tls.key
+        admin_key:
+        - key: ${{APISIX_ADMIN_KEY}}
+          name: controller
+          role: admin
+        admin_key_required: true
+        admin_listen:
+          ip: 0.0.0.0
+          port: 9180
+        allow_admin:
+        - 10.42.0.0/16
+        enable_admin_cors: false
+        enable_admin_ui: false
+        https_admin: true
+      role: traditional
+      role_traditional:
+        config_provider: yaml
+    nginx_config:
+      envs:
+      - APISIX_ADMIN_KEY
+      - APISIX_OIDC_CLIENT_SECRET
+      http:
+        client_max_body_size: 1m
+      http_configuration_snippet: |
+        proxy_ssl_verify on;
+        proxy_ssl_verify_depth 3;
+        proxy_ssl_trusted_certificate /etc/vcloud-ca/ca.crt;
+---
+# Source: apisix/templates/service-admin.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: apisix-admin
+  namespace: platform-services
+  annotations:
+  labels:
+    helm.sh/chart: apisix-2.18.0
+    
+    app.kubernetes.io/name: apisix
+    app.kubernetes.io/instance: apisix
+    app.kubernetes.io/version: "3.19.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/service: apisix-admin
+spec:
+  type: ClusterIP
+  ports:
+  - name: apisix-admin
+    port: 9180
+    targetPort: 9180
+    protocol: TCP
+  selector:
+    
+    app.kubernetes.io/name: apisix
+    app.kubernetes.io/instance: apisix
+---
+# Source: apisix/templates/service-gateway.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: apisix-gateway
+  namespace: platform-services
+  annotations:
+  labels:
+    helm.sh/chart: apisix-2.18.0
+    
+    app.kubernetes.io/name: apisix
+    app.kubernetes.io/instance: apisix
+    app.kubernetes.io/version: "3.19.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/service: apisix-gateway
+spec:
+  type: ClusterIP
+  ports:
+  - name: apisix-gateway-tls
+    port: 443
+    targetPort: 9443
+    protocol: TCP
+  selector:
+    
+    app.kubernetes.io/name: apisix
+    app.kubernetes.io/instance: apisix
+---
+# Source: apisix/templates/deployment.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apisix
+  namespace: platform-services
+  labels:
+    helm.sh/chart: apisix-2.18.0
+    
+    app.kubernetes.io/name: apisix
+    app.kubernetes.io/instance: apisix
+    app.kubernetes.io/version: "3.19.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      
+      app.kubernetes.io/name: apisix
+      app.kubernetes.io/instance: apisix
+  template:
+    metadata:
+      annotations:
+        checksum/config: b4a268912721f495ebe66a4793f9b6e40172ccf55a8da89c6993387f5209840d
+      labels:
+        
+        app.kubernetes.io/name: apisix
+        app.kubernetes.io/instance: apisix
+    spec:
+      serviceAccountName: apisix-runtime
+      securityContext:
+        fsGroup: 65532
+        runAsGroup: 65532
+        runAsNonRoot: true
+        runAsUser: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: apisix
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            readOnlyRootFilesystem: false
+          image: "registry.vcloud.example.com/vcloud/apisix:3.19.0-vcloud.1"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: APISIX_OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: oidc-client-secret
+                  name: apisix-runtime-secrets
+            - name: APISIX_ADMIN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: apisix-runtime-secrets
+                  key: admin
+            - name: APISIX_VIEWER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: apisix-runtime-secrets
+                  key: viewer
+            - name: APISIX_ETCD_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: etcd-apisix
+                  key: etcd-root-password
+
+          ports:
+            - name: http
+              containerPort: 9080
+              protocol: TCP     
+            - name: tls
+              containerPort: 9443
+              protocol: TCP
+            - name: admin
+              containerPort: 9180
+              protocol: TCP
+            - name: status
+              containerPort: 7085
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            httpGet:
+              path: /status/ready
+              port: 7085
+            timeoutSeconds: 1
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sh
+                - -c
+                - sleep 30
+          volumeMounts:
+            - mountPath: /usr/local/apisix/conf/config.yaml
+              name: apisix-config
+              subPath: config.yaml
+            - mountPath: /etc/vcloud-ca
+              name: trusted-ca
+              readOnly: true
+            - mountPath: /etc/vcloud-admin-tls
+              name: admin-tls
+              readOnly: true
+            - mountPath: /etc/vcloud-gateway-tls
+              name: gateway-tls
+              readOnly: true
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+      hostNetwork: false
+      initContainers:
+      volumes:
+        - configMap:
+            name: apisix
+          name: apisix-config
+        - name: trusted-ca
+          secret:
+            defaultMode: 292
+            secretName: vcloud-runtime-ca
+        - name: admin-tls
+          secret:
+            defaultMode: 292
+            secretName: apisix-admin-tls
+        - name: gateway-tls
+          secret:
+            defaultMode: 292
+            secretName: apisix-gateway-tls
+---
+# Source: apisix/templates/apisix-config-cm.yml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: apisix/templates/clusterrole.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: apisix/templates/clusterrolebinding.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: apisix/templates/hpa.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: apisix/templates/ingress-admin.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: apisix/templates/ingress-control.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: apisix/templates/ingress.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: apisix/templates/pdb.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: apisix/templates/service-control.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: apisix/templates/service-metrics.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: apisix/templates/service-monitor.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+# Source: apisix/templates/serviceaccount.yaml
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: {name: apisix-runtime, namespace: platform-services}
+automountServiceAccountToken: false

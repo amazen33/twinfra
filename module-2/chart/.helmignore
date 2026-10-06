@@ -1,0 +1,3 @@
+.git/
+files/__pycache__/
+*.pyc

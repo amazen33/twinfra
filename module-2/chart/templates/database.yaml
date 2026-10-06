@@ -1,0 +1,138 @@
+{{- if has .Values.renderGroup (list "all" "database") }}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ .Values.database.name }}
+  namespace: platform-services
+{{- with .Values.database.lastScaled }}
+  annotations: {vcloud.io/resources-last-scaled: {{ . | quote }}}
+{{- end }}
+spec:
+  instances: {{ .Values.database.instances }}
+  imageName: {{ .Values.database.image | quote }}
+  imagePullPolicy: IfNotPresent
+  postgresUID: 26
+  postgresGID: 26
+  enableSuperuserAccess: false
+  primaryUpdateStrategy: unsupervised
+  primaryUpdateMethod: switchover
+  seccompProfile: {type: RuntimeDefault}
+  securityContext:
+    allowPrivilegeEscalation: false
+    runAsNonRoot: true
+    capabilities: {drop: [ALL]}
+  bootstrap:
+    initdb:
+      database: vcloud
+      owner: vcloud_app
+      postInitApplicationSQL: ["CREATE EXTENSION IF NOT EXISTS vector;"]
+  postgresql:
+    parameters: {shared_buffers: 256MB, max_connections: "100", huge_pages: "off"}
+    pg_hba:
+      - hostnossl all all all reject
+      - hostssl all all all scram-sha-256
+  resources:
+    requests: {cpu: {{ .Values.database.cpu | quote }}, memory: {{ .Values.database.memory }}}
+    limits: {cpu: {{ .Values.database.cpu | quote }}, memory: {{ .Values.database.memory }}}
+  storage:
+    storageClass: {{ .Values.storage.className }}
+    size: {{ .Values.database.size }}
+    resizeInUseVolumes: false
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: {{ .Values.database.antiAffinityType }}
+    topologyKey: kubernetes.io/hostname
+  inheritedMetadata:
+    labels: {vcloud.io/component: postgres}
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata: {name: postgres-resources, namespace: platform-services}
+spec:
+  targetRef: {apiVersion: postgresql.cnpg.io/v1, kind: Cluster, name: {{ .Values.database.name }}}
+  updatePolicy: {updateMode: "Off"}
+  resourcePolicy:
+    containerPolicies:
+      - containerName: postgres
+        controlledResources: [cpu, memory]
+        minAllowed: {cpu: {{ .Values.database.autoscaler.minCPU | quote }}, memory: {{ .Values.database.autoscaler.minMemory }}}
+        maxAllowed: {cpu: {{ .Values.database.autoscaler.maxCPU | quote }}, memory: {{ .Values.database.autoscaler.maxMemory }}}
+{{- if .Values.database.autoscaler.enabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata: {name: postgres-resource-scaler, namespace: platform-services}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata: {name: postgres-resource-scaler, namespace: platform-services}
+rules:
+  - apiGroups: [postgresql.cnpg.io]
+    resources: [clusters]
+    resourceNames: [{{ .Values.database.name }}]
+    verbs: [get, patch]
+  - apiGroups: [autoscaling.k8s.io]
+    resources: [verticalpodautoscalers]
+    resourceNames: [postgres-resources]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata: {name: postgres-resource-scaler, namespace: platform-services}
+subjects: [{kind: ServiceAccount, name: postgres-resource-scaler, namespace: platform-services}]
+roleRef: {apiGroup: rbac.authorization.k8s.io, kind: Role, name: postgres-resource-scaler}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: postgres-resource-scaler, namespace: platform-services}
+data:
+  scaler.py: |
+{{ .Files.Get "files/scaler.py" | indent 4 }}
+  policy.json: |
+{{ .Values.database.autoscaler | toJson | indent 4 }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata: {name: postgres-resource-scaler, namespace: platform-services}
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 120
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 45
+      template:
+        metadata: {labels: {vcloud.io/component: postgres-resource-scaler}}
+        spec:
+          serviceAccountName: postgres-resource-scaler
+          restartPolicy: Never
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
+            seccompProfile: {type: RuntimeDefault}
+          containers:
+            - name: scaler
+              image: {{ .Values.function.image | quote }}
+              imagePullPolicy: IfNotPresent
+              command: [python, /app/scaler.py]
+              env:
+                - {name: PYTHONDONTWRITEBYTECODE, value: "1"}
+                - {name: CLUSTER_NAME, value: {{ .Values.database.name | quote }}}
+                - {name: NAMESPACE, value: platform-services}
+              resources:
+                requests: {cpu: 25m, memory: 32Mi}
+                limits: {cpu: 100m, memory: 64Mi}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities: {drop: [ALL]}
+              volumeMounts: [{name: code, mountPath: /app, readOnly: true}]
+          volumes:
+            - name: code
+              configMap: {name: postgres-resource-scaler, defaultMode: 292}
+{{- end }}
+{{- end }}

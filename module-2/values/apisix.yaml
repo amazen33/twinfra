@@ -1,0 +1,93 @@
+# Optional dependency profile, rendered/validated by make; installed separately.
+# Pin: Apache chart 2.18.0 / APISIX 3.19.0. Build the non-root derivative first.
+image:
+  repository: registry.vcloud.example.com/vcloud/apisix
+  tag: 3.19.0-vcloud.1
+  pullPolicy: IfNotPresent
+replicaCount: 1
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile: {type: RuntimeDefault}
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities: {drop: [ALL]}
+  # APISIX generates conf/nginx.conf at startup. The derivative owns conf/logs.
+  # A read-only image needs a separate seed/init profile; do not silently enable it.
+  readOnlyRootFilesystem: false
+serviceAccount: {create: false, name: apisix-runtime}
+resources:
+  requests: {cpu: 200m, memory: 256Mi}
+  limits: {cpu: "1", memory: 512Mi}
+service:
+  type: ClusterIP
+  http: {enabled: false, containerPort: 9080}
+  tls: {servicePort: 443}
+control: {enabled: false}
+etcd: {enabled: false}
+ingress-controller: {enabled: false}
+extraEnvVars:
+  - name: APISIX_OIDC_CLIENT_SECRET
+    valueFrom: {secretKeyRef: {name: apisix-runtime-secrets, key: oidc-client-secret}}
+extraVolumes:
+  - name: trusted-ca
+    secret: {secretName: vcloud-runtime-ca, defaultMode: 292}
+  - name: admin-tls
+    secret: {secretName: apisix-admin-tls, defaultMode: 292}
+  - name: gateway-tls
+    secret: {secretName: apisix-gateway-tls, defaultMode: 292}
+extraVolumeMounts:
+  - {name: trusted-ca, mountPath: /etc/vcloud-ca, readOnly: true}
+  - {name: admin-tls, mountPath: /etc/vcloud-admin-tls, readOnly: true}
+  - {name: gateway-tls, mountPath: /etc/vcloud-gateway-tls, readOnly: true}
+apisix:
+  ssl: {enabled: true, containerPort: 9443}
+  deployment:
+    # API-driven standalone: traditional + yaml; avoid file-watcher mode/etcd.
+    mode: traditional
+    role: traditional
+    role_traditional: {config_provider: yaml}
+  admin:
+    enabled: true
+    port: 9180
+    credentials: {secretName: apisix-runtime-secrets, secretAdminKey: admin, secretViewerKey: viewer}
+  fullCustomConfig:
+    enabled: true
+    config:
+      apisix:
+        enable_admin: true
+        enable_server_tokens: false
+        enable_ipv6: false
+        ssl:
+          enable: true
+          listen: [{port: 9443}]
+          ssl_cert: /etc/vcloud-gateway-tls/tls.crt
+          ssl_cert_key: /etc/vcloud-gateway-tls/tls.key
+          ssl_trusted_certificate: /etc/vcloud-ca/ca.crt
+          ssl_protocols: TLSv1.2 TLSv1.3
+      nginx_config:
+        envs: [APISIX_ADMIN_KEY, APISIX_OIDC_CLIENT_SECRET]
+        http_configuration_snippet: |
+          proxy_ssl_verify on;
+          proxy_ssl_verify_depth 3;
+          proxy_ssl_trusted_certificate /etc/vcloud-ca/ca.crt;
+        http:
+          client_max_body_size: 1m
+      deployment:
+        role: traditional
+        role_traditional: {config_provider: yaml}
+        admin:
+          admin_key_required: true
+          # Escape Helm tpl, then use APISIX native environment interpolation.
+          admin_key: [{name: controller, key: '${{ "{{" }}APISIX_ADMIN_KEY{{ "}}" }}', role: admin}]
+          enable_admin_cors: false
+          enable_admin_ui: false
+          allow_admin: [10.42.0.0/16]
+          admin_listen: {ip: 0.0.0.0, port: 9180}
+          https_admin: true
+          admin_api_mtls:
+            admin_ssl_cert: /etc/vcloud-admin-tls/tls.crt
+            admin_ssl_cert_key: /etc/vcloud-admin-tls/tls.key
+            admin_ssl_ca_cert: /etc/vcloud-ca/ca.crt

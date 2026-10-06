@@ -1,0 +1,167 @@
+{
+  "kubernetes": "1.36.5",
+  "cilium": "1.20.2",
+  "cnpg": "1.30.1",
+  "knative": "1.23.0",
+  "apisixController": "2.2.0",
+  "argocd": "3.5.3",
+  "vpa": "1.8.0",
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/namespace.json",
+      "sha256": "99301bb4ecb85094c9708ee076b5bdcc23465a1352dd0f1d9189e39d2fbeeac3"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/configmap.json",
+      "sha256": "14bf6e296c189e0414464c734c384a53dd2e0aae12589b030340f6079e7473b4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/serviceaccount.json",
+      "sha256": "dd71e8bcb8514b858b41757f8c52389440d40ffe5631880cc7f3dce6afab64b5"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/persistentvolume.json",
+      "sha256": "0acc793acc615fd1340d98f7f7f8091140a3150dfd2dcbefd9b58a6d8154c7be"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/persistentvolumeclaim.json",
+      "sha256": "0e83188a756b9df1cc719f98c7fafa558bcc9bf1da83039c8e1c31cd398ef6e9"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/storageclass.json",
+      "sha256": "861cd2cad6e752b0d361e4946438f1d22e6e8ab0acad194c2a5dc50dc9242a4c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/role.json",
+      "sha256": "106f50305e0ab4a40d1f0226b145c7d810d9132b7a0ccd51bc30f04d86111897"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/rolebinding.json",
+      "sha256": "d9b50842abde1f24dd16bdf266cb144184cf4672a628d0ee16ebc723ec7ecf79"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/cronjob.json",
+      "sha256": "68b59db21e59a2e4979e7e808142d5223dd4f333649cee4624f0d9411ca4b5d6"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/networkpolicy.json",
+      "sha256": "ad5b450751102335d51cbaca737a46d75396666ba59b5139f3420e56550251fb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/service.json",
+      "sha256": "67995b5af5be6b179c6ce8833864282e901f1ba0f604d97a67e57f1d93db2deb"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/deployment.json",
+      "sha256": "cd8f028559c39fb3de4078e2ab10302ba5be95503d67fb02bae556f096d2755d"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/daemonset.json",
+      "sha256": "24d42e64c146bf0f1f2d8ca15fd7c837eaf42b1bf332f05d840bb2420e6c56a8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/clusterrole.json",
+      "sha256": "5b35631b2aa7e349269562742607d2e54fe5922ee5bf1579a1eceb58ce86f206"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/clusterrolebinding.json",
+      "sha256": "114a4db87e6bf7c81b49fd1b32b57ccb7e1f052de891c70e3ed3c0b375e82cc5"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/poddisruptionbudget.json",
+      "sha256": "b298454a08f8ff1266c3e62b0e8ed6c4aab9b7882ecc9ff6eb13999ca88a7b6f"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/secret.json",
+      "sha256": "65f5a6945bbe766eef8292e5aa45c7b62d98c275af45a51652d26b0426cc3c55"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/v1.30.1/config/crd/bases/postgresql.cnpg.io_clusters.yaml",
+      "sha256": "d255176c368727b8ee84893bb2f37b5c5578a497e6ee7461a81fa6f3f80e552b"
+    },
+    {
+      "url": "https://github.com/knative/serving/releases/download/knative-v1.23.0/serving-crds.yaml",
+      "sha256": "b172ff4901ed50f8e4e09ff8616e54d22e264df7086ce8cb74f513a04812fe74"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.3/manifests/crds/application-crd.yaml",
+      "sha256": "5dde0e229249b6b707beb98674c1deae3949d5c319a6c45b9f5a80c99618e40c"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.3/manifests/crds/appproject-crd.yaml",
+      "sha256": "ab225266944322750136f1198d93786e4a79a0e43c8d149abfba44da30a3eac8"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-1.8.0/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml",
+      "sha256": "2916e9b8e0699375ed8eca8af81e00c5a8cf9d68a70b4796e24d43794838d623"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apache/apisix-ingress-controller/2.2.0/config/crd/bases/apisix.apache.org_apisixroutes.yaml",
+      "sha256": "e26e3292e1dfd7dad0755bb897f0bf827446b88e91a945d1282d7f203a2554b4"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apache/apisix-ingress-controller/2.2.0/config/crd/bases/apisix.apache.org_apisixupstreams.yaml",
+      "sha256": "92a50e07056ad46592a83d76cc0fd8cf5843124e3666120f6a8210961114642b"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/cilium/cilium/v1.20.2/pkg/k8s/apis/cilium.io/client/crds/v2/ciliumnetworkpolicies.yaml",
+      "sha256": "62c6de8f358da125b94468d39187edb1cea157d79503fdc50ccec8a6aaa79a76"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/cilium/cilium/v1.20.2/pkg/k8s/apis/cilium.io/client/crds/v2/ciliumclusterwidenetworkpolicies.yaml",
+      "sha256": "ae65e44fdee9da399cb7257a8464f197bea5270fdc213f6343700309c39abad6"
+    },
+    {
+      "url": "https://github.com/apache/apisix-helm-chart/releases/download/apisix-2.18.0/apisix-2.18.0.tgz",
+      "sha256": "f8e4332be34b080832fdc368b9c3e1c17df55c481d4d0ee2be116fe97fe0b77e"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apache/apisix-ingress-controller/2.2.0/config/crd/bases/apisix.apache.org_apisixtlses.yaml",
+      "sha256": "f7cf2ec41abe2a60b53b3ab78ead0a4c1dd7241fee2aa6791120569105f8995a"
+    }
+  ],
+  "filesSHA256": {
+    "module-2/schemas/apisix.apache.org/apisixroute_v2.json": "dd8f8930b97c35022ec3c7f72be4333ed61f84796b6d7f415dd69bc4a0d5cb59",
+    "module-2/schemas/apisix.apache.org/apisixupstream_v2.json": "3b82dc2296f43ae835e5473c489677c0dcee66eac9559097dd3c5c3654b2f5df",
+    "module-2/schemas/argoproj.io/application_v1alpha1.json": "629761579fc0c8cca507b7613b536bea3644ad979fcaa3b1c12a66fe48f5f6a2",
+    "module-2/schemas/argoproj.io/appproject_v1alpha1.json": "60dda8f76ad689a6760288c662facd4634220f98605a087c25aed16355a9be2e",
+    "module-2/schemas/autoscaling.k8s.io/verticalpodautoscaler_v1.json": "47f551b36d34e8ceed10922edf8ad4f296de8d7503574aad8e8c10207a6521e9",
+    "module-2/schemas/cilium.io/ciliumclusterwidenetworkpolicy_v2.json": "309f9b47a9ee348b6206b63ec771aba67ca24202c7ff5f3d3e3e2e193bde09bd",
+    "module-2/schemas/cilium.io/ciliumnetworkpolicy_v2.json": "4f2bf31ca382754036525c81c18b70abf9686b9d523e5c7a1a17c54da692b25b",
+    "module-2/schemas/clusterrole_v1.json": "5b35631b2aa7e349269562742607d2e54fe5922ee5bf1579a1eceb58ce86f206",
+    "module-2/schemas/clusterrolebinding_v1.json": "114a4db87e6bf7c81b49fd1b32b57ccb7e1f052de891c70e3ed3c0b375e82cc5",
+    "module-2/schemas/configmap_v1.json": "14bf6e296c189e0414464c734c384a53dd2e0aae12589b030340f6079e7473b4",
+    "module-2/schemas/cronjob_v1.json": "68b59db21e59a2e4979e7e808142d5223dd4f333649cee4624f0d9411ca4b5d6",
+    "module-2/schemas/daemonset_v1.json": "24d42e64c146bf0f1f2d8ca15fd7c837eaf42b1bf332f05d840bb2420e6c56a8",
+    "module-2/schemas/deployment_v1.json": "cd8f028559c39fb3de4078e2ab10302ba5be95503d67fb02bae556f096d2755d",
+    "module-2/schemas/namespace_v1.json": "99301bb4ecb85094c9708ee076b5bdcc23465a1352dd0f1d9189e39d2fbeeac3",
+    "module-2/schemas/networkpolicy_v1.json": "ad5b450751102335d51cbaca737a46d75396666ba59b5139f3420e56550251fb",
+    "module-2/schemas/persistentvolume_v1.json": "0acc793acc615fd1340d98f7f7f8091140a3150dfd2dcbefd9b58a6d8154c7be",
+    "module-2/schemas/persistentvolumeclaim_v1.json": "0e83188a756b9df1cc719f98c7fafa558bcc9bf1da83039c8e1c31cd398ef6e9",
+    "module-2/schemas/poddisruptionbudget_v1.json": "b298454a08f8ff1266c3e62b0e8ed6c4aab9b7882ecc9ff6eb13999ca88a7b6f",
+    "module-2/schemas/postgresql.cnpg.io/cluster_v1.json": "e8addf7e2b3cd9f506ce09ed5eb4666f8e2e91a54a9551c1ff204fdd2ea2ce27",
+    "module-2/schemas/role_v1.json": "106f50305e0ab4a40d1f0226b145c7d810d9132b7a0ccd51bc30f04d86111897",
+    "module-2/schemas/rolebinding_v1.json": "d9b50842abde1f24dd16bdf266cb144184cf4672a628d0ee16ebc723ec7ecf79",
+    "module-2/schemas/secret_v1.json": "65f5a6945bbe766eef8292e5aa45c7b62d98c275af45a51652d26b0426cc3c55",
+    "module-2/schemas/service_v1.json": "67995b5af5be6b179c6ce8833864282e901f1ba0f604d97a67e57f1d93db2deb",
+    "module-2/schemas/serviceaccount_v1.json": "dd71e8bcb8514b858b41757f8c52389440d40ffe5631880cc7f3dce6afab64b5",
+    "module-2/schemas/serving.knative.dev/service_v1.json": "6cfef4626910dab0781b29c275fa4dec9e29c6876bf5e2400a0c07c67bbe0d2d",
+    "module-2/schemas/storageclass_v1.json": "861cd2cad6e752b0d361e4946438f1d22e6e8ab0acad194c2a5dc50dc9242a4c",
+    "module-2/vendor/apisix-crds.yaml.gz": "f3abcaa3db7f199b7a3bc427d31088b34356bb46c083c958114f063c499add6b",
+    "module-2/vendor/apisix-upstream-crd.yaml.gz": "dcfca08e33145fef7d0180de5645a38f9309814cb5161c7568f8ea1425d6bb47",
+    "module-2/vendor/argocd-crd.yaml.gz": "c75b9df269cccf3fde5e137700a266d6c52882250b275e24484e768fba98941b",
+    "module-2/vendor/argocd-project-crd.yaml.gz": "1279ed9d4922b691a9316deefb105b3b586620cc217e9c7c91f678782e5f28bc",
+    "module-2/vendor/cilium-1.20.2.tgz": "b2afd87b7f75f875f92a14559f14f59b7babbb479d968e3fd625a20bf30ec20e",
+    "module-2/vendor/cilium-crd.yaml.gz": "c0365cd78061c861af776ce321d5605544df2acfa222c39b1c5595db7cf41714",
+    "module-2/vendor/cilium-host-crd.yaml.gz": "2800b596db2312b03d5531f4a7124f2fa3c56cb8bc44a88dddc7a5010003402d",
+    "module-2/vendor/cnpg-crds.yaml.gz": "34b5891cc6886f6e03d229aa96834f99b43e37d6e32093f0fff22175a249184a",
+    "module-2/vendor/knative-crds.yaml.gz": "9c2a0c5776af54666396a11ab1b03241a5e8455f7cdaec88bfdcf7532d76a9bd",
+    "module-2/vendor/LICENSE-Apache-2.0.txt": "f096c31ac0fb2e66df5b7ec20049741ae15accd50c8cd4d100b4db6c9353f6aa",
+    "module-2/vendor/vpa-crds.yaml.gz": "e5fd612e8c72847e42ff3dfd7c6e60514079e1a926d675a79b84e7f09a3851e8",
+    "module-2/vendor/apisix-2.18.0.tgz": "f8e4332be34b080832fdc368b9c3e1c17df55c481d4d0ee2be116fe97fe0b77e",
+    "module-2/vendor/apisix-tls-crd.yaml.gz": "f4ce82ae6d45d7d2419bf12070123d5b7060c2249ddca227f13678d6328c77fa",
+    "module-2/schemas/apisix.apache.org/apisixtls_v2.json": "0189893739475cb3a91f763fa47371ad69b9df4b566856d5b399fb91e1f868c7"
+  },
+  "apisixChart": "2.18.0",
+  "apisix": "3.19.0"
+}
