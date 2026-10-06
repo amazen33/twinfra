@@ -77,3 +77,7 @@ It uses vCloud / amazen33/vCloud throughout; physical and live acceptance remain
 
 The [pre-push validation record](docs/pre-push-validation.json) records the complete
 2026-10-06 artifact checks. Live Ubuntu, GPU and cluster acceptance is still pending.
+
+## GitHub Actions tests
+
+Pull requests and main-branch pushes run the [CI workflow](.github/workflows/pr-tests.yaml), including a regression of merged PR #1. The [CI guide](docs/github-actions-tests.md) explains historical PR reruns, module coverage and evidence artifacts.

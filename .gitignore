@@ -3,3 +3,4 @@ __pycache__/
 *.pyc
 .build/
 module-2/site-values.yaml
+tools/ci/mermaid/node_modules/

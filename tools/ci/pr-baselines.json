@@ -1,0 +1,11 @@
+{
+  "repository": "amazen33/vCloud",
+  "baselines": [
+    {
+      "number": 1,
+      "commit": "1bc96d335bcb82482e33d4656102123e714c8fe9",
+      "description": "Merged Modules -1, 1 and 2",
+      "url": "https://github.com/amazen33/vCloud/pull/1"
+    }
+  ]
+}
