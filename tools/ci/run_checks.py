@@ -22,6 +22,11 @@ OPTIONAL = {
                  'tests/module3-alerts.test.yaml', 'module-3/app/test_app.py'],
     'module-4a': ['tools/module4a.py', 'tools/render_module4a.py', 'tests/test_module4a.py'],
     'module-4b': ['tools/module4b.py', 'tools/render_module4b.py', 'tests/test_module4b.py'],
+    'module-5a': ['tools/module5a.py', 'tools/render_module5a.py', 'tools/stage_module5a_models.py', 'tools/module5a_encoder_smoke.py',
+                  'tests/test_module5a.py', 'module-5a/config/rag.yaml', 'module-5a/rag/pipeline.py',
+                  'module-5a/sql/migrate.sql', 'module-5a/examples/vllm.knative.yaml',
+                  'module-5a/requirements-runtime.lock.txt', 'module-5a/images/rag.Dockerfile',
+                  'module-5a/README.md'],
     'module-5b': ['tools/module5b.py', 'tools/render_module5b.py', 'tests/test_module5b.py',
                   'tests/module5b-alerts.test.yaml', 'module-5b/reference-profile.json'],
     'lab/wsl': ['lab/wsl/profile.json', 'lab/wsl/bootstrap.sh', 'lab/wsl/api-firewall.sh',
@@ -153,7 +158,7 @@ def main():
         run('module2-validate', [python, 'tools/module2.py', '--site', 'module-2/site-values.example.yaml',
                                 '--helm', binaries['helm'], '--kubeconform', binaries['kubeconform'], 'validate'])
         run('module2-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_module2.py', '-v'], unit=True)
-        for module, stem in [('module-3', 'module3'), ('module-4a', 'module4a'), ('module-4b', 'module4b'), ('module-5b', 'module5b')]:
+        for module, stem in [('module-3', 'module3'), ('module-4a', 'module4a'), ('module-4b', 'module4b'), ('module-5a', 'module5a'), ('module-5b', 'module5b')]:
             if report['modules'][module] == 'not_present_in_revision':
                 print(module + ': absent from historical revision', flush=True)
                 continue

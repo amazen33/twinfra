@@ -1,0 +1,11 @@
+# Client graph is pinned and hash-locked separately for CPU-free CI tests.
+langchain-postgres==0.0.19
+langchain-core==1.6.7
+SQLAlchemy==2.1.3
+psycopg[binary]==3.3.6
+PyYAML==6.0.3
+# Direct runtime pins. The image installs requirements-runtime.lock.txt instead.
+# Its torch wheel is the official Linux amd64 CPU build, not a CUDA distribution.
+sentence-transformers==6.1.0
+transformers==5.19.0
+torch==2.14.1+cpu

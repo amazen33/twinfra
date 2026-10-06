@@ -2,6 +2,21 @@
 
 Status: **awaiting user approval**. No exception is active.
 
+The [WSL setup and troubleshooting guide](../../docs/WSL_SETUP_GUIDE.md) includes
+the requested automatic PowerShell WSL/Default Switch adapter detection example,
+a scoped rule preview, rollback and Argo CD namespace ordering. These are
+documentation references, not executed or validated repairs. Windows Defender
+and Hyper-V firewall rules are distinct from Cilium Host Firewall; this Helm
+guard does not inspect Windows rules. A Windows allowance therefore cannot
+satisfy the guard or authorize disabling Cilium Host Firewall.
+
+Pre-create `argocd` before applying a standalone upstream Argo CD installation.
+The existing vCloud lab uses `platform-services`, which the foundation creates
+before installing its relocated Argo CD Core manifests. That namespace and repo
+server Pods already exist. The observed `ComparisonError` is not evidence of a
+missing `argocd` namespace. Do not install overlapping Argo CD controllers as a
+workaround. The guide provides the pinned, separate-cluster reference commands.
+
 The live Cilium 1.20.2 host datapath reports K3s host health probes and admission
 callbacks from its router address `10.42.0.188` with the `world` identity.
 The API and kubelet traffic is therefore denied by host-only rules. Node-address

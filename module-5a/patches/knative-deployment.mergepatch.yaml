@@ -1,0 +1,5 @@
+# Gives this reference profile a 30-minute progress window around its
+# 20-minute startup-probe budget.
+# Applies to platform-services/config-deployment, not the Knative Service itself.
+data:
+  progress-deadline: 30m

@@ -108,6 +108,15 @@ OIDC arguments and narrow group RBAC. Run `make module4b-validate module4b-test`
 
 Pull requests and main-branch pushes run the [CI workflow](.github/workflows/pr-tests.yaml), including regressions of merged PRs #1 and #2. The [CI guide](docs/github-actions-tests.md) explains historical PR reruns, module coverage and evidence artifacts.
 
+## Module 5a: vLLM and pgvector RAG
+
+Module 5a now provides the [vLLM/pgvector RAG runbook](module-5a/README.md),
+a private one-GPU Knative Service and a CPU LangChain retrieval pipeline using
+CNPG and paired OpenBao CSI credentials. The examples stay outside live GitOps;
+RAG is disabled and its Jobs are suspended until GPU, storage, TLS, secrets and
+database acceptance pass. Run `make module5a-validate module5a-test`; see the
+[validation record](docs/module-5a-validation.json).
+
 ## Module 5b: disabled hybrid GPU reference
 
 [Module 5b](module-5b/README.md) adds DeepSeek planning, a private Knative/vLLM

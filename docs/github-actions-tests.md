@@ -36,6 +36,7 @@ Manual dispatch is available after the workflow exists on the default branch.
 | Module 3, when present | CI/GitOps manifest validation, pipeline and application tests, Prometheus rule validation and alert scenarios |
 | Module 4a, when present | OpenBao/CSI configuration validation, Bash/jq integration contract tests with mock transports |
 | Module 4b, when present | Keycloak/APISIX/RBAC validation and security regression tests |
+| Module 5a, when present | Strict GPU Knative/CSI/Job/policy schemas, frozen Pod security audit, deterministic renders, real LangChain/SQLAlchemy client and LCEL tests with mocked database/inference transports |
 | Module 5b, when present | Disabled Spinifex profile, Kueue Helm/CRD validation, durable capacity limits, SDK signing/stubs, local mTLS and HPC alert scenarios |
 | WSL lab, when present | Local K3s configuration, strict manifests/frozen Cilium audit, resource/adoption/CIDR safeguards; no host execution on GitHub |
 | WSL GitOps/database, when present | Locked Argo/CNPG/metrics artifacts, strict rendered schemas, exact Local PV vetting, TLS/RBAC boundaries and bounded CPU/memory growth; SQL and reconciliation require live acceptance |
@@ -59,6 +60,10 @@ already vendored in the selected revision remain subject to its integrity checks
 When Module 5b is present, the workflow installs its seven SDK test dependencies
 from the CI control checkout's hash-locked `hpc-requirements.txt`. Historical
 revisions without the module do not install or run that optional dependency set.
+Module 5a similarly installs 43 hash-locked client test packages from
+`rag-requirements.txt`; its 73-package CPU encoder runtime remains a separate
+Linux amd64 image lock. Hosted unit tests do not download model weights or
+connect to a database or GPU.
 The earlier workflow-only PR's results do not validate Module 5b. Each later
 hosted run validates its exact selected candidate and reports optional modules
 present in that revision.

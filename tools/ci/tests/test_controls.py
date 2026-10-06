@@ -113,6 +113,23 @@ class Controls(unittest.TestCase):
         self.assertIn('tests/test_module5b.py', checks.OPTIONAL['module-5b'])
         self.assertIn('tests/module5b-alerts.test.yaml', checks.OPTIONAL['module-5b'])
 
+    def test_rag_coverage_cannot_be_omitted(self):
+        self.assertIn('tests/test_module5a.py', checks.OPTIONAL['module-5a'])
+        self.assertIn('module-5a/requirements-runtime.lock.txt', checks.OPTIONAL['module-5a'])
+        self.assertIn('module-5a/rag/pipeline.py', checks.OPTIONAL['module-5a'])
+
+    def test_rag_dependencies_are_hashed_and_installed_only_when_present(self):
+        lines=(ROOT/'rag-requirements.txt').read_text().splitlines()
+        packages=[line for line in lines if line and not line.startswith('#')]
+        self.assertEqual(len(packages),43)
+        for line in packages:
+            self.assertRegex(line,r'^[A-Za-z0-9_.-]+==[^ ]+ --hash=sha256:[a-f0-9]{64}')
+            self.assertNotIn('torch==',line)
+        workflow=yaml.safe_load((ROOT.parents[1]/'.github/workflows/pr-tests.yaml').read_text())
+        step=next(s for s in workflow['jobs']['test']['steps'] if s.get('name')=='Install trusted pinned RAG client test dependencies')
+        self.assertIn("hashFiles('source/module-5a/config/rag.yaml')",step['if'])
+        self.assertIn('--require-hashes',step['run']);self.assertIn('.ci-control/tools/ci/rag-requirements.txt',step['run'])
+
     def test_hpc_dependencies_are_hashed_and_installed_only_when_present(self):
         lines = (ROOT / 'hpc-requirements.txt').read_text().splitlines()
         self.assertEqual(len(lines), 7)

@@ -71,6 +71,14 @@ module5b-alerts:
 module5b-wheels:
 	$(PYTHON) tools/stage_module5b.py
 
+.PHONY: module5a-render module5a-validate module5a-test
+module5a-render:
+	$(PYTHON) tools/render_module5a.py
+module5a-validate:
+	$(PYTHON) tools/module5a.py --kubeconform "$(KUBECONFORM)"
+module5a-test:
+	$(PYTHON) -m unittest discover -s tests -p test_module5a.py -v
+
 # Invoke these targets inside WSL Ubuntu; no production target is substituted.
 .PHONY: wsl-lab-plan wsl-lab-apply wsl-lab-validate wsl-lab-test
 wsl-lab-plan:

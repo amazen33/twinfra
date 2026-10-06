@@ -1,5 +1,8 @@
 # Local vCloud validation on WSL2
 
+See the [WSL setup and troubleshooting guide](../../docs/WSL_SETUP_GUIDE.md) for
+Windows adapter detection/firewall scope and Argo CD namespace ordering.
+
 This profile implements the user's requested Ubuntu WSL2 K3s bootstrap with a
 20 GB memory ceiling, six CPUs and mirrored networking. It is a separate
 development cluster named `vcloud-wsl-local`. Production `vCloud-prod-01`, its

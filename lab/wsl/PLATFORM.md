@@ -5,6 +5,10 @@ production root Application or enable GPU, AI or Spinifex workloads.
 
 ## Current gate
 
+The [WSL troubleshooting guide](../../docs/WSL_SETUP_GUIDE.md) documents automatic
+Windows adapter detection and namespace pre-creation, while distinguishing those
+reference procedures from this lab's Cilium host-probe failure.
+
 The deny-all test passed with matching Cilium drop events. Argo CD and CNPG
 controller manifests are installed, but host probe/callback drops prevent
 controller readiness. The proposed [WSL Host Firewall exception](HOST-FIREWALL-EXCEPTION.md)

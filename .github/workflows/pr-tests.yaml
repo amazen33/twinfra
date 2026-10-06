@@ -72,6 +72,9 @@ jobs:
       - name: Install trusted pinned HPC test dependencies
         if: ${{ hashFiles('source/module-5b/reference-profile.json') != '' }}
         run: python -m pip install --require-hashes --disable-pip-version-check -r .ci-control/tools/ci/hpc-requirements.txt
+      - name: Install trusted pinned RAG client test dependencies
+        if: ${{ hashFiles('source/module-5a/config/rag.yaml') != '' }}
+        run: python -m pip install --require-hashes --disable-pip-version-check -r .ci-control/tools/ci/rag-requirements.txt
       - name: Stage checksum-verified tools and schemas
         run: python .ci-control/tools/ci/stage_tools.py --destination .ci-control/.build/ci-tools --source source
       - name: Lint workflow
