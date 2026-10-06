@@ -1,0 +1,59 @@
+---
+# Source: vcloud-foundation/templates/storage.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: vcloud-local
+  annotations: {argocd.argoproj.io/sync-wave: "-20"}
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+allowVolumeExpansion: false
+---
+# Source: vcloud-foundation/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vcloud-function-data
+  annotations:
+    argocd.argoproj.io/sync-wave: "-19"
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+    vcloud.io/vetted: "true"
+    vcloud.io/vetting-mode: host-check-required-before-apply
+spec:
+  capacity: {storage: 1Gi}
+  volumeMode: Filesystem
+  accessModes: [ReadOnlyMany]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: vcloud-local
+  claimRef: {namespace: workload-apps, name: function-data}
+  local: {path: /var/lib/vcloud/local-pv/function}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - {key: kubernetes.io/hostname, operator: In, values: ["vcloud-node-01"]}
+---
+# Source: vcloud-foundation/templates/storage.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vcloud-postgres-1
+  annotations:
+    argocd.argoproj.io/sync-wave: "-19"
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+    vcloud.io/vetted: "true"
+    vcloud.io/vetting-mode: host-check-required-before-apply
+spec:
+  capacity: {storage: 20Gi}
+  volumeMode: Filesystem
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: vcloud-local
+  claimRef: {namespace: platform-services, name: vcloud-postgres-1}
+  local: {path: /var/lib/vcloud/local-pv/postgres-1}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - {key: kubernetes.io/hostname, operator: In, values: ["vcloud-node-01"]}

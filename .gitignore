@@ -1,0 +1,5 @@
+.tools/
+__pycache__/
+*.pyc
+.build/
+module-2/site-values.yaml

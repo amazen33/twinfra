@@ -1,0 +1,4 @@
+PyYAML==6.0.3
+# Pure Python backend works under Windows application-control policy; test tooling only.
+jsonschema==4.17.3
+tomli>=2,<3; python_version < "3.11"

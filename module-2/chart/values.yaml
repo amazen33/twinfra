@@ -1,0 +1,93 @@
+# Site-specific values overlay this file. Documentation addresses are not deployable.
+renderGroup: all
+registry: registry.vcloud.example.com
+clusterName: vCloud-prod-01
+baseDomain: vcloud.example.com
+git:
+  repoURL: https://git.vcloud.example.com/amazen33/vCloud.git
+  upstream: https://github.com/amazen33/vCloud.git
+  revision: vcloud-module-2-v0.2.0
+  path: module-2/chart
+  mirrorReady: false
+site:
+  referenceOnly: true
+  nodeName: vcloud-node-01
+  apiHost: 192.0.2.10
+  podCIDR: 10.42.0.0/16
+  adminCIDR: 192.0.2.0/24
+  registryCIDRs: [192.0.2.20/32]
+  gitCIDRs: [192.0.2.21/32]
+  dnsCIDRs: [192.0.2.53/32]
+  identityCIDRs: [192.0.2.22/32]
+  devices: [eth0]
+storage:
+  className: vcloud-local
+  # No dynamic hostPath provisioner. These exact directories need host inspection.
+  volumes:
+    - {name: function-data, node: vcloud-node-01, path: /var/lib/vcloud/local-pv/function, size: 1Gi, uid: 65532, gid: 65532, namespace: workload-apps, claim: function-data, mode: ReadOnlyMany}
+    - {name: postgres-1, node: vcloud-node-01, path: /var/lib/vcloud/local-pv/postgres-1, size: 20Gi, uid: 26, gid: 26, namespace: platform-services, claim: vcloud-postgres-1, mode: ReadWriteOnce}
+    - {name: postgres-2, node: vcloud-node-02, path: /var/lib/vcloud/local-pv/postgres-2, size: 20Gi, uid: 26, gid: 26, namespace: platform-services, claim: vcloud-postgres-2, mode: ReadWriteOnce}
+    - {name: postgres-3, node: vcloud-node-03, path: /var/lib/vcloud/local-pv/postgres-3, size: 20Gi, uid: 26, gid: 26, namespace: platform-services, claim: vcloud-postgres-3, mode: ReadWriteOnce}
+function:
+  name: secure-function
+  image: registry.vcloud.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e
+  routeHost: secure-function.workload-apps.svc.cluster.local
+  maxScale: 1
+database:
+  name: vcloud-postgres
+  instances: 3
+  # Build images/postgresql-pgvector.Dockerfile, scan, publish and record its digest.
+  image: registry.vcloud.example.com/vcloud/postgresql-pgvector:18.6.0-pgvector0.8.2
+  cpu: "1"
+  memory: 2Gi
+  size: 20Gi
+  antiAffinityType: required
+  autoscaler:
+    enabled: true
+    minCPU: "1"
+    maxCPU: "2"
+    minMemory: 2Gi
+    maxMemory: 4Gi
+    cooldownSeconds: 3600
+    recommendationMaxAgeSeconds: 900
+    minChangeRatio: 1.25
+    # Automatic growth only. Shrinking RAM requires a reviewed maintenance change.
+    allowDecrease: false
+knative:
+  namespace: platform-services
+  kourierService: kourier-internal
+  gatewayPort: 443
+  gatewayTargetPort: 8443
+  activatorPort: 8112
+  queueTLS: 8112
+  controllerProfileReady: false
+  internalTLSReady: false
+apisix:
+  gatewayLabel: apisix
+  ingressClass: apisix
+  ingressControllerLabel: apisix-ingress-controller
+  # Existing infrastructure must mount/trust this CA and provide mTLS material if used.
+  upstreamTLSSecret: knative-upstream-tls
+  issuer: https://auth.vcloud.example.com/realms/vcloud
+  clientId: vcloud-function
+  profileReady: false
+hpc:
+  jobGroup: bootstrap-demo
+  mpiPortMin: 10000
+  mpiPortMax: 10100
+  secondaryNetworksApproved: false
+dependencies:
+  cnpgReady: false
+  vpaReady: false
+  argocdReady: false
+  # Fill exact mirrored images after staging the infrastructure controllers.
+  # Live preflight compares ready controllers against these references and audits their Pods.
+  images:
+    cloudnative-pg: []
+    vpa-recommender: []
+    argocd-application-controller: []
+    argocd-repo-server: []
+    argocd-redis: []
+    apisix: []
+    apisix-ingress-controller: []
+    knative-serving: []

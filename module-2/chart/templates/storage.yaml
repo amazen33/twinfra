@@ -1,0 +1,36 @@
+{{- if has .Values.renderGroup (list "all" "storage") }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: {{ .Values.storage.className }}
+  annotations: {argocd.argoproj.io/sync-wave: "-20"}
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+allowVolumeExpansion: false
+{{- range .Values.storage.volumes }}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vcloud-{{ .name }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-19"
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+    vcloud.io/vetted: "true"
+    vcloud.io/vetting-mode: host-check-required-before-apply
+spec:
+  capacity: {storage: {{ .size }}}
+  volumeMode: Filesystem
+  accessModes: [{{ .mode }}]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ $.Values.storage.className }}
+  claimRef: {namespace: {{ .namespace }}, name: {{ .claim }}}
+  local: {path: {{ .path }}}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - {key: kubernetes.io/hostname, operator: In, values: [{{ .node | quote }}]}
+{{- end }}
+{{- end }}

@@ -1,0 +1,53 @@
+#cloud-config
+# Source template. Run `python3 tools/render_cloud_init.py` after changing the script.
+# The generated user-data.yaml embeds the complete script; it requires no script URL.
+package_update: true
+package_upgrade: false
+packages:
+  - ca-certificates
+  - curl
+  - python3
+write_files:
+  - path: /etc/vcloud-host.env
+    owner: root:root
+    permissions: '0600'
+    content: |
+@@HOST_ENV@@
+  - path: /usr/local/sbin/00-setup-ubuntu-host.sh
+    owner: root:root
+    permissions: '0755'
+    content: |
+@@BOOTSTRAP_SCRIPT@@
+  - path: /etc/systemd/system/vcloud-host-bootstrap.service
+    owner: root:root
+    permissions: '0644'
+    content: |
+      [Unit]
+      Description=vCloud Module -1 bootstrap and post-reboot resume
+      Wants=network-online.target
+      After=network-online.target cloud-final.service
+      ConditionPathExists=!/var/lib/vcloud-host/complete
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/sbin/00-setup-ubuntu-host.sh --apply
+      SuccessExitStatus=20
+      TimeoutStartSec=3600
+      StandardOutput=journal+console
+      StandardError=journal+console
+      [Install]
+      WantedBy=multi-user.target
+runcmd:
+  - [systemctl, daemon-reload]
+  # Enable for the next boot. Starting a unit ordered after cloud-final from inside
+  # cloud-final would deadlock, so this first invocation runs the script directly.
+  - [systemctl, enable, vcloud-host-bootstrap.service]
+  - [bash, -c, '/usr/local/sbin/00-setup-ubuntu-host.sh --apply; rc=$?; if [ "$rc" -eq 20 ]; then exit 0; fi; exit "$rc"']
+# The first boot can reboot automatically for kernel/driver/HugeTLB changes. If a later
+# boot still needs intervention, the service records exit 20; inspect its journal.
+power_state:
+  mode: reboot
+  delay: now
+  timeout: 120
+  message: Activating vCloud host kernel, cgroups and HugePages
+  condition: [test, -f, /var/lib/vcloud-host/reboot-required]
+final_message: 'vCloud provisioning invoked. Check /var/lib/vcloud-host/result.json and journalctl -u vcloud-host-bootstrap.service; cloud-init success alone is not cluster readiness.'

@@ -1,0 +1,77 @@
+{{- if has .Values.renderGroup (list "all" "function") }}
+apiVersion: v1
+kind: ServiceAccount
+metadata: {name: secure-function, namespace: workload-apps}
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: function-data
+  namespace: workload-apps
+  annotations: {argocd.argoproj.io/sync-options: "Prune=false,Delete=false"}
+spec:
+  accessModes: [ReadOnlyMany]
+  storageClassName: {{ .Values.storage.className }}
+  resources: {requests: {storage: 1Gi}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: function-code, namespace: workload-apps}
+data:
+  function.py: |
+{{ .Files.Get "files/function.py" | indent 4 }}
+---
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: {{ .Values.function.name }}
+  namespace: workload-apps
+  labels: {networking.knative.dev/visibility: cluster-local}
+spec:
+  template:
+    metadata:
+      labels: {vcloud.io/function: secure-function}
+      annotations:
+        autoscaling.knative.dev/min-scale: "0"
+        autoscaling.knative.dev/max-scale: {{ .Values.function.maxScale | quote }}
+        autoscaling.knative.dev/target: "10"
+        kubernetes.io/egress-bandwidth: 100M
+    spec:
+      serviceAccountName: secure-function
+      automountServiceAccountToken: false
+      containerConcurrency: 10
+      timeoutSeconds: 60
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: function
+          image: {{ .Values.function.image | quote }}
+          imagePullPolicy: IfNotPresent
+          command: [python, /app/function.py]
+          ports: [{name: http1, containerPort: 8080}]
+          env: [{name: PYTHONDONTWRITEBYTECODE, value: "1"}]
+          resources:
+            requests: {cpu: 100m, memory: 64Mi}
+            limits: {cpu: 500m, memory: 128Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          readinessProbe: {httpGet: {path: /healthz, port: 8080}}
+          volumeMounts:
+            - {name: data, mountPath: /data, readOnly: true}
+            - {name: code, mountPath: /app, readOnly: true}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: function-data, readOnly: true}
+        - name: code
+          configMap: {name: function-code, defaultMode: 292}
+        - name: tmp
+          emptyDir: {sizeLimit: 16Mi}
+{{- end }}

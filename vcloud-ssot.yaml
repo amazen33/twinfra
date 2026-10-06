@@ -1,0 +1,36 @@
+# Authoritative platform contract supplied by the user. This is configuration, not a K8s object.
+version: '2.2'
+host:
+  os: ubuntu
+  release: '24.04'
+  minimumKernel: '6.8'
+  cgroupVersion: 2
+cluster:
+  name: vCloud-prod-01
+  dnsName: vcloud-prod-01
+  minimumKubernetesVersion: '1.30'
+  baseDomain: vcloud.example.com
+  gitOpsRepository: amazen33/vCloud
+  namespaces: [platform-services, workload-apps, hpc-compute]
+network:
+  cni: cilium
+  routingMode: native
+  defaultIngress: deny
+  defaultEgress: deny
+registry: registry.vcloud.example.com
+gpuRuntime: nvidia
+security:
+  deprecatedAPIs: forbidden
+  floatingImageTags: forbidden
+  privilegedOrRoot: requires-explicit-necessity-and-justification
+  manifestValidation: kubeconform-strict
+  hostPathVolumes: forbidden
+  persistentStorage: CSI-or-vetted-Local-PV
+  nodeHostMountException:
+    status: approved
+    approvedBy: user
+    approvedOn: '2026-10-05'
+    decision: Approve the documented node exception
+    adr: docs/adr-0001-node-host-mounts.md
+    policyFile: security/node-exceptions.json
+    policySHA256: d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253

@@ -1,0 +1,9 @@
+# Keep source/schema hashes stable across Windows and Ubuntu checkouts.
+* text=auto eol=lf
+*.gz -text
+*.tgz -text
+# Markdown uses two trailing spaces for explicit line breaks.
+*.md whitespace=-blank-at-eol
+# Preserve Helm output and the upstream license exactly for reproducibility.
+module-2/manifests/*.yaml whitespace=-blank-at-eol
+module-2/vendor/LICENSE-Apache-2.0.txt whitespace=-blank-at-eof

@@ -1,0 +1,95 @@
+#cloud-config
+# Generated; script SHA256=36502fff0383354d67e64f034873953b350a0c1ad9d469ebbdd737119835f220.
+# Source template. Run `python3 tools/render_cloud_init.py` after changing the script.
+# Remote variant for small user-data limits: publish the script at the HTTPS URL below.
+package_update: true
+package_upgrade: false
+packages:
+  - ca-certificates
+  - curl
+  - python3
+write_files:
+  - path: /etc/vcloud-host.env
+    owner: root:root
+    permissions: '0600'
+    content: |
+      # Install as root-owned /etc/vcloud-host.env, mode 0600. Values here persist across reboot.
+      # The script reads this file after shell environment variables. Do not store credentials here.
+      # BEGIN GENERATED SSOT IDENTITY
+      SSOT_VERSION=2.2
+      CLUSTER_NAME=vCloud-prod-01
+      CLUSTER_DNS_NAME=vcloud-prod-01
+      BASE_DOMAIN=vcloud.example.com
+      GITOPS_REPOSITORY=amazen33/vCloud
+      IMAGE_REGISTRY=registry.vcloud.example.com
+      # END GENERATED SSOT IDENTITY
+      KUBERNETES_VERSION=v1.36.5
+      CILIUM_VERSION=1.20.2
+      CRICTL_VERSION=v1.36.0
+      HUGEPAGES_2M=128
+      HUGEPAGES_1G=1
+      MIN_NORMAL_RAM_MIB=4096
+      ENABLE_GPU=auto
+      NVIDIA_DRIVER_PACKAGE=auto
+      ENABLE_KVM=false
+      INSTALL_HPC=true
+      BOOTSTRAP_K8S=true
+      RUN_SMOKE_TESTS=true
+      REGISTRY_MIRROR=https://registry.vcloud.example.com
+      MIRROR_REQUIRED=true
+      # REGISTRY_CA_FILE=/usr/local/share/ca-certificates/vcloud-registry.crt
+      POD_CIDR=10.42.0.0/16
+      SERVICE_CIDR=10.43.0.0/16
+      # Set a stable, assigned interface address if the host has multiple NICs.
+      # NODE_IP=192.168.50.10
+      # NODE_NAME=vcloud01
+  - path: /usr/local/sbin/vcloud-fetch-host.sh
+    owner: root:root
+    permissions: '0755'
+    content: |
+      #!/usr/bin/env bash
+      # Small-provider bootstrap: host the exact companion script at this URL first.
+      set -Eeuo pipefail
+      expected='36502fff0383354d67e64f034873953b350a0c1ad9d469ebbdd737119835f220'
+      url='https://artifacts.example.com/vcloud/00-setup-ubuntu-host.sh'
+      target=/usr/local/sbin/00-setup-ubuntu-host.sh
+      if [[ -f $target ]] && [[ $(sha256sum "$target" | cut -d' ' -f1) == "$expected" ]]; then exit 0; fi
+      candidate=$(mktemp /var/tmp/vcloud-bootstrap.XXXXXX)
+      trap 'rm -f -- "$candidate"' EXIT
+      curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 --retry 4 \
+          --connect-timeout 15 --max-time 300 "$url" -o "$candidate"
+      printf '%s  %s\n' "$expected" "$candidate" | sha256sum -c -
+      install -m 0755 -o root -g root "$candidate" "$target"
+  - path: /etc/systemd/system/vcloud-host-bootstrap.service
+    owner: root:root
+    permissions: '0644'
+    content: |
+      [Unit]
+      Description=vCloud Module -1 bootstrap and post-reboot resume
+      Wants=network-online.target
+      After=network-online.target cloud-final.service
+      ConditionPathExists=!/var/lib/vcloud-host/complete
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/sbin/00-setup-ubuntu-host.sh --apply
+      SuccessExitStatus=20
+      TimeoutStartSec=3600
+      StandardOutput=journal+console
+      StandardError=journal+console
+      [Install]
+      WantedBy=multi-user.target
+runcmd:
+  - [systemctl, daemon-reload]
+  # Enable for the next boot. Starting a unit ordered after cloud-final from inside
+  # cloud-final would deadlock, so this first invocation runs the script directly.
+  - [systemctl, enable, vcloud-host-bootstrap.service]
+  - [bash, -c, '/usr/local/sbin/vcloud-fetch-host.sh && /usr/local/sbin/00-setup-ubuntu-host.sh --apply; rc=$?; if [ "$rc" -eq 20 ]; then exit 0; fi; exit "$rc"']
+# The first boot can reboot automatically for kernel/driver/HugeTLB changes. If a later
+# boot still needs intervention, the service records exit 20; inspect its journal.
+power_state:
+  mode: reboot
+  delay: now
+  timeout: 120
+  message: Activating vCloud host kernel, cgroups and HugePages
+  condition: [test, -f, /var/lib/vcloud-host/reboot-required]
+final_message: 'vCloud provisioning invoked. Check /var/lib/vcloud-host/result.json and journalctl -u vcloud-host-bootstrap.service; cloud-init success alone is not cluster readiness.'

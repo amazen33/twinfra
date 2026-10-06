@@ -1,0 +1,58 @@
+{{- if has .Values.renderGroup (list "all" "function") }}
+apiVersion: apisix.apache.org/v2
+kind: ApisixTls
+metadata: {name: public-api, namespace: platform-services}
+spec:
+  ingressClassName: {{ .Values.apisix.ingressClass }}
+  hosts: [api.{{ .Values.baseDomain }}]
+  secret: {name: apisix-gateway-tls, namespace: platform-services}
+---
+# The route and Kourier backend are in the SAME namespace; CRD forbids cross-namespace backends.
+apiVersion: apisix.apache.org/v2
+kind: ApisixUpstream
+metadata: {name: {{ .Values.knative.kourierService }}, namespace: {{ .Values.knative.namespace }}}
+spec:
+  ingressClassName: {{ .Values.apisix.ingressClass }}
+  scheme: https
+  passHost: rewrite
+  upstreamHost: {{ .Values.function.routeHost }}
+  retries: 0
+  timeout: {connect: 5s, send: 65s, read: 65s}
+  tlsSecret: {name: {{ .Values.apisix.upstreamTLSSecret }}, namespace: {{ .Values.knative.namespace }}}
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata: {name: secure-function, namespace: {{ .Values.knative.namespace }}}
+spec:
+  ingressClassName: {{ .Values.apisix.ingressClass }}
+  http:
+    - name: function
+      match:
+        hosts: [api.{{ .Values.baseDomain }}]
+        paths: [/function]
+        methods: [GET]
+        exprs: [{subject: {scope: Variable, name: scheme}, op: Equal, value: https}]
+      backends:
+        - serviceName: {{ .Values.knative.kourierService }}
+          servicePort: {{ .Values.knative.gatewayPort }}
+          resolveGranularity: service
+      plugins:
+        - name: proxy-rewrite
+          enable: true
+          config: {uri: /, host: {{ .Values.function.routeHost }}}
+        - name: openid-connect
+          enable: true
+          config:
+            client_id: {{ .Values.apisix.clientId }}
+            client_secret: $ENV://APISIX_OIDC_CLIENT_SECRET
+            discovery: {{ .Values.apisix.issuer }}/.well-known/openid-configuration
+            bearer_only: true
+            use_jwks: true
+            ssl_verify: true
+            unauth_action: deny
+            accept_none_alg: false
+            accept_unsupported_alg: false
+            claim_validator:
+              issuer: {valid_issuers: [{{ .Values.apisix.issuer }}]}
+              audience: {required: true, match_with_client_id: true}
+{{- end }}
