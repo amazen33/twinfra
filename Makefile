@@ -70,3 +70,28 @@ module5b-alerts:
 	$(PROMTOOL) test rules tests/module5b-alerts.test.yaml
 module5b-wheels:
 	$(PYTHON) tools/stage_module5b.py
+
+# Invoke these targets inside WSL Ubuntu; no production target is substituted.
+.PHONY: wsl-lab-plan wsl-lab-apply wsl-lab-validate wsl-lab-test
+wsl-lab-plan:
+	bash lab/wsl/bootstrap.sh --plan
+wsl-lab-apply:
+	sudo bash lab/wsl/bootstrap.sh --apply
+wsl-lab-validate:
+	sudo bash lab/wsl/bootstrap.sh --validate
+wsl-lab-test:
+	$(PYTHON) -m unittest discover -s tests -p test_wsl_lab.py -v
+
+.PHONY: wsl-network-test wsl-platform-render wsl-platform-validate wsl-platform-apply wsl-platform-test wsl-database-test
+wsl-network-test:
+	sudo bash lab/wsl/test-network.sh
+wsl-platform-render:
+	$(PYTHON) tools/wsl_platform.py render --gitops
+wsl-platform-validate:
+	$(PYTHON) tools/wsl_platform.py validate --kubeconform "$(KUBECONFORM)"
+wsl-platform-apply:
+	sudo bash lab/wsl/platform.sh
+wsl-platform-test:
+	$(PYTHON) -m unittest discover -s tests -p test_wsl_platform.py -v
+wsl-database-test:
+	sudo python3 tools/wsl_db_test.py --restart

@@ -116,3 +116,12 @@ Region `vcloud-hpc-1` and `vcloud.io/offload-target` preserve the platform ident
 Offloading stays disabled, quotas and deployment replicas stay zero, and live
 GPU/site acceptance remains pending. See [ADR 0023](docs/adr-0023-module-5b-hybrid-hpc.md)
 and the [hybrid flow](module-5b/docs/hybrid-topology.md).
+
+## WSL local validation
+
+The separate [WSL K3s profile](lab/wsl/README.md) follows the requested 20 GB / six
+CPU mirrored-network development environment. It bootstraps a single-node
+`vcloud-wsl-local` cluster with Cilium, restricted namespaces and DNS/policy
+smoke tests. Heavy AI/HPC profiles stay disabled. It does not replace the
+production Ubuntu/kubeadm profile. GitHub CI includes its offline safety and
+schema checks when the profile is present; host execution is opt-in on WSL.

@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "timestampUTC": "2026-10-06T17:15:45.924070+00:00",
+  "context": "vcloud-wsl-local",
+  "source": "hpc-compute/vcloud-lab-denied",
+  "destination": "platform-services/vcloud-lab-server",
+  "port": 8080,
+  "protocol": "TCP",
+  "dns": "passed",
+  "allowedControlHTTP": "passed",
+  "unauthorizedServiceHTTP": "blocked",
+  "unauthorizedDirectPodHTTP": "blocked",
+  "matchingCiliumPolicyDrops": 6,
+  "dropEvents": [
+    "xx drop (Policy denied) flow 0x73219b02 to endpoint 0, ifindex 17, file bpf_lxc.c:1663, , identity 25045->51577: 10.42.0.202:51304 -> 10.42.0.236:8080 tcp SYN",
+    "xx drop (Policy denied) flow 0xa6cc49ca to endpoint 0, ifindex 17, file bpf_lxc.c:1663, , identity 25045->51577: 10.42.0.202:51304 -> 10.42.0.236:8080 tcp SYN",
+    "xx drop (Policy denied) flow 0xd1987b25 to endpoint 0, ifindex 17, file bpf_lxc.c:1663, , identity 25045->51577: 10.42.0.202:51304 -> 10.42.0.236:8080 tcp SYN",
+    "xx drop (Policy denied) flow 0xe61d60b1 to endpoint 0, ifindex 17, file bpf_lxc.c:1663, , identity 25045->51577: 10.42.0.202:51320 -> 10.42.0.236:8080 tcp SYN",
+    "xx drop (Policy denied) flow 0x7ac88b7 to endpoint 0, ifindex 17, file bpf_lxc.c:1663, , identity 25045->51577: 10.42.0.202:51320 -> 10.42.0.236:8080 tcp SYN",
+    "xx drop (Policy denied) flow 0xa9b245a5 to endpoint 0, ifindex 17, file bpf_lxc.c:1663, , identity 25045->51577: 10.42.0.202:51320 -> 10.42.0.236:8080 tcp SYN"
+  ]
+}

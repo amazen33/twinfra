@@ -1,0 +1,93 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vcloud-wsl-postgres
+  namespace: platform-services
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:cnpg.io/cluster: vcloud-wsl-postgres
+  ingress:
+  - fromEntities:
+    - host
+    toPorts:
+    - ports:
+      - port: '8000'
+        protocol: TCP
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: cloudnative-pg
+    toPorts:
+    - ports:
+      - port: '5432'
+        protocol: TCP
+      - port: '8000'
+        protocol: TCP
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:cnpg.io/cluster: vcloud-wsl-postgres
+    toPorts:
+    - ports:
+      - port: '5432'
+        protocol: TCP
+      - port: '8000'
+        protocol: TCP
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:vcloud.io/component: database-test
+    toPorts:
+    - ports:
+      - port: '5432'
+        protocol: TCP
+  egress:
+  - toEntities:
+    - kube-apiserver
+    toPorts:
+    - ports:
+      - port: '443'
+        protocol: TCP
+      - port: '16443'
+        protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vcloud-wsl-db-scaler
+  namespace: platform-services
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:vcloud.io/component: database-scaler
+  ingress: []
+  egress:
+  - toEntities:
+    - kube-apiserver
+    toPorts:
+    - ports:
+      - port: '443'
+        protocol: TCP
+      - port: '16443'
+        protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vcloud-wsl-db-client
+  namespace: platform-services
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:vcloud.io/component: database-test
+  ingress: []
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:cnpg.io/cluster: vcloud-wsl-postgres
+    toPorts:
+    - ports:
+      - port: '5432'
+        protocol: TCP

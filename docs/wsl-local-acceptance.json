@@ -1,0 +1,102 @@
+{
+  "status": "passed",
+  "scope": "live single-node WSL K3s foundation and policy smoke tests",
+  "timestampUTC": "2026-10-06T16:20:25.586683+00:00",
+  "context": "vcloud-wsl-local",
+  "kubernetes": "v1.36.5+k3s1",
+  "apiPort": 16443,
+  "cpu": 6,
+  "memoryGiB": 19.53,
+  "networking": "mirrored",
+  "nodeReady": true,
+  "kubeProxyReplacement": true,
+  "tests": {
+    "clusterDNS": "passed",
+    "permittedCrossNamespaceHTTP": "passed",
+    "deniedCrossNamespaceHTTP": "passed"
+  },
+  "pods": [
+    {
+      "namespace": "hpc-compute",
+      "name": "vcloud-lab-denied",
+      "phase": "Running"
+    },
+    {
+      "namespace": "kube-system",
+      "name": "cilium-envoy-kbh8h",
+      "phase": "Running"
+    },
+    {
+      "namespace": "kube-system",
+      "name": "cilium-operator-85dd8cbb7c-4tthm",
+      "phase": "Running"
+    },
+    {
+      "namespace": "kube-system",
+      "name": "cilium-zqhfz",
+      "phase": "Running"
+    },
+    {
+      "namespace": "kube-system",
+      "name": "vcloud-lab-dns-68dcb5bb4-rjgtx",
+      "phase": "Running"
+    },
+    {
+      "namespace": "platform-services",
+      "name": "vcloud-lab-server",
+      "phase": "Running"
+    },
+    {
+      "namespace": "workload-apps",
+      "name": "vcloud-lab-allowed",
+      "phase": "Running"
+    }
+  ],
+  "disabled": [
+    "GPU workloads",
+    "vLLM/DeepSeek 32B",
+    "Spinifex offload",
+    "HPC queues",
+    "bundled hostPath storage"
+  ],
+  "unexecuted": [
+    "full application stack",
+    "real GPU container execution",
+    "APISIX/Knative/OpenBao/Keycloak integration",
+    "CSI/persistent database",
+    "backup/restore",
+    "host-firewall policy enforcement",
+    "bandwidth limits",
+    "WSL/Windows restart recovery",
+    "production go-live"
+  ],
+  "host": {
+    "distribution": "Ubuntu 26.04.1 LTS",
+    "kernel": "6.18.33.2-microsoft-standard-WSL2"
+  },
+  "ciliumVersion": "1.20.2",
+  "bootstrapReapply": "passed",
+  "independentValidation": "passed",
+  "dnsImage": {
+    "image": "registry.vcloud.example.com/vcloud/coredns:1.14.7-vcloud-wsl.1",
+    "manifestDigest": "sha256:bbda30383cd507d2635d474722cd1c5786cfe632edcea55c34cf709a56f56045",
+    "binarySHA256": "67d7387acb5d58df2c884cd2f0a4a4815f6a6bb29b865a6ea5efa4e782d76faa",
+    "user": "65532:65532",
+    "fileCapabilities": "none",
+    "sourceManifestDigest": "sha256:2329f5f0e7e79fbe56dcdf11ecc4337ee2476bb251095bc275fe9461cb88a55b"
+  },
+  "frozenNodePolicySHA256": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+  "frozenNodeInventorySHA256": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81",
+  "offlineValidation": {
+    "status": "passed",
+    "moduleTests": 310,
+    "ciControlTests": 18,
+    "totalUnitTests": 328,
+    "checks": 30,
+    "wslSchemaResources": 47,
+    "invalidSchemas": 0,
+    "schemaErrors": 0,
+    "skippedSchemas": 0,
+    "githubExecution": "not run for these local uncommitted changes"
+  }
+}

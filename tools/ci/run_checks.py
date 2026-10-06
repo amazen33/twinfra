@@ -24,6 +24,13 @@ OPTIONAL = {
     'module-4b': ['tools/module4b.py', 'tools/render_module4b.py', 'tests/test_module4b.py'],
     'module-5b': ['tools/module5b.py', 'tools/render_module5b.py', 'tests/test_module5b.py',
                   'tests/module5b-alerts.test.yaml', 'module-5b/reference-profile.json'],
+    'lab/wsl': ['lab/wsl/profile.json', 'lab/wsl/bootstrap.sh', 'lab/wsl/api-firewall.sh',
+                'tools/wsl_lab.py', 'tools/wsl_lab_acceptance.py', 'tools/wsl_lab_dns_image.py', 'tools/stage_wsl_lab.py',
+                'tests/test_wsl_lab.py'],
+    'lab/wsl/gitops': ['tools/wsl_platform.py', 'tools/wsl_db_scaler.py', 'tools/wsl_db_test.py', 'tools/wsl_pg_image.py',
+                       'tools/stage_wsl_platform.py', 'lab/wsl/platform.sh', 'lab/wsl/prepare-storage.sh',
+                       'lab/wsl/prepare-tls.sh', 'lab/wsl/test-network.sh', 'lab/wsl/platform-artifacts.lock.json',
+                       'lab/wsl/gitops/workload.yaml', 'lab/wsl/gitops/network.yaml', 'tests/test_wsl_platform.py'],
 }
 
 
@@ -160,6 +167,21 @@ def main():
             if stem == 'module5b':
                 run('hpc-alert-rules', [binaries['promtool'], 'check', 'rules', 'module-5b/observability/rules.yaml'])
                 run('hpc-alert-tests', [binaries['promtool'], 'test', 'rules', 'tests/module5b-alerts.test.yaml'])
+        if report['modules']['lab/wsl'] == 'present':
+            # Offline renders must never overwrite an active lab's live evidence
+            # or address-specific Helm values in .build/wsl-lab.
+            wsl_build = report_dir / 'wsl-rendered'
+            run('wsl-lab-render', [python, 'tools/wsl_lab.py', 'render', '--build', wsl_build])
+            run('wsl-lab-validate', [python, 'tools/wsl_lab.py', 'validate', '--helm', binaries['helm'],
+                                   '--kubeconform', binaries['kubeconform'], '--schemas', assets / 'schemas',
+                                   '--build', wsl_build])
+            run('wsl-lab-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_wsl_lab.py', '-v'], unit=True)
+        if report['modules']['lab/wsl/gitops'] == 'present':
+            platform_build = report_dir / 'wsl-platform-rendered'
+            run('wsl-platform-render', [python, 'tools/wsl_platform.py', 'render', '--build', platform_build])
+            run('wsl-platform-validate', [python, 'tools/wsl_platform.py', 'validate', '--build', platform_build,
+                                        '--kubeconform', binaries['kubeconform'], '--schemas', assets / 'schemas'])
+            run('wsl-platform-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_wsl_platform.py', '-v'], unit=True)
         report['status'] = 'passed'
         return 0
     except (ValueError, RuntimeError, OSError) as error:

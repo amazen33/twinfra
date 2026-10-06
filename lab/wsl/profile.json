@@ -1,0 +1,33 @@
+{
+  "name": "vcloud-wsl-local",
+  "scope": "single-node local validation; no production promotion",
+  "nodeName": "vcloud-wsl-local",
+  "k3sVersion": "v1.36.5+k3s1",
+  "ciliumVersion": "1.20.2",
+  "podCIDR": "10.42.0.0/16",
+  "serviceCIDR": "10.43.0.0/16",
+  "dnsServiceIP": "10.43.0.10",
+  "registry": "registry.vcloud.example.com",
+  "minimumMemoryGiB": 16,
+  "minimumCPUs": 4,
+  "spinifexOffloadEnabled": false,
+  "gpuWorkloadsEnabled": false,
+  "hugePagesRequired": false,
+  "pauseImage": "docker.io/rancher/mirrored-pause:3.10.2",
+  "dnsImage": "docker.io/rancher/mirrored-coredns-coredns:1.14.7",
+  "smokeImage": "docker.io/rancher/mirrored-library-busybox:1.37.0",
+  "artifacts": {
+    "k3s": {
+      "url": "https://github.com/k3s-io/k3s/releases/download/v1.36.5%2Bk3s1/k3s",
+      "sha256": "d73847bcd3c5fccef0115b372e2f9a91f3032dc84bbf71518a4617565294d313"
+    },
+    "k3s-images.tar.gz": {
+      "url": "https://github.com/k3s-io/k3s/releases/download/v1.36.5%2Bk3s1/k3s-airgap-images-amd64.tar.gz",
+      "sha256": "53b76460862db28d81651e5bb1f7d9dbdf32adb25bc35b6db8b1d4c2423efb56"
+    },
+    "k3s-images.txt": {
+      "url": "https://github.com/k3s-io/k3s/releases/download/v1.36.5%2Bk3s1/k3s-images.txt",
+      "sha256": "377307d4039ccd04f0e27d2906595a8c7b7d49a79f7553c311f6f960ff3efb58"
+    }
+  }
+}

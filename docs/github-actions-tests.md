@@ -37,6 +37,8 @@ Manual dispatch is available after the workflow exists on the default branch.
 | Module 4a, when present | OpenBao/CSI configuration validation, Bash/jq integration contract tests with mock transports |
 | Module 4b, when present | Keycloak/APISIX/RBAC validation and security regression tests |
 | Module 5b, when present | Disabled Spinifex profile, Kueue Helm/CRD validation, durable capacity limits, SDK signing/stubs, local mTLS and HPC alert scenarios |
+| WSL lab, when present | Local K3s configuration, strict manifests/frozen Cilium audit, resource/adoption/CIDR safeguards; no host execution on GitHub |
+| WSL GitOps/database, when present | Locked Argo/CNPG/metrics artifacts, strict rendered schemas, exact Local PV vetting, TLS/RBAC boundaries and bounded CPU/memory growth; SQL and reconciliation require live acceptance |
 | CI controls | Historical revision selection, invalid input/commit rejection, checksum and archive safety, partial module rejection, no skipped or empty suites, immutable action/tool pins |
 
 The [runner](../tools/ci/run_checks.py) always requires the original modules.
