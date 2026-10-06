@@ -1,0 +1,70 @@
+{
+  "platform": "linux-amd64",
+  "artifacts": {
+    "helm": {
+      "url": "https://get.helm.sh/helm-v3.22.0-linux-amd64.tar.gz",
+      "sha256": "1e4ab49e429626cf6c6958d914248b78c9730803c2751b87627e171dc800e7bb",
+      "output": "bin/helm",
+      "member": "linux-amd64/helm"
+    },
+    "kubeconform": {
+      "url": "https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz",
+      "sha256": "9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883",
+      "output": "bin/kubeconform-real",
+      "member": "kubeconform"
+    },
+    "promtool": {
+      "url": "https://github.com/prometheus/prometheus/releases/download/v3.15.0/prometheus-3.15.0.linux-amd64.tar.gz",
+      "sha256": "2a542df32eac02ee17b9d844fb2aa1de00dafa5476579ba8a3ba862e9d572ea0",
+      "output": "bin/promtool",
+      "member": "prometheus-3.15.0.linux-amd64/promtool"
+    },
+    "shellcheck": {
+      "url": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.gz",
+      "sha256": "b7af85e41cc99489dcc21d66c6d5f3685138f06d34651e6d34b42ec6d54fe6f6",
+      "output": "bin/shellcheck",
+      "member": "shellcheck-v0.11.0/shellcheck"
+    },
+    "actionlint": {
+      "url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz",
+      "sha256": "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8",
+      "output": "bin/actionlint",
+      "member": "actionlint"
+    },
+    "yq": {
+      "url": "https://github.com/mikefarah/yq/releases/download/v4.54.1/yq_linux_amd64",
+      "sha256": "8e34fc298390875de416e6a4afcb8cabeceb25d9aa8506c1a2f9353cf702ea5f",
+      "output": "bin/yq"
+    },
+    "jq": {
+      "url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-linux-amd64",
+      "sha256": "b1c22172dd303f3be49e935aa56aa48a8b7a46e0bc838b4997d3bb451495870f",
+      "output": "bin/jq"
+    },
+    "nvidia-chart": {
+      "url": "https://nvidia.github.io/k8s-device-plugin/stable/nvidia-device-plugin-0.20.1.tgz",
+      "sha256": "b705142f03ac17906bfcface9319e2f7b9a570d2af7f04f23252723ce2c0bb8e",
+      "output": "nvidia-device-plugin-0.20.1.tgz"
+    },
+    "cloud-config-schema": {
+      "url": "https://raw.githubusercontent.com/canonical/cloud-init/26.2/cloudinit/config/schemas/schema-cloud-config-v1.json",
+      "sha256": "a2923d8886201b5478683cf9c6118a00d5603f36d69f8ad899c5b7909c807d63",
+      "output": "cloud-config-schema.json"
+    },
+    "pod-schema": {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/pod.json",
+      "sha256": "2463f2a5c7d16fa0a59f0fdfeb7f2a0c983219617b09c8598894e4ef429c8183",
+      "output": "schemas/pod.json"
+    },
+    "job-schema": {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/job.json",
+      "sha256": "edcd3b8017ad204da5cb94562dd31f038f121e9a81931204d9983edd3fa7604c",
+      "output": "schemas/job.json"
+    },
+    "runtimeclass-schema": {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/runtimeclass.json",
+      "sha256": "0859dd74ab2e01156ef2dd2cb97b1870a1241598210c75c9927eb9a310a41a23",
+      "output": "schemas/runtimeclass.json"
+    }
+  }
+}

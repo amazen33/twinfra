@@ -1,0 +1,102 @@
+name: vCloud tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Optional prior PR number; merged PRs use their immutable merge commit'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: vcloud-tests-${{ github.event.pull_request.number || github.ref }}-${{ inputs.pr_number || 'current' }}
+  cancel-in-progress: true
+
+jobs:
+  revisions:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.revisions.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Resolve current and historical revisions
+        id: revisions
+        env:
+          REQUESTED_PR: ${{ inputs.pr_number }}
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/ci/revisions.py
+
+  test:
+    needs: revisions
+    name: Test ${{ matrix.label }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.revisions.outputs.matrix) }}
+    steps:
+      - name: Checkout CI controls
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: .ci-control
+          persist-credentials: false
+      - name: Checkout selected revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ matrix.commit }}
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.14.5'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24.21.0'
+      - name: Install pinned test libraries
+        run: |
+          python -m pip install --disable-pip-version-check -r .ci-control/tools/ci/requirements.txt
+          npm ci --prefix .ci-control/tools/ci/mermaid --ignore-scripts --no-audit --no-fund
+      - name: Verify CI controls
+        run: python -m unittest discover -s .ci-control/tools/ci/tests -v
+      - name: Stage checksum-verified tools and schemas
+        run: python .ci-control/tools/ci/stage_tools.py --destination .ci-control/.build/ci-tools --source source
+      - name: Lint workflow
+        run: .ci-control/.build/ci-tools/bin/actionlint -shellcheck="" .ci-control/.github/workflows/pr-tests.yaml
+      - name: Run offline module gates
+        env:
+          EXPECTED_COMMIT: ${{ matrix.commit }}
+        run: python .ci-control/tools/ci/run_checks.py --source source --assets .ci-control/.build/ci-tools --report .ci-control/.build/ci-report
+      - name: Upload validation evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: validation-${{ matrix.label }}-${{ github.run_attempt }}
+          path: .ci-control/.build/ci-report/
+          if-no-files-found: warn
+          retention-days: 14
+
+  required:
+    name: vCloud PR gate
+    if: ${{ always() }}
+    needs: [revisions, test]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require every revision to pass
+        env:
+          REVISIONS_RESULT: ${{ needs.revisions.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+        run: |
+          test "$REVISIONS_RESULT" = success
+          test "$TEST_RESULT" = success
