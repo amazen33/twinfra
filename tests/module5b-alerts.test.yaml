@@ -1,0 +1,80 @@
+rule_files:
+  - ../module-5b/observability/rules.yaml
+evaluation_interval: 30s
+tests:
+  - name: sustained GPU saturation and pending demand
+    interval: 30s
+    input_series:
+      - series: 'DCGM_FI_DEV_GPU_UTIL{cluster="vCloud-prod-01"}'
+        values: '95+0x20'
+      - series: 'kueue_pending_workloads{cluster="vCloud-prod-01",cluster_queue="spinifex-hpc-burst"}'
+        values: '1+0x20'
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: VCloudHPCBurstCandidate
+        exp_alerts:
+          - exp_labels: {cluster: vCloud-prod-01, queue: spinifex-hpc-burst, severity: info}
+            exp_annotations:
+              summary: 'Reserved HPC demand may need capacity; bridge refetches quota and fresh metrics before any action'
+  - name: CPU pressure needs demand
+    interval: 30s
+    input_series:
+      - series: 'node_cpu_seconds_total{mode="idle",cluster="vCloud-prod-01"}'
+        values: '0+1.5x30'
+      - series: 'kueue_pending_workloads{cluster="vCloud-prod-01",cluster_queue="spinifex-hpc-burst"}'
+        values: '0+0x30'
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: VCloudHPCBurstCandidate
+        exp_alerts: []
+  - name: memory at 85 percent fires after hold
+    interval: 30s
+    input_series:
+      - series: 'container_memory_working_set_bytes{namespace="hpc-compute",cluster="vCloud-prod-01",container="worker"}'
+        values: '850+0x20'
+      - series: 'kube_pod_container_resource_limits{namespace="hpc-compute",cluster="vCloud-prod-01",resource="memory",unit="byte"}'
+        values: '1000+0x20'
+      - series: 'kueue_pending_workloads{cluster="vCloud-prod-01",cluster_queue="spinifex-hpc-burst"}'
+        values: '1+0x20'
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: VCloudHPCBurstCandidate
+        exp_alerts:
+          - exp_labels: {cluster: vCloud-prod-01, queue: spinifex-hpc-burst, severity: info}
+            exp_annotations:
+              summary: 'Reserved HPC demand may need capacity; bridge refetches quota and fresh metrics before any action'
+  - name: transient GPU pressure and exact threshold stay quiet
+    interval: 30s
+    input_series:
+      - series: 'DCGM_FI_DEV_GPU_UTIL{cluster="vCloud-prod-01"}'
+        values: '95+0x6 85+0x20'
+      - series: 'kueue_pending_workloads{cluster="vCloud-prod-01",cluster_queue="spinifex-hpc-burst"}'
+        values: '1+0x30'
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: VCloudHPCBurstCandidate
+        exp_alerts: []
+  - name: unexpected feature enablement
+    interval: 30s
+    input_series:
+      - series: 'vcloud_spinifex_offload_enabled{job="capacity"}'
+        values: '1+0x8'
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: VCloudHPCReferenceUnexpectedlyEnabled
+        exp_alerts:
+          - exp_labels: {job: capacity, severity: critical}
+            exp_annotations:
+              summary: 'Disabled reference offload flag was enabled; inspect all independent acceptance gates'
+  - name: uncertain cleanup retains quota and alerts
+    interval: 30s
+    input_series:
+      - series: 'vcloud_spinifex_reconciliation_uncertain{job="capacity"}'
+        values: '1+0x8'
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: VCloudHPCReconciliationNeedsReview
+        exp_alerts:
+          - exp_labels: {job: capacity, severity: warning}
+            exp_annotations:
+              summary: 'Capacity outcome or cleanup requires operator reconciliation; quota stays charged'

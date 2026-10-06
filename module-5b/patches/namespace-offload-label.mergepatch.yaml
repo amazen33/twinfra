@@ -1,0 +1,5 @@
+# Merge this label into the existing namespace owner's desired state after review.
+# This is a patch payload, not another Namespace owner.
+metadata:
+  labels:
+    vcloud.io/offload-target: spinifex-hpc

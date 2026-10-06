@@ -1,0 +1,55 @@
+{
+  "versions": {
+    "keycloak": "26.8.0",
+    "apisix": "3.19.0",
+    "apisixIngressController": "2.2.0",
+    "kubernetes": "1.36.5"
+  },
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/apache/apisix-ingress-controller/2.2.0/config/crd/bases/apisix.apache.org_apisixpluginconfigs.yaml",
+      "sourceSHA256": "b37210fd73c15ea2148969d0a9f31879e2c5184d8a01db3c34eb4438127ac5e7",
+      "file": "module-4b/vendor/apisixpluginconfig-crd.yaml.gz"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/apache/apisix/3.19.0/apisix/plugins/openid-connect.lua",
+      "sourceSHA256": "b6308d1ae915f6a6f9454e538720c15c944e04750ce214fc4ab661ebcb36e055",
+      "file": "module-4b/vendor/openid-connect.lua.gz"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/keycloak/keycloak/26.8.0/core/src/main/java/org/keycloak/representations/idm/RealmRepresentation.java",
+      "sourceSHA256": "11782008ce3cb077085e7b8a71bb820a50abe2ed9061e58f808228d90eb124fc",
+      "file": "module-4b/vendor/RealmRepresentation.java.gz"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/keycloak/keycloak/26.8.0/core/src/main/java/org/keycloak/representations/idm/ClientRepresentation.java",
+      "sourceSHA256": "de515be95fc1929fad2628a3522d7af65007d6e87d8f2bea092f0adb2b85ed76",
+      "file": "module-4b/vendor/ClientRepresentation.java.gz"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/keycloak/keycloak/26.8.0/core/src/main/java/org/keycloak/representations/idm/ScopeMappingRepresentation.java",
+      "sourceSHA256": "7a24b114fd2fa3e7f37a0df242be0ca844d305327fd058355165741f20051c31",
+      "file": "module-4b/vendor/ScopeMappingRepresentation.java.gz"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/keycloak/keycloak/26.8.0/services/src/main/java/org/keycloak/protocol/oidc/mappers/GroupMembershipMapper.java",
+      "sourceSHA256": "768710bac33d8100001cbaeff0a2715a9b5eb644d93b8a961f44ca22514a5488",
+      "file": "module-4b/vendor/GroupMembershipMapper.java.gz"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/keycloak/keycloak/26.8.0/services/src/main/java/org/keycloak/protocol/oidc/mappers/AudienceProtocolMapper.java",
+      "sourceSHA256": "706653e426b063601795c1047e6b0f61cf04f378da24569fbb6ab6ff2c25341a",
+      "file": "module-4b/vendor/AudienceProtocolMapper.java.gz"
+    }
+  ],
+  "filesSHA256": {
+    "module-4b/vendor/apisixpluginconfig-crd.yaml.gz": "55e1c1fa8a09354158d890f4ab12be5dfc45049d847a0138009fb062c595a2ce",
+    "module-4b/vendor/openid-connect.lua.gz": "b713aa3e372638e7bb1763684c86d565a5d25660db275920a38512d00ef568e1",
+    "module-4b/vendor/RealmRepresentation.java.gz": "41bc307d33b4fa25477d3a107703f2d247e7c4d80f60f0cc3f0182f4a8d94a03",
+    "module-4b/vendor/ClientRepresentation.java.gz": "8151f8b8ee3b94ccf3aa8eaba9caea7cb93c22a5acf96e1f59412081639e1945",
+    "module-4b/vendor/ScopeMappingRepresentation.java.gz": "357dccae496491d8c67f14c53dceabc6e4a75efe4d52457064eecaa87aea61af",
+    "module-4b/vendor/GroupMembershipMapper.java.gz": "cb1690763e2f1dbac7a1b8f0ce997e6d49218e69ea74a619183e029abce6614f",
+    "module-4b/vendor/AudienceProtocolMapper.java.gz": "8917f2282df0d0a014e091aeda51200b36b9a01329a7047537e4d7b930cf023e",
+    "module-4b/schemas/apisix.apache.org/apisixpluginconfig_v2.json": "bf0dec285222e90b79dd34fcf1e431d52db1c148468948b4970bb02b2faec0ae"
+  }
+}

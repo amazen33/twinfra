@@ -1,0 +1,8 @@
+**
+!module-4a/
+!module-4a/scripts/
+!module-4a/scripts/**
+!module-4a/runtime/
+!module-4a/runtime/check-csi.py
+!module-4a/openbao/
+!module-4a/openbao/**

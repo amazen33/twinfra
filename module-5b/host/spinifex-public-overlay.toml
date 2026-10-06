@@ -1,0 +1,34 @@
+# PUBLIC PARTIAL OVERLAY ONLY. Never replace a native generated cluster config.
+# Test-net address and unaccepted GPU passthrough deliberately prevent deployment.
+# Source: Spinifex v1.21.0 cmd/spinifex/cmd/templates/spinifex.toml.
+version = "4"
+epoch = 1
+node = "spinifex-node-01"
+
+[aws]
+region = "vcloud-hpc-1"
+services_domain = "services.internal"
+
+[network]
+ipsec_enabled = true
+
+[nodes.spinifex-node-01]
+node = "spinifex-node-01"
+host = "192.0.2.40"
+region = "vcloud-hpc-1"
+az = "vcloud-hpc-1a"
+data_dir = "/var/lib/spinifex"
+
+[nodes.spinifex-node-01.daemon]
+host = "192.0.2.40:8000"
+gpu_passthrough = false
+dev_networking = false
+tlskey = "/run/spinifex/credentials/server.key"
+tlscert = "/run/spinifex/credentials/server.pem"
+
+[nodes.spinifex-node-01.awsgw]
+host = "192.0.2.40:9999"
+tlskey = "/run/spinifex/credentials/server.key"
+tlscert = "/run/spinifex/credentials/server.pem"
+debug = false
+config = "awsgw/awsgw.toml"

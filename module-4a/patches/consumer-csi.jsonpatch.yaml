@@ -1,0 +1,18 @@
+- op: test
+  path: /spec/template/spec/serviceAccountName
+  value: vcloud-secrets-client
+- op: add
+  path: /spec/template/spec/volumes/-
+  value:
+    name: secrets
+    csi:
+      driver: secrets-store.csi.k8s.io
+      readOnly: true
+      volumeAttributes:
+        secretProviderClass: vcloud-openbao
+- op: add
+  path: /spec/template/spec/containers/0/volumeMounts/-
+  value:
+    name: secrets
+    mountPath: /run/vcloud-secrets
+    readOnly: true

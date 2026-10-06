@@ -1,0 +1,151 @@
+{
+  "status": "passed",
+  "module": "4a",
+  "scope": "Strict offline schemas and semantic contracts; live OpenBao/PostgreSQL/CSI not executed",
+  "versions": {
+    "openbao": "2.7.1",
+    "openbaoHelm": "0.30.2",
+    "openbaoCSIProvider": "2.0.3",
+    "secretsStoreCSIDriver": "1.6.1",
+    "kubernetes": "1.36.5",
+    "cnpg": "1.30.1"
+  },
+  "primaryResources": 11,
+  "schemaValidation": "Summary: 17 resources found in 8 files - Valid: 17, Invalid: 0, Errors: 0, Skipped: 0",
+  "schemaReproducibility": 1,
+  "composedPatches": [
+    "consumer CSI mount",
+    "CNPG HBA",
+    "CSIDriver fsGroup/token audience",
+    "optional static Secret sync"
+  ],
+  "nodeExceptionExpansion": false,
+  "liveAcceptance": {
+    "SQLInstallationAndPrivilegeIsolation": "not executed",
+    "OpenBaoConfigurationAndKubernetesAuthentication": "not executed",
+    "LeaseIssuanceTLSLoginAndSynchronousRevocation": "not executed",
+    "ExistingSessionTerminationAndRenewal": "not executed",
+    "CSINonRootMountAndRotationPermissions": "not executed",
+    "StaticKeyReloadAndExternalIssuerRevocation": "not executed",
+    "ServerSideAdmission": "not executed",
+    "OCIImageBuildAndPublication": "not executed"
+  },
+  "date": "2026-10-06",
+  "executionEnvironment": "Windows; Python 3.14.5, Git for Windows Bash 5.3.15, real jq 1.8.2, kubeconform 0.8.0",
+  "branch": "codex/module-3-gitops",
+  "baseCommit": "49848feb7fd58870650c919928297509af3f243a",
+  "publication": "Snapshot of local validation before publication; GitHub commit/check records establish delivery status. No live deployment.",
+  "tests": {
+    "module4a": {
+      "passed": 48,
+      "failed": 0,
+      "skipped": 0,
+      "command": "make module4a-validate module4a-test",
+      "realExecution": "Bash and jq process execution; protected descriptors, response handling and cleanup paths",
+      "mockedExecution": "curl, psql and findmnt responses; no real lease or PostgreSQL session. Unix mode bits simulated on Windows"
+    },
+    "earlierModulesRegression": {
+      "host": 42,
+      "module2": 54,
+      "module3": 37,
+      "applicationHTTP": 4,
+      "passed": 137,
+      "failed": 0,
+      "skipped": 0
+    },
+    "total": {
+      "passed": 185,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "schemaSummary": {
+    "resources": 17,
+    "files": 8,
+    "valid": 17,
+    "invalid": 0,
+    "errors": 0,
+    "skipped": 0,
+    "schemaLocations": "Local locked Module 4a and Module 2 schemas only"
+  },
+  "additionalChecks": {
+    "shellcheck": "0.11.0; style severity passed for all four Bash files",
+    "bashSyntax": "Four scripts passed",
+    "pythonCompilation": "Passed",
+    "documentation": {
+      "localLinksChecked": 35,
+      "codeFences": "balanced"
+    },
+    "credentials": "No high-confidence credential patterns in final source tree; mock fixture values only",
+    "inheritedExports": "Two real Bash regressions verify new tokens/passwords cannot inherit ambient export flags",
+    "SQLAndACL": "Source/structural boundary checks only; no PostgreSQL parser/server or OpenBao policy evaluator executed",
+    "jqWindowsBinarySHA256": "a6fc67fedaf9128a3309a1e2ebb8b986aeccf70122ee46d2cb4849e423f0c627",
+    "prometheusRegression": "Four rules and five scenarios passed"
+  },
+  "approvedNodeArtifactsSHA256": {
+    "security/node-exceptions.json": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+    "docs/node-agent-inventory.json": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81"
+  },
+  "requiredBeforeEnablement": [
+    "Accepted vCloud cluster/CNPG and initialized/unsealed verified-TLS OpenBao",
+    "Separately reviewed and approved CSI driver/provider node inventory; frozen existing exception is not expanded",
+    "Provider Agent memory cache, public CA trust, rotation and File fsGroup/token-request owner integration",
+    "Constrained lifecycle SQL installation and initial manager password through hidden psql prompt",
+    "Reconcile public configuration with protected descriptors and accept real three-step test",
+    "Accept non-root files after rotation, pool reconnect, live renewal and open-session termination",
+    "Build/publish immutable verifier image and run server-side admission"
+  ],
+  "deliveredFilesSHA256": {
+    ".gitattributes": "bc0935ae048667c57e104a90094087d7bddc0f642a385eae46ace87c6aa6cb86",
+    "Makefile": "384bf7200eb07172bfa6ae627eaa60e4a2c3751150d2da39c657d18303810828",
+    "README.md": "d78624c0a276836a2fc2347ef01f5f300b114d1650d6ace8b4d7d92234278d8f",
+    "docs/adr-0021-openbao-dynamic-secrets.md": "54961bdb9a936eab01dc29bdced771b0cb3381f041845c0dcb91478287e6a228",
+    "docs/node-agent-inventory.json": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81",
+    "module-3/README.md": "0220065e796ee9a94063743f4e6b991501b0f206f9a626babd64ed74941f6c7b",
+    "module-3/images/ci-tooling.Dockerfile": "49ce80ad0456a4ea003146c3fb499f47429b85dd6c00d9fd19e1b4d4cdc4c3e0",
+    "module-3/runtime/runner.py": "87992b5d0815fd5d619427c71db9955e22d0fb0f4db237cf26a93029bbd6590f",
+    "module-4a/README.md": "7b10a54244c0d4e825211eb5242364bf15f0a145cdf13c9313ed61196d7d5fb4",
+    "module-4a/artifacts.lock.json": "9c82f88760c9e57bf26932ee8d6945a177430e7d827969d2061d08ae70a1d091",
+    "module-4a/examples/consumer-base.yaml": "0d78bfe6ec30deb980eabcd4524124a2f9cdf5b6757b83e84667efe31bf0e11d",
+    "module-4a/examples/validator-pod.yaml": "f595bb78c12533e016c2f29317b5fb15b46f2bc82d6dc2b93a556486b8305a45",
+    "module-4a/images/verifier.Dockerfile": "0c18fe2d4710f519cf290d78497037964b1b826520886e4b5296ea1133c6a223",
+    "module-4a/images/verifier.Dockerfile.dockerignore": "3015cec509ed97e509e4230f9235182a9882de03e0d6343a87190dda7273fc1a",
+    "module-4a/manifests/consumer.yaml": "b2a26837ed6239bedc6b59356d0440ec58f8c617f258df7679f6f7bbd7915d55",
+    "module-4a/manifests/network.yaml": "cefc4308c74e0f8476fde16be25855d5b51373811c8ed1fe36823fd8981c9675",
+    "module-4a/manifests/reviewer-rbac.yaml": "12e0cd9dc065b88283858eb0699040fb446d7b982f01d5f500c43ae2a4146983",
+    "module-4a/manifests/secretproviderclass.yaml": "f8581e697c7bb134109792a9ed3b8eb4db8776c3a51252f2cfb1281b7727c051",
+    "module-4a/manifests/serviceaccounts.yaml": "72b3fa8cc9eebdc6203c65d64d6cf04f4b134172d1b7e10c468709e533b4f55d",
+    "module-4a/openbao/database-connection.json": "13d5f2c6721b0549573ef843e0091344907d2699d96df2d582cddb63af2399f0",
+    "module-4a/openbao/database-mount.json": "89eed240a0db20af3df919e3d604058cfa30f6bcad41e6decc830a8911ae2879",
+    "module-4a/openbao/database-role-vcloud-app-readonly.json": "026ea305b83e51f4becfc63ea497ef4f02e75a9f8f73d7c25f16ca3842df1d39",
+    "module-4a/openbao/database-role-vcloud-validation.json": "25eb161553708bd181f6932cde72a50746185e56d33be37d4703fd48f3979191",
+    "module-4a/openbao/kubernetes-config.json": "1c9f9aada011f4b92616862e09a8fc1344ca997544a146f6b9a13cbd5b09dee9",
+    "module-4a/openbao/kubernetes-mount.json": "0bbf2d45016786e18b4b78b4378a96a141420398f46b8b2916432ef3a6f5f818",
+    "module-4a/openbao/kubernetes-role-vcloud-csi-client.json": "791ac457fa163a4f1cfdda57c7489762486227cce49afe465168b6005c74d0fb",
+    "module-4a/openbao/kubernetes-role-vcloud-validation.json": "568083c6d18d3bd3da554fdd9397ab95533a90ce0f33d1515222d0aedbcb398b",
+    "module-4a/openbao/kv-config.json": "24d0ed9e331bba39f3a3251aa3204d972f33e5cdee7ba3f6e85377f6ea6e2027",
+    "module-4a/openbao/kv-mount.json": "c7863a590cf3165522d384431217793345de914ab27aefa443afc7e0e69dccfe",
+    "module-4a/openbao/policies/validation.hcl": "4d1847b2b542de450883239048bd0a042639f3d1ea0aa80c361705113e05ba12",
+    "module-4a/openbao/policies/workload.hcl": "e627ad727a58d0d7817c2beefb28e46919e61b58d3b711065af09a7578b63e2c",
+    "module-4a/patches/cnpg-hba.mergepatch.yaml": "25b9d507237bd319987eb33bfe867276e8b218a81ef3ed56dbe70eef9b171ea2",
+    "module-4a/patches/consumer-csi.jsonpatch.yaml": "b3809ff60f29ace07e5ac2f4b50f1e0415f5f7bbc6f86d75e217819907550fda",
+    "module-4a/patches/csi-fsgroup.mergepatch.yaml": "222b16b1442a0668f25e7cd1a46084f7ad09c7b533f72e396a7db50a2c9c9860",
+    "module-4a/patches/static-secret-sync.jsonpatch.yaml": "faf6e728e277cc4ee6627e5a036c07306be1af6328dd0f992971492464d89f20",
+    "module-4a/runtime/check-csi.py": "26da811ccdba8be8c463a4a43442f9c0b8693825166ec96d6e4d9cd3422f212a",
+    "module-4a/schemas/pod_v1.json": "b4298c92d1e6ea40f2355cb629bc57779773014eefb6942b64c3e206ac1b4e13",
+    "module-4a/schemas/secrets-store.csi.x-k8s.io/secretproviderclass_v1.json": "cc8afb02855f35986adfbfa518c171d0afa82f222556a0381e86d6e3f7b5f39a",
+    "module-4a/schemas/storage.k8s.io/csidriver_v1.json": "2128eda05966a4b5021ce7ac7824787162ac15e8078518eae190a2e45d9d6610",
+    "module-4a/scripts/configure-openbao.sh": "565fc14c059d092dc108f61e8044d7c589e3a7a0808fef02b8e9da00af55df28",
+    "module-4a/scripts/lib.sh": "9d1e69e2c4d03cc7e37a82d779845e77dc252dd2339b9daa5b9b96f939bb03b7",
+    "module-4a/scripts/login-and-verify.sh": "965100cfbb934f72e4910fbec37d6bc11e702c6224b5834fd7ad3e4c4b26f16d",
+    "module-4a/scripts/verify-rotation.sh": "380afbf44c395e2512a94c8f2ac1fc9f218fb7dd3cb2add4648d35cfa60f05bb",
+    "module-4a/sql/bootstrap-lifecycle.sql": "2bf36fa605288027a4c2e591cbfb09e771be484496b2ea8c55bbc23c3e24c5a0",
+    "module-4a/vendor/LICENSE-Apache-2.0.txt": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+    "module-4a/vendor/csidriver.yaml.gz": "0407ff84609e092b08fe267d687a62909910e22351e2f6807e11b7cce9da62b3",
+    "module-4a/vendor/secretproviderclass-crd.yaml.gz": "4796b9af8c21560270b56aeed4b31b1af08c3a82b265fa94ff3bc6ca15675b20",
+    "security/node-exceptions.json": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+    "tests/test_module4a.py": "fc15bc68ec1f94042b296d41430ed11d8a6764afe231db6f6a2eebc1b47a1a5a",
+    "tools/module4a.py": "70955b076064955c7642c37c30dbff0b13b62f6d0ce59b0e031329a9206e238e",
+    "tools/render_module4a.py": "da00651bd1db5ffa74df0413c903073dd8eec3d41245e0f3a013fa8a6ad23267"
+  }
+}

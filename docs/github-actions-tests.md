@@ -5,9 +5,11 @@ requests targeting `main`, pushes to `main`, and manual dispatch. Its stable
 aggregate check is **vCloud PR gate**. Require that check in a GitHub branch
 ruleset after the workflow has run; this change does not modify repository rules.
 
-Every normal run tests the candidate revision and the immutable merged revision
-of [PR #1](https://github.com/amazen33/vCloud/pull/1),
-`1bc96d335bcb82482e33d4656102123e714c8fe9`, covering Modules -1, 1 and 2.
+Every normal run tests the candidate revision and both immutable merged revisions:
+[PR #1](https://github.com/amazen33/vCloud/pull/1),
+`1bc96d335bcb82482e33d4656102123e714c8fe9`, covering Modules -1, 1 and 2, and
+[PR #2](https://github.com/amazen33/vCloud/pull/2),
+`49848feb7fd58870650c919928297509af3f243a`, adding the GitHub workflow.
 The reviewed [baseline inventory](../tools/ci/pr-baselines.json) controls those
 historical commits. Add future baseline PRs to that inventory through review.
 
@@ -34,6 +36,7 @@ Manual dispatch is available after the workflow exists on the default branch.
 | Module 3, when present | CI/GitOps manifest validation, pipeline and application tests, Prometheus rule validation and alert scenarios |
 | Module 4a, when present | OpenBao/CSI configuration validation, Bash/jq integration contract tests with mock transports |
 | Module 4b, when present | Keycloak/APISIX/RBAC validation and security regression tests |
+| Module 5b, when present | Disabled Spinifex profile, Kueue Helm/CRD validation, durable capacity limits, SDK signing/stubs, local mTLS and HPC alert scenarios |
 | CI controls | Historical revision selection, invalid input/commit rejection, checksum and archive safety, partial module rejection, no skipped or empty suites, immutable action/tool pins |
 
 The [runner](../tools/ci/run_checks.py) always requires the original modules.
@@ -51,6 +54,12 @@ Mermaid dependencies use a checked-in integrity lock. Downloaded executables,
 the NVIDIA chart and extra host schemas are SHA256 verified against the
 [CI tool lock](../tools/ci/toolchain.lock.json); Kubernetes and operator schemas
 already vendored in the selected revision remain subject to its integrity checks.
+When Module 5b is present, the workflow installs its seven SDK test dependencies
+from the CI control checkout's hash-locked `hpc-requirements.txt`. Historical
+revisions without the module do not install or run that optional dependency set.
+The earlier workflow-only PR's results do not validate Module 5b. Each later
+hosted run validates its exact selected candidate and reports optional modules
+present in that revision.
 
 GitHub-hosted CI needs network access to fetch those pinned dependencies. The
 module gates run with local schemas and chart archives; this is not an air-gapped

@@ -7,3 +7,5 @@
 # Preserve Helm output and the upstream license exactly for reproducibility.
 module-2/manifests/*.yaml whitespace=-blank-at-eol
 module-2/vendor/LICENSE-Apache-2.0.txt whitespace=-blank-at-eof
+module-3/vendor/LICENSE-Apache-2.0.txt whitespace=-blank-at-eof
+module-4a/vendor/LICENSE-Apache-2.0.txt whitespace=-blank-at-eof

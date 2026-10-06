@@ -1,0 +1,44 @@
+# Generated public reference by tools/render_module4b.py.
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: secure-function
+  namespace: platform-services
+spec:
+  ingressClassName: apisix
+  http:
+  - name: function
+    match:
+      hosts:
+      - api.vcloud.example.com
+      paths:
+      - /function
+      methods:
+      - GET
+      exprs:
+      - subject:
+          scope: Variable
+          name: scheme
+        op: Equal
+        value: https
+    backends:
+    - serviceName: kourier-internal
+      servicePort: 443
+      resolveGranularity: service
+    plugins:
+    - name: proxy-rewrite
+      enable: true
+      config:
+        uri: /
+        host: secure-function.workload-apps.svc.cluster.local
+        headers:
+          remove:
+          - X-ID-Token
+          - X-Userinfo
+          - X-Access-Token
+          - X-Raw-ID-Token
+          - X-Refresh-Token
+          - X-User
+          - X-Groups
+    plugin_config_name: vcloud-oidc
+    plugin_config_namespace: platform-services

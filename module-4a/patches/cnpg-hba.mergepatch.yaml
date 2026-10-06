@@ -1,0 +1,9 @@
+spec:
+  postgresql:
+    pg_hba:
+    - hostnossl all all all reject
+    - hostssl vcloud +vcloud_db_readonly all scram-sha-256
+    - hostssl all +vcloud_db_readonly all reject
+    - hostssl vcloud openbao_manager all scram-sha-256
+    - hostssl all openbao_manager all reject
+    - hostssl all all all scram-sha-256

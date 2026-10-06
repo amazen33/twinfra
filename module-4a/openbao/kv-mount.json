@@ -1,0 +1,7 @@
+{
+  "type": "kv",
+  "description": "vCloud static API keys",
+  "options": {
+    "version": "2"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "versions": {
+    "openbao": "2.7.1",
+    "openbaoHelm": "0.30.2",
+    "openbaoCSIProvider": "2.0.3",
+    "secretsStoreCSIDriver": "1.6.1",
+    "kubernetes": "1.36.5",
+    "cnpg": "1.30.1"
+  },
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/kubernetes-sigs/secrets-store-csi-driver/v1.6.1/deploy/secrets-store.csi.x-k8s.io_secretproviderclasses.yaml",
+      "sha256": "5b25cc3fbd8dce30ac8d20adb0789ef9d51207b63ba6a2b68ad5f624fc8b7669",
+      "file": "module-4a/vendor/secretproviderclass-crd.yaml.gz"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/pod.json",
+      "sha256": "2463f2a5c7d16fa0a59f0fdfeb7f2a0c983219617b09c8598894e4ef429c8183",
+      "file": "module-4a/schemas/pod_v1.json"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/csidriver.json",
+      "sha256": "29ec037f5a5950b2233bf11504a6c497306b8ee6d8d125923e5ac2c81ceedeb5",
+      "file": "module-4a/schemas/storage.k8s.io/csidriver_v1.json"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/kubernetes-sigs/secrets-store-csi-driver/v1.6.1/deploy/csidriver.yaml",
+      "sha256": "a3232c8da1d5639212b8f534120bd0cb0459468066edb0b3b097d052d5251fb1",
+      "file": "module-4a/vendor/csidriver.yaml.gz"
+    }
+  ],
+  "filesSHA256": {
+    "module-4a/vendor/csidriver.yaml.gz": "0407ff84609e092b08fe267d687a62909910e22351e2f6807e11b7cce9da62b3",
+    "module-4a/vendor/LICENSE-Apache-2.0.txt": "43070e2d4e532684de521b885f385d0841030efa2b1a20bafb76133a5e1379c1",
+    "module-4a/vendor/secretproviderclass-crd.yaml.gz": "4796b9af8c21560270b56aeed4b31b1af08c3a82b265fa94ff3bc6ca15675b20",
+    "module-4a/schemas/pod_v1.json": "b4298c92d1e6ea40f2355cb629bc57779773014eefb6942b64c3e206ac1b4e13",
+    "module-4a/schemas/secrets-store.csi.x-k8s.io/secretproviderclass_v1.json": "cc8afb02855f35986adfbfa518c171d0afa82f222556a0381e86d6e3f7b5f39a",
+    "module-4a/schemas/storage.k8s.io/csidriver_v1.json": "2128eda05966a4b5021ce7ac7824787162ac15e8078518eae190a2e45d9d6610"
+  }
+}

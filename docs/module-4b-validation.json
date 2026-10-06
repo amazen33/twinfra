@@ -1,0 +1,114 @@
+{
+  "status": "passed",
+  "module": "4b",
+  "versions": {
+    "keycloak": "26.8.0",
+    "apisix": "3.19.0",
+    "apisixIngressController": "2.2.0",
+    "kubernetes": "1.36.5"
+  },
+  "scope": "Offline IAM reference/schema validation; live Keycloak/APISIX/API-server not executed",
+  "schemaValidation": "Summary: 10 resources found in 4 files - Valid: 10, Invalid: 0, Errors: 0, Skipped: 0",
+  "schemaReproducibility": 1,
+  "gatewayPatchComposition": "passed",
+  "liveAcceptance": {
+    "KeycloakDeploymentAndRealmImport": "not executed",
+    "BrowserPKCEAndMFA": "not executed",
+    "JWTAndAPISIXRouting": "not executed",
+    "APIserverOIDCAndRBAC": "not executed",
+    "ManagedProviderFederation": "not executed",
+    "ServerSideAdmission": "not executed"
+  },
+  "date": "2026-10-06",
+  "executionEnvironment": "Windows, Python 3.14.5, local kubeconform 0.8.0",
+  "branch": "codex/module-3-gitops",
+  "baseCommit": "49848feb7fd58870650c919928297509af3f243a",
+  "publication": "Snapshot of local validation before publication; GitHub commit/check records establish delivery status. No live deployment.",
+  "tests": {
+    "module4b": {
+      "passed": 32,
+      "failed": 0,
+      "skipped": 0,
+      "command": "make module4b-validate module4b-test"
+    },
+    "earlierRegression": {
+      "host": 42,
+      "module2": 54,
+      "module3": 37,
+      "applicationHTTP": 4,
+      "module4a": 48,
+      "passed": 185,
+      "failed": 0,
+      "skipped": 0
+    },
+    "total": {
+      "passed": 217,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "schemaSummary": {
+    "resources": 10,
+    "files": 4,
+    "valid": 10,
+    "invalid": 0,
+    "errors": 0,
+    "skipped": 0,
+    "schemaLocations": "Local Module 4b and Module 2 schemas; no missing-schema skips"
+  },
+  "additionalChecks": {
+    "publicRealm": "Root/client property names checked against checksum-locked Keycloak 26.8.0 representations; configuration/security graph checks, not real import",
+    "OIDCPlugin": "Compared secret-free JWKS flow support with checksum-locked APISIX 3.19.0 source; no Lua evaluator or real JWT verification executed",
+    "RBAC": "Custom read-only ClusterRole and namespace binding contracts; no live API-server authorization test",
+    "KubeadmArguments": "Reference fragment checked for exact issuer, dedicated audience, subject and group prefix; not a kubectl resource",
+    "pythonCompilation": "Passed",
+    "documentation": {
+      "localLinksChecked": 14,
+      "codeFences": "balanced"
+    },
+    "prometheusRegression": "Four rules and five alert scenarios passed",
+    "credentials": "No high-confidence credential patterns in final source tree"
+  },
+  "requiredBeforeEnablement": [
+    "Reviewed non-root Keycloak installation, dedicated database role, TLS/CA, private admin and narrow network profile",
+    "Safe new-realm import or reviewed existing-realm reconciliation; actual users/MFA/group membership",
+    "One-writer Module 2 route/profile integration; remove unused OIDC environment reference only with updated owner checks",
+    "Real signed-token negative tests for issuer, audience, expiry, algorithm, scope and spoofed proxy headers",
+    "Controlled API-server OIDC merge/CA rollout under original node contract with independent recovery identity",
+    "Real OIDC contexts with whoami and positive/negative RBAC tests; inspect existing bindings",
+    "Accept group-removal token/cache delay and incident revocation procedure"
+  ],
+  "approvedNodeArtifactsSHA256": {
+    "security/node-exceptions.json": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+    "docs/node-agent-inventory.json": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81"
+  },
+  "deliveredFilesSHA256": {
+    "Makefile": "384bf7200eb07172bfa6ae627eaa60e4a2c3751150d2da39c657d18303810828",
+    "README.md": "d78624c0a276836a2fc2347ef01f5f300b114d1650d6ace8b4d7d92234278d8f",
+    "docs/adr-0022-keycloak-gateway-rbac.md": "4050cbcaa5a1bf0352fdce015fd432867232636f8d59b404353b7258f8515ff1",
+    "docs/node-agent-inventory.json": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81",
+    "module-3/README.md": "0220065e796ee9a94063743f4e6b991501b0f206f9a626babd64ed74941f6c7b",
+    "module-3/runtime/runner.py": "87992b5d0815fd5d619427c71db9955e22d0fb0f4db237cf26a93029bbd6590f",
+    "module-4b/README.md": "d8d29eb270fcac9eaebe41e5620573a9620493c826488fc1c95666e85ceb70af",
+    "module-4b/artifacts.lock.json": "25c01d908e992cbccf11f2c810b9e6727eaf77a4c21bf4d851428be84fc614f7",
+    "module-4b/examples/secure-function.yaml": "551b468c7f22862c9f0e9883cf11dc1f9f32f03be0dc2a86650fafcd6267a346",
+    "module-4b/keycloak/vcloud-realm.json": "badab94bc3cd122fcf3a71704a9e62e75a5ad5311efca155d0a1c1066e2305f3",
+    "module-4b/kubernetes/kubeadm-oidc-args.yaml": "f66fe14f8789f036642d242699c6d7d6b78cf80c23e26304af94761984f4b5f6",
+    "module-4b/manifests/identity-gateway.yaml": "5f37034a6cabd4421a4e9b85d472332a8bd17b6230a7bbdafeeea7ad1454a656",
+    "module-4b/manifests/oidc-plugin.yaml": "70727d876a71a5515634b52f6bd76ba3ed321b88126ab3b5381dfcbe77bbb2fe",
+    "module-4b/manifests/rbac.yaml": "071cbb919df8bc3e427e1fab62e55f12554a3265bf88af94b50a4b6c27553fed",
+    "module-4b/patches/gateway-route.jsonpatch.yaml": "0b0d76b2ee235279ec61965711201aac7cffa6c5ae7a94412271e9b7909f5e54",
+    "module-4b/schemas/apisix.apache.org/apisixpluginconfig_v2.json": "bf0dec285222e90b79dd34fcf1e431d52db1c148468948b4970bb02b2faec0ae",
+    "module-4b/vendor/AudienceProtocolMapper.java.gz": "8917f2282df0d0a014e091aeda51200b36b9a01329a7047537e4d7b930cf023e",
+    "module-4b/vendor/ClientRepresentation.java.gz": "8151f8b8ee3b94ccf3aa8eaba9caea7cb93c22a5acf96e1f59412081639e1945",
+    "module-4b/vendor/GroupMembershipMapper.java.gz": "cb1690763e2f1dbac7a1b8f0ce997e6d49218e69ea74a619183e029abce6614f",
+    "module-4b/vendor/RealmRepresentation.java.gz": "41bc307d33b4fa25477d3a107703f2d247e7c4d80f60f0cc3f0182f4a8d94a03",
+    "module-4b/vendor/ScopeMappingRepresentation.java.gz": "357dccae496491d8c67f14c53dceabc6e4a75efe4d52457064eecaa87aea61af",
+    "module-4b/vendor/apisixpluginconfig-crd.yaml.gz": "55e1c1fa8a09354158d890f4ab12be5dfc45049d847a0138009fb062c595a2ce",
+    "module-4b/vendor/openid-connect.lua.gz": "b713aa3e372638e7bb1763684c86d565a5d25660db275920a38512d00ef568e1",
+    "security/node-exceptions.json": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+    "tests/test_module4b.py": "cb0f78eb52e940271e0049460fd90dc2a32e19e0ce4e66187878646b73faf49a",
+    "tools/module4b.py": "cbccefa0f237383551efbbf836e2c571f8d36178802909de4b255f2306277a28",
+    "tools/render_module4b.py": "a480dab3150e8f827f2936da660538967bee7256320a571a6ae1a3b088756e25"
+  }
+}

@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vcloud-secret-validator
+  namespace: workload-apps
+  labels:
+    app.kubernetes.io/part-of: vcloud
+    vcloud.io/module: 4a
+    vcloud.io/secret-test: 'true'
+spec:
+  serviceAccountName: vcloud-secret-validator
+  automountServiceAccountToken: false
+  restartPolicy: Never
+  activeDeadlineSeconds: 1800
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+  - name: validator
+    image: registry.vcloud.example.com/vcloud/openbao-verifier:1.0.0
+    imagePullPolicy: IfNotPresent
+    command:
+    - sleep
+    - '1800'
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      runAsGroup: 65532
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+        - ALL
+      seccompProfile:
+        type: RuntimeDefault
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+    volumeMounts:
+    - name: identity
+      mountPath: /run/openbao-identity
+      readOnly: true
+    - name: trust
+      mountPath: /run/trust
+      readOnly: true
+    - name: scratch
+      mountPath: /tmp
+  volumes:
+  - name: identity
+    projected:
+      defaultMode: 288
+      sources:
+      - serviceAccountToken:
+          audience: openbao
+          expirationSeconds: 600
+          path: jwt
+  - name: trust
+    configMap:
+      name: vcloud-secrets-trust
+      defaultMode: 292
+  - name: scratch
+    emptyDir:
+      medium: Memory
+      sizeLimit: 16Mi

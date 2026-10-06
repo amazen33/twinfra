@@ -1,0 +1,18 @@
+{
+  "db_name": "vcloud-postgres",
+  "default_ttl": "2m",
+  "max_ttl": "5m",
+  "credential_type": "password",
+  "creation_statements": [
+    "SELECT vcloud_secret_lifecycle.create_login('{{name}}','{{password}}','{{expiration}}'::timestamptz);"
+  ],
+  "renew_statements": [
+    "SELECT vcloud_secret_lifecycle.renew_login('{{name}}','{{expiration}}'::timestamptz);"
+  ],
+  "revocation_statements": [
+    "SELECT vcloud_secret_lifecycle.revoke_login('{{name}}');"
+  ],
+  "rollback_statements": [
+    "SELECT vcloud_secret_lifecycle.revoke_login('{{name}}');"
+  ]
+}

@@ -1,0 +1,70 @@
+# Public realm/resources only; no admin or master-realm route.
+apiVersion: apisix.apache.org/v2
+kind: ApisixTls
+metadata:
+  name: vcloud-keycloak-public
+  namespace: platform-services
+spec:
+  ingressClassName: apisix
+  hosts:
+  - auth.vcloud.example.com
+  secret:
+    name: keycloak-gateway-tls
+    namespace: platform-services
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixUpstream
+metadata:
+  name: keycloak
+  namespace: platform-services
+spec:
+  ingressClassName: apisix
+  scheme: https
+  passHost: rewrite
+  upstreamHost: auth.vcloud.example.com
+  retries: 0
+  timeout:
+    connect: 5s
+    send: 60s
+    read: 60s
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: vcloud-keycloak-public
+  namespace: platform-services
+spec:
+  ingressClassName: apisix
+  http:
+  - name: vcloud-realm
+    match:
+      hosts:
+      - auth.vcloud.example.com
+      paths:
+      - /realms/vcloud/*
+      - /resources/*
+      methods:
+      - GET
+      - POST
+      exprs:
+      - subject:
+          scope: Variable
+          name: scheme
+        op: Equal
+        value: https
+    backends:
+    - serviceName: keycloak
+      servicePort: 443
+      resolveGranularity: service
+    plugins:
+    - name: proxy-rewrite
+      enable: true
+      config:
+        headers:
+          set:
+            X-Forwarded-Host: auth.vcloud.example.com
+            X-Forwarded-Proto: https
+            X-Forwarded-Port: '443'
+            X-Forwarded-For: $remote_addr
+          remove:
+          - Forwarded

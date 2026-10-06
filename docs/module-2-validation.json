@@ -10,7 +10,7 @@
   "physicalLocalPVVetting": "required before apply",
   "liveTests": "not run by static validation",
   "renderedSHA256": {
-    "cilium.yaml": "2b9182efba92b39d73a9a428a054c26d37b18952e8be8b1d2e408b951e1bdec4",
+    "cilium.yaml": "d9a9ff9b8d7aa15de7535e2182c507e15483f76cad272708c12090f253774d48",
     "foundation.yaml": "34c8ccc0ecbed77167eb3e8ca22aa80b66d6f1486e23ac2240f9fbbc48c6742d",
     "apisix-dependency.yaml": "f81aec6280e75ae9b9f368609a1d3b136088ca05d06ad86fea355a73fe7fce6d"
   },
@@ -96,7 +96,7 @@
   },
   "deliveredFilesSHA256": {
     "docs/adr-0019-module-2-bootstrap.md": "b368e60d268c7db5a494c86289cfc51ca0b2b7ce73b0fd98fc8208c260519dfa",
-    "Makefile": "5de3dbb06cf9566ac7a13f642668dbcce6e2d43b02cadc292e80b7f7546ac523",
+    "Makefile": "384bf7200eb07172bfa6ae627eaa60e4a2c3751150d2da39c657d18303810828",
     "module-2/artifacts.lock.json": "e45e3a755e2bc61a07d9689fc9571c464afa3a883f3ac3ffeac73789535d9317",
     "module-2/chart/Chart.yaml": "a33a9dbe72f904a1f51d51c002a52f6d0057182c8744058b94cce6bbfebd9963",
     "module-2/chart/files/function.py": "f5637ce7558cf4775c011f367d2b36251b7497bc38a4de39d6806d0504fdebc4",
@@ -165,10 +165,16 @@
     "module-2/vendor/knative-crds.yaml.gz": "9c2a0c5776af54666396a11ab1b03241a5e8455f7cdaec88bfdcf7532d76a9bd",
     "module-2/vendor/LICENSE-Apache-2.0.txt": "f096c31ac0fb2e66df5b7ec20049741ae15accd50c8cd4d100b4db6c9353f6aa",
     "module-2/vendor/vpa-crds.yaml.gz": "e5fd612e8c72847e42ff3dfd7c6e60514079e1a926d675a79b84e7f09a3851e8",
-    "tests/test_module2.py": "6ea5f45a13859154f53e6cf02f3d1405f5ba33d9ed6ec4b3862d1ef97cca6ab5",
+    "tests/test_module2.py": "b1916b7334d13277669aaa728649a24bd5aeb1784cd8a7bbdee787e5eb1f11c4",
     "tools/build_module2_schemas.py": "c2c33f319a644cf05634b5f11dfc9004411b76525bbdbd15fc6d6c108f04a731",
     "tools/helm_node_guard.py": "5ad150e58150cc830bfc617f43a3224a0ac9c2616e4ffe2bdccf56915bac7932",
     "tools/module2.py": "0291661b95081636127bb605d9caba696fae1413680c05188abe6cc16c881aeb",
     "module-2/chart/.helmignore": "0f2066992b625195aae55dc1037b9efc8c8df1cd313aba33d90752a8d822c86e"
+  },
+  "regressionRefresh": {
+    "date": "2026-10-06",
+    "reason": "Modules 4a and 4b integration",
+    "testsPassed": 54,
+    "strictResourcesValid": 80
   }
 }

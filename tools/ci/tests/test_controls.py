@@ -60,9 +60,16 @@ class Controls(unittest.TestCase):
     def test_baseline_is_included_and_deduplicated(self):
         lock = json.loads((ROOT / 'pr-baselines.json').read_text())
         current = revisions.resolve('', SHA, revisions.REPOSITORY, None)
-        self.assertEqual(len(revisions.matrix(current, lock)['include']), 2)
+        self.assertEqual(len(revisions.matrix(current, lock)['include']), len(lock['baselines']) + 1)
         selected = dict(label='requested-pr-1', commit=lock['baselines'][0]['commit'])
-        self.assertEqual(len(revisions.matrix(selected, lock)['include']), 1)
+        self.assertEqual(len(revisions.matrix(selected, lock)['include']), len(lock['baselines']))
+
+    def test_both_merged_pr_baselines_are_immutable(self):
+        lock = json.loads((ROOT / 'pr-baselines.json').read_text())
+        self.assertEqual([p['number'] for p in lock['baselines']], [1, 2])
+        for baseline in lock['baselines']:
+            self.assertRegex(baseline['commit'], r'^[a-f0-9]{40}$')
+            self.assertEqual(baseline['url'], f"https://github.com/amazen33/vCloud/pull/{baseline['number']}")
 
     def test_checksum_failure(self):
         self.assertEqual(staging.verified(b'good', hashlib.sha256(b'good').hexdigest()), b'good')
@@ -100,6 +107,21 @@ class Controls(unittest.TestCase):
         for output in ('', 'Ran 0 tests in 1s\nOK\n', 'Ran 1 test in 1s\nOK (skipped=1)\n', 'Ran 5 tests in 1s\nFAILED (failures=1)\n'):
             with self.subTest(output=output), self.assertRaises(ValueError):
                 checks.require_complete_tests(output)
+
+    def test_hpc_coverage_cannot_be_omitted(self):
+        self.assertIn('module-5b', checks.OPTIONAL)
+        self.assertIn('tests/test_module5b.py', checks.OPTIONAL['module-5b'])
+        self.assertIn('tests/module5b-alerts.test.yaml', checks.OPTIONAL['module-5b'])
+
+    def test_hpc_dependencies_are_hashed_and_installed_only_when_present(self):
+        lines = (ROOT / 'hpc-requirements.txt').read_text().splitlines()
+        self.assertEqual(len(lines), 7)
+        for line in lines:
+            self.assertRegex(line, r'^[a-z0-9-]+==[0-9]+\.[0-9]+\.[0-9]+(?:\.post[0-9]+)? --hash=sha256:[a-f0-9]{64}$')
+        workflow = yaml.safe_load((ROOT.parents[1] / '.github/workflows/pr-tests.yaml').read_text())
+        step = next(s for s in workflow['jobs']['test']['steps'] if s.get('name') == 'Install trusted pinned HPC test dependencies')
+        self.assertIn("hashFiles('source/module-5b/reference-profile.json')", step['if'])
+        self.assertIn('--require-hashes', step['run']); self.assertIn('.ci-control/tools/ci/hpc-requirements.txt', step['run'])
 
     def test_fresh_workspace_has_empty_schema_cache(self):
         with tempfile.TemporaryDirectory() as temp:
