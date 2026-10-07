@@ -32,7 +32,11 @@ class InitTests(unittest.TestCase):
                 self.assertTrue(base64.b64decode(binary));self.assertEqual(len(fingerprint),40)
                 cipher=subprocess.run(command+['--trust-model','always','--encrypt','--recipient',fingerprint],
                     input=b'synthetic CI fragment',capture_output=True,check=True).stdout
-                self.assertIn(18,init.packet_tags(base64.b64encode(cipher).decode()))
+                tags=init.packet_tags(base64.b64encode(cipher).decode())
+                self.assertEqual(tags[0],1)
+                # GnuPG selects integrity-protected (18) or AEAD (20) packets
+                # by version/preferences. Both must remain encrypted streams.
+                self.assertTrue(set(tags)&{18,20})
                 key.write_bytes(subprocess.check_output(command+['--armor','--export-secret-keys'],stderr=subprocess.DEVNULL))
                 with self.assertRaises(ValueError):init.public_key(key,home)
             finally:
