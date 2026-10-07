@@ -72,10 +72,30 @@
   "validation": {
     "offline": {
       "status": "passed",
-      "moduleTests": 414,
-      "ciControlTests": 22,
-      "checks": 39,
-      "scope": "Pre-roadmap-integration working tree; final immutable candidate requires fresh hosted CI"
+      "moduleTests": 418,
+      "ciControlTests": 24,
+      "checks": 40,
+      "skippedUnitTests": 0,
+      "scope": "Final integrated working tree; immutable published revision is verified by fresh hosted CI",
+      "argocdOverlay": {
+        "valid": 60,
+        "skipped": 0,
+        "resources": 60
+      },
+      "probePolicies": {
+        "valid": 2,
+        "skipped": 0,
+        "resources": 2
+      },
+      "regoUnitTests": 7,
+      "conftestPolicyCases": 60,
+      "shellcheck": "passed",
+      "workflowLint": "passed",
+      "reviewedDocumentation": {
+        "files": 15,
+        "localLinks": 90,
+        "status": "passed"
+      }
     },
     "hostedCI": {
       "policy": "Require fresh candidate and PR integration checks before merge",

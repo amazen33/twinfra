@@ -5,11 +5,16 @@ requests targeting `main`, pushes to `main`, and manual dispatch. Its stable
 aggregate check is **vCloud PR gate**. Require that check in a GitHub branch
 ruleset after the workflow has run; this change does not modify repository rules.
 
-Every normal run tests the candidate revision and both immutable merged revisions:
-[PR #1](https://github.com/amazen33/vCloud/pull/1),
-`1bc96d335bcb82482e33d4656102123e714c8fe9`, covering Modules -1, 1 and 2, and
-[PR #2](https://github.com/amazen33/vCloud/pull/2),
-`49848feb7fd58870650c919928297509af3f243a`, adding the GitHub workflow.
+Every normal run tests the candidate revision and five immutable merged revisions:
+
+| Prior PR | Verified merge commit | Scope |
+| --- | --- | --- |
+| [#1](https://github.com/amazen33/vCloud/pull/1) | `1bc96d335bcb82482e33d4656102123e714c8fe9` | Modules -1, 1 and 2 |
+| [#2](https://github.com/amazen33/vCloud/pull/2) | `49848feb7fd58870650c919928297509af3f243a` | Initial workflow |
+| [#3](https://github.com/amazen33/vCloud/pull/3) | `e13aa15f3fd4864bb8ee022bd561c29441be7b31` | Delivery, IAM, secrets and gated HPC |
+| [#5](https://github.com/amazen33/vCloud/pull/5) | `405ac74bedd9ed19f98de699932edf716949a510` | Roadmap document |
+| [#6](https://github.com/amazen33/vCloud/pull/6) | `87ed35e883e547311e70fda22161a829687c7f81` | Roadmap automation |
+
 The reviewed [baseline inventory](../tools/ci/pr-baselines.json) controls those
 historical commits. Add future baseline PRs to that inventory through review.
 
@@ -40,6 +45,9 @@ Manual dispatch is available after the workflow exists on the default branch.
 | Module 5b, when present | Disabled Spinifex profile, Kueue Helm/CRD validation, durable capacity limits, SDK signing/stubs, local mTLS and HPC alert scenarios |
 | WSL lab, when present | Local K3s configuration, strict manifests/frozen Cilium audit, resource/adoption/CIDR safeguards; no host execution on GitHub |
 | WSL GitOps/database, when present | Locked Argo/CNPG/metrics artifacts, strict rendered schemas, exact Local PV vetting, TLS/RBAC boundaries and bounded CPU/memory growth; SQL and reconciliation require live acceptance |
+| Registry overlay, when present | Strict kubeconform with no skipped resources; explicit `IfNotPresent`, immutable Argo images and pull-secret references; Rego rules and DNS/TLS/cache/private-path fixtures |
+| Platform probe correction, when present | Both policy schemas, workload/port scope, dependency prechecks, dynamic CIDR preservation, multi-pod health/stability and fail-closed restart recovery fixtures |
+| Roadmap automation, when present | Mocked pagination, exact-title reuse, milestone assignment, dry-run no-writes and closed-milestone rejection; no GitHub mutation |
 | CI controls | Historical revision selection, invalid input/commit rejection, checksum and archive safety, partial module rejection, no skipped or empty suites, immutable action/tool pins |
 
 The [runner](../tools/ci/run_checks.py) always requires the original modules.
@@ -47,6 +55,9 @@ Later modules absent from an older commit are recorded as
 `not_present_in_revision`; partial implementations fail. Unit-test failures,
 empty suites and skipped tests fail the gate. The runner produces fresh evidence
 instead of trusting previously committed validation reports.
+The document-only roadmap does not require a later automation implementation,
+and historical WSL profiles do not require the later proxy repair. Once either
+feature is present, incomplete bundles fail instead of disappearing from coverage.
 
 ## Dependency and execution boundaries
 

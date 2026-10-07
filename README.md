@@ -116,7 +116,7 @@ OIDC arguments and narrow group RBAC. Run `make module4b-validate module4b-test`
 
 ## GitHub Actions tests
 
-Pull requests and main-branch pushes run the [CI workflow](.github/workflows/pr-tests.yaml), including regressions of merged PRs #1 and #2. The [CI guide](docs/github-actions-tests.md) explains historical PR reruns, module coverage and evidence artifacts.
+Pull requests and main-branch pushes run the [CI workflow](.github/workflows/pr-tests.yaml), including regressions of immutable merged PRs #1–#3, #5 and #6. The [CI guide](docs/github-actions-tests.md) explains historical PR reruns, module coverage and evidence artifacts.
 
 ## Module 5a: vLLM and pgvector RAG
 

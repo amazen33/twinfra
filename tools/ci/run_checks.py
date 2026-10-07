@@ -18,6 +18,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'roadmap-automation': ['tools/create_roadmap_issues.py', 'tests/test_roadmap_issues.py'],
     'deploy/network/platform-probes': ['deploy/network/platform-probes/cilium-platform-probes.yaml',
                                       'deploy/network/platform-probes/k8s-platform-probes.yaml',
                                       'deploy/network/platform-probes/apply-and-verify.sh',
@@ -43,9 +44,10 @@ OPTIONAL = {
     'module-5b': ['tools/module5b.py', 'tools/render_module5b.py', 'tests/test_module5b.py',
                   'tests/module5b-alerts.test.yaml', 'module-5b/reference-profile.json'],
     'lab/wsl': ['lab/wsl/profile.json', 'lab/wsl/bootstrap.sh', 'lab/wsl/api-firewall.sh',
-                'tools/wsl_proxy_marks.py', 'lab/wsl/vcloud-wsl-proxy-marks.service', 'lab/wsl/vcloud-wsl-proxy-marks.timer',
                 'tools/wsl_lab.py', 'tools/wsl_lab_acceptance.py', 'tools/wsl_lab_dns_image.py', 'tools/stage_wsl_lab.py',
                 'tests/test_wsl_lab.py'],
+    'lab/wsl/proxy-marks': ['tools/wsl_proxy_marks.py', 'lab/wsl/vcloud-wsl-proxy-marks.service',
+                          'lab/wsl/vcloud-wsl-proxy-marks.timer'],
     'lab/wsl/gitops': ['tools/wsl_platform.py', 'tools/wsl_db_scaler.py', 'tools/wsl_db_test.py', 'tools/wsl_pg_image.py',
                        'tools/stage_wsl_platform.py', 'lab/wsl/platform.sh', 'lab/wsl/prepare-storage.sh',
                        'lab/wsl/prepare-tls.sh', 'lab/wsl/test-network.sh', 'lab/wsl/platform-artifacts.lock.json',
@@ -164,6 +166,9 @@ def main():
                            '--yq', binaries['yq'], '--kubeconform', binaries['kubeconform']], unit=True)
         run('topology-parser', [binaries['node'], ROOT / 'mermaid/check.mjs', source, report_dir / 'mermaid.json'])
         run('architecture-docs', [python, ROOT / 'check_docs.py', source, report_dir / 'architecture.json', report_dir / 'mermaid.json'])
+        if report['modules']['roadmap-automation'] == 'present':
+            run('roadmap-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests',
+                                 '-p', 'test_roadmap_issues.py', '-v'], unit=True)
         shell_files = [source / '00-setup-ubuntu-host.sh']
         if report['modules']['deploy/kustomize'] == 'present':
             shell_files.extend(sorted((source / 'scripts').rglob('*.sh')))
