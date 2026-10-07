@@ -77,6 +77,21 @@ routing and proxy replacement. The existing ConfigMap still has `bpf-lb-sock:
 "false"`, overridden by full kube-proxy replacement in the agent; the overlay
 makes this intent explicit on the next Helm reconciliation. No additional
 Cilium restart or socket configuration mutation was performed for that check.
+The later **15:04:33 UTC** receipt, after the owned Helm recovery described
+below, confirms both ConfigMap `bpf-lb-sock: "true"` and effective Socket LB
+enabled. The explicit desired configuration has now converged.
+
+During publication WSL restarted, moving the same Node address from `eth1`
+to `eth2`. Cilium retained `devices: eth1` and reported that the direct-routing
+device had no usable addresses; application Pods could not recreate their
+networks. The scoped recovery re-rendered the lab with the observed interface,
+passed strict schemas and the frozen node audit, upgraded the existing Cilium
+Helm release, then explicitly restarted its DaemonSet. Updating the ConfigMap
+alone did not reload the agent's device. The retained database volume was still
+mounted and was not reset. Both Argo applications subsequently reconciled
+`main`; the ten live acceptance gates and three node probes passed. See the
+[interface recovery procedure](../../WSL_SETUP_GUIDE.md#after-a-wsl-restart-verify-the-routing-interface).
+This establishes manual recovery, without unattended reboot acceptance.
 
 The live fetch and six policy-denied drops were rechecked at 14:11 UTC in the
 [dated acceptance record](../../acceptance/wsl-2026-10-07.md). SPIFFE/SPIRE
@@ -95,6 +110,6 @@ milestone. No production environment or GitHub ruleset is modified here.
 - [x] Document actual routing/fetch/policy evidence and its limits.
 - [x] Document the exact-head/integration GitHub publication gate; [PR #19](https://github.com/amazen33/vCloud/pull/19) carries its current results.
 - [x] Record live effective socket LB/native/BPF/proxy status and repeat GitHub/deny-all/endpoint checks.
-- [ ] Reconcile the new explicit socket LB ConfigMap value through the lab Helm owner.
-- [ ] Retest WSL reboot and revisit this workaround after kernel/Cilium upgrades.
+- [x] Reconcile the explicit socket LB ConfigMap value through the lab Helm owner and validate manual interface recovery after a WSL restart.
+- [ ] Validate unattended recovery across WSL interface changes and revisit this workaround after kernel/Cilium upgrades.
 - [ ] Separately deploy/validate SPIFFE if adopted; retain the existing default-deny policies.

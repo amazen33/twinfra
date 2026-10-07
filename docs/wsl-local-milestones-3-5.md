@@ -41,9 +41,13 @@ BPF masquerading and policies remain enabled. This matches Cilium's documented
 [host-stack compatibility workaround](https://docs.cilium.io/en/stable/operations/performance/tuning/#ebpf-host-routing);
 it is evidence of a successful local workaround, not a complete upstream RCA.
 See [ADR-0024](architecture/adr/ADR-0024-wsl-host-routing.md) for the decision.
-The 14:12 UTC refresh verified effective socket LB enabled/full coverage under
-proxy replacement; explicit ConfigMap convergence follows the next lab Helm
-reconciliation. SPIFFE/SPIRE is disabled and was not validated by this policy test.
+The 15:04 UTC refresh verified effective socket LB enabled/full coverage and
+explicit ConfigMap `bpf-lb-sock: "true"` after the owned Helm reconciliation.
+A WSL restart changed the active interface from `eth1` to `eth2`; manual
+[device recovery](WSL_SETUP_GUIDE.md#after-a-wsl-restart-verify-the-routing-interface)
+restored fresh reconciliation on `main`, all ten endpoint gates, retained
+database data and the three node probes. Unattended reboot recovery remains
+open. SPIFFE/SPIRE is disabled and was not validated by this policy test.
 
 ```bash
 sudo bash lab/wsl/reconcile-host-routing.sh --check
