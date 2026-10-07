@@ -223,17 +223,94 @@ CNI routing remains eBPF-based, while host packets traverse the Linux stack.
 The network test must prove the allowed control and unauthorized Service/direct
 Pod requests with matching Cilium drops. Do not accept merely Ready Pods.
 
-The 2026-10-07 live refresh establishes successful GitHub fetching, deny-all
+The 2026-10-07 15:04 UTC refresh establishes successful GitHub fetching, deny-all
 enforcement and effective Socket LB enabled/full coverage in agent status.
-Full kube-proxy replacement enables socket LB even though the existing
-ConfigMap still reads `bpf-lb-sock: "false"`; the new explicit `"true"` value
-converges at the next lab Helm reconciliation. The strict ConfigMap check above
-is a post-reconciliation gate, while current effective status is already
-verified. SPIFFE/SPIRE is not established by Cilium's label identities:
+The owned Helm reconciliation also converged ConfigMap `bpf-lb-sock: "true"`;
+the strict ConfigMap check above now passes. SPIFFE/SPIRE is not established by Cilium's label identities:
 `mesh-auth-enabled` is false and the auth certificate provider reports Disabled.
 See
 [ADR-0024](architecture/adr/ADR-0024-wsl-host-routing.md) and the
 [dated acceptance record](acceptance/wsl-2026-10-07.md) for evidence and limits.
+
+### After a WSL restart: verify the routing interface
+
+Mirrored WSL interface names can change across starts. On 2026-10-07 the Node
+address `192.168.1.9` moved from `eth1` to `eth2`, while Cilium still selected
+`eth1`. Cilium reported `direct routing device eth1 has no usable addresses`;
+Pods stayed Unknown/ContainerCreating and CNI endpoint creation returned 429.
+A Ready Node and old Argo Synced/Healthy status were insufficient evidence:
+require a fresh reconciliation at the intended commit and live endpoint tests.
+
+Inspect the actual route, Node address and configured device before recovery:
+
+```bash
+sudo -i
+cd /mnt/e/vCloud
+export KUBECONFIG=/etc/vcloud-wsl/kubeconfig.yaml
+k() { /usr/local/bin/k3s kubectl --context=vcloud-wsl-local --request-timeout=40s "$@"; }
+ip -4 route get 1.1.1.1
+ip -br -4 address
+k get nodes -o wide
+k -n kube-system get configmap cilium-config -o json | jq '.data.devices'
+k -n kube-system logs daemonset/cilium -c cilium-agent --tail=100
+```
+
+The following scoped recovery uses the checksum-verified Linux tools and offline
+schemas already staged for [CI validation](github-actions-tests.md), the locked
+chart and the existing Helm owner. It briefly interrupts this single lab's
+networking. Run only on the owned lab with the retained Local PV mounted; if the
+detected Node address differs from the Kubernetes InternalIP, stop and investigate
+the API/node configuration first. Do not hard-code `eth2` for future starts.
+
+```bash
+set -euo pipefail
+test -f /var/lib/vcloud-wsl/owner.json
+k get nodes -o json | jq -e '.items | length == 1 and .[0].metadata.name == "vcloud-wsl-local"'
+findmnt /var/lib/vcloud-wsl/storage/postgres-1
+NODE_IP=$(ip -4 route get 1.1.1.1 | awk '{for(i=1;i<=NF;i++) if($i=="src") {print $(i+1);exit}}')
+DEVICE=$(ip -4 route get 1.1.1.1 | awk '{for(i=1;i<=NF;i++) if($i=="dev") {print $(i+1);exit}}')
+k get node vcloud-wsl-local -o json | jq -e --arg ip "$NODE_IP" \
+  '.status.addresses | any(.type == "InternalIP" and .address == $ip)'
+ROOT=$PWD
+BUILD="$ROOT/.build/wsl-device-recovery"
+ASSETS="$ROOT/.build/ci-linux-assets"
+test -x "$ASSETS/bin/helm"
+test -x "$ASSETS/bin/kubeconform"
+test -d "$ASSETS/schemas"
+python3 tools/wsl_lab.py render --build "$BUILD" --node-ip "$NODE_IP" --device "$DEVICE"
+python3 tools/wsl_lab.py validate --build "$BUILD" --helm "$ASSETS/bin/helm" \
+  --kubeconform "$ASSETS/bin/kubeconform" --schemas "$ASSETS/schemas"
+k -n kube-system get configmap cilium-config -o json > "$BUILD/cilium-config-before.json"
+cat > "$BUILD/kubeconform-offline.sh" <<EOF
+#!/usr/bin/env bash
+exec "$ASSETS/bin/kubeconform" -kubernetes-version 1.36.5 \
+  -schema-location '$ASSETS/schemas/{{.ResourceKind}}.json' "\$@"
+EOF
+cat > "$BUILD/post-render.sh" <<EOF
+#!/usr/bin/env bash
+exec python3 "$ROOT/tools/helm_node_guard.py" --kubeconform "$BUILD/kubeconform-offline.sh"
+EOF
+chmod 0755 "$BUILD/kubeconform-offline.sh" "$BUILD/post-render.sh"
+"$ASSETS/bin/helm" upgrade cilium module-2/vendor/cilium-1.20.2.tgz \
+  --namespace kube-system --kube-context vcloud-wsl-local --reuse-values \
+  -f "$BUILD/cilium-values.yaml" --post-renderer "$BUILD/post-render.sh" --wait --timeout 5m
+# A ConfigMap-only change does not restart the agent or reload its selected device.
+k -n kube-system rollout restart daemonset/cilium
+k -n kube-system rollout status daemonset/cilium --timeout=180s
+k -n kube-system exec daemonset/cilium -c cilium-agent -- cilium-dbg status --verbose
+python3 tools/wsl_git_dns.py
+bash lab/wsl/test-network.sh
+bash lab/wsl/test-e2e.sh
+KUBE_CONTEXT=vcloud-wsl-local bash deploy/network/platform-probes/apply-and-verify.sh --verify-only
+```
+
+Verify the selected device, explicit ConfigMap flags and effective agent status;
+require a bounded repo-server GitHub fetch, allowed/DNS controls, denied Service
+and direct-Pod traffic with Cilium drops, both Applications Synced/Healthy at
+current `main`, demo HTTP 200, database persistence and stable node probes.
+The bootstrap already rediscovers the route for rendering, but automatic
+post-reboot device reconciliation and agent restart are not implemented.
+Manual recovery passed; unattended reboot acceptance remains open.
 
 ## 4. Acceptance after a deliberate repair
 

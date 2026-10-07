@@ -11,7 +11,8 @@ not imply ISTQB certification. All four GitHub release milestones remain open.
 - [x] Configure Cilium eBPF deny-all and record DNS, allowed-control HTTP, denied Service/Pod HTTP and matching policy-drop evidence for the lab test pair. — **[Security, Functional suitability]**
 - [x] Codify the WSL-only host-routing overlay; validate lab/base Helm renders and CI rejection of production/staging/Argo enablement. — **[Compatibility, Security]**
 - [x] Refresh live native/legacy routing, BPF masquerade and effective socket LB status; repeat GitHub fetch, deny-all and ten endpoint gates. — **[Security, Reliability]**
-- [ ] Reconcile the explicit lab socket LB ConfigMap value and repeat WSL reboot acceptance; SPIFFE attestation requires separate deployment/validation. — **[Security, Reliability]**
+- [x] Reconcile the explicit lab socket LB ConfigMap value through the owned Helm release; validate manual recovery after WSL changed the active routing interface. — **[Compatibility, Reliability]**
+- [ ] Validate unattended WSL restart/interface recovery; SPIFFE attestation requires separate deployment/validation. — **[Security, Reliability]**
 - [x] Restore the three platform health probes and Windows loopback Core dashboard with Host Firewall enabled; retain the local probe-port exception. — **[Reliability, Interaction capability]**
 - [ ] Define and verify scoped host and Windows Firewall guards for required vCloud traffic; confirm unrelated traffic remains blocked. — **[Security, Reliability]**
 - [ ] Retest WSL reboot recovery and complete application readiness before claiming the cluster supports all vCloud workloads. — **[Reliability, Functional suitability]**
