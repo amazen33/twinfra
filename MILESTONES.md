@@ -78,6 +78,7 @@ release sign-off. See the [CI guide](docs/github-actions-tests.md).
 - [x] M5 local acceptance: ten live gates passed with zero failures, including generated PodSecurity and GPU/Spinifex disabled constraints.
 - [ ] OpenBao activation: provide the four operator public keys, execute the PGP-only initialization, then complete operator unseal and secrets-engine acceptance.
 - [x] M5 hosted publication: candidate and exact-head GitHub gates passed; `vcloud-wsl-endpoints` Synced/Healthy at the tested revision, followed by zero-failure acceptance.
+- [x] Local AWS API extension: restricted LocalStack Community 4.14.0 deployed; S3/EC2/IAM/DynamoDB running, four signed API calls and APISIX ingress returned HTTP 200 from the validated lab; existing ten platform gates passed.
 
 Evidence and executable procedures: [local stages runbook](docs/wsl-local-milestones-3-5.md).
 The [dated acceptance record](docs/acceptance/wsl-2026-10-07.md) records the final
@@ -85,6 +86,9 @@ checks, approved WSL routing workaround and remaining production gates.
 The controlled drift test changed only the existing GitOps marker ConfigMap;
 Argo restored `managed-by-github`. HTTP 200 and telemetry are local acceptance,
 not production release, persistent observability, OIDC authorization or HPC proof.
+The [LocalStack acceptance record](docs/acceptance/localstack-wsl-2026-10-07.md)
+records the AWS API extension and its separate limitations. No AWS Web Console,
+actual EC2 VM provisioning or Spinifex offloading is implied by emulator acceptance.
 
 ## ISO/IEC 25010:2023 tag key
 
