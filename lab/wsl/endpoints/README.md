@@ -9,6 +9,10 @@ Collector 0.162.0. Release manifests and image digests are frozen in
 The [milestone runbook](../../../docs/wsl-local-milestones-3-5.md) describes
 provisioning order, actual endpoints, security gates, validation and recovery.
 
+The GUI at <https://localhost:18443/admin/> needs a master-realm administrator;
+discovery health alone does not provision one. Use the separate
+[admin bootstrap and private password retrieval](../../../docs/keycloak-admin-access.md).
+
 ```bash
 cd /mnt/e/vCloud
 # Connected staging imports exact digests, not a public runtime fallback.

@@ -102,7 +102,9 @@ does not claim production OIDC authorization or tenant isolation acceptance.
 Keycloak imports the public Module 4b realm and uses its dedicated PostgreSQL
 database/role with JDBC verify-full TLS. Its local hostname is
 `https://localhost:18443`. Local cache and Recreate rollout match the single-node
-lab; no human admin credential is published or synthesized. Quarkus build output
+lab. Human administrator access uses the separate
+[secure admin bootstrap](keycloak-admin-access.md); no private credential is
+published in Git or this runbook. Quarkus build output
 is confined to tmpfs, retaining a read-only root filesystem. OpenBao also uses a
 dedicated PostgreSQL database and verify-full TLS, with mlock disabled because
 restricted Pods receive no IPC_LOCK capability. Both databases reuse CNPG's PV.

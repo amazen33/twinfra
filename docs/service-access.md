@@ -20,6 +20,10 @@ document with issuer `https://localhost:18443/realms/vcloud`. Windows and WSL
 independently returned HTTP 200 with the public lab certificate and hostname
 verified. This confirms transport/discovery, not an administrator login.
 
+Administrator provisioning and private password retrieval are documented in
+the [Keycloak admin runbook](keycloak-admin-access.md). The intended master-realm
+username is `vcloud-admin`; no password appears in this repository.
+
 LocalStack port 4566 was repaired after the owned forward exhausted rapid retries
 during a temporary API-server outage. Its root and health URLs now return HTTP
 200 from Windows. [Recovery instructions](../lab/wsl/localstack/README.md#recovery)

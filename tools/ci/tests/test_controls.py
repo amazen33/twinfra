@@ -260,6 +260,12 @@ class Controls(unittest.TestCase):
                      'lab/wsl/console/apply.sh', 'lab/wsl/console/verify.sh'):
             self.assertIn(path, files)
 
+    def test_keycloak_admin_bundle_cannot_omit_runtime_or_tests(self):
+        files = checks.OPTIONAL['keycloak-admin-bootstrap']
+        for path in ('tools/wsl_keycloak_admin.py', 'tests/test_wsl_keycloak_admin.py',
+                     'lab/wsl/endpoints/copy-keycloak-password.ps1', 'docs/keycloak-admin-access.md'):
+            self.assertIn(path, files)
+
     def test_localstack_bundle_cannot_omit_runtime_or_tests(self):
         files=checks.OPTIONAL['lab/wsl/localstack']
         self.assertIn('tests/test_wsl_localstack.py',files)
