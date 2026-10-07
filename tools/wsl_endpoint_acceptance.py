@@ -29,14 +29,24 @@ def http(url,headers=None):
             time.sleep(1)
 
 
+def gitops(apps):
+    by_name={app['metadata']['name']:app for app in apps}
+    result={}
+    for name in ('vcloud-wsl-platform','vcloud-wsl-endpoints'):
+        app=by_name.get(name)
+        if not app:raise ValueError('Required GitOps Application missing: '+name)
+        status=app.get('status',{})
+        if status.get('sync',{}).get('status')!='Synced' or status.get('health',{}).get('status')!='Healthy' or status.get('conditions'):
+            raise ValueError('GitOps Application not Synced/Healthy: '+name)
+        result[name]={'revision':status['sync']['revision'],'sync':'Synced','health':'Healthy'}
+    return result
+
+
 def main():
     report={'timestampUTC':datetime.now(timezone.utc).isoformat(),'scope':'CPU-only local WSL; no production promotion','checks':[]}
     def passed(name,detail):report['checks'].append({'name':name,'status':'passed','detail':detail});print('PASS: '+name+' '+str(detail),flush=True)
     try:
-        app=get('get','application','vcloud-wsl-platform','-n',NS)
-        assert app['status']['sync']['status']=='Synced' and app['status']['health']['status']=='Healthy'
-        assert not app['status'].get('conditions')
-        passed('GitOps',{'revision':app['status']['sync']['revision'],'sync':'Synced','health':'Healthy'})
+        passed('GitOps',gitops(get('get','applications','-n',NS)['items']))
         assert sql("SELECT extversion FROM pg_extension WHERE extname='vector';")=='0.8.2'
         assert sql('SELECT ssl FROM pg_stat_ssl WHERE pid=pg_backend_pid();')=='t'
         assert sql("SELECT count(*) FROM local_acceptance WHERE marker='local-storage-survives';")=='1'

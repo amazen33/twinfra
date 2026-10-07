@@ -54,6 +54,18 @@ class EndpointTests(unittest.TestCase):
                     self.assertFalse(set(rule['resources']) & {'*','secrets','nodes','persistentvolumes','roles','rolebindings','ciliumnetworkpolicies'})
             if obj['kind']=='AppProject':self.assertEqual(obj['spec']['clusterResourceWhitelist'],[])
 
+    def test_live_gitops_gate_requires_both_apps_healthy_without_conditions(self):
+        from wsl_endpoint_acceptance import gitops
+        apps=[{'metadata':{'name':name},'status':{'sync':{'status':'Synced','revision':'a'*40},'health':{'status':'Healthy'}}}
+              for name in ('vcloud-wsl-platform','vcloud-wsl-endpoints')]
+        self.assertEqual(len(gitops(apps)),2)
+        with self.assertRaises(ValueError):gitops(apps[:1])
+        for key in ('sync','health','conditions'):
+            bad=copy.deepcopy(apps)
+            if key=='conditions':bad[1]['status'][key]=[{'type':'ComparisonError'}]
+            else:bad[1]['status'][key]['status']='Unknown'
+            with self.subTest(key=key),self.assertRaises(ValueError):gitops(bad)
+
     def test_node_rbac_bindings_relocated(self):
         for o in endpoints.controllers():
             for s in o.get('subjects',[]):

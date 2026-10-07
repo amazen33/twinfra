@@ -199,6 +199,13 @@ def application():
                                 'resources':{'requests':{'cpu':'25m','memory':'32Mi'},'limits':{'cpu':'200m','memory':'64Mi'}},
                                 'volumeMounts':[{'name':'code','mountPath':'/app','readOnly':True}]}],
                  'volumes':[{'name':'code','configMap':{'name':'demo-cpu-app'}}]}}},APP_NS,'serving.knative.dev/v1')
+    # Explicit admission defaults keep this custom resource stable in Argo's
+    # desired/live comparison; no broad ignoreDifferences rule is required.
+    demo['spec']['traffic']=[{'latestRevision':True,'percent':100}]
+    template=demo['spec']['template']['spec']
+    template.update(enableServiceLinks=False,timeoutSeconds=300)
+    template['containers'][0]['ports'][0]['protocol']='TCP'
+    template['containers'][0]['readinessProbe']={'tcpSocket':{'port':0},'successThreshold':1}
     next(o for o in result if o['kind']=='Service' and o['metadata']['name']=='apisix-metrics')['spec']['ports'][0]['name']='metrics'
     apisix_dep=next(o for o in result if o['kind']=='Deployment')
     spec=apisix_dep['spec']['template']['spec']

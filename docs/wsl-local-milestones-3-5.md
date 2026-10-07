@@ -192,11 +192,22 @@ Spinifex flags. The missing-operator-key gate is an expected security outcome,
 recorded separately from unseal acceptance. It never turns a missing live service
 into a skipped test. Check the dated result before claiming a live pass.
 
+The GitOps gate requires both `vcloud-wsl-platform` and
+`vcloud-wsl-endpoints` present, Synced/Healthy and without error conditions.
+Knative admission defaults are explicit in the CPU Service so Argo can compare
+desired/live specs without ignoring readiness, traffic or security differences.
+
 Publish generated GitOps source with `python3 tools/wsl_endpoints_gitops.py`.
 Activate `lab/wsl/endpoints/argocd.yaml` only after its Git revision is available
 and CI passes. Scoped namespaced write Roles exclude Secrets, node/storage
 resources and cluster write access; controller/CRD bootstrap stays separately
 owned. Do not delete a tracked Git branch before verified cutover.
+
+```bash
+sudo kubectl --kubeconfig=/etc/vcloud-wsl/kubeconfig.yaml --context=vcloud-wsl-local \
+  apply -f lab/wsl/endpoints/argocd.yaml
+sudo bash lab/wsl/test-e2e.sh
+```
 
 The new writer Roles grant no Secret writes. The existing cluster discovery
 Role permits read-only access to all resources, including Secrets. Narrowing

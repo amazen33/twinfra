@@ -747,6 +747,7 @@ spec:
             type: RuntimeDefault
         ports:
         - containerPort: 8080
+          protocol: TCP
         resources:
           requests:
             cpu: 25m
@@ -758,10 +759,19 @@ spec:
         - name: code
           mountPath: /app
           readOnly: true
+        readinessProbe:
+          tcpSocket:
+            port: 0
+          successThreshold: 1
       volumes:
       - name: code
         configMap:
           name: demo-cpu-app
+      enableServiceLinks: false
+      timeoutSeconds: 300
+  traffic:
+  - latestRevision: true
+    percent: 100
 ---
 apiVersion: v1
 kind: ServiceAccount

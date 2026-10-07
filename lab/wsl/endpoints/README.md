@@ -15,6 +15,9 @@ cd /mnt/e/vCloud
 sudo python3 tools/stage_wsl_endpoints.py
 sudo bash lab/wsl/endpoints/deploy.sh
 sudo bash lab/wsl/endpoints/access.sh start
+# After the referenced Git revision passes CI and is published on main:
+sudo kubectl --kubeconfig=/etc/vcloud-wsl/kubeconfig.yaml --context=vcloud-wsl-local \
+  apply -f lab/wsl/endpoints/argocd.yaml
 sudo bash lab/wsl/test-e2e.sh
 # Operator public keys remain operator-managed. Missing keys -> exit 3.
 sudo bash lab/wsl/openbao-init.sh
