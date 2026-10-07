@@ -1,5 +1,8 @@
 # WSL2 Local Environment Runbook & Troubleshooting
 
+The [local M3–M5 runbook](wsl-local-milestones-3-5.md) covers the subsequent
+GitOps DNS, encryption-at-rest, CNPG storage-mode and PGP-init corrections.
+
 For actual browser endpoints, use the [verified local service access runbook](service-access.md).
 Start the existing Core dashboard with `sudo bash lab/wsl/access.sh start`;
 its local URL is `http://127.0.0.1:8080/`. Reference domain names do not become

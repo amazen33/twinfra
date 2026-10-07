@@ -18,6 +18,24 @@ spec:
     capabilities:
       drop:
       - ALL
+  managed:
+    roles:
+    - name: openbao
+      ensure: present
+      login: true
+      superuser: false
+      createdb: false
+      createrole: false
+      passwordSecret:
+        name: vcloud-wsl-openbao-db
+    - name: keycloak
+      ensure: present
+      login: true
+      superuser: false
+      createdb: false
+      createrole: false
+      passwordSecret:
+        name: vcloud-wsl-keycloak-db
   bootstrap:
     initdb:
       database: vcloud

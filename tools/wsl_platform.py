@@ -178,6 +178,8 @@ def git_dns():
 def workload():
     cluster=resource('Cluster',DB,{'instances':1,'imageName':PG_IMAGE,'imagePullPolicy':'IfNotPresent','postgresUID':26,'postgresGID':26,
         'enableSuperuserAccess':False,'seccompProfile':{'type':'RuntimeDefault'},'securityContext':{'runAsNonRoot':True,'allowPrivilegeEscalation':False,'capabilities':{'drop':['ALL']}},
+        'managed':{'roles':[{'name':name,'ensure':'present','login':True,'superuser':False,'createdb':False,'createrole':False,
+                    'passwordSecret':{'name':'vcloud-wsl-'+name+'-db'}} for name in ('openbao','keycloak')]},
         'bootstrap':{'initdb':{'database':'vcloud','owner':'vcloud_app','postInitApplicationSQL':['CREATE EXTENSION IF NOT EXISTS vector;']}},
         'postgresql':{'parameters':{'shared_buffers':'128MB','max_connections':'50','huge_pages':'off'},
                       'pg_hba':['hostnossl all all all reject','hostssl all all all scram-sha-256']},

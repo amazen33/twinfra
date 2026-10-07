@@ -66,7 +66,7 @@ class Controls(unittest.TestCase):
 
     def test_reviewed_merged_pr_baselines_are_immutable(self):
         lock = json.loads((ROOT / 'pr-baselines.json').read_text())
-        self.assertEqual([p['number'] for p in lock['baselines']], [1, 2, 3, 5, 6])
+        self.assertEqual([p['number'] for p in lock['baselines']], [1, 2, 3, 4, 5, 6])
         for baseline in lock['baselines']:
             self.assertRegex(baseline['commit'], r'^[a-f0-9]{40}$')
             self.assertEqual(baseline['url'], f"https://github.com/amazen33/vCloud/pull/{baseline['number']}")

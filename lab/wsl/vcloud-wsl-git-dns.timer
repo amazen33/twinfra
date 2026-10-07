@@ -1,0 +1,11 @@
+[Unit]
+Description=vCloud owned WSL GitHub-only DNS refresh timer
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=60s
+RandomizedDelaySec=3s
+Unit=vcloud-wsl-git-dns.service
+
+[Install]
+WantedBy=timers.target

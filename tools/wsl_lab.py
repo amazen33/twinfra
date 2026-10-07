@@ -105,7 +105,7 @@ def k3s_config(p, node_ip):
     # Mirrored WSL routes node-address access reliably; localhost/wildcard
     # self-bootstrap can be intercepted by the Windows shared network stack.
     return {'node-name': p['nodeName'], 'node-ip': node_ip, 'bind-address': node_ip,
-            'https-listen-port': API_PORT, 'write-kubeconfig-mode': '0600',
+            'https-listen-port': API_PORT, 'write-kubeconfig-mode': '0600', 'secrets-encryption': True,
             'flannel-backend': 'none', 'disable-network-policy': True, 'disable-kube-proxy': True,
             'disable': ['traefik', 'servicelb', 'local-storage', 'metrics-server', 'coredns'],
             'disable-helm-controller': True, 'cluster-cidr': p['podCIDR'],
@@ -215,6 +215,9 @@ def render(build, node_ip, device):
     p = profile()
     build.mkdir(parents=True, exist_ok=True)
     cilium = yaml.safe_load((ROOT / 'module-2/values/cilium.yaml').read_text(encoding='utf-8'))
+    # Measured WSL mirrored-network workaround: traverse the Linux host stack.
+    # Native routing, BPF masquerading and kube-proxy replacement stay enabled.
+    cilium['bpf']['hostLegacyRouting'] = True
     cilium.update(k8sServiceHost=node_ip, k8sServicePort=API_PORT, devices=[device], cluster={'name': p['name']})
     datasets = {'k3s-config.yaml': k3s_config(p, node_ip), 'cilium-values.yaml': cilium}
     for name, data in datasets.items():
