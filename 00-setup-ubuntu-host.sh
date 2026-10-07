@@ -506,11 +506,18 @@ EOF
 }
 
 render_mirror() {
-    # _default applies to docker.io, registry.k8s.io, quay.io, nvcr.io, etc. The proxy
-    # must support containerd's ?ns=<upstream> convention; plain Harbor projects need
-    # per-registry endpoints instead. Credentials use Kubernetes imagePullSecrets.
-    if [[ $MIRROR_REQUIRED == true ]]; then printf 'server = "%s"\n' "$REGISTRY_MIRROR"; fi
-    printf '[host."%s"]\n  capabilities = ["pull", "resolve"]\n' "$REGISTRY_MIRROR"
+    # Upstream names map into mirror /v2/<upstream>/<repository>. override_path
+    # describes this explicit API root; it does not rewrite a bare hostname.
+    # Root and host share the same private endpoint, including CA and capabilities.
+    local upstream=${1:-} endpoint=$REGISTRY_MIRROR
+    case "$upstream" in ''|quay.io|docker.io|registry.k8s.io|ghcr.io|public.ecr.aws|nvcr.io) ;; *) die 'Unsupported upstream mirror';; esac
+    [[ -z $upstream ]] || endpoint="$REGISTRY_MIRROR/v2/$upstream"
+    if [[ $MIRROR_REQUIRED == true ]]; then printf 'server = "%s"\n' "$endpoint"; fi
+    printf 'capabilities = ["pull", "resolve"]\n'
+    [[ -z $upstream ]] || printf 'override_path = true\n'
+    if [[ -n $REGISTRY_CA_FILE ]]; then printf 'ca = "%s"\n' "$REGISTRY_CA_FILE"; fi
+    printf '\n[host."%s"]\n  capabilities = ["pull", "resolve"]\n' "$endpoint"
+    [[ -z $upstream ]] || printf '  override_path = true\n'
     if [[ -n $REGISTRY_CA_FILE ]]; then printf '  ca = "%s"\n' "$REGISTRY_CA_FILE"; fi
 }
 
@@ -540,6 +547,15 @@ PY
     [[ $FILE_CHANGED == true ]] && changed=true
     touch "$STATE_DIR/containerd-owned"
     render_mirror | write_file /etc/containerd/certs.d/_default/hosts.toml
+    local upstream
+    for upstream in "$IMAGE_REGISTRY" quay.io docker.io registry.k8s.io ghcr.io public.ecr.aws nvcr.io; do
+        mkdir -p "/etc/containerd/certs.d/$upstream"
+        if [[ $upstream == "$IMAGE_REGISTRY" ]]; then
+            render_mirror | write_file "/etc/containerd/certs.d/$upstream/hosts.toml"
+        else
+            render_mirror "$upstream" | write_file "/etc/containerd/certs.d/$upstream/hosts.toml"
+        fi
+    done
     write_file /etc/crictl.yaml <<EOF
 runtime-endpoint: $CRI_SOCKET
 image-endpoint: $CRI_SOCKET

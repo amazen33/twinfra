@@ -1,0 +1,58 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# Full Argo reference profile for an explicitly selected argocd installation.
+# Do not install alongside the existing WSL Core owner in platform-services.
+namespace: argocd
+resources:
+  - ../../base/argocd
+  - namespace.yaml
+images:
+  - name: quay.io/argoproj/argocd
+    newName: registry.vcloud.example.com/quay.io/argoproj/argocd
+    digest: sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa
+  - name: ghcr.io/dexidp/dex
+    newName: registry.vcloud.example.com/ghcr.io/dexidp/dex
+    newTag: v2.45.1
+  - name: public.ecr.aws/docker/library/redis
+    newName: registry.vcloud.example.com/public.ecr.aws/docker/library/redis
+    newTag: 8.2.3-alpine
+patches:
+  - path: repo-server.yaml
+  - path: server.yaml
+  - path: application-controller.yaml
+  - target:
+      kind: Deployment
+      labelSelector: app.kubernetes.io/part-of=argocd
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: unused
+      spec:
+        template:
+          spec:
+            imagePullSecrets:
+              - name: vcloud-registry-cred
+  - target:
+      kind: StatefulSet
+      name: argocd-application-controller
+    patch: |-
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: argocd-application-controller
+      spec:
+        template:
+          spec:
+            imagePullSecrets:
+              - name: vcloud-registry-cred
+  - target:
+      kind: ServiceAccount
+      labelSelector: app.kubernetes.io/part-of=argocd
+    patch: |-
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: unused
+      imagePullSecrets:
+        - name: vcloud-registry-cred

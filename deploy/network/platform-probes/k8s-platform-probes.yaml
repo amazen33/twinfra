@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kubelet-probes
+  namespace: platform-services
+  labels:
+    app.kubernetes.io/part-of: vcloud
+    vcloud.io/profile: wsl-local
+  annotations:
+    vcloud.io/scope: "User-approved WSL probe-port exception; not a production policy"
+# Omitting 'from' allows all sources to these three ports on selected pods.
+# This native fallback cannot express Cilium entities; it is a local lab exception.
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - cloudnative-pg
+          - argocd-repo-server
+          - argocd-application-controller
+  policyTypes:
+  - Ingress
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 9443
+    - protocol: TCP
+      port: 8084
+    - protocol: TCP
+      port: 8082 # Mandatory for argocd-application-controller readiness at /healthz.

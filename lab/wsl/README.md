@@ -1,5 +1,9 @@
 # Local vCloud validation on WSL2
 
+For local browser access, run `sudo bash lab/wsl/access.sh start` inside WSL.
+The [service access runbook](../../docs/service-access.md) lists tested URLs,
+Windows verification and the services that are not deployed.
+
 See the [WSL setup and troubleshooting guide](../../docs/WSL_SETUP_GUIDE.md) for
 Windows adapter detection/firewall scope and Argo CD namespace ordering.
 

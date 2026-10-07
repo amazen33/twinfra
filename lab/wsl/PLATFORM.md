@@ -10,11 +10,14 @@ Windows adapter detection and namespace pre-creation, while distinguishing those
 reference procedures from this lab's Cilium host-probe failure.
 
 The deny-all test passed with matching Cilium drop events. Argo CD and CNPG
-controller manifests are installed, but host probe/callback drops prevent
-controller readiness. The proposed [WSL Host Firewall exception](HOST-FIREWALL-EXCEPTION.md)
-requires an explicit decision before deployment continues. GitOps reconciliation
-and SQL acceptance are not complete. This document describes the executable
-acceptance procedure, not a successful deployment claim.
+controllers are Ready following the [DNS proxy mark repair](../../docs/troubleshooting/argocd-repo-health-wsl.md).
+Cilium Host Firewall remains enabled; the earlier disablement proposal is
+[superseded](HOST-FIREWALL-EXCEPTION.md). The local
+[Core dashboard](../../docs/service-access.md) works, but the controller's
+cluster discovery binding still targets the wrong installation namespace.
+GitOps reconciliation, PostgreSQL initialization, SQL/TLS/persistence and scaling
+acceptance remain pending. The [correction review](../../docs/correction-review.md)
+separates verified repairs from these open milestone gates.
 
 ## Reproducible inputs
 
@@ -63,7 +66,9 @@ is enabled; automatic prune and empty-source deletion are disabled.
 The repo server verifies its private service TLS certificate. Its DNS service
 forwards only `github.com` externally and cluster-local queries internally.
 Cilium limits HTTPS egress to `github.com`; broad DNS/world allowances are absent.
-Argo Core has no publicly exposed UI or API. Credentials are generated in
+Argo Core has no publicly exposed UI or API. A loopback-only Core dashboard is
+available through `sudo bash lab/wsl/access.sh start`; it is a local admin
+session, not a production authenticated endpoint. Credentials are generated in
 Kubernetes Secrets and never copied to Git. Thirty-day local serving certificates
 require rotation; OpenBao certificate lifecycle integration is a later stage.
 
@@ -98,7 +103,7 @@ sudo python3 tools/stage_wsl_platform.py --cache .tools/wsl-platform
 sudo python3 tools/wsl_pg_image.py --cache .tools/wsl-platform
 python3 tools/wsl_platform.py render --gitops
 python3 tools/wsl_platform.py validate --kubeconform .tools/wsl-lab/kubeconform
-# Continue only after resolving the controller-health compatibility gate.
+# Continue after confirming the single Argo owner and vetted discovery RBAC.
 sudo bash lab/wsl/platform.sh
 sudo python3 tools/wsl_db_test.py --restart
 sudo /usr/local/bin/k3s kubectl --kubeconfig /etc/vcloud-wsl/kubeconfig.yaml \

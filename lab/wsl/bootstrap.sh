@@ -74,10 +74,11 @@ target.write_text(json.dumps({'profileSHA256':hashlib.sha256((root/'lab/wsl/prof
  'scope':'user-authorized WSL local validation','rootServices':['containerd','k3s']},indent=2)+'\n')
 target.chmod(0o600)
 PY
-    # Signed Ubuntu packages provide the host runtime and minimal validation tools.
+    # Signed Ubuntu packages provide the host runtime and node diagnostic tools.
+    # jq is mandatory for apply-and-verify.sh and other JSON-based cluster checks.
     apt-get update -qq
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        containerd runc containernetworking-plugins iptables iproute2 python3-yaml ca-certificates curl
+        containerd runc containernetworking-plugins iptables nftables iproute2 python3-yaml ca-certificates curl jq
     python3 "$ROOT/tools/wsl_lab.py" check-facts --facts "$BUILD/facts.json"
     python3 "$ROOT/tools/stage_wsl_lab.py" --cache "$CACHE"
 fi
@@ -107,12 +108,13 @@ from wsl_lab import containerd_config,profile
 text=containerd_config(pathlib.Path(sys.argv[2]).read_text(),profile())
 pathlib.Path(sys.argv[3]).write_text(text)
 PY
-    cat > /etc/containerd/certs.d/_default/hosts.toml <<'TOML'
-# Runtime pulls resolve only through the canonical private registry, never upstream.
-server = "https://registry.vcloud.example.com"
-[host."https://registry.vcloud.example.com"]
-  capabilities = ["pull", "resolve"]
-TOML
+    # Explicit per-upstream API roots preserve the canonical repository prefix.
+    # An optional operator-supplied registry IP is accepted only after verified
+    # HTTPS succeeds for the registry hostname; never guess a local address.
+    registry_args=()
+    [[ -z ${VCLOUD_REGISTRY_ADDRESS:-} ]] || registry_args+=(--registry-address "$VCLOUD_REGISTRY_ADDRESS")
+    [[ -z ${VCLOUD_REGISTRY_CA_FILE:-} ]] || registry_args+=(--ca-file "$VCLOUD_REGISTRY_CA_FILE")
+    python3 "$ROOT/tools/node_registry.py" configure --apply "${registry_args[@]}" > "$BUILD/registry-config.json"
     systemctl enable containerd
     systemctl restart containerd
     ctr --namespace k8s.io images import --platform linux/amd64 "$CACHE/k3s-images.tar.gz" > "$BUILD/image-import.log"
@@ -145,6 +147,11 @@ CLI
     fi
     install -d -m 0755 /usr/local/libexec
     install -m 0750 "$ROOT/lab/wsl/api-firewall.sh" /usr/local/libexec/vcloud-wsl-api-firewall
+    # WSL's output mark=1 rule otherwise destroys Cilium DNS proxy marks.
+    # This owned-profile helper preserves only Cilium's proxy mark classes.
+    install -m 0750 "$ROOT/tools/wsl_proxy_marks.py" /usr/local/libexec/vcloud-wsl-proxy-marks
+    install -m 0644 "$ROOT/lab/wsl/vcloud-wsl-proxy-marks.service" /etc/systemd/system/
+    install -m 0644 "$ROOT/lab/wsl/vcloud-wsl-proxy-marks.timer" /etc/systemd/system/
     install -m 0600 "$BUILD/k3s-config.yaml" /etc/rancher/k3s/config.yaml
     python3 - "$ROOT" <<'PY'
 from pathlib import Path
@@ -184,6 +191,8 @@ UNIT
     systemctl daemon-reload
     systemctl enable k3s
     systemctl restart k3s
+    systemctl enable --now vcloud-wsl-proxy-marks.timer
+    systemctl start vcloud-wsl-proxy-marks.service
 fi
 for _attempt in $(seq 1 90); do
     if /usr/local/bin/k3s kubectl --server "https://$NODE_IP:16443" --kubeconfig /etc/rancher/k3s/k3s.yaml get --raw=/readyz > /dev/null 2>&1; then break; fi

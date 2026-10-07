@@ -1,9 +1,22 @@
 # WSL2 Local Environment Runbook & Troubleshooting
 
+For actual browser endpoints, use the [verified local service access runbook](service-access.md).
+Start the existing Core dashboard with `sudo bash lab/wsl/access.sh start`;
+its local URL is `http://127.0.0.1:8080/`. Reference domain names do not become
+live endpoints until a backend and an access route are deployed.
+
 Scope: `vcloud-wsl-local`, six CPUs, approximately 20 GB RAM, mirrored networking.
+Node diagnostics require `kubectl`, **`jq`**, `curl` and `ip` (`iproute2`). The WSL
+bootstrap installs `jq`; use the [prerequisite installation steps](prerequisites.md)
+to repair an existing node without rerunning the cluster bootstrap.
+For private registry DNS, containerd API-path mapping and exact CRI cache gates,
+use the [image-pull runbook](troubleshooting/image-pull-failures.md). WSL Core and
+the full Argo overlay share a pinned digest and explicit `IfNotPresent`; select
+one installation owner before applying either profile.
 This is a documentation update; the Windows Firewall examples below have not
 been executed or validated as fixes on this host. The existing Cilium exception
-is still [awaiting a separate decision](../lab/wsl/HOST-FIREWALL-EXCEPTION.md).
+is [superseded by the validated DNS mark repair](../lab/wsl/HOST-FIREWALL-EXCEPTION.md);
+Cilium Host Firewall remains enabled.
 
 ## 1. Host Firewall Exception (PowerShell Admin)
 
@@ -117,11 +130,14 @@ bootstrap before resuming the [platform runbook](../lab/wsl/PLATFORM.md).
 If it exists but endpoints are unready, investigate Pod events, health probes,
 TLS, network-policy drops and repo-server connectivity before changing namespaces.
 
-The recorded lab failure has an existing `platform-services` namespace and repo
-server Pods, but failed probes and `ComparisonError` with `no route to host` on
-the repo Service. [Saved status](wsl-platform-status.json) and the
-[Cilium compatibility proposal](../lab/wsl/HOST-FIREWALL-EXCEPTION.md) describe the
-remaining gate. These Windows and namespace examples do not establish its fix.
+The historical [saved status](wsl-platform-status.json) records failed probes
+and a repo Service `no route to host` error. The 2026-10-07
+[correction review](correction-review.md) supersedes that health gate: all three
+probes and local browser access pass with Host Firewall enabled. GitOps still
+reports `ComparisonError` because the controller's discovery binding targets
+the old `argocd` ServiceAccount. Restore the vetted `platform-services` binding
+and verify reconciliation before initializing the database. The namespace and
+Windows examples above do not resolve this RBAC mismatch.
 
 ### Separate upstream reference installation: `argocd`
 
@@ -147,6 +163,39 @@ different namespace, update embedded RBAC subjects and service references too;
 `kubectl -n` alone does not relocate those fields.
 
 ## 3. Acceptance after a deliberate repair
+
+For a repo-server that accepts 8084 but times out on `/healthz?full=true`, follow
+the [validated DNS proxy mark repair](troubleshooting/argocd-repo-health-wsl.md).
+It covers the local gRPC SRV lookup, exact Redis DNS allowance and WSL's output
+packet-mark overwrite. The owned bootstrap now installs a reconciliation timer
+for the two Cilium proxy mark classes. Repair that dependency before restarting
+Pods; retain the full health probe and its five-second timeout.
+
+For probe-port recovery in `platform-services`, use the
+[platform probe recovery runbook](../deploy/network/platform-probes/README.md#recovery-after-opening-the-probe-ports).
+Its sequence applies both network policies first, restarts the
+`argocd-repo-server` Deployment and `argocd-application-controller` StatefulSet to
+replace Pods carrying restart backoff, waits for the rollouts, then runs all
+three node health checks. It retains HTTP 200, readiness and stable restart
+counters as acceptance gates. The Make targets require GNU Make; install the
+`make` package from the configured Ubuntu sources if it is missing, or invoke
+`bash deploy/network/platform-probes/recover.sh` directly with the same
+kubeconfig/context. On the owned WSL node with the private kubeconfig:
+
+```bash
+cd /mnt/e/vCloud
+sudo env KUBECONFIG=/etc/vcloud-wsl/kubeconfig.yaml KUBE_CONTEXT=vcloud-wsl-local \
+  make wsl-platform-recovery-plan
+sudo env KUBECONFIG=/etc/vcloud-wsl/kubeconfig.yaml KUBE_CONTEXT=vcloud-wsl-local \
+  make wsl-platform-recover
+# Later read-only health verification, without applying policies or restarting:
+sudo env KUBECONFIG=/etc/vcloud-wsl/kubeconfig.yaml KUBE_CONTEXT=vcloud-wsl-local \
+  make wsl-platform-probe-verify
+```
+
+The recovery helper stops on failure and rejects Nodes outside the labelled
+local-validation profile. A successful rollout does not establish that
+repo-server's full health check, Git reconciliation or database readiness works.
 
 Require a Ready repo server, ready Service endpoints, and an Application that
 is `Synced` and `Healthy` at the intended Git commit with no `ComparisonError`.

@@ -58,6 +58,35 @@ class PlatformTests(unittest.TestCase):
         fqdn=[r['toFQDNs'] for r in policy['spec']['egress'] if 'toFQDNs' in r]
         self.assertEqual(fqdn,[[{'matchName':'github.com'}]])
 
+    def test_repo_local_grpc_srv_lookup_is_allowed_only_on_git_dns(self):
+        policy=next(p for p in platform.network() if p['metadata']['name']=='vcloud-wsl-argo-repo')
+        rules=[r for r in policy['spec']['egress'] if any('rules' in p for p in r.get('toPorts',[]))]
+        self.assertEqual(len(rules),1)
+        self.assertEqual(rules[0]['toEndpoints'],platform.peers({'k8s:vcloud.io/component':'git-dns'}))
+        self.assertEqual(rules[0]['toPorts'][0]['ports'],[{'port':'1053','protocol':'ANY'}])
+        names=rules[0]['toPorts'][0]['rules']['dns']
+        self.assertIn({'matchName':'argocd-redis.platform-services.svc.cluster.local'},names)
+        self.assertNotIn({'matchPattern':'*.svc.cluster.local'},names)
+        self.assertIn({'matchName':'_grpclb._tcp.localhost'},names)
+        self.assertNotIn({'matchPattern':'*'},names)
+        self.assertNotIn({'matchPattern':'*.localhost'},names)
+
+    def test_repo_local_srv_zone_does_not_forward_upstream(self):
+        config=platform.git_dns()[0]['data']['Corefile']
+        zone=config.split('_grpclb._tcp.localhost:1053 {',1)[1]
+        self.assertIn('template ANY ANY {\n  rcode NXDOMAIN\n }',zone)
+        self.assertNotIn('forward',zone)
+
+    def test_repo_keeps_full_grpc_liveness_and_tls(self):
+        objects=platform.infrastructure()
+        repo=next(o for o in objects if o['kind']=='Deployment' and o['metadata']['name']=='argocd-repo-server')
+        container=repo['spec']['template']['spec']['containers'][0]
+        self.assertEqual(container['livenessProbe']['httpGet']['path'],'/healthz?full=true')
+        self.assertEqual(container['livenessProbe']['timeoutSeconds'],5)
+        config=next(o for o in objects if o['kind']=='ConfigMap' and o['metadata']['name']=='argocd-cmd-params-cm')
+        self.assertEqual(config['data']['reposerver.disable.tls'],'false')
+        self.assertEqual(config['data']['controller.repo.server.strict.tls'],'true')
+
     def test_renderer_drift_is_detectable(self):
         with tempfile.TemporaryDirectory() as directory:
             platform.render(Path(directory))

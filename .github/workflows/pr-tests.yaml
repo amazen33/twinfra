@@ -79,7 +79,7 @@ jobs:
         run: python .ci-control/tools/ci/stage_tools.py --destination .ci-control/.build/ci-tools --source source
       - name: Lint workflow
         run: .ci-control/.build/ci-tools/bin/actionlint -shellcheck="" .ci-control/.github/workflows/pr-tests.yaml
-      - name: Run offline module gates
+      - name: Run offline module gates and air-gapped Kustomize/schema/policy checks
         env:
           EXPECTED_COMMIT: ${{ matrix.commit }}
         run: python .ci-control/tools/ci/run_checks.py --source source --assets .ci-control/.build/ci-tools --report .ci-control/.build/ci-report

@@ -1,0 +1,48 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: cilium-platform-probes
+  namespace: platform-services
+  labels:
+    app.kubernetes.io/part-of: vcloud
+    vcloud.io/profile: wsl-local
+  annotations:
+    vcloud.io/scope: "User-approved WSL probe-port exception; not a production policy"
+spec:
+  endpointSelector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - cloudnative-pg
+          - argocd-repo-server
+          - argocd-application-controller
+  ingress:
+    # WSL mirrored routing can classify node probes as world (security ID 2).
+    # This lab exception retains the edited cluster identity allowance and
+    # opens only the three probe ports, not general application ingress.
+    - fromEntities:
+        - host
+        - remote-node
+        - health
+        - world
+        - cluster
+      toPorts:
+        - ports:
+            - port: "9443"
+              protocol: TCP
+            - port: "8084"
+              protocol: TCP
+            - port: "8082"
+              protocol: TCP # Argo application-controller readiness at /healthz.
+    # Reference Pod subnet; the node verifier adds actual Node.spec.podCIDRs.
+    - fromCIDRSet:
+        - cidr: "10.42.0.0/16"
+      toPorts:
+        - ports:
+            - port: "9443"
+              protocol: TCP
+            - port: "8084"
+              protocol: TCP
+            - port: "8082"
+              protocol: TCP

@@ -7,6 +7,14 @@ user's requirements; their integration contracts are proposed designs with expli
 release, security and live acceptance gates.
 See the [Module 1 documentation checks](docs/module-1-validation.json) for validation evidence.
 
+## Node diagnostic prerequisites
+
+`kubectl`, **`jq`**, `curl` and `ip` (from `iproute2`) are mandatory for node-level
+cluster diagnostics, including the platform health-probe verification script.
+Both Ubuntu host and WSL provisioning install `jq`; `kubectl` is supplied by the
+selected Kubernetes bootstrap. See [prerequisites](docs/prerequisites.md) for
+installation and verification commands on existing nodes.
+
 ## Module -1: Ubuntu host preparation
 
 Ubuntu 24.04 host preparation and a single-node **upstream Kubernetes** bootstrap using
@@ -67,7 +75,9 @@ implicit DNS/API allowances. Add reviewed workload-specific allow rules before d
 Native routing requires underlay routes to remote node PodCIDRs.
 
 Local syntax, configuration, schema and Helm checks are documented in `docs/validation.md`.
-No Ubuntu VM, live Kubernetes cluster, GPU passthrough or HPC fabric was deployed here.
+Production Ubuntu/kubeadm, GPU passthrough and HPC fabric acceptance remain pending.
+The separate WSL lab has a live Kubernetes foundation and Ready platform
+controllers; its current limits are recorded in the local validation section.
 
 Module 2 is available in the [infrastructure runbook](module-2/README.md),
 with [rendered reference YAML](module-2/manifests/README.md),
@@ -134,3 +144,10 @@ CPU mirrored-network development environment. It bootstraps a single-node
 smoke tests. Heavy AI/HPC profiles stay disabled. It does not replace the
 production Ubuntu/kubeadm profile. GitHub CI includes its offline safety and
 schema checks when the profile is present; host execution is opt-in on WSL.
+
+The [correction review](docs/correction-review.md) maps registry, probe, DNS-mark
+and browser-access repairs to [milestones](MILESTONES.md), with explicit evidence
+and remaining gates. Use the [service access runbook](docs/service-access.md)
+for tested Windows URLs. GitOps controller RBAC, database initialization and
+the full application stack remain pending; working health probes and a dashboard
+do not establish those outcomes.

@@ -1,0 +1,94 @@
+{
+  "reviewedAtUtc": "2026-10-07T09:08:13.9227479Z",
+  "scope": "Review of repository corrections and existing single-node WSL acceptance; not production release",
+  "context": "vcloud-wsl-local",
+  "runtime": {
+    "nodes": [
+      {
+        "name": "vcloud-wsl-local",
+        "ready": "True",
+        "version": "v1.36.5+k3s1",
+        "podCIDRs": [
+          "10.42.0.0/24"
+        ]
+      }
+    ],
+    "cilium": {
+      "hostFirewall": "true",
+      "kubeProxyReplacement": "true",
+      "routingMode": "native",
+      "bandwidthManager": "true",
+      "dnsTransparentMode": "true"
+    },
+    "allThreeHealthProbes": "passed: HTTP 200, Ready, stable restart counters across two polls",
+    "network": {
+      "status": "passed",
+      "timestampUTC": "2026-10-07T12:04:56.521857+03:00",
+      "context": "vcloud-wsl-local",
+      "source": "hpc-compute/vcloud-lab-denied",
+      "destination": "platform-services/vcloud-lab-server",
+      "port": 8080,
+      "protocol": "TCP",
+      "dns": "passed",
+      "allowedControlHTTP": "passed",
+      "unauthorizedServiceHTTP": "blocked",
+      "unauthorizedDirectPodHTTP": "blocked",
+      "matchingCiliumPolicyDrops": 6,
+      "dropEvents": [
+        "xx drop (Policy denied) flow 0x6399fe22 to endpoint 0, ifindex 17, file bpf_lxc.c:1663, , identity 25045->51577: 10.42.0.202:59070 -> 10.42.0.236:8080 tcp SYN",
+        "xx drop (Policy denied) flow 0xa960d7bb to endpoint 0, ifindex 17, file bpf_lxc.c:1663, , identity 25045->51577: 10.42.0.202:59070 -> 10.42.0.236:8080 tcp SYN",
+        "xx drop (Policy denied) flow 0xe38c8614 to endpoint 0, ifindex 17, file bpf_lxc.c:1663, , identity 25045->51577: 10.42.0.202:59070 -> 10.42.0.236:8080 tcp SYN",
+        "xx drop (Policy denied) flow 0xc4f0148a to endpoint 0, ifindex 17, file bpf_lxc.c:1663, , identity 25045->51577: 10.42.0.202:59080 -> 10.42.0.236:8080 tcp SYN",
+        "xx drop (Policy denied) flow 0xe3552f01 to endpoint 0, ifindex 17, file bpf_lxc.c:1663, , identity 25045->51577: 10.42.0.202:59080 -> 10.42.0.236:8080 tcp SYN",
+        "xx drop (Policy denied) flow 0xb8578924 to endpoint 0, ifindex 17, file bpf_lxc.c:1663, , identity 25045->51577: 10.42.0.202:59080 -> 10.42.0.236:8080 tcp SYN"
+      ]
+    },
+    "proxyMarks": "plan is already reconciled; timer active; last oneshot result success",
+    "windowsAccess": {
+      "checkedAtUtc": "2026-10-07T09:06:26.4756278Z",
+      "origin": "Windows loopback",
+      "ui": "http://127.0.0.1:8080/",
+      "smoke": "http://127.0.0.1:18080/",
+      "accessPassed": true,
+      "checks": [
+        "HTML route",
+        "JavaScript bundle",
+        "version API",
+        "settings API",
+        "projects API",
+        "applications API",
+        "HTTP smoke body"
+      ],
+      "application": {
+        "name": "vcloud-wsl-platform",
+        "sync": "Unknown",
+        "health": "Healthy"
+      }
+    },
+    "gitops": "blocked: controller discovery binding targets argocd, active controller is platform-services",
+    "databases": [],
+    "pvcs": []
+  },
+  "validation": {
+    "offline": {
+      "status": "passed",
+      "moduleTests": 414,
+      "ciControlTests": 22,
+      "checks": 39,
+      "scope": "Pre-roadmap-integration working tree; final immutable candidate requires fresh hosted CI"
+    },
+    "hostedCI": {
+      "policy": "Require fresh candidate and PR integration checks before merge",
+      "pullRequest": "https://github.com/amazen33/vCloud/pull/4",
+      "evidence": "GitHub Actions immutable-revision summaries and per-check logs; previous green runs are not reused"
+    }
+  },
+  "pendingAcceptance": [
+    "GitOps Synced/Healthy and drift self-heal",
+    "PostgreSQL TLS/pgvector/persistence and scaling",
+    "Offline cold-cache bootstrap and authenticated mirror",
+    "WSL reboot recovery",
+    "Secrets/IAM/SaaS/observability integration",
+    "GPU/HPC and production release"
+  ]
+}

@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import subprocess
 import yaml
+from airgap import argocd_image
 from wsl_lab import ROOT,load_policy,normalize_pods,resource,security
 from manifest_contract import audit_objects,podspec
 from wsl_pg_image import IMAGE as PG_IMAGE
@@ -49,14 +50,18 @@ def infrastructure():
             relocate(obj)
             if name=='argocd-core.yaml' and obj['kind'] not in cluster_kinds:obj['metadata']['namespace']=NS
             spec=podspec(obj)
+            if name=='argocd-core.yaml' and obj['kind']=='ServiceAccount':
+                obj['imagePullSecrets']=[{'name':'vcloud-registry-cred'}]
             if spec:
                 obj['spec']['replicas']=1
                 uid=10001 if name=='cnpg.yaml' else 1000 if name=='metrics-server.yaml' else 999
                 spec['securityContext']={'runAsNonRoot':True,'runAsUser':uid,'runAsGroup':uid,'fsGroup':uid,'seccompProfile':{'type':'RuntimeDefault'}}
                 for c in spec.get('containers',[])+spec.get('initContainers',[]):
                     c['image']=REG+c['image'];c['imagePullPolicy']='IfNotPresent'
+                    if '/argoproj/argocd' in c['image']:c['image']=argocd_image()
                     c['securityContext']=security()|{'runAsUser':uid,'runAsGroup':uid}
                     c['resources']={'requests':{'cpu':'100m','memory':'128Mi'},'limits':{'cpu':'1','memory':'512Mi'}}
+                if name=='argocd-core.yaml':spec['imagePullSecrets']=[{'name':'vcloud-registry-cred'}]
                 if obj['metadata']['name']=='argocd-repo-server':
                     spec['automountServiceAccountToken']=False
                     spec['dnsPolicy']='None';spec['dnsConfig']={'nameservers':['10.43.0.11'],'searches':[NS+'.svc.cluster.local','svc.cluster.local','cluster.local']}
@@ -138,19 +143,27 @@ def network():
         cnp('vcloud-wsl-argo-repo',repo,[probe(8084),{'fromEndpoints':peers(controller),'toPorts':ports(8081)}],[
             {'toEndpoints':peers(redis),'toPorts':ports(6379)},
             {'toEndpoints':peers(dns),'toPorts':[{'ports':[{'port':'1053','protocol':'ANY'}],
-                'rules':{'dns':[{'matchName':'github.com'},{'matchPattern':'*.svc.cluster.local'}]}}]},
+                # Full repo health checks use a gRPC localhost connection. Its
+                # SRV lookup must receive a negative answer rather than time out
+                # at the DNS L7 proxy, even when TXT service config is disabled.
+                'rules':{'dns':[{'matchName':'github.com'},
+                                 {'matchName':'argocd-redis.'+NS+'.svc.cluster.local'},
+                                 {'matchName':'_grpclb._tcp.localhost'}]}}]},
             {'toFQDNs':[{'matchName':'github.com'}],'toPorts':ports(443)}]),
         cnp('vcloud-wsl-git-dns',dns,[{'fromEndpoints':peers(repo),'toPorts':ports(1053,protocol='ANY')}],[
             {'toCIDR':['10.255.255.254/32'],'toPorts':ports(53,protocol='ANY')},
             {'toEndpoints':[{'matchLabels':{'k8s:io.kubernetes.pod.namespace':'kube-system','k8s:k8s-app':'kube-dns'}}],
              'toPorts':ports(1053,protocol='ANY')}]),
         cnp('vcloud-wsl-db-scaler',{'k8s:vcloud.io/component':'database-scaler'},[],[api]),
-        cnp('vcloud-wsl-db-client',client,[],[{'toEndpoints':peers(pg),'toPorts':ports(5432)}])]
+        cnp('vcloud-wsl-db-client',client,[],[{'toEndpoints':peers(pg),'toPorts':ports(5432)}]),
+        yaml.safe_load((ROOT/'deploy/network/platform-probes/cilium-platform-probes.yaml').read_text())]
 
 
 def git_dns():
     cm=resource('ConfigMap','vcloud-git-dns',namespace=NS)
-    cm['data']={'Corefile':'github.com:1053 {\n forward . 10.255.255.254\n cache 30\n errors\n}\ncluster.local:1053 {\n forward . 10.43.0.10\n cache 30\n errors\n}\n'}
+    # Answer only this local service-discovery zone without external forwarding.
+    # NXDOMAIN lets gRPC continue to the /etc/hosts localhost addresses promptly.
+    cm['data']={'Corefile':'github.com:1053 {\n forward . 10.255.255.254\n cache 30\n errors\n}\ncluster.local:1053 {\n forward . 10.43.0.10\n cache 30\n errors\n}\n_grpclb._tcp.localhost:1053 {\n template ANY ANY {\n  rcode NXDOMAIN\n }\n cache 30\n errors\n}\n'}
     container={'name':'dns','image':DNS_IMAGE,'imagePullPolicy':'IfNotPresent','args':['-conf','/etc/coredns/Corefile'],
         'securityContext':security(),'resources':{'requests':{'cpu':'25m','memory':'32Mi'},'limits':{'cpu':'200m','memory':'64Mi'}},
         'volumeMounts':[{'name':'config','mountPath':'/etc/coredns','readOnly':True}]}

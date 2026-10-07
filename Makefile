@@ -11,6 +11,8 @@ BUILD ?= .build/module-2
 PROMTOOL ?= promtool
 BASH_BINARY ?= $(SHELL)
 JQ_BINARY ?= jq
+KUSTOMIZE ?= kustomize
+CONFTEST ?= conftest
 RUN = $(PYTHON) tools/module2.py --site "$(SITE)" --build "$(BUILD)" --helm "$(HELM)" --kubeconform "$(KUBECONFORM)" --kubectl "$(KUBECTL)"
 
 .PHONY: host-check validate render diff apply prepare test help module3-render module3-validate module3-test module3-preflight module3-alerts module4a-render module4a-validate module4a-test module4b-render module4b-validate module4b-test
@@ -19,6 +21,7 @@ help:
 	@printf '%s\n' 'module3-render / module3-validate: generate or check offline CI/CD manifests' 'module3-test / module3-alerts: CI/Git/HTTP contracts and Prometheus alert tests' 'module3-preflight CONTEXT=<reviewed context>: read-only cluster prerequisites'
 	@printf '%s\n' 'module4a-render / module4a-validate / module4a-test: public OpenBao configuration, CSI patches and offline revocation guards'
 	@printf '%s\n' 'module4b-render / module4b-validate / module4b-test: public Keycloak, APISIX OIDC and group RBAC references'
+	@printf '%s\n' 'wsl-platform-recovery-plan / wsl-platform-recover: preview or apply probe policies, restart Argo CD and verify health' 'wsl-platform-probe-verify / wsl-platform-probe-test: read-only live health checks or offline recovery tests'
 host-check:
 	$(RUN) host-check
 render:
@@ -103,3 +106,25 @@ wsl-platform-test:
 	$(PYTHON) -m unittest discover -s tests -p test_wsl_platform.py -v
 wsl-database-test:
 	sudo python3 tools/wsl_db_test.py --restart
+
+# Run on the WSL node with access to the private lab kubeconfig.
+KUBE_CONTEXT ?= vcloud-wsl-local
+.PHONY: wsl-platform-recovery-plan wsl-platform-recover wsl-platform-probe-verify wsl-platform-probe-test
+wsl-platform-recovery-plan:
+	KUBE_CONTEXT="$(KUBE_CONTEXT)" "$(BASH_BINARY)" deploy/network/platform-probes/recover.sh --plan
+wsl-platform-recover:
+	KUBE_CONTEXT="$(KUBE_CONTEXT)" "$(BASH_BINARY)" deploy/network/platform-probes/recover.sh
+wsl-platform-probe-verify:
+	KUBE_CONTEXT="$(KUBE_CONTEXT)" "$(BASH_BINARY)" deploy/network/platform-probes/apply-and-verify.sh --verify-only
+wsl-platform-probe-test:
+	BASH_BINARY="$(BASH_BINARY)" $(PYTHON) -m unittest discover -s tests -p test_platform_probes.py -v
+
+.PHONY: airgap-validate airgap-test node-registry-plan node-preflight
+airgap-validate:
+	$(PYTHON) tools/airgap.py --kustomize "$(KUSTOMIZE)" --kubeconform "$(KUBECONFORM)" --conftest "$(CONFTEST)"
+airgap-test:
+	$(PYTHON) -m unittest discover -s tests/ci -v
+node-registry-plan:
+	bash scripts/bootstrap-node.sh --plan
+node-preflight:
+	bash scripts/validate-node.sh

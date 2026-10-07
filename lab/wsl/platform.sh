@@ -11,6 +11,10 @@ kubectl() { /usr/local/bin/k3s kubectl --context vcloud-wsl-local "$@"; }
 mkdir -p "$BUILD"
 python3 "$ROOT/tools/wsl_platform.py" render
 python3 "$ROOT/tools/wsl_platform.py" validate --kubeconform "$ROOT/.tools/wsl-lab/kubeconform"
+# Gate exact images through the ACTIVE external CRI before any live storage or
+# controller write. A cache-only lab may tolerate mirror DNS degradation only
+# when every image in this render is already present under its canonical alias.
+bash "$ROOT/scripts/validate-node.sh" --cache-only --manifest "$BUILD/infrastructure.yaml"
 bash "$ROOT/lab/wsl/prepare-storage.sh" --apply
 bash "$ROOT/lab/wsl/prepare-tls.sh"
 # Only the public metrics serving CA is read into the bootstrap APIService.

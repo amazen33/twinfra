@@ -113,6 +113,21 @@ class Controls(unittest.TestCase):
         self.assertIn('tests/test_module5b.py', checks.OPTIONAL['module-5b'])
         self.assertIn('tests/module5b-alerts.test.yaml', checks.OPTIONAL['module-5b'])
 
+    def test_airgap_coverage_and_tools_cannot_be_omitted(self):
+        self.assertIn('tests/ci/test_airgap.py', checks.OPTIONAL['deploy/kustomize'])
+        self.assertIn('tests/ci/policy/airgap.rego', checks.OPTIONAL['deploy/kustomize'])
+        self.assertIn('tests/ci/policy/airgap_test.rego', checks.OPTIONAL['deploy/kustomize'])
+        artifacts = json.loads((ROOT / 'toolchain.lock.json').read_text())['artifacts']
+        for name in ('kustomize', 'conftest'):
+            self.assertRegex(artifacts[name]['sha256'], r'^[a-f0-9]{64}$')
+            self.assertEqual(artifacts[name]['output'], 'bin/' + name)
+
+    def test_platform_probe_bundle_cannot_omit_tests_or_manifests(self):
+        bundle = checks.OPTIONAL['deploy/network/platform-probes']
+        for name in ('cilium-platform-probes.yaml', 'k8s-platform-probes.yaml', 'apply-and-verify.sh', 'recover.sh', 'README.md'):
+            self.assertIn('deploy/network/platform-probes/' + name, bundle)
+        self.assertIn('tests/test_platform_probes.py', bundle)
+
     def test_rag_coverage_cannot_be_omitted(self):
         self.assertIn('tests/test_module5a.py', checks.OPTIONAL['module-5a'])
         self.assertIn('module-5a/requirements-runtime.lock.txt', checks.OPTIONAL['module-5a'])

@@ -1,5 +1,5 @@
 ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1
-quay.io/argoproj/argocd:v3.5.3
+quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa
 public.ecr.aws/docker/library/redis:8.2.3-alpine
 registry.k8s.io/metrics-server/metrics-server:v0.9.0
 docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e

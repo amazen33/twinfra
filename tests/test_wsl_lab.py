@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 import sys
 sys.path.insert(0, str(ROOT/'tools'))
 import wsl_lab as lab
+import wsl_proxy_marks as proxy_marks
 from wsl_lab_acceptance import acceptance, runtime_projection, ready_or_completed
 from wsl_lab_dns_image import build as build_dns, binary_from_export
 
@@ -28,6 +29,50 @@ class WslLabTests(unittest.TestCase):
 
     def test_updated_host_passes(self):
         self.assertIs(lab.check_facts(self.facts,self.p),self.facts)
+
+    def test_proxy_fix_profile_is_the_owned_lab(self):
+        import hashlib
+        self.assertEqual(proxy_marks.PROFILE_SHA256,hashlib.sha256((ROOT/'lab/wsl/profile.json').read_bytes()).hexdigest())
+
+    def proxy_fixture(self):
+        return {'nftables':[{'chain':{'family':'ip','table':'filter','name':'WSLOUTPUT',
+                                     'type':'filter','hook':'output','policy':'accept'}},
+             {'rule':{'family':'ip','table':'filter','chain':'WSLOUTPUT','handle':2,
+                      'expr':[{'mangle':{'key':{'meta':{'key':'mark'}},'value':1}}]}}]}
+
+    def proxy_rule(self,tag,handle):
+        return {'rule':{'family':'ip','table':'filter','chain':'WSLOUTPUT','handle':handle,'comment':tag,
+                        'expr':[proxy_marks.expected_match(proxy_marks.MARKS[tag]),
+                                {'counter':{'packets':1,'bytes':80}},{'return':None}]}}
+
+    def test_proxy_fix_changes_marks_without_firewall_accepts(self):
+        commands=proxy_marks.plan(self.proxy_fixture())
+        self.assertEqual(len(commands),2)
+        self.assertTrue(all('insert rule ip filter WSLOUTPUT' in command and 'counter return' in command for command in commands))
+        self.assertTrue(all(' accept' not in command and ' flush ' not in command for command in commands))
+
+    def test_proxy_fix_is_idempotent_and_removes_only_owned_rules(self):
+        fixture=self.proxy_fixture()
+        for index,tag in enumerate(proxy_marks.MARKS):fixture['nftables'].insert(1,self.proxy_rule(tag,10+index))
+        self.assertEqual(proxy_marks.plan(fixture),[])
+        commands=proxy_marks.plan(fixture,remove=True)
+        self.assertEqual(set(commands),{'delete rule ip filter WSLOUTPUT handle 10','delete rule ip filter WSLOUTPUT handle 11'})
+
+    def test_proxy_fix_repairs_rules_recreated_after_wsl_overwrite(self):
+        fixture=self.proxy_fixture()
+        for index,tag in enumerate(proxy_marks.MARKS):fixture['nftables'].append(self.proxy_rule(tag,10+index))
+        commands=proxy_marks.plan(fixture)
+        self.assertEqual(len(commands),4)
+        self.assertTrue(all('handle 2' not in command for command in commands))
+
+    def test_proxy_fix_refuses_unknown_chain_and_tampered_owned_rule(self):
+        fixture=self.proxy_fixture();fixture['nftables'][0]['chain']['policy']='drop'
+        with self.assertRaises(ValueError):proxy_marks.plan(fixture)
+        fixture=self.proxy_fixture();fixture['nftables'][1]['rule']['expr'][0]['mangle']['value']=99
+        with self.assertRaises(ValueError):proxy_marks.plan(fixture)
+        fixture=self.proxy_fixture();tag=next(iter(proxy_marks.MARKS));rule=self.proxy_rule(tag,10)
+        rule['rule']['expr']=[{'accept':None}];fixture['nftables'].insert(1,rule)
+        with self.assertRaises(ValueError):proxy_marks.plan(fixture,remove=True)
 
     def test_small_host_rejected(self):
         self.facts['memoryKiB']=4*1024**2
