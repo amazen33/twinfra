@@ -32,10 +32,18 @@ Pod MTU test failed and restored its original value. The operator approved a
 scoped Cilium routing test after automatic approval review flagged its brief
 lab-wide interruption. With `bpf.hostLegacyRouting: true`, repo-server fetched
 GitHub successfully. The WSL renderer now preserves that measured workaround;
-production Cilium values retain `false`. Native routing, kube-proxy replacement,
+production Cilium values retain `false`. The dedicated
+[routing overlay](../lab/wsl/values/cilium-routing.yaml) now makes that boundary
+explicit and adds socket LB to the desired lab configuration. The
+[CI/render guard](../tools/check_host_routing.py) rejects enablement elsewhere,
+including Argo Helm overrides. Native routing, kube-proxy replacement,
 BPF masquerading and policies remain enabled. This matches Cilium's documented
 [host-stack compatibility workaround](https://docs.cilium.io/en/stable/operations/performance/tuning/#ebpf-host-routing);
 it is evidence of a successful local workaround, not a complete upstream RCA.
+See [ADR-0024](architecture/adr/ADR-0024-wsl-host-routing.md) for the decision.
+The 14:12 UTC refresh verified effective socket LB enabled/full coverage under
+proxy replacement; explicit ConfigMap convergence follows the next lab Helm
+reconciliation. SPIFFE/SPIRE is disabled and was not validated by this policy test.
 
 ```bash
 sudo bash lab/wsl/reconcile-host-routing.sh --check
@@ -202,6 +210,13 @@ Activate `lab/wsl/endpoints/argocd.yaml` only after its Git revision is availabl
 and CI passes. Scoped namespaced write Roles exclude Secrets, node/storage
 resources and cluster write access; controller/CRD bootstrap stays separately
 owned. Do not delete a tracked Git branch before verified cutover.
+
+Both Application definitions target `main`. During candidate validation, pin
+the endpoint Application to a CI-passed immutable SHA, then promote after merge.
+The initial legacy Core source required a temporary `/spec/managed` ignore to
+preserve the new role references. Remove that whole-role ignore on main cutover;
+the explicit CNPG role defaults now match admission. Keep only bounded resource
+scaling differences ignored. Do not add the temporary ignore back on `main`.
 
 ```bash
 sudo kubectl --kubeconfig=/etc/vcloud-wsl/kubeconfig.yaml --context=vcloud-wsl-local \

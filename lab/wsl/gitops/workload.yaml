@@ -26,6 +26,8 @@ spec:
       superuser: false
       createdb: false
       createrole: false
+      inherit: true
+      connectionLimit: -1
       passwordSecret:
         name: vcloud-wsl-openbao-db
     - name: keycloak
@@ -34,6 +36,8 @@ spec:
       superuser: false
       createdb: false
       createrole: false
+      inherit: true
+      connectionLimit: -1
       passwordSecret:
         name: vcloud-wsl-keycloak-db
   bootstrap:

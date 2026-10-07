@@ -21,6 +21,7 @@ API_PORT = 16443
 sys.path.insert(0, str(ROOT / 'tools'))
 from module2 import audit_objects, load_policy, normalize_pods, verify_bundle
 from wsl_lab_dns_image import IMAGE as DNS_IMAGE
+from check_host_routing import LAB, LAB_VALUES, assert_config, documents
 
 
 def profile():
@@ -215,9 +216,16 @@ def render(build, node_ip, device):
     p = profile()
     build.mkdir(parents=True, exist_ok=True)
     cilium = yaml.safe_load((ROOT / 'module-2/values/cilium.yaml').read_text(encoding='utf-8'))
-    # Measured WSL mirrored-network workaround: traverse the Linux host stack.
-    # Native routing, BPF masquerading and kube-proxy replacement stay enabled.
-    cilium['bpf']['hostLegacyRouting'] = True
+    # Narrow local overlay; production inputs remain unchanged. Reject drift
+    # before bootstrap, even when it is invoked without the separate CI guard.
+    overlay = documents((ROOT / LAB).read_text(encoding='utf-8'))
+    if p['name'] != 'vcloud-wsl-local' or overlay != [LAB_VALUES]:
+        raise ValueError('Unexpected WSL routing profile')
+    for key, value in overlay[0].items():
+        if isinstance(value, dict):
+            cilium.setdefault(key, {}).update(value)
+        else:
+            cilium[key] = value
     cilium.update(k8sServiceHost=node_ip, k8sServicePort=API_PORT, devices=[device], cluster={'name': p['name']})
     datasets = {'k3s-config.yaml': k3s_config(p, node_ip), 'cilium-values.yaml': cilium}
     for name, data in datasets.items():
@@ -237,6 +245,7 @@ def validate(build, helm, kubeconform, schemas=None):
     command = [helm, 'template', 'cilium', str(ROOT / 'module-2/vendor/cilium-1.20.2.tgz'),
                '--namespace', 'kube-system', '-f', str(build / 'cilium-values.yaml')]
     output = subprocess.check_output(command, text=True, encoding='utf-8')
+    assert_config(documents(output), True, socket_lb=True)
     audit([obj for obj in yaml.safe_load_all(output) if obj])
     (build / 'cilium-rendered.yaml').write_text(output, encoding='utf-8', newline='\n')
     schema_args = []

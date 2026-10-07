@@ -145,6 +145,28 @@ class Controls(unittest.TestCase):
             with self.subTest(output=output), self.assertRaises(ValueError):
                     checks.require_complete_tests(output)
 
+    def test_host_routing_bundle_is_optional_only_for_historical_revisions(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            self.baseline_fixture(source)
+            self.assertEqual(checks.coverage(source)['lab/wsl/values'], 'not_present_in_revision')
+            (source / 'tools/check_host_routing.py').touch()
+            with self.assertRaisesRegex(ValueError, 'Incomplete lab/wsl/values'):
+                checks.coverage(source)
+            for name in checks.OPTIONAL['lab/wsl/values']:
+                path = source / name; path.parent.mkdir(parents=True, exist_ok=True); path.touch()
+            for name in checks.OPTIONAL['lab/wsl']:
+                path = source / name; path.parent.mkdir(parents=True, exist_ok=True); path.touch()
+            self.assertEqual(checks.coverage(source)['lab/wsl/values'], 'present')
+
+    def test_candidate_routing_guard_runs_before_historical_gates(self):
+        workflow = yaml.safe_load((ROOT.parents[1] / '.github/workflows/pr-tests.yaml').read_text())
+        steps = workflow['jobs']['test']['steps']
+        guard_step = next(s for s in steps if s.get('name') == 'Validate candidate WSL routing boundary')
+        self.assertNotIn('if', guard_step)
+        self.assertIn('.ci-control/tools/check_host_routing.py --root .ci-control', guard_step['run'])
+        self.assertLess(steps.index(guard_step), next(i for i, s in enumerate(steps) if s.get('name') == 'Run offline module gates and air-gapped Kustomize/schema/policy checks'))
+
     def test_hpc_coverage_cannot_be_omitted(self):
         self.assertIn('module-5b', checks.OPTIONAL)
         self.assertIn('tests/test_module5b.py', checks.OPTIONAL['module-5b'])

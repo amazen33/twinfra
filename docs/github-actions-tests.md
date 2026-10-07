@@ -45,6 +45,7 @@ Manual dispatch is available after the workflow exists on the default branch.
 | Module 5a, when present | Strict GPU Knative/CSI/Job/policy schemas, frozen Pod security audit, deterministic renders, real LangChain/SQLAlchemy client and LCEL tests with mocked database/inference transports |
 | Module 5b, when present | Disabled Spinifex profile, Kueue Helm/CRD validation, durable capacity limits, SDK signing/stubs, local mTLS and HPC alert scenarios |
 | WSL lab, when present | Local K3s configuration, strict manifests/frozen Cilium audit, resource/adoption/CIDR safeguards; no host execution on GitHub |
+| WSL routing boundary | Unconditional candidate source guard; applicable selected revisions also run mutation tests and locked-chart lab/base render assertions; reject legacy routing outside the exact local values overlay, including Argo Helm overrides |
 | WSL GitOps/database, when present | Locked Argo/CNPG/metrics artifacts, strict rendered schemas, exact Local PV vetting, TLS/RBAC boundaries and bounded CPU/memory growth; SQL and reconciliation require live acceptance |
 | WSL endpoints, when present | Strict endpoint/GitOps schemas and render drift, restricted Pod policy, CPU-only mutations, PGP-only initialization/custody guards; no initialization or deployment on GitHub |
 | Registry overlay, when present | Strict kubeconform with no skipped resources; explicit `IfNotPresent`, immutable Argo images and pull-secret references; Rego rules and DNS/TLS/cache/private-path fixtures |
@@ -61,6 +62,16 @@ instead of trusting previously committed validation reports.
 The document-only roadmap does not require a later automation implementation,
 and historical WSL profiles do not require the later proxy repair. Once either
 feature is present, incomplete bundles fail instead of disappearing from coverage.
+
+The candidate [host-routing guard](../tools/check_host_routing.py) runs from the
+CI control checkout before selected-revision gates. Thus historical PRs without
+the new WSL overlay do not suppress the candidate's production/staging boundary
+check. New routing bundles require the overlay, guard and tests together.
+The selected-revision render gate asserts lab legacy routing `"true"`, base
+`"false"`, native mode, BPF masquerade, proxy replacement and explicit lab socket
+LB. The [ADR](architecture/adr/ADR-0024-wsl-host-routing.md) records the exception.
+Require `vCloud PR gate` in a GitHub ruleset for enforced merge prevention;
+the local CI rule alone does not protect an otherwise unprotected `main` branch.
 
 ## Dependency and execution boundaries
 

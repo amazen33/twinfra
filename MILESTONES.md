@@ -9,6 +9,9 @@ not imply ISTQB certification. All four GitHub release milestones remain open.
 
 - [x] Provision the WSL2 K3s foundation and verify its Node, DNS and local network controls on the 20 GiB / six-CPU profile. — **[Flexibility, Reliability]**
 - [x] Configure Cilium eBPF deny-all and record DNS, allowed-control HTTP, denied Service/Pod HTTP and matching policy-drop evidence for the lab test pair. — **[Security, Functional suitability]**
+- [x] Codify the WSL-only host-routing overlay; validate lab/base Helm renders and CI rejection of production/staging/Argo enablement. — **[Compatibility, Security]**
+- [x] Refresh live native/legacy routing, BPF masquerade and effective socket LB status; repeat GitHub fetch, deny-all and ten endpoint gates. — **[Security, Reliability]**
+- [ ] Reconcile the explicit lab socket LB ConfigMap value and repeat WSL reboot acceptance; SPIFFE attestation requires separate deployment/validation. — **[Security, Reliability]**
 - [x] Restore the three platform health probes and Windows loopback Core dashboard with Host Firewall enabled; retain the local probe-port exception. — **[Reliability, Interaction capability]**
 - [ ] Define and verify scoped host and Windows Firewall guards for required vCloud traffic; confirm unrelated traffic remains blocked. — **[Security, Reliability]**
 - [ ] Retest WSL reboot recovery and complete application readiness before claiming the cluster supports all vCloud workloads. — **[Reliability, Functional suitability]**
@@ -73,7 +76,7 @@ release sign-off. See the [CI guide](docs/github-actions-tests.md).
 - [x] M4 observability: APISIX, CNPG and Knative Prometheus targets present/up; real demo span exported by OpenTelemetry; Grafana application health and Keycloak verified TLS/discovery passed.
 - [x] M5 local acceptance: ten live gates passed with zero failures, including generated PodSecurity and GPU/Spinifex disabled constraints.
 - [ ] OpenBao activation: provide the four operator public keys, execute the PGP-only initialization, then complete operator unseal and secrets-engine acceptance.
-- [ ] M5 hosted publication: pass the candidate GitHub workflow and verify the new endpoint Application at the published Git revision.
+- [x] M5 hosted publication: candidate and exact-head GitHub gates passed; `vcloud-wsl-endpoints` Synced/Healthy at the tested revision, followed by zero-failure acceptance.
 
 Evidence and executable procedures: [local stages runbook](docs/wsl-local-milestones-3-5.md).
 The [dated acceptance record](docs/acceptance/wsl-2026-10-07.md) records the final

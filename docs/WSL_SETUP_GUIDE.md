@@ -136,11 +136,13 @@ TLS, network-policy drops and repo-server connectivity before changing namespace
 The historical [saved status](wsl-platform-status.json) records failed probes
 and a repo Service `no route to host` error. The 2026-10-07
 [correction review](correction-review.md) supersedes that health gate: all three
-probes and local browser access pass with Host Firewall enabled. GitOps still
-reports `ComparisonError` because the controller's discovery binding targets
-the old `argocd` ServiceAccount. Restore the vetted `platform-services` binding
-and verify reconciliation before initializing the database. The namespace and
-Windows examples above do not resolve this RBAC mismatch.
+probes and local browser access passed with Host Firewall enabled. At that
+review, GitOps still reported `ComparisonError` because the discovery binding
+targeted the old `argocd` ServiceAccount. The later
+[M3–M5 acceptance record](acceptance/wsl-2026-10-07.md) documents the corrected
+`platform-services` binding, both Applications Synced/Healthy and PostgreSQL
+acceptance. Namespace creation and Windows firewall changes alone do not
+resolve a controller RBAC mismatch.
 
 ### Separate upstream reference installation: `argocd`
 
@@ -165,7 +167,75 @@ Do not force field ownership over an existing installation. If installing into a
 different namespace, update embedded RBAC subjects and service references too;
 `kubectl -n` alone does not relocate those fields.
 
-## 3. Acceptance after a deliberate repair
+## 3. WSL host routing, eBPF validation and the production boundary
+
+The measured mirrored-network/veth lab requires legacy host routing as its
+current GitHub fetch workaround. It is scoped to
+[`lab/wsl/values/cilium-routing.yaml`](../lab/wsl/values/cilium-routing.yaml).
+The renderer merges it after production/base values, which retain
+`bpf.hostLegacyRouting: false`. Native CNI, BPF masquerade and full kube-proxy
+replacement remain enabled. Socket load balancing is now explicitly enabled
+in the lab overlay. No networking controller changes ownership.
+
+The Helm key is `bpf.hostLegacyRouting`, **not** `enableHostLegacyRouting`.
+It renders `cilium-config.data["enable-host-legacy-routing"]`. Verify the
+desired lab and base profiles offline using the locked chart:
+
+```bash
+python3 tools/check_host_routing.py --helm helm --build .build/host-routing
+python3 -m unittest discover -s tests -p test_host_routing.py -v
+```
+
+Expected rendered values:
+
+| ConfigMap key | Lab | Base/production |
+| --- | --- | --- |
+| `enable-host-legacy-routing` | `"true"` | `"false"` |
+| `routing-mode` | `"native"` | `"native"` |
+| `kube-proxy-replacement` | `"true"` | `"true"` |
+| `enable-bpf-masquerade` | `"true"` | `"true"` |
+| `bpf-lb-sock` | `"true"` | Existing behavior unchanged |
+
+CI rejects legacy routing in other source values or Argo Applications,
+including inline values, valuesObject, Helm parameters and multiple sources.
+Production/staging must never reference the local overlay. A required GitHub
+ruleset remains necessary to enforce merge blocking; it is tracked separately.
+
+After deliberately reconciling the lab Helm values, use read-only checks to
+verify the effective configuration, agent status and repository fetch:
+
+```bash
+cd /mnt/e/vCloud
+sudo bash lab/wsl/reconcile-host-routing.sh --check
+kubectl_local -n kube-system get configmap cilium-config -o json \
+  | jq -e '.data | .["enable-host-legacy-routing"] == "true" and
+      .["routing-mode"] == "native" and .["kube-proxy-replacement"] == "true" and
+      .["enable-bpf-masquerade"] == "true" and .["bpf-lb-sock"] == "true"'
+kubectl_local -n kube-system exec daemonset/cilium -c cilium-agent -- cilium-dbg status --verbose
+kubectl_local -n platform-services exec deployment/argocd-repo-server -- \
+  timeout 25 git ls-remote https://github.com/amazen33/vCloud.git HEAD
+sudo bash lab/wsl/test-network.sh
+```
+
+`kubectl_local` is defined in section 2. Expect `Host Routing: Legacy`,
+kube-proxy replacement enabled and Socket LB enabled in agent status. Native
+CNI routing remains eBPF-based, while host packets traverse the Linux stack.
+The network test must prove the allowed control and unauthorized Service/direct
+Pod requests with matching Cilium drops. Do not accept merely Ready Pods.
+
+The 2026-10-07 live refresh establishes successful GitHub fetching, deny-all
+enforcement and effective Socket LB enabled/full coverage in agent status.
+Full kube-proxy replacement enables socket LB even though the existing
+ConfigMap still reads `bpf-lb-sock: "false"`; the new explicit `"true"` value
+converges at the next lab Helm reconciliation. The strict ConfigMap check above
+is a post-reconciliation gate, while current effective status is already
+verified. SPIFFE/SPIRE is not established by Cilium's label identities:
+`mesh-auth-enabled` is false and the auth certificate provider reports Disabled.
+See
+[ADR-0024](architecture/adr/ADR-0024-wsl-host-routing.md) and the
+[dated acceptance record](acceptance/wsl-2026-10-07.md) for evidence and limits.
+
+## 4. Acceptance after a deliberate repair
 
 For a repo-server that accepts 8084 but times out on `/healthz?full=true`, follow
 the [validated DNS proxy mark repair](troubleshooting/argocd-repo-health-wsl.md).

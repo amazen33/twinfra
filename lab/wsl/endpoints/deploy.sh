@@ -34,7 +34,8 @@ roles=workload()[0]['spec']['managed']
 PY
 k -n platform-services patch cluster vcloud-wsl-postgres --type=merge --patch-file "$BUILD/roles-patch.json"
 # Preserve externally managed roles until this source is published in GitOps.
-if ! k -n platform-services get application vcloud-wsl-platform -o json | jq -e '.spec.ignoreDifferences[0].jsonPointers | index("/spec/managed") != null' >/dev/null; then
+if [[ $(k -n platform-services get application vcloud-wsl-platform -o jsonpath='{.spec.source.targetRevision}') != main ]] \
+  && ! k -n platform-services get application vcloud-wsl-platform -o json | jq -e '.spec.ignoreDifferences[0].jsonPointers | index("/spec/managed") != null' >/dev/null; then
   k -n platform-services patch application vcloud-wsl-platform --type=json -p \
     '[{"op":"add","path":"/spec/ignoreDifferences/0/jsonPointers/-","value":"/spec/managed"}]'
 fi

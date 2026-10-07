@@ -69,6 +69,8 @@ jobs:
           npm ci --prefix .ci-control/tools/ci/mermaid --ignore-scripts --no-audit --no-fund
       - name: Verify CI controls
         run: python -m unittest discover -s .ci-control/tools/ci/tests -v
+      - name: Validate candidate WSL routing boundary
+        run: python .ci-control/tools/check_host_routing.py --root .ci-control
       - name: Install trusted pinned HPC test dependencies
         if: ${{ hashFiles('source/module-5b/reference-profile.json') != '' }}
         run: python -m pip install --require-hashes --disable-pip-version-check -r .ci-control/tools/ci/hpc-requirements.txt

@@ -18,6 +18,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'lab/wsl/values': ['lab/wsl/values/cilium-routing.yaml', 'tools/check_host_routing.py',
+                       'tests/test_host_routing.py'],
     'roadmap-automation': ['tools/create_roadmap_issues.py', 'tests/test_roadmap_issues.py'],
     'deploy/network/platform-probes': ['deploy/network/platform-probes/cilium-platform-probes.yaml',
                                       'deploy/network/platform-probes/k8s-platform-probes.yaml',
@@ -225,6 +227,11 @@ def main():
                                    '--kubeconform', binaries['kubeconform'], '--schemas', assets / 'schemas',
                                    '--build', wsl_build])
             run('wsl-lab-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_wsl_lab.py', '-v'], unit=True)
+        if report['modules']['lab/wsl/values'] == 'present':
+            run('host-routing-governance', [python, ROOT.parent / 'check_host_routing.py',
+                '--root', source, '--helm', binaries['helm'], '--build', report_dir / 'host-routing'])
+            run('host-routing-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests',
+                                      '-p', 'test_host_routing.py', '-v'], unit=True)
         if report['modules']['lab/wsl/gitops'] == 'present':
             platform_build = report_dir / 'wsl-platform-rendered'
             run('wsl-platform-render', [python, 'tools/wsl_platform.py', 'render', '--build', platform_build])
