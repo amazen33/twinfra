@@ -18,6 +18,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'keycloak-admin-bootstrap': ['tools/wsl_keycloak_admin.py', 'tests/test_wsl_keycloak_admin.py',
+        'lab/wsl/endpoints/copy-keycloak-password.ps1', 'docs/keycloak-admin-access.md'],
     'lab/wsl/console': ['tools/wsl_console.py', 'tools/wsl_console_preflight.py', 'tests/test_wsl_console.py',
         'lab/wsl/console/profile.json', 'lab/wsl/console/artifacts.lock.json', 'lab/wsl/console/ui.py',
         'lab/wsl/console/keycloak-client.json', 'lab/wsl/console/test-backends.py', 'lab/wsl/console/test-denied.py', 'lab/wsl/console/workloads.yaml', 'lab/wsl/console/network.yaml',
@@ -264,6 +266,14 @@ def main():
                 run(suite[:-3],[python,'-m','unittest','discover','-s','tests','-p',suite,'-v'],unit=True)
         if report['modules']['lab/wsl/localstack'] == 'present':
             run('wsl-localstack-tests',[python,'-m','unittest','discover','-s','tests','-p','test_wsl_localstack.py','-v'],unit=True)
+        if report['modules']['keycloak-admin-bootstrap'] == 'present':
+            admin_pod = report_dir/'keycloak-admin-bootstrap.json'
+            run('keycloak-admin-tests',[python,'-m','unittest','discover','-s','tests','-p','test_wsl_keycloak_admin.py','-v'],unit=True)
+            run('keycloak-admin-render',[python,'tools/wsl_keycloak_admin.py','--render-pod',admin_pod])
+            run('keycloak-admin-schema',[binaries['kubeconform'],'-strict','-summary','-schema-location',
+                str(assets/'schemas/{{.ResourceKind}}.json'),admin_pod])
+            run('keycloak-admin-pss',[binaries['conftest'],'test','--namespace','vcloud_wsl','--policy',
+                'tests/ci/policy/wsl-endpoints.rego',admin_pod])
         if report['modules']['lab/wsl/console'] == 'present':
             run('wsl-console-render',[python,'tools/wsl_console.py','--check'])
             run('wsl-console-tests',[python,'-m','unittest','discover','-s','tests','-p','test_wsl_console.py','-v'],unit=True)
