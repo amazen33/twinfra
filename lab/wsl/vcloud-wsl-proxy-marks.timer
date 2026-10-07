@@ -1,0 +1,10 @@
+[Unit]
+Description=Reconcile Cilium proxy marks after WSL recreates its output chain
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=60s
+Unit=vcloud-wsl-proxy-marks.service
+
+[Install]
+WantedBy=timers.target

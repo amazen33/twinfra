@@ -1,0 +1,57 @@
+{
+  "status": "partial; controller compatibility approval pending",
+  "dateUTC": "2026-10-06",
+  "context": "vcloud-wsl-local",
+  "networkPolicy": {
+    "status": "live passed",
+    "evidence": "docs/wsl-network-acceptance.json",
+    "unauthorizedServiceHTTP": "blocked",
+    "unauthorizedDirectPodHTTP": "blocked",
+    "matchingCiliumPolicyDrops": 6
+  },
+  "staticValidation": {
+    "status": "passed",
+    "regressionTests": 333,
+    "ciControlTests": 18,
+    "checks": 33,
+    "platformResources": 83,
+    "invalidOrSkippedPlatformResources": 0,
+    "runtimeAcceptance": false
+  },
+  "storage": {
+    "status": "host vetted and static Local PV installed",
+    "node": "vcloud-wsl-local",
+    "path": "/var/lib/vcloud-wsl/storage/postgres-1",
+    "backingBytes": 4294967296,
+    "filesystem": "ext4",
+    "uid": 26,
+    "gid": 26,
+    "mode": "0700",
+    "mountOptions": "rw,nosuid,nodev,noexec,noatime",
+    "reclaimPolicy": "Retain",
+    "expansionEnabled": false,
+    "databasePVCBound": false
+  },
+  "gitops": {
+    "repository": "https://github.com/amazen33/vCloud.git",
+    "revision": "codex/wsl-local-bootstrap",
+    "path": "lab/wsl/gitops",
+    "status": "prepared; live Synced/Healthy and self-heal unverified"
+  },
+  "database": {
+    "operator": "1.30.1; installed but unhealthy",
+    "clusterInitialized": false,
+    "sqlPgvectorTLSAndPersistenceAcceptance": "not executed",
+    "cpuGrowthAcceptance": "not executed",
+    "image": "registry.vcloud.example.com/vcloud/postgresql-pgvector:18.6.0-pgvector0.8.2-wsl.1",
+    "imageDigest": "sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6"
+  },
+  "blocker": {
+    "observed": "Cilium classifies host probes/callbacks with world identity and denies them",
+    "proposal": "lab/wsl/HOST-FIREWALL-EXCEPTION.md",
+    "approved": false,
+    "exceptionActive": false,
+    "productionGuardAndFrozenNodeInventory": "unchanged"
+  },
+  "productionReady": false
+}

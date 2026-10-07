@@ -1,0 +1,24 @@
+{
+  "manifest": {
+    "url": "https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.3/manifests/install.yaml",
+    "vendor": "deploy/vendor/argocd-v3.5.3-install.yaml.gz",
+    "sourceSHA256": "7efe2d6bbc03f63623640f1e4198f16c84009d510fb810ef71e56df1b7614ba9",
+    "gzipSHA256": "a7f90e64b36375ac2938a856c3e465027d50f4eb97d7c4f6450947a36c34a2f0"
+  },
+  "images": {
+    "argocd": {
+      "source": "quay.io/argoproj/argocd:v3.5.3",
+      "digest": "sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "canonical": "registry.vcloud.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "digestSource": "https://quay.io/v2/argoproj/argocd/manifests/v3.5.3"
+    },
+    "dex": {
+      "source": "ghcr.io/dexidp/dex:v2.45.1",
+      "canonical": "registry.vcloud.example.com/ghcr.io/dexidp/dex:v2.45.1"
+    },
+    "redis": {
+      "source": "public.ecr.aws/docker/library/redis:8.2.3-alpine",
+      "canonical": "registry.vcloud.example.com/public.ecr.aws/docker/library/redis:8.2.3-alpine"
+    }
+  }
+}

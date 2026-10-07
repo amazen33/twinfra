@@ -1,0 +1,36 @@
+# Public configuration only. Credentials arrive as paired CSI JSON files.
+version: 1
+enabled: false
+database:
+  host: vcloud-postgres-rw.platform-services.svc.cluster.local
+  port: 5432
+  name: vcloud
+  schema: public
+  table: vcloud_rag_documents
+  credentialsFile: /run/vcloud-secrets/database.json
+  caFile: /var/run/vcloud/trust/postgres-ca.crt
+  sslmode: verify-full
+  connectTimeoutSeconds: 5
+  statementTimeoutMilliseconds: 15000
+embeddings:
+  repository: sentence-transformers/all-MiniLM-L6-v2
+  revision: 1110a243fdf4706b3f48f1d95db1a4f5529b4d41
+  path: /models/all-minilm-l6-v2
+  dimensions: 384
+  device: cpu
+  normalize: true
+  # Record SHA256 of vcloud-model.json from verified staging before enabling.
+  manifestSHA256: null
+retrieval:
+  topK: 4
+  maxQuestionCharacters: 2000
+  maxContextCharacters: 8000
+  chunkCharacters: 1600
+  chunkOverlapCharacters: 200
+inference:
+  endpoint: https://vcloud-vllm.hpc-compute.svc.cluster.local/v1/chat/completions
+  caFile: /var/run/vcloud/trust/knative-ca.crt
+  model: deepseek-r1-distill-qwen-32b
+  timeoutSeconds: 150
+  maxTokens: 512
+  temperature: 0.0

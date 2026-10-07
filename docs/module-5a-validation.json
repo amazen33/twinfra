@@ -1,0 +1,114 @@
+{
+  "module": "5a",
+  "recordedAt": "2026-10-06T18:38:17.656124+00:00",
+  "result": "offline validation and real CPU encoder passed; live integration pending",
+  "source": {
+    "baseCommit": "5642f31306e796e0660873a707d92f1abc64c925",
+    "uncommittedWorkingTree": true,
+    "fileSHA256": {
+      ".github/workflows/pr-tests.yaml": "d30aa7cf585347a3963ef75c10f847affb23c5bfc214f76798842dce240c6c22",
+      "Makefile": "9a85d111685d0c2c31f401c66eb1bd4f830b52ccf9f11c9eefaa986d44064796",
+      "module-5a/config/rag.yaml": "9a99a44129f82f90a19b3e3c12ca5ea8bde97a548b29b386e321253546dda09c",
+      "module-5a/examples/rag-jobs.yaml": "509646cd5df8ff6a08e89e0de16325ae403be465b5c6d013c00cb108debe6082",
+      "module-5a/examples/vllm.knative.yaml": "1e1e8d413bd0811d40160b6d03bdb5ef07a2d7bf2cc5f4e3404ddb292851bcc0",
+      "module-5a/images/rag.Dockerfile": "1662e6933915ce9cb7e997a9431b0a3170298895483d787f85d5fa48e81ceb14",
+      "module-5a/manifests/integration.yaml": "af75358acd5599a35f444914d819746c5b9b9505f48cdc8c41baf4542770903f",
+      "module-5a/manifests/network.yaml": "a3a79985b652099a0993be9ef08fade97db4a2587acccd3999b3366ebff9695b",
+      "module-5a/openbao/database-role-vcloud-rag-ingest.json": "1f1c2f3db3edf941c9e6b76548f9f13673e88872918bbe741f867ae460030b38",
+      "module-5a/openbao/database-role-vcloud-rag-query.json": "026ea305b83e51f4becfc63ea497ef4f02e75a9f8f73d7c25f16ca3842df1d39",
+      "module-5a/openbao/kubernetes-role-vcloud-rag-indexer.json": "3f67ef6f2ba4043d600dad6791e712eece759bb2288bb1e80de38cbb2aac8ba2",
+      "module-5a/openbao/kubernetes-role-vcloud-rag.json": "1499c260b77d891b193ae3b0805955355130f7682af4df8cfe412bf90ae602c3",
+      "module-5a/openbao/vcloud-rag-indexer.hcl": "229f5e824b8e6eb089844b2fa73db9cee862e9bb824a8c1178c6b8a5d51c621d",
+      "module-5a/openbao/vcloud-rag.hcl": "857f86ef41e83160aaab78c2719f3e3f098f47c3720ae0f559161cf68e0fb614",
+      "module-5a/patches/knative-autoscaler.mergepatch.yaml": "ac32705bf528d906a894883b2219807799b76c259946c9365601c02c08e53e1a",
+      "module-5a/patches/knative-deployment.mergepatch.yaml": "80af4d8e78acfca5a64711c0a534965ab3f9751c965dc107b0f43ee184b88149",
+      "module-5a/patches/knative-features.mergepatch.yaml": "d0d221993f72f3495964ddb00810f0e549de818b17d509b2dc32d9b2e8c7d85c",
+      "module-5a/rag/pipeline.py": "ef3a75c2fed27ab09006b1dd1b31403e71250c356ab88e0f269a5eb0ab0efc7d",
+      "module-5a/README.md": "ceb5c3c55effeac5dc73e9232fb802c3ce5d02b872232f3aee011a690ed303c3",
+      "module-5a/requirements-runtime.lock.txt": "a398d85f2b7a2aada60df1345996dbaf3032b4af5cc271219aebc7a14d1a7e72",
+      "module-5a/requirements.txt": "9d33f65c15d4bddf14e201987ea26ab7f03cd370b525fa38135d482e1ea1eb33",
+      "module-5a/sql/migrate.sql": "8c012bf4071beb115cebe985fdec94bb62f27b2412aa7de413c6baa273fb6a53",
+      "tests/test_module5a.py": "85afce7aa7fed4c889024552fdf6dbcdcd5eccf50a9d852607d937e710f374f4",
+      "tools/ci/rag-requirements.txt": "42d8e63ce9bceb9dd8a8d35772544722f594cabd6f4cc260e4b8144b04c44e49",
+      "tools/ci/run_checks.py": "c9f3ef6f88ce81f8a55af15353f426acd8910d7a01bcefe54a97f2bfd50045f7",
+      "tools/ci/tests/test_controls.py": "5c62a125e78fa89e118fc7b62586ac59217a1bd9390598c0f5d16959cbdc5092",
+      "tools/module5a.py": "6e6d83c4670d24ad6e0f9d6950acece49be9337c34a4c66356998098400f8e25",
+      "tools/module5a_encoder_smoke.py": "f807b49bb882db265d7be4e7eed0d69202b218f537e759eedc19f405c03c173a",
+      "tools/render_module5a.py": "c9bc82f0f1c1b9a082a669e6395fb5cbfac4976058cff03c9d8c2c419a369eeb",
+      "tools/stage_module5a_models.py": "98923fdb39f44da6eb46e37c4d44c7a027af9f06231c8d9a2ba5a3c0d4439765"
+    }
+  },
+  "checks": {
+    "repositoryTests": 363,
+    "module5aTests": 30,
+    "ciControlTests": 20,
+    "totalUnitTests": 383,
+    "skippedTests": 0,
+    "strictKubeconform": {
+      "valid": 19,
+      "invalid": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "renderDrift": "passed",
+    "workflowActionlint": "passed",
+    "frozenNodePolicy": "unchanged",
+    "localDocumentationReferences": 26,
+    "documentationFiles": 2
+  },
+  "cpuEncoder": {
+    "status": "passed",
+    "scope": "real offline CPU encoder only; no database/GPU/end-to-end RAG",
+    "repository": "sentence-transformers/all-MiniLM-L6-v2",
+    "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "manifestSHA256": "d4e99b4ec3da1dee0966cec671f3ff9fa4ff2216e1c53532bcbfdaf9211dc105",
+    "dimensions": 384,
+    "vectors": 3,
+    "normalized": true,
+    "semanticOrdering": true,
+    "queryDocumentAgreement": true,
+    "relatedCosine": 0.938601,
+    "unrelatedCosine": 0.008214,
+    "torchVersion": "2.14.1+cpu"
+  },
+  "frozenFileSHA256": {
+    "security/node-exceptions.json": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+    "docs/node-agent-inventory.json": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81"
+  },
+  "liveReadinessSnapshot": {
+    "argocd-repo-server": {
+      "desired": 1,
+      "ready": 0
+    },
+    "cnpg-controller-manager": {
+      "desired": 1,
+      "ready": 0
+    },
+    "cnpgClusters": 0
+  },
+  "executionBoundary": {
+    "module5aResourcesApplied": false,
+    "containerImageBuilt": false,
+    "inferenceWeightsDownloaded": false,
+    "gpuInferenceExecuted": false,
+    "databaseMigrationExecuted": false,
+    "endToEndRagAccepted": false,
+    "githubActionsRunForThisWorkingTree": false,
+    "productionAccepted": false,
+    "ragEnabled": false,
+    "referenceJobsSuspended": true
+  },
+  "remainingGates": [
+    "Repair and accept Argo/CNPG connectivity before database initialization",
+    "Accept CSI node installation, paired-file permissions and dynamic lease rotation/revocation",
+    "Apply administrator migration and verify query/writer permissions on CNPG pgvector",
+    "Build/scan/mirror immutable images and accepted model PVC contents",
+    "Accept H100 GPU runtime and Knative admission, TLS, cold/warm-start and policy enforcement",
+    "Execute ingestion, retrieval and grounded-answer integration test"
+  ],
+  "evidence": {
+    "fullRegression": ".build/module-5a-final/summary.json",
+    "ciControls": ".build/module-5a/ci-controls.log",
+    "encoder": ".build/module-5a/encoder.json"
+  }
+}

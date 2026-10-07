@@ -1,0 +1,222 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: vcloud-wsl-postgres
+  namespace: platform-services
+spec:
+  instances: 1
+  imageName: registry.vcloud.example.com/vcloud/postgresql-pgvector:18.6.0-pgvector0.8.2-wsl.1
+  imagePullPolicy: IfNotPresent
+  postgresUID: 26
+  postgresGID: 26
+  enableSuperuserAccess: false
+  seccompProfile:
+    type: RuntimeDefault
+  securityContext:
+    runAsNonRoot: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+  bootstrap:
+    initdb:
+      database: vcloud
+      owner: vcloud_app
+      postInitApplicationSQL:
+      - CREATE EXTENSION IF NOT EXISTS vector;
+  postgresql:
+    parameters:
+      shared_buffers: 128MB
+      max_connections: '50'
+      huge_pages: 'off'
+    pg_hba:
+    - hostnossl all all all reject
+    - hostssl all all all scram-sha-256
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  storage:
+    storageClass: vcloud-wsl-local
+    size: 4Gi
+    resizeInUseVolumes: false
+  affinity:
+    enablePodAntiAffinity: true
+    podAntiAffinityType: preferred
+    topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vcloud-wsl-db-scaler
+  namespace: platform-services
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vcloud-wsl-db-scaler
+  namespace: platform-services
+rules:
+- apiGroups:
+  - postgresql.cnpg.io
+  resources:
+  - clusters
+  resourceNames:
+  - vcloud-wsl-postgres
+  verbs:
+  - get
+  - patch
+- apiGroups:
+  - metrics.k8s.io
+  resources:
+  - pods
+  resourceNames:
+  - vcloud-wsl-postgres-1
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vcloud-wsl-db-scaler
+  namespace: platform-services
+subjects:
+- kind: ServiceAccount
+  name: vcloud-wsl-db-scaler
+  namespace: platform-services
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: vcloud-wsl-db-scaler
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcloud-wsl-db-scaler
+  namespace: platform-services
+data:
+  scaler.py: "#!/usr/bin/env python3\n\"\"\"Bounded growth of one CNPG Cluster from\
+    \ consecutive real metrics samples.\n\nCNPG owns Pod changes. This service account\
+    \ can patch only the named Cluster.\nRequests equal limits, growth stops at 1\
+    \ CPU/1 GiB, and shrinking is disabled.\n\"\"\"\nfrom datetime import datetime,timezone\n\
+    from decimal import Decimal,ROUND_CEILING\nimport json\nimport os\nfrom pathlib\
+    \ import Path\nimport re\nimport ssl\nimport time\nfrom urllib.request import\
+    \ Request,build_opener,HTTPSHandler,HTTPRedirectHandler\n\n\ndef quantity(value):\n\
+    \    match=re.fullmatch(r'(\\d+(?:\\.\\d+)?)(n|u|m|Ki|Mi|Gi|K|M|G)?',str(value))\n\
+    \    if not match:raise ValueError('Invalid resource quantity')\n    units={'':1,'n':Decimal('0.000000001'),'u':Decimal('0.000001'),'m':Decimal('0.001'),\n\
+    \           'Ki':2**10,'Mi':2**20,'Gi':2**30,'K':10**3,'M':10**6,'G':10**9}\n\
+    \    return Decimal(match[1])*units[match[2] or '']\n\n\ndef plan(cluster,samples,now):\n\
+    \    spec,status=cluster['spec'],cluster.get('status',{})\n    if (spec.get('instances')!=1\
+    \ or status.get('readyInstances')!=1 or\n        status.get('phase')!='Cluster\
+    \ in healthy state' or not status.get('currentPrimary') or\n        status.get('currentPrimary')!=status.get('targetPrimary')\
+    \ or cluster['metadata'].get('deletionTimestamp')):\n        return None,'Cluster\
+    \ not healthy/stable'\n    last=cluster['metadata'].get('annotations',{}).get('vcloud.io/resources-last-scaled')\n\
+    \    if last and now-datetime.fromisoformat(last.replace('Z','+00:00')).timestamp()<1800:\n\
+    \        return None,'cooldown'\n    current=spec['resources']\n    if current.get('requests')!=current.get('limits')\
+    \ or set(current['requests'])!={'cpu','memory'}:\n        return None,'Unexpected\
+    \ resource policy'\n    if len(samples)!=3:return None,'Three consecutive samples\
+    \ required'\n    stamps=[datetime.fromisoformat(sample['timestamp'].replace('Z','+00:00')).timestamp()\
+    \ for sample in samples]\n    if any(b<=a for a,b in zip(stamps,stamps[1:])):return\
+    \ None,'Metrics did not advance'\n    wanted=dict(current['requests']);changed=False\n\
+    \    for resource,low,high in [('cpu',Decimal('.5'),Decimal('1')),('memory',Decimal(512*2**20),Decimal(1024*2**20))]:\n\
+    \        previous=quantity(current['requests'][resource])\n        if not low<=previous<=high:return\
+    \ None,'Resource outside local bounds'\n        values=[]\n        for sample\
+    \ in samples:\n            if sample['metadata']['name']!=status['currentPrimary']:return\
+    \ None,'Metrics target changed'\n            stamp=datetime.fromisoformat(sample['timestamp'].replace('Z','+00:00')).timestamp()\n\
+    \            if not 0<=now-stamp<=120:return None,'Stale metrics'\n          \
+    \  pg=[c for c in sample['containers'] if c['name']=='postgres']\n           \
+    \ if len(pg)!=1:return None,'Postgres metrics absent'\n            values.append(quantity(pg[0]['usage'][resource]))\n\
+    \        if all(value/previous>Decimal('.85') for value in values):\n        \
+    \    target=min(high,previous*Decimal('1.25'))\n            if target>previous:\n\
+    \                changed=True\n                unit=1000 if resource=='cpu' else\
+    \ Decimal(1)/2**20\n                wanted[resource]=str((target*unit).to_integral_value(rounding=ROUND_CEILING))+('m'\
+    \ if resource=='cpu' else 'Mi')\n    if not changed:return None,'No sustained\
+    \ pressure or at maximum'\n    annotations=cluster['metadata'].get('annotations',{})|{'vcloud.io/resources-last-scaled':datetime.fromtimestamp(now,timezone.utc).isoformat()}\n\
+    \    return [{'op':'test','path':'/metadata/resourceVersion','value':cluster['metadata']['resourceVersion']},\n\
+    \            {'op':'test','path':'/spec/resources','value':current},\n       \
+    \     {'op':'add','path':'/spec/resources','value':{'requests':wanted,'limits':wanted}},\n\
+    \            {'op':'add','path':'/metadata/annotations','value':annotations}],'bounded\
+    \ resource growth'\n\n\nclass NoRedirect(HTTPRedirectHandler):\n    def redirect_request(self,*args,**kwargs):raise\
+    \ ValueError('API redirect forbidden')\n\n\ndef main():\n    token=Path('/var/run/secrets/kubernetes.io/serviceaccount/token').read_text().strip()\n\
+    \    ctx=ssl.create_default_context(cafile='/var/run/secrets/kubernetes.io/serviceaccount/ca.crt')\n\
+    \    opener=build_opener(HTTPSHandler(context=ctx),NoRedirect())\n    base='https://'+os.environ['KUBERNETES_SERVICE_HOST']+':'+os.environ['KUBERNETES_SERVICE_PORT_HTTPS']\n\
+    \    name='vcloud-wsl-postgres';namespace='platform-services'\n    path=f'/apis/postgresql.cnpg.io/v1/namespaces/{namespace}/clusters/{name}'\n\
+    \    def request(uri,patch=None):\n        headers={'Authorization':'Bearer '+token}\n\
+    \        if patch is not None:headers['Content-Type']='application/json-patch+json'\n\
+    \        req=Request(base+uri,data=None if patch is None else json.dumps(patch).encode(),headers=headers,method='GET'\
+    \ if patch is None else 'PATCH')\n        with opener.open(req,timeout=10) as\
+    \ response:return json.load(response)\n    cluster=request(path);primary=cluster.get('status',{}).get('currentPrimary')\n\
+    \    if not primary:print('No primary; no change');return\n    samples=[]\n  \
+    \  for index in range(3):\n        if index:time.sleep(16)\n        samples.append(request(f'/apis/metrics.k8s.io/v1beta1/namespaces/{namespace}/pods/{primary}'))\n\
+    \    fresh=request(path)\n    patch,reason=plan(fresh,samples,time.time());print(reason)\n\
+    \    if patch:\n        result=request(path,patch)\n        print(json.dumps({'cluster':name,'resources':result['spec']['resources']}))\n\
+    \n\nif __name__=='__main__':main()\n"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: vcloud-wsl-db-scaler
+  namespace: platform-services
+spec:
+  schedule: '*/2 * * * *'
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: 90
+      template:
+        metadata:
+          labels:
+            vcloud.io/component: database-scaler
+        spec:
+          serviceAccountName: vcloud-wsl-db-scaler
+          restartPolicy: Never
+          containers:
+          - name: scaler
+            image: registry.vcloud.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e
+            imagePullPolicy: IfNotPresent
+            command:
+            - python
+            - /app/scaler.py
+            env:
+            - name: PYTHONDONTWRITEBYTECODE
+              value: '1'
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 65532
+              runAsGroup: 65532
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+              seccompProfile:
+                type: RuntimeDefault
+            resources:
+              requests:
+                cpu: 25m
+                memory: 32Mi
+              limits:
+                cpu: 100m
+                memory: 64Mi
+            volumeMounts:
+            - name: code
+              mountPath: /app
+              readOnly: true
+          volumes:
+          - name: code
+            configMap:
+              name: vcloud-wsl-db-scaler
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcloud-wsl-gitops-marker
+  namespace: platform-services
+data:
+  state: managed-by-github

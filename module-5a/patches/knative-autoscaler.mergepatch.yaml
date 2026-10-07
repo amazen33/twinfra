@@ -1,0 +1,4 @@
+# Review with the existing platform-services/config-autoscaler owner.
+data:
+  enable-scale-to-zero: "true"
+  allow-zero-initial-scale: "true"

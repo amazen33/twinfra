@@ -64,9 +64,9 @@ class Controls(unittest.TestCase):
         selected = dict(label='requested-pr-1', commit=lock['baselines'][0]['commit'])
         self.assertEqual(len(revisions.matrix(selected, lock)['include']), len(lock['baselines']))
 
-    def test_both_merged_pr_baselines_are_immutable(self):
+    def test_reviewed_merged_pr_baselines_are_immutable(self):
         lock = json.loads((ROOT / 'pr-baselines.json').read_text())
-        self.assertEqual([p['number'] for p in lock['baselines']], [1, 2])
+        self.assertEqual([p['number'] for p in lock['baselines']], [1, 2, 3, 5, 6])
         for baseline in lock['baselines']:
             self.assertRegex(baseline['commit'], r'^[a-f0-9]{40}$')
             self.assertEqual(baseline['url'], f"https://github.com/amazen33/vCloud/pull/{baseline['number']}")
@@ -102,16 +102,85 @@ class Controls(unittest.TestCase):
             with self.assertRaises(ValueError):
                 checks.coverage(source)
 
+    def baseline_fixture(self, source):
+        for name in ('00-setup-ubuntu-host.sh', 'user-data.yaml', 'tests/test_bootstrap.py',
+                     'tools/render_ssot.py', 'tools/render_cloud_init.py', 'docs/module-1-topology.md',
+                     'tools/module2.py', 'tests/test_module2.py', 'module-2/vendor/cilium-1.20.2.tgz'):
+            target = source / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.touch()
+
+    def test_document_only_roadmap_does_not_require_future_automation(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            self.baseline_fixture(source)
+            (source / 'MILESTONES.md').touch()
+            self.assertEqual(checks.coverage(source)['roadmap-automation'], 'not_present_in_revision')
+            (source / 'tools/create_roadmap_issues.py').touch()
+            with self.assertRaisesRegex(ValueError, 'Incomplete roadmap-automation'):
+                checks.coverage(source)
+            (source / 'tests/test_roadmap_issues.py').touch()
+            self.assertEqual(checks.coverage(source)['roadmap-automation'], 'present')
+
+    def test_old_wsl_profile_does_not_require_future_proxy_repair(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            self.baseline_fixture(source)
+            for name in checks.OPTIONAL['lab/wsl']:
+                target = source / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.touch()
+            self.assertEqual(checks.coverage(source)['lab/wsl'], 'present')
+            self.assertEqual(checks.coverage(source)['lab/wsl/proxy-marks'], 'not_present_in_revision')
+            (source / 'tools/wsl_proxy_marks.py').touch()
+            with self.assertRaisesRegex(ValueError, 'Incomplete lab/wsl/proxy-marks'):
+                checks.coverage(source)
+            for name in checks.OPTIONAL['lab/wsl/proxy-marks']:
+                (source / name).touch()
+            self.assertEqual(checks.coverage(source)['lab/wsl/proxy-marks'], 'present')
+
     def test_zero_tests_skipped_tests_and_failed_suites_rejected(self):
         self.assertEqual(checks.require_complete_tests('Ran 42 tests in 1.0s\n\nOK\n'), 42)
         for output in ('', 'Ran 0 tests in 1s\nOK\n', 'Ran 1 test in 1s\nOK (skipped=1)\n', 'Ran 5 tests in 1s\nFAILED (failures=1)\n'):
             with self.subTest(output=output), self.assertRaises(ValueError):
-                checks.require_complete_tests(output)
+                    checks.require_complete_tests(output)
 
     def test_hpc_coverage_cannot_be_omitted(self):
         self.assertIn('module-5b', checks.OPTIONAL)
         self.assertIn('tests/test_module5b.py', checks.OPTIONAL['module-5b'])
         self.assertIn('tests/module5b-alerts.test.yaml', checks.OPTIONAL['module-5b'])
+
+    def test_airgap_coverage_and_tools_cannot_be_omitted(self):
+        self.assertIn('tests/ci/test_airgap.py', checks.OPTIONAL['deploy/kustomize'])
+        self.assertIn('tests/ci/policy/airgap.rego', checks.OPTIONAL['deploy/kustomize'])
+        self.assertIn('tests/ci/policy/airgap_test.rego', checks.OPTIONAL['deploy/kustomize'])
+        artifacts = json.loads((ROOT / 'toolchain.lock.json').read_text())['artifacts']
+        for name in ('kustomize', 'conftest'):
+            self.assertRegex(artifacts[name]['sha256'], r'^[a-f0-9]{64}$')
+            self.assertEqual(artifacts[name]['output'], 'bin/' + name)
+
+    def test_platform_probe_bundle_cannot_omit_tests_or_manifests(self):
+        bundle = checks.OPTIONAL['deploy/network/platform-probes']
+        for name in ('cilium-platform-probes.yaml', 'k8s-platform-probes.yaml', 'apply-and-verify.sh', 'recover.sh', 'README.md'):
+            self.assertIn('deploy/network/platform-probes/' + name, bundle)
+        self.assertIn('tests/test_platform_probes.py', bundle)
+
+    def test_rag_coverage_cannot_be_omitted(self):
+        self.assertIn('tests/test_module5a.py', checks.OPTIONAL['module-5a'])
+        self.assertIn('module-5a/requirements-runtime.lock.txt', checks.OPTIONAL['module-5a'])
+        self.assertIn('module-5a/rag/pipeline.py', checks.OPTIONAL['module-5a'])
+
+    def test_rag_dependencies_are_hashed_and_installed_only_when_present(self):
+        lines=(ROOT/'rag-requirements.txt').read_text().splitlines()
+        packages=[line for line in lines if line and not line.startswith('#')]
+        self.assertEqual(len(packages),43)
+        for line in packages:
+            self.assertRegex(line,r'^[A-Za-z0-9_.-]+==[^ ]+ --hash=sha256:[a-f0-9]{64}')
+            self.assertNotIn('torch==',line)
+        workflow=yaml.safe_load((ROOT.parents[1]/'.github/workflows/pr-tests.yaml').read_text())
+        step=next(s for s in workflow['jobs']['test']['steps'] if s.get('name')=='Install trusted pinned RAG client test dependencies')
+        self.assertIn("hashFiles('source/module-5a/config/rag.yaml')",step['if'])
+        self.assertIn('--require-hashes',step['run']);self.assertIn('.ci-control/tools/ci/rag-requirements.txt',step['run'])
 
     def test_hpc_dependencies_are_hashed_and_installed_only_when_present(self):
         lines = (ROOT / 'hpc-requirements.txt').read_text().splitlines()

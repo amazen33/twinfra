@@ -1,0 +1,16 @@
+[Unit]
+Description=Preserve Cilium DNS proxy marks in the owned mirrored WSL lab
+After=network-online.target k3s.service
+Wants=network-online.target
+ConditionPathExists=/var/lib/vcloud-wsl/owner.json
+
+[Service]
+# Host netlink rule updates require root/CAP_NET_ADMIN; no container privilege.
+Type=oneshot
+User=root
+ExecStart=/usr/bin/python3 /usr/local/libexec/vcloud-wsl-proxy-marks --apply
+CapabilityBoundingSet=CAP_NET_ADMIN
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
