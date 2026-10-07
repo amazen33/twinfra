@@ -1,0 +1,10 @@
+{
+  "images": {
+    "ministack": {
+      "release": "docker.io/ministackorg/ministack:1.5.22",
+      "source": "docker.io/ministackorg/ministack@sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818",
+      "canonical": "registry.vcloud.example.com/docker.io/ministackorg/ministack@sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818",
+      "digest": "sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818"
+    }
+  }
+}
