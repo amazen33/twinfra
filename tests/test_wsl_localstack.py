@@ -17,7 +17,7 @@ class LocalStackTests(unittest.TestCase):
     def test_frozen_images_and_generated_sources(self):
         aws.lock()
         for name,objects in [('deployment.yaml',[aws.workloads()[0]]),('service.yaml',[aws.workloads()[1]]),
-                             ('apisix-route.yaml',[aws.routes()[2]])]:
+                             ('apisix-route.yaml',[o for o in aws.routes() if o['kind']=='ApisixRoute' and o['metadata']['name']==aws.NAME])]:
             self.assertEqual(list(yaml.safe_load_all((aws.HERE/name).read_text())),objects)
 
     def test_pod_security_mutations_fail(self):
@@ -48,6 +48,12 @@ class LocalStackTests(unittest.TestCase):
         self.assertEqual(len(policy['ingress']),1)
         self.assertEqual(set(policy['ingress'][0]),{'fromEndpoints','toPorts'})
         self.assertEqual(policy['ingress'][0]['fromEndpoints'][0]['matchLabels']['k8s:app.kubernetes.io/name'],'apisix')
+
+    def test_demo_uses_real_same_namespace_kourier_service(self):
+        demo=next(o for o in aws.routes() if o['metadata']['name']=='demo-cpu-app')
+        self.assertEqual(demo['metadata']['namespace'],'workload-apps')
+        self.assertEqual(demo['spec']['http'][0]['backends'][0]['serviceName'],'kourier-internal')
+        self.assertFalse(any(o['kind']=='Service' and o['spec'].get('type')=='ExternalName' for o in aws.routes()))
 
     def test_controller_never_writes_secrets_or_uses_wildcard_rbac(self):
         for obj in aws.controller():

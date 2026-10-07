@@ -927,18 +927,6 @@ spec:
     port: 4566
     targetPort: 4566
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: vcloud-kourier-proxy
-  namespace: platform-services
-spec:
-  type: ExternalName
-  externalName: kourier-internal.workload-apps.svc.cluster.local
-  ports:
-  - name: http
-    port: 80
----
 apiVersion: apisix.apache.org/v1alpha1
 kind: GatewayProxy
 metadata:
@@ -987,7 +975,7 @@ apiVersion: apisix.apache.org/v2
 kind: ApisixRoute
 metadata:
   name: demo-cpu-app
-  namespace: platform-services
+  namespace: workload-apps
 spec:
   ingressClassName: vcloud-local
   http:
@@ -999,7 +987,7 @@ spec:
       hosts:
       - demo-cpu-app.workload-apps.example.com
     backends:
-    - serviceName: vcloud-kourier-proxy
+    - serviceName: kourier-internal
       servicePort: 80
       resolveGranularity: service
     plugins:

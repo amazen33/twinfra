@@ -106,20 +106,21 @@ def route(name, backend, port, host=None, uri='/*', priority=10, plugins=None):
 
 
 def routes():
-    # The namespaced ExternalName preserves the reviewed Kourier destination.
-    external = resource('Service', 'vcloud-kourier-proxy', {'type': 'ExternalName',
-        'externalName': 'kourier-internal.workload-apps.svc.cluster.local',
-        'ports': [{'name': 'http', 'port': 80}]}, NS)
     gateway = resource('GatewayProxy', 'vcloud-apisix', {'provider': {'type': 'ControlPlane',
         'controlPlane': {'mode': 'apisix-standalone',
             'endpoints': ['https://apisix-admin.platform-services.svc.cluster.local:9180'],
             'tlsVerify': True, 'auth': {'type': 'AdminKey', 'adminKey': {'valueFrom': {
                 'secretKeyRef': {'name': ADMIN_SECRET, 'key': 'admin-key'}}}}}}}, NS, 'apisix.apache.org/v1alpha1')
-    return [external, gateway,
+    # An ExternalName has no ClusterIP/endpoints in controller 2.2.0. Keep this
+    # route beside the actual Kourier Service; IngressClass refers to the private
+    # platform GatewayProxy explicitly by namespace.
+    demo = route('demo-cpu-app', 'kourier-internal', 80, 'demo-cpu-app.workload-apps.example.com',
+                 plugins=[{'name': 'proxy-rewrite', 'enable': True,
+                           'config': {'host': 'demo-cpu-app.workload-apps.vcloud.example.com'}}])
+    demo['metadata']['namespace']='workload-apps'
+    return [gateway,
         route(NAME, NAME, 4566, 'aws.platform.example.com', priority=30),
-        route('demo-cpu-app', 'vcloud-kourier-proxy', 80, 'demo-cpu-app.workload-apps.example.com',
-              plugins=[{'name': 'proxy-rewrite', 'enable': True,
-                        'config': {'host': 'demo-cpu-app.workload-apps.vcloud.example.com'}}]),
+        demo,
         route('legacy-smoke', 'vcloud-lab-server', 8080, uri='/', priority=1)]
 
 
@@ -208,7 +209,8 @@ def network(router):
 def publish():
     HERE.mkdir(exist_ok=True)
     dep, svc = workloads()
-    outputs = {'deployment.yaml': [dep], 'service.yaml': [svc], 'apisix-route.yaml': [routes()[2]]}
+    outputs = {'deployment.yaml': [dep], 'service.yaml': [svc],
+               'apisix-route.yaml': [o for o in routes() if o['kind']=='ApisixRoute' and o['metadata']['name']==NAME]}
     for filename, objects in outputs.items():
         (HERE / filename).write_text(yaml.safe_dump_all(objects, sort_keys=False), encoding='utf-8', newline='\n')
 

@@ -28,6 +28,10 @@ does not switch existing APISIX routes. The updated endpoint Application owns
 the later APISIX configuration and `ApisixRoute` reconciliation. CRDs, controller
 RBAC and node-dependent Cilium policies stay bootstrap-owned. The first
 deployment must complete these prerequisites before Argo receives the new source.
+The demo route lives in `workload-apps` beside the real Kourier Service. An
+ExternalName bridge has no usable upstream nodes under controller 2.2.0 and must
+not replace this same-namespace backend. A candidate local trial pins an
+immutable published commit; promotion to tracking `main` waits for hosted CI.
 
 ## Test endpoints
 

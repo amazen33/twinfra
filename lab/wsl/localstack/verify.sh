@@ -28,7 +28,7 @@ bash "$here/access.sh"
 curl --fail --silent --show-error --retry 15 --retry-connrefused --retry-delay 1 --max-time 5 \
   http://127.0.0.1:4566/_localstack/health > "$root/.build/localstack/direct-health.json"
 jq -e '.services | [.s3,.ec2,.iam,.dynamodb] | all(.=="running")' "$root/.build/localstack/direct-health.json" >/dev/null
-code=$(curl --silent --show-error --max-time 10 -H 'Host: aws.platform.example.com' \
+code=$(curl --fail-with-body --silent --show-error --retry 5 --retry-all-errors --retry-delay 1 --max-time 10 -H 'Host: aws.platform.example.com' \
   -o "$root/.build/localstack/ingress-root.txt" -w '%{http_code}' http://127.0.0.1:18080/)
 [[ $code == 200 || $code == 302 ]] || { echo "FAIL: APISIX root HTTP $code" >&2; exit 1; }
 curl --fail --silent --show-error --max-time 10 -H 'Host: aws.platform.example.com' \
