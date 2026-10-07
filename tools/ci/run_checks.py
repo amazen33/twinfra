@@ -18,6 +18,12 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'lab/wsl/localstack': ['lab/wsl/localstack/artifacts.lock.json','lab/wsl/localstack/deployment.yaml',
+        'lab/wsl/localstack/service.yaml','lab/wsl/localstack/apisix-route.yaml',
+        'lab/wsl/localstack/configure-apisix.py','lab/wsl/localstack/access.sh',
+        'lab/wsl/localstack/deploy.sh',
+        'lab/wsl/localstack/verify.sh','lab/wsl/localstack/test-api.py',
+        'tools/wsl_localstack.py','tests/test_wsl_localstack.py'],
     'lab/wsl/values': ['lab/wsl/values/cilium-routing.yaml', 'tools/check_host_routing.py',
                        'tests/test_host_routing.py'],
     'roadmap-automation': ['tools/create_roadmap_issues.py', 'tests/test_roadmap_issues.py'],
@@ -249,6 +255,8 @@ def main():
                  endpoint_build/'controllers.yaml',endpoint_build/'identity.yaml',endpoint_build/'application.yaml',endpoint_build/'observability.yaml'])
             for suite in ('test_wsl_endpoints.py','test_openbao_pgp_init.py'):
                 run(suite[:-3],[python,'-m','unittest','discover','-s','tests','-p',suite,'-v'],unit=True)
+        if report['modules']['lab/wsl/localstack'] == 'present':
+            run('wsl-localstack-tests',[python,'-m','unittest','discover','-s','tests','-p','test_wsl_localstack.py','-v'],unit=True)
         report['status'] = 'passed'
         return 0
     except (ValueError, RuntimeError, OSError) as error:

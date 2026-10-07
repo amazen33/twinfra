@@ -66,6 +66,11 @@
       "sha256": "0859dd74ab2e01156ef2dd2cb97b1870a1241598210c75c9927eb9a310a41a23",
       "output": "schemas/runtimeclass.json"
     },
+    "ingressclass-schema": {
+      "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/ingressclass.json",
+      "sha256": "2a2d381ace9fe7630a3a474130ebc7defa0b1ddce39d683ba5fb5d307de1cda5",
+      "output": "schemas/ingressclass.json"
+    },
     "kustomize": {
       "url": "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.8.1/kustomize_v5.8.1_linux_amd64.tar.gz",
       "sha256": "029a7f0f4e1932c52a0476cf02a0fd855c0bb85694b82c338fc648dcb53a819d",

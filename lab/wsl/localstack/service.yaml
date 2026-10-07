@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: localstack-aws-console
+  namespace: platform-services
+spec:
+  selector:
+    app.kubernetes.io/name: localstack-aws-console
+  ports:
+  - name: http
+    port: 4566
+    targetPort: 4566

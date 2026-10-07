@@ -497,13 +497,18 @@ metadata:
   name: vcloud-apisix
   namespace: platform-services
 data:
-  config.yaml: "apisix:\n  node_listen: 9080\n  enable_admin: false\n  enable_ipv6:\
+  config.yaml: "apisix:\n  node_listen: 9080\n  enable_admin: true\n  enable_ipv6:\
     \ false\nnginx_config:\n  worker_processes: 1\n  error_log: /dev/stderr\n  error_log_level:\
     \ warn\n  http:\n    access_log: /dev/stdout\n    client_body_temp_path: /tmp/client-body\n\
     \    proxy_temp_path: /tmp/proxy\n    fastcgi_temp_path: /tmp/fastcgi\n    uwsgi_temp_path:\
-    \ /tmp/uwsgi\n    scgi_temp_path: /tmp/scgi\ndeployment:\n  role: data_plane\n\
-    \  role_data_plane:\n    config_provider: yaml\nplugin_attr:\n  prometheus:\n\
-    \    export_addr:\n      ip: 0.0.0.0\n      port: 9091\n"
+    \ /tmp/uwsgi\n    scgi_temp_path: /tmp/scgi\ndeployment:\n  role: traditional\n\
+    \  role_traditional:\n    config_provider: yaml\n  admin:\n    admin_key_required:\
+    \ true\n    enable_admin_cors: false\n    enable_admin_ui: false\n    allow_admin:\n\
+    \    - 10.42.0.0/16\n    admin_listen:\n      ip: 0.0.0.0\n      port: 9180\n\
+    \    https_admin: true\n    admin_key:\n    - name: controller\n      key: __VCLOUD_ADMIN_KEY__\n\
+    \      role: admin\n    admin_api_mtls:\n      admin_ssl_cert: /admin/tls.crt\n\
+    \      admin_ssl_cert_key: /admin/tls.key\nplugin_attr:\n  prometheus:\n    export_addr:\n\
+    \      ip: 0.0.0.0\n      port: 9091\n"
   apisix.yaml: "routes:\n- id: demo-cpu\n  uri: /*\n  host: demo-cpu-app.workload-apps.example.com\n\
     \  plugins:\n    prometheus: {}\n    proxy-rewrite:\n      host: demo-cpu-app.workload-apps.vcloud.example.com\n\
     \  upstream:\n    type: roundrobin\n    nodes:\n      kourier-internal.workload-apps.svc.cluster.local:80:\
@@ -525,7 +530,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: f7112d8f81b476766b8cd9dfd8e53cd531e8cbd085a3b10e4156092a7dbc6204
+        vcloud.io/config-hash: bb18ec7bbce0584fb882c838bf1b9ca9452db87044ce995386d2403874318536
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -541,8 +546,8 @@ spec:
         command:
         - sh
         - -ec
-        - cp /config/* /usr/local/apisix/conf/; apisix init; exec /usr/local/openresty/bin/openresty
-          -p /usr/local/apisix -c conf/nginx.conf -g "daemon off;"
+        - apisix init; exec /usr/local/openresty/bin/openresty -p /usr/local/apisix
+          -c conf/nginx.conf -g "daemon off;"
         volumeMounts:
         - name: config
           mountPath: /config
@@ -563,6 +568,9 @@ spec:
           mountPath: /usr/local/apisix/uwsgi_temp
         - name: scratch-scgi-temp
           mountPath: /usr/local/apisix/scgi_temp
+        - name: admin
+          mountPath: /admin
+          readOnly: true
         readinessProbe:
           tcpSocket:
             port: 9080
@@ -624,6 +632,13 @@ spec:
         emptyDir:
           medium: Memory
           sizeLimit: 8Mi
+      - name: admin
+        secret:
+          secretName: vcloud-wsl-apisix-admin
+          defaultMode: 288
+      - name: setup
+        configMap:
+          name: vcloud-apisix-setup
       initContainers:
       - name: prepare-conf
         image: registry.vcloud.example.com/docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141
@@ -653,6 +668,42 @@ spec:
         volumeMounts:
         - name: conf
           mountPath: /built
+      - name: config
+        image: registry.vcloud.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e
+        imagePullPolicy: IfNotPresent
+        command:
+        - python
+        - /code/configure-apisix.py
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+        volumeMounts:
+        - name: config
+          mountPath: /config
+          readOnly: true
+        - name: conf
+          mountPath: /conf
+        - name: admin
+          mountPath: /admin
+          readOnly: true
+        - name: setup
+          mountPath: /code
+          readOnly: true
 ---
 apiVersion: v1
 kind: Service
@@ -703,6 +754,282 @@ data:
     \            print('OTLP span exported for demo-cpu-app',flush=True)\n       \
     \ except Exception:print('OTLP export failed',flush=True)\n    def log_message(self,*args):pass\n\
     \nThreadingHTTPServer(('0.0.0.0',8080),Handler).serve_forever()\n"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcloud-apisix-setup
+  namespace: platform-services
+data:
+  configure-apisix.py: "\"\"\"Restricted init container: compose authenticated APISIX\
+    \ config on tmpfs.\"\"\"\nfrom pathlib import Path\nimport re\nimport shutil\n\
+    \nkey = Path('/admin/admin-key').read_text().strip()\nif not re.fullmatch('[a-f0-9]{64}',\
+    \ key):\n    raise SystemExit('Invalid mounted APISIX admin credential')\nfor\
+    \ filename in ('config.yaml', 'apisix.yaml'):\n    # Projected ConfigMaps also\
+    \ contain directory symlinks; copy only known files.\n    shutil.copyfile(Path('/config')\
+    \ / filename, Path('/conf') / filename)\ntarget = Path('/conf/config.yaml')\n\
+    text = target.read_text()\nif text.count('__VCLOUD_ADMIN_KEY__') != 1:\n    raise\
+    \ SystemExit('APISIX credential placeholder must occur exactly once')\ntarget.write_text(text.replace('__VCLOUD_ADMIN_KEY__',\
+    \ key))\ntarget.chmod(0o600)\n"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apisix-admin
+  namespace: platform-services
+  labels: &id001
+    app.kubernetes.io/name: apisix
+spec:
+  selector: *id001
+  ports:
+  - name: http
+    port: 9180
+    targetPort: 9180
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: localstack-aws-console
+  namespace: platform-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &id001
+      app.kubernetes.io/name: localstack-aws-console
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: localstack
+        image: registry.vcloud.example.com/docker.io/localstack/localstack@sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a
+        env:
+        - name: SERVICES
+          value: s3,ec2,iam,dynamodb
+        - name: EAGER_SERVICE_LOADING
+          value: '1'
+        - name: STRICT_SERVICE_LOADING
+          value: '1'
+        - name: GATEWAY_LISTEN
+          value: 0.0.0.0:4566
+        - name: LOCALSTACK_HOST
+          value: aws.platform.example.com:18080
+        - name: DNS_ADDRESS
+          value: '0'
+        - name: SKIP_SSL_CERT_DOWNLOAD
+          value: '1'
+        - name: SKIP_INFRA_DOWNLOADS
+          value: '1'
+        - name: DISABLE_EVENTS
+          value: '1'
+        - name: DEBUG
+          value: '0'
+        - name: PERSISTENCE
+          value: '0'
+        - name: DYNAMODB_IN_MEMORY
+          value: '1'
+        - name: DYNAMODB_HEAP_SIZE
+          value: 256m
+        - name: PYTHONDONTWRITEBYTECODE
+          value: '1'
+        - name: HOME
+          value: /home/localstack
+        - name: XDG_CACHE_HOME
+          value: /home/localstack/.cache
+        ports:
+        - name: aws
+          containerPort: 4566
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: '2'
+            memory: 1536Mi
+        startupProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - import json,urllib.request; h=json.load(urllib.request.urlopen('http://127.0.0.1:4566/_localstack/health',timeout=3));
+              assert all(h['services'].get(s)=='running' for s in ('s3','ec2','iam','dynamodb'))
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 60
+        readinessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - import json,urllib.request; h=json.load(urllib.request.urlopen('http://127.0.0.1:4566/_localstack/health',timeout=3));
+              assert all(h['services'].get(s)=='running' for s in ('s3','ec2','iam','dynamodb'))
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - import urllib.request; urllib.request.urlopen('http://127.0.0.1:4566/_localstack/health',timeout=3)
+          periodSeconds: 20
+          timeoutSeconds: 5
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: state
+          mountPath: /var/lib/localstack
+        - name: home
+          mountPath: /home/localstack
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+      volumes:
+      - name: tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 256Mi
+      - name: state
+        emptyDir:
+          medium: Memory
+          sizeLimit: 128Mi
+      - name: home
+        emptyDir:
+          medium: Memory
+          sizeLimit: 32Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: localstack-aws-console
+  namespace: platform-services
+spec:
+  selector:
+    app.kubernetes.io/name: localstack-aws-console
+  ports:
+  - name: http
+    port: 4566
+    targetPort: 4566
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vcloud-kourier-proxy
+  namespace: platform-services
+spec:
+  type: ExternalName
+  externalName: kourier-internal.workload-apps.svc.cluster.local
+  ports:
+  - name: http
+    port: 80
+---
+apiVersion: apisix.apache.org/v1alpha1
+kind: GatewayProxy
+metadata:
+  name: vcloud-apisix
+  namespace: platform-services
+spec:
+  provider:
+    type: ControlPlane
+    controlPlane:
+      mode: apisix-standalone
+      endpoints:
+      - https://apisix-admin.platform-services.svc.cluster.local:9180
+      tlsVerify: true
+      auth:
+        type: AdminKey
+        adminKey:
+          valueFrom:
+            secretKeyRef:
+              name: vcloud-wsl-apisix-admin
+              key: admin-key
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: localstack-aws-console
+  namespace: platform-services
+spec:
+  ingressClassName: vcloud-local
+  http:
+  - name: localstack-aws-console
+    priority: 30
+    match:
+      paths:
+      - /*
+      hosts:
+      - aws.platform.example.com
+    backends:
+    - serviceName: localstack-aws-console
+      servicePort: 4566
+      resolveGranularity: service
+    plugins:
+    - name: prometheus
+      enable: true
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: demo-cpu-app
+  namespace: platform-services
+spec:
+  ingressClassName: vcloud-local
+  http:
+  - name: demo-cpu-app
+    priority: 10
+    match:
+      paths:
+      - /*
+      hosts:
+      - demo-cpu-app.workload-apps.example.com
+    backends:
+    - serviceName: vcloud-kourier-proxy
+      servicePort: 80
+      resolveGranularity: service
+    plugins:
+    - name: prometheus
+      enable: true
+    - name: proxy-rewrite
+      enable: true
+      config:
+        host: demo-cpu-app.workload-apps.vcloud.example.com
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: legacy-smoke
+  namespace: platform-services
+spec:
+  ingressClassName: vcloud-local
+  http:
+  - name: legacy-smoke
+    priority: 1
+    match:
+      paths:
+      - /
+    backends:
+    - serviceName: vcloud-lab-server
+      servicePort: 8080
+      resolveGranularity: service
+    plugins:
+    - name: prometheus
+      enable: true
 ---
 apiVersion: serving.knative.dev/v1
 kind: Service

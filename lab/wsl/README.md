@@ -5,6 +5,8 @@ The [endpoint profile](endpoints/README.md) adds CPU-only applications and
 observability; OpenBao initialization remains gated on operator public keys.
 The [service access runbook](../../docs/service-access.md) lists tested URLs,
 Windows verification and the services that are not deployed.
+The [LocalStack profile](localstack/README.md) adds a restricted Community AWS
+API emulator and APISIX route-controller prerequisites; it supplies no AWS GUI.
 
 See the [WSL setup and troubleshooting guide](../../docs/WSL_SETUP_GUIDE.md) for
 Windows adapter detection/firewall scope and Argo CD namespace ordering.

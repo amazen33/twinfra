@@ -24,7 +24,8 @@ sudo bash lab/wsl/openbao-init.sh
 ```
 
 All application containers run without root or capabilities, with RuntimeDefault
-seccomp and read-only root filesystems. Private configuration is rendered only
+seccomp and read-only root filesystems. The added upstream APISIX controller/ADC
+also meet restricted PSS but use writable container filesystems. Private configuration is rendered only
 in memory-backed volumes. Identity databases reuse the vetted 4 GiB CNPG PV;
 monitoring data is intentionally transient and bounded. There are no new host
 mounts, CSI node components, GPUs, vLLM containers or Spinifex controllers.
@@ -40,3 +41,8 @@ unchanged and includes Secret reads; production least-privilege review remains o
 The pinned upstream internal Knative Certificate API is served and not
 deprecated despite its alpha suffix. Strict validation uses its actual local
 CRD schema. Prometheus service discovery uses EndpointSlice.
+
+The [LocalStack extension](../localstack/README.md) changes only the WSL gateway
+to authenticated TLS API-driven standalone mode so real `ApisixRoute` resources
+reconcile. It preserves the CPU demo and smoke routes, supplies the pinned
+2.2.0 controller/0.27.1 ADC prerequisites, and keeps admin port 9180 private.
