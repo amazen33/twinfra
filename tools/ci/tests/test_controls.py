@@ -253,6 +253,19 @@ class Controls(unittest.TestCase):
             if line and not line.startswith('#'):
                 self.assertRegex(line, r'^[A-Za-z]+==\d+\.\d+\.\d+$')
 
+    def test_localstack_bundle_cannot_omit_runtime_or_tests(self):
+        files=checks.OPTIONAL['lab/wsl/localstack']
+        self.assertIn('tests/test_wsl_localstack.py',files)
+        self.assertIn('lab/wsl/localstack/deploy.sh',files)
+        with tempfile.TemporaryDirectory() as directory:
+            source=Path(directory)
+            # Reuse the actual baseline inventory, then remove one optional gate.
+            for name in ['00-setup-ubuntu-host.sh','user-data.yaml','tests/test_bootstrap.py',
+                         'tools/render_ssot.py','tools/render_cloud_init.py','docs/module-1-topology.md',
+                         'tools/module2.py','tests/test_module2.py','module-2/vendor/cilium-1.20.2.tgz']+files[:-1]:
+                path=source/name;path.parent.mkdir(parents=True,exist_ok=True);path.touch()
+            with self.assertRaisesRegex(ValueError,'Incomplete lab/wsl/localstack'):checks.coverage(source)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -12,6 +12,7 @@ establish that its backend is deployed or that a browser route exists.
 | Prometheus | <http://127.0.0.1:9090/query> | Targets API verified from Windows; APISIX, CNPG and Knative up |
 | Grafana | <http://127.0.0.1:3000/login> | Application health HTTP 200/database ok; credentials remain private |
 | Keycloak | <https://localhost:18443/realms/vcloud/.well-known/openid-configuration> | WSL OIDC discovery with verified TLS; browser trust requires its public lab certificate |
+| LocalStack Community AWS API | <http://127.0.0.1:4566/_localstack/health> | Windows and WSL HTTP 200; S3, EC2, IAM and DynamoDB running; JSON API, no console GUI |
 
 The HTTP links and Keycloak HTTPS listener bind loopback on this computer only. Keep WSL running.
 The dashboard has been opened in Codex. Core's local dashboard uses the invoking
@@ -32,6 +33,8 @@ sudo bash lab/wsl/access.sh status
 # Deploy the endpoint profile first, then start its application/monitoring forwards:
 sudo bash lab/wsl/endpoints/access.sh start
 sudo bash lab/wsl/test-e2e.sh
+sudo bash lab/wsl/localstack/access.sh
+sudo bash lab/wsl/localstack/verify.sh
 # When finished:
 sudo bash lab/wsl/access.sh stop
 ```
@@ -78,6 +81,7 @@ Application is now Synced/Healthy. See the
 | Component | Current local state |
 | --- | --- |
 | Spinifex EC2 API and console | No controller or console deployed; offloading remains disabled |
+| LocalStack Web Console | No GUI installed; Community 4.14.0 AWS API emulator is available on loopback 4566 |
 | Customer SaaS/API | CPU smoke demo runs; production authorization and application acceptance remain separate |
 | OpenTelemetry trace GUI/backend | Collector exports a real demo span to logs; no trace GUI or durable backend is deployed |
 | OpenBao activation | Server runs but is uninitialized/sealed; four operator public keys are absent |
@@ -87,9 +91,23 @@ Application is now Synced/Healthy. See the
 `api.vcloud.example.com`, `auth.vcloud.example.com`, the example Spinifex
 endpoint and Kubernetes `*.svc.cluster.local` references are **not working
 Windows browser URLs**. A ClusterIP or Pod IP is an internal address; Pod IPs
-also change on replacement. No Ingress, NodePort or LoadBalancer is configured
-for the endpoint profile; access uses private loopback forwarding and an APISIX
-Host route. Do not publish example domains as resolvable live endpoints.
+also change on replacement. No NodePort, LoadBalancer or Windows DNS entry is
+configured for the endpoint profile; access uses private loopback forwarding
+and controller-reconciled APISIX Host routes. Do not publish example domains as
+resolvable live endpoints.
+
+For the AWS API Host route, use:
+
+```bash
+curl -i -H 'Host: aws.platform.example.com' http://127.0.0.1:18080/
+curl --resolve aws.platform.example.com:18080:127.0.0.1 \
+  http://aws.platform.example.com:18080/_localstack/health
+```
+
+Both returned HTTP 200 on 2026-10-07, with all four configured API services
+running. The [LocalStack runbook](../lab/wsl/localstack/README.md) covers API
+tests, security, state loss on restart and controller prerequisites. This EC2
+emulator does not deploy Spinifex or launch VMs.
 
 ## OpenBao operator endpoint
 

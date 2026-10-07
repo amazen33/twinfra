@@ -1,0 +1,23 @@
+{
+  "scope": "vcloud-wsl-local; user-selected legacy Community API validation only",
+  "images": {
+    "localstack": {
+      "release": "docker.io/localstack/localstack:4.14.0",
+      "source": "docker.io/localstack/localstack@sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a",
+      "canonical": "registry.vcloud.example.com/docker.io/localstack/localstack@sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a",
+      "digest": "sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a"
+    },
+    "controller": {
+      "release": "docker.io/apache/apisix-ingress-controller:2.2.0",
+      "source": "docker.io/apache/apisix-ingress-controller@sha256:5c5efa4c7f2aa60e21d20fefc0388ad52faaefb71b840ee1e11ece303cd8ed86",
+      "canonical": "registry.vcloud.example.com/docker.io/apache/apisix-ingress-controller@sha256:5c5efa4c7f2aa60e21d20fefc0388ad52faaefb71b840ee1e11ece303cd8ed86",
+      "digest": "sha256:5c5efa4c7f2aa60e21d20fefc0388ad52faaefb71b840ee1e11ece303cd8ed86"
+    },
+    "adc": {
+      "release": "ghcr.io/api7/adc:0.27.1",
+      "source": "ghcr.io/api7/adc@sha256:f65f53dd966827ff485471d00b9ce8ca146f7aba187519817b7453e476a274b8",
+      "canonical": "registry.vcloud.example.com/ghcr.io/api7/adc@sha256:f65f53dd966827ff485471d00b9ce8ca146f7aba187519817b7453e476a274b8",
+      "digest": "sha256:f65f53dd966827ff485471d00b9ce8ca146f7aba187519817b7453e476a274b8"
+    }
+  }
+}

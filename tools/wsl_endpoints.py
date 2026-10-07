@@ -174,6 +174,16 @@ def application():
                        'upstream':{'type':'roundrobin','nodes':{'kourier-internal.workload-apps.svc.cluster.local:80':1}}},
                       {'id':'legacy-smoke','uri':'/','plugins':{'prometheus':{}},
                        'upstream':{'type':'roundrobin','nodes':{'vcloud-lab-server.platform-services.svc.cluster.local:8080':1}}}]}
+    local_aws=(HERE.parent/'localstack/artifacts.lock.json').exists()
+    if local_aws:
+        # The official controller supplies full in-memory route snapshots.
+        # The public file-driven route list remains a rollback reference only.
+        apisix['apisix']['enable_admin']=True
+        apisix['deployment']={'role':'traditional','role_traditional':{'config_provider':'yaml'},
+            'admin':{'admin_key_required':True,'enable_admin_cors':False,'enable_admin_ui':False,
+                'allow_admin':['10.42.0.0/16'],'admin_listen':{'ip':'0.0.0.0','port':9180},
+                'https_admin':True,'admin_key':[{'name':'controller','key':'__VCLOUD_ADMIN_KEY__','role':'admin'}],
+                'admin_api_mtls':{'admin_ssl_cert':'/admin/tls.crt','admin_ssl_cert_key':'/admin/tls.key'}}}
     route_text=yaml.safe_dump(routes,sort_keys=False)+'#END\n'
     result=[config('vcloud-apisix',{'config.yaml':yaml.safe_dump(apisix,sort_keys=False),'apisix.yaml':route_text}),
             deployment('apisix',{'name':'apisix','image':image('apisix'),
@@ -215,6 +225,22 @@ def application():
         volume='scratch-'+path.replace('_','-')
         spec['volumes'].append({'name':volume,'emptyDir':{'medium':'Memory','sizeLimit':'8Mi'}})
         spec['containers'][0]['volumeMounts'].append({'name':volume,'mountPath':'/usr/local/apisix/'+path})
+    if local_aws:
+        from wsl_localstack import workloads,routes as aws_routes,ADMIN_SECRET
+        c=spec['containers'][0]
+        c['command']=['sh','-ec','apisix init; exec /usr/local/openresty/bin/openresty -p /usr/local/apisix -c conf/nginx.conf -g "daemon off;"']
+        spec['volumes'] += [{'name':'admin','secret':{'secretName':ADMIN_SECRET,'defaultMode':0o440}},
+                           {'name':'setup','configMap':{'name':'vcloud-apisix-setup'}}]
+        c['volumeMounts'].append({'name':'admin','mountPath':'/admin','readOnly':True})
+        mounts=[{'name':'config','mountPath':'/config','readOnly':True},
+                {'name':'conf','mountPath':'/conf'},{'name':'admin','mountPath':'/admin','readOnly':True},
+                {'name':'setup','mountPath':'/code','readOnly':True}]
+        spec['initContainers'].append({'name':'config','image':PYTHON,'imagePullPolicy':'IfNotPresent',
+            'command':['python','/code/configure-apisix.py'],'securityContext':security(),
+            'resources':{'requests':{'cpu':'25m','memory':'32Mi'},'limits':{'cpu':'100m','memory':'64Mi'}},'volumeMounts':mounts})
+        admin=service('apisix-admin',9180,labels={'app.kubernetes.io/name':'apisix'})
+        result += [config('vcloud-apisix-setup',{'configure-apisix.py':(HERE.parent/'localstack/configure-apisix.py').read_text()}),
+                   admin,*workloads(),*aws_routes()]
     return result+[demo]
 
 
@@ -329,9 +355,14 @@ def network(router='10.42.0.188'):
 
 def groups(router='10.42.0.188'):
     control=controllers()
+    extra_network=[]
+    if (HERE.parent/'localstack/artifacts.lock.json').exists():
+        from wsl_localstack import crds,controller,network as aws_network
+        control=control+crds()+controller()
+        extra_network=aws_network(router)
     return {'crds.yaml':[o for o in control if o['kind']=='CustomResourceDefinition'],
             'controllers.yaml':[o for o in control if o['kind']!='CustomResourceDefinition'],
-            'network.yaml':network(router),'identity.yaml':identity(),
+            'network.yaml':network(router)+extra_network,'identity.yaml':identity(),
             'observability.yaml':observability(),'application.yaml':application()}
 
 
@@ -340,6 +371,10 @@ def check(objects):
     adapted=copy.deepcopy(objects)
     served={(o['spec']['group']+'/'+v['name'],o['spec']['names']['kind']) for o in controllers()
             if o['kind']=='CustomResourceDefinition' for v in o['spec']['versions'] if v['served'] and not v.get('deprecated',False)}
+    if (HERE.parent/'localstack/artifacts.lock.json').exists():
+        from wsl_localstack import crds
+        served |= {(o['spec']['group']+'/'+v['name'],o['spec']['names']['kind']) for o in crds()
+                   for v in o['spec']['versions'] if v['served'] and not v.get('deprecated',False)}
     for obj in adapted:
         if obj['apiVersion']=='monitoring.coreos.com/v1' and obj['kind']=='ServiceMonitor':continue
         if obj['apiVersion']=='monitoring.coreos.com/v1' and obj['kind']=='Prometheus':
@@ -358,6 +393,8 @@ def check(objects):
         spec=podspec(obj)
         if spec:
             for c in spec.get('containers',[])+spec.get('initContainers',[]):
+                if c.get('securityContext',{}).get('allowPrivilegeEscalation') is not False:
+                    raise ValueError('Privilege escalation must be disabled')
                 if c.get('imagePullPolicy')!='IfNotPresent':raise ValueError('Image cache policy missing')
                 if c.get('image') and '@sha256:' not in c['image']:raise ValueError('Immutable image required')
                 if any('nvidia.com/' in key for key in c.get('resources',{}).get('limits',{})):raise ValueError('GPU forbidden')
@@ -373,7 +410,11 @@ def check(objects):
 def render(build,router='10.42.0.188'):
     build.mkdir(parents=True,exist_ok=True);schemas=build/'schemas';schemas.mkdir(exist_ok=True)
     lock=json.loads((HERE/'artifacts.lock.json').read_text())
-    (build/'images.txt').write_text('\n'.join(sorted({v['canonical'] for v in lock['images'].values()}|{PYTHON}))+'\n')
+    images={v['canonical'] for v in lock['images'].values()}|{PYTHON}
+    if (HERE.parent/'localstack/artifacts.lock.json').exists():
+        from wsl_localstack import lock as aws_lock
+        images|={v['canonical'] for v in aws_lock()['images'].values()}
+    (build/'images.txt').write_text('\n'.join(sorted(images))+'\n')
     for filename,objects in groups(router).items():
         objects=copy.deepcopy(objects)
         configs={(o['metadata'].get('namespace'),o['metadata']['name']):o.get('data',{}) for o in objects if o['kind']=='ConfigMap'}
