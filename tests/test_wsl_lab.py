@@ -30,6 +30,15 @@ class WslLabTests(unittest.TestCase):
     def test_updated_host_passes(self):
         self.assertIs(lab.check_facts(self.facts,self.p),self.facts)
 
+    def test_wsl_host_routing_override_leaves_production_native_bpf_values(self):
+        with tempfile.TemporaryDirectory() as directory:
+            values=lab.render(Path(directory),'192.0.2.10','eth1')['cilium-values.yaml']
+        self.assertTrue(values['bpf']['hostLegacyRouting'])
+        self.assertTrue(values['bpf']['masquerade']);self.assertTrue(values['kubeProxyReplacement'])
+        self.assertEqual(values['routingMode'],'native')
+        production=yaml.safe_load((ROOT/'module-2/values/cilium.yaml').read_text())
+        self.assertFalse(production['bpf']['hostLegacyRouting'])
+
     def test_proxy_fix_profile_is_the_owned_lab(self):
         import hashlib
         self.assertEqual(proxy_marks.PROFILE_SHA256,hashlib.sha256((ROOT/'lab/wsl/profile.json').read_bytes()).hexdigest())

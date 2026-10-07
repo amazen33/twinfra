@@ -5,13 +5,14 @@ requests targeting `main`, pushes to `main`, and manual dispatch. Its stable
 aggregate check is **vCloud PR gate**. Require that check in a GitHub branch
 ruleset after the workflow has run; this change does not modify repository rules.
 
-Every normal run tests the candidate revision and five immutable merged revisions:
+Every normal run tests the candidate revision and six immutable merged revisions:
 
 | Prior PR | Verified merge commit | Scope |
 | --- | --- | --- |
 | [#1](https://github.com/amazen33/vCloud/pull/1) | `1bc96d335bcb82482e33d4656102123e714c8fe9` | Modules -1, 1 and 2 |
 | [#2](https://github.com/amazen33/vCloud/pull/2) | `49848feb7fd58870650c919928297509af3f243a` | Initial workflow |
 | [#3](https://github.com/amazen33/vCloud/pull/3) | `e13aa15f3fd4864bb8ee022bd561c29441be7b31` | Delivery, IAM, secrets and gated HPC |
+| [#4](https://github.com/amazen33/vCloud/pull/4) | `05471067cb64d89d4ef20fd87319c8cadf3bf7a4` | WSL corrections, recovery documentation and CI review |
 | [#5](https://github.com/amazen33/vCloud/pull/5) | `405ac74bedd9ed19f98de699932edf716949a510` | Roadmap document |
 | [#6](https://github.com/amazen33/vCloud/pull/6) | `87ed35e883e547311e70fda22161a829687c7f81` | Roadmap automation |
 
@@ -44,13 +45,16 @@ Manual dispatch is available after the workflow exists on the default branch.
 | Module 5a, when present | Strict GPU Knative/CSI/Job/policy schemas, frozen Pod security audit, deterministic renders, real LangChain/SQLAlchemy client and LCEL tests with mocked database/inference transports |
 | Module 5b, when present | Disabled Spinifex profile, Kueue Helm/CRD validation, durable capacity limits, SDK signing/stubs, local mTLS and HPC alert scenarios |
 | WSL lab, when present | Local K3s configuration, strict manifests/frozen Cilium audit, resource/adoption/CIDR safeguards; no host execution on GitHub |
+| WSL routing boundary | Unconditional candidate source guard; applicable selected revisions also run mutation tests and locked-chart lab/base render assertions; reject legacy routing outside the exact local values overlay, including Argo Helm overrides |
 | WSL GitOps/database, when present | Locked Argo/CNPG/metrics artifacts, strict rendered schemas, exact Local PV vetting, TLS/RBAC boundaries and bounded CPU/memory growth; SQL and reconciliation require live acceptance |
+| WSL endpoints, when present | Strict endpoint/GitOps schemas and render drift, restricted Pod policy, CPU-only mutations, PGP-only initialization/custody guards; no initialization or deployment on GitHub |
 | Registry overlay, when present | Strict kubeconform with no skipped resources; explicit `IfNotPresent`, immutable Argo images and pull-secret references; Rego rules and DNS/TLS/cache/private-path fixtures |
 | Platform probe correction, when present | Both policy schemas, workload/port scope, dependency prechecks, dynamic CIDR preservation, multi-pod health/stability and fail-closed restart recovery fixtures |
 | Roadmap automation, when present | Mocked pagination, exact-title reuse, milestone assignment, dry-run no-writes and closed-milestone rejection; no GitHub mutation |
 | CI controls | Historical revision selection, invalid input/commit rejection, checksum and archive safety, partial module rejection, no skipped or empty suites, immutable action/tool pins |
 
 The [runner](../tools/ci/run_checks.py) always requires the original modules.
+It also lints the packaged Cilium/APISIX charts and, when present, Kueue.
 Later modules absent from an older commit are recorded as
 `not_present_in_revision`; partial implementations fail. Unit-test failures,
 empty suites and skipped tests fail the gate. The runner produces fresh evidence
@@ -58,6 +62,16 @@ instead of trusting previously committed validation reports.
 The document-only roadmap does not require a later automation implementation,
 and historical WSL profiles do not require the later proxy repair. Once either
 feature is present, incomplete bundles fail instead of disappearing from coverage.
+
+The candidate [host-routing guard](../tools/check_host_routing.py) runs from the
+CI control checkout before selected-revision gates. Thus historical PRs without
+the new WSL overlay do not suppress the candidate's production/staging boundary
+check. New routing bundles require the overlay, guard and tests together.
+The selected-revision render gate asserts lab legacy routing `"true"`, base
+`"false"`, native mode, BPF masquerade, proxy replacement and explicit lab socket
+LB. The [ADR](architecture/adr/ADR-0024-wsl-host-routing.md) records the exception.
+Require `vCloud PR gate` in a GitHub ruleset for enforced merge prevention;
+the local CI rule alone does not protect an otherwise unprotected `main` branch.
 
 ## Dependency and execution boundaries
 

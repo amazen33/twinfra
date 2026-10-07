@@ -1,0 +1,17 @@
+[Unit]
+Description=vCloud owned WSL GitHub-only DNS refresh
+After=k3s.service network-online.target
+Requires=k3s.service
+ConditionPathExists=/var/lib/vcloud-wsl/owner.json
+
+[Service]
+Type=oneshot
+# Root is required only for the private lab kubeconfig, not the DNS resolver.
+User=root
+ExecStart=/usr/bin/python3 /usr/local/lib/vcloud-wsl/wsl_git_dns.py
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+MemoryMax=128M
+TimeoutStartSec=150

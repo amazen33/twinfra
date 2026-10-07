@@ -8,8 +8,12 @@ establish that its backend is deployed or that a browser route exists.
 | --- | --- | --- |
 | Argo CD Core dashboard | <http://127.0.0.1:8080/> | UI rendered with `vcloud-wsl-platform`; HTML, JavaScript and application API passed |
 | Lab HTTP smoke server | <http://127.0.0.1:18080/> | HTTP 200 with `vcloud-wsl-ok`; a connectivity test, not a SaaS application |
+| APISIX -> CPU Knative demo | <http://127.0.0.1:18080/> with Host `demo-cpu-app.workload-apps.example.com` | HTTP 200 and `vcloud-knative-cpu-ok` verified from WSL and Windows |
+| Prometheus | <http://127.0.0.1:9090/query> | Targets API verified from Windows; APISIX, CNPG and Knative up |
+| Grafana | <http://127.0.0.1:3000/login> | Application health HTTP 200/database ok; credentials remain private |
+| Keycloak | <https://localhost:18443/realms/vcloud/.well-known/openid-configuration> | WSL OIDC discovery with verified TLS; browser trust requires its public lab certificate |
 
-The two URLs use **HTTP**, on this Windows computer only. Keep WSL running.
+The HTTP links and Keycloak HTTPS listener bind loopback on this computer only. Keep WSL running.
 The dashboard has been opened in Codex. Core's local dashboard uses the invoking
 process's Kubernetes credentials rather than a separate Argo CD login; this is
 the upstream [Core access model](https://github.com/argoproj/argo-cd/blob/v3.5.3/docs/operator-manual/core.md).
@@ -25,6 +29,9 @@ Inside Ubuntu WSL:
 cd /mnt/e/vCloud
 sudo bash lab/wsl/access.sh start
 sudo bash lab/wsl/access.sh status
+# Deploy the endpoint profile first, then start its application/monitoring forwards:
+sudo bash lab/wsl/endpoints/access.sh start
+sudo bash lab/wsl/test-e2e.sh
 # When finished:
 sudo bash lab/wsl/access.sh stop
 ```
@@ -32,10 +39,13 @@ sudo bash lab/wsl/access.sh stop
 The script verifies the owned single-node context, ready Pods and the running
 Argo CD image digest. It copies the CLI from that cached image and verifies the
 binary SHA-256 before execution; no internet download is required. It starts
-two exact transient systemd units, preserves unrelated listeners and keeps
+exact owned transient systemd units, preserves unrelated listeners and keeps
 access alive after the shell closes. Repeated `start` calls reuse active units.
 After WSL stops or reboots, run `start` again. The script installs no Kubernetes
 workload and does not change network policies, Services or Windows firewall rules.
+When APISIX exists, the Core access helper delegates the HTTP forward to the
+endpoint helper and retains the old hostless smoke route. Its stop command
+stops Core and the HTTP forward only; other component units are separate.
 
 From PowerShell, start access and test the actual Windows route:
 
@@ -53,42 +63,40 @@ does **not** imply successful GitOps reconciliation.
 If access fails:
 
 ```bash
-sudo systemctl status vcloud-wsl-argocd-dashboard.service vcloud-wsl-http-access.service
-sudo journalctl -u vcloud-wsl-argocd-dashboard.service -u vcloud-wsl-http-access.service -n 40
+sudo systemctl status vcloud-wsl-argocd-dashboard.service vcloud-wsl-apisix-access.service
+sudo journalctl -u vcloud-wsl-argocd-dashboard.service -u vcloud-wsl-apisix-access.service -n 40
 sudo ss -ltnp 'sport = :8080 or sport = :18080'
 ```
 
-The dashboard is Core in `platform-services`. At the review on 2026-10-07,
-there is no full `argocd-server` Service in `argocd`. A stale cluster discovery
-binding from the earlier installation still targets that namespace. Restore
-the single-owner RBAC rather than installing another controller over the
-existing cluster-wide Argo CD resources.
+The dashboard is Core in `platform-services`, with no second Argo installation.
+The 2026-10-07 discovery/DNS repair restored its existing owner and the platform
+Application is now Synced/Healthy. See the
+[application/observability runbook](wsl-local-milestones-3-5.md).
 
 ## Services with no working browser endpoint
 
 | Component | Current local state |
 | --- | --- |
 | Spinifex EC2 API and console | No controller or console deployed; offloading remains disabled |
-| APISIX, Knative and customer SaaS/API | No runtime deployment or ingress route |
-| Grafana and Prometheus | Not deployed |
-| OpenTelemetry collector and trace backend | Not deployed; a collector is a telemetry receiver, not a dashboard |
-| Keycloak and OpenBao | Not deployed |
+| Customer SaaS/API | CPU smoke demo runs; production authorization and application acceptance remain separate |
+| OpenTelemetry trace GUI/backend | Collector exports a real demo span to logs; no trace GUI or durable backend is deployed |
+| OpenBao activation | Server runs but is uninitialized/sealed; four operator public keys are absent |
 | vLLM and RAG | Not deployed; heavy GPU profiles remain bypassed |
-| PostgreSQL/pgvector | CNPG operator is Ready; no database Pod is running at this snapshot |
+| PostgreSQL/pgvector GUI | Database Ready; TLS/vector/persistence verified; no database GUI is deployed |
 
 `api.vcloud.example.com`, `auth.vcloud.example.com`, the example Spinifex
 endpoint and Kubernetes `*.svc.cluster.local` references are **not working
 Windows browser URLs**. A ClusterIP or Pod IP is an internal address; Pod IPs
 also change on replacement. No Ingress, NodePort or LoadBalancer is configured
-in this snapshot. Do not publish example URLs as live endpoints.
+for the endpoint profile; access uses private loopback forwarding and an APISIX
+Host route. Do not publish example domains as resolvable live endpoints.
 
-## Reconciliation blocker visible in the working dashboard
+## OpenBao operator endpoint
 
-`vcloud-wsl-platform` is **Healthy / Unknown**, with `ComparisonError`: its
-`platform-services:argocd-application-controller` ServiceAccount is denied
-cluster discovery (the review captured forbidden ControllerRevision listing,
-and the Node authorization check also failed). The dashboard displays this
-actual status. Resolve
-installation ownership and restore the vetted controller RBAC before treating
-GitOps as accepted. Avoid granting `cluster-admin` as a workaround. Database
-and full platform readiness require their own deployment and acceptance gates.
+`http://127.0.0.1:8200/v1/sys/init` forwards to the Pod's loopback-only HTTP
+listener. The normal in-cluster Service uses HTTPS 8200. GET returned false on
+2026-10-07; the guarded init helper returned Linux exit 3 for missing public
+keys and created no init-output Secret. Use the
+[PGP gate](wsl-local-milestones-3-5.md#openbao-initialization-gate) before manual
+operator unseal. No plaintext keys/token or private Grafana credentials are
+displayed here; Ready transport probes do not establish secrets acceptance.

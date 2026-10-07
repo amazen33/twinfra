@@ -128,3 +128,18 @@ node-registry-plan:
 	bash scripts/bootstrap-node.sh --plan
 node-preflight:
 	bash scripts/validate-node.sh
+
+.PHONY: wsl-endpoints-stage wsl-endpoints-render wsl-endpoints-validate wsl-endpoints-apply wsl-e2e wsl-openbao-init
+wsl-endpoints-stage:
+	sudo $(PYTHON) tools/stage_wsl_endpoints.py
+wsl-endpoints-render:
+	$(PYTHON) tools/wsl_endpoints.py render
+wsl-endpoints-validate:
+	$(PYTHON) tools/wsl_endpoints.py validate --kubeconform "$(KUBECONFORM)"
+wsl-endpoints-apply:
+	sudo bash lab/wsl/endpoints/deploy.sh
+wsl-e2e:
+	sudo bash lab/wsl/test-e2e.sh
+wsl-openbao-init:
+	sudo bash lab/wsl/endpoints/access.sh openbao
+	sudo bash lab/wsl/openbao-init.sh

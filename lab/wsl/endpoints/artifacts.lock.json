@@ -1,0 +1,123 @@
+{
+  "versions": {
+    "knative": "1.23.0",
+    "prometheusOperator": "0.94.1",
+    "prometheus": "3.15.0",
+    "grafana": "13.2.3",
+    "otelCollector": "0.162.0",
+    "openbao": "2.7.1",
+    "keycloak": "26.8.0",
+    "apisix": "3.19.0"
+  },
+  "files": {
+    "serving-core.yaml": {
+      "url": "https://github.com/knative/serving/releases/download/knative-v1.23.0/serving-core.yaml",
+      "sourceSHA256": "be3f16c9c0ac9276cc173ef04871aaeac78537f9edb116310caa02f016e9cbc2",
+      "gzipSHA256": "d0355dbc3bb40062a06853b2a434698aeccbe4fa8eb3ac0dfb2f9f798f0c75cc"
+    },
+    "kourier.yaml": {
+      "url": "https://github.com/knative/net-kourier/releases/download/knative-v1.23.0/kourier.yaml",
+      "sourceSHA256": "cded0c3c1d7669b1aa9f7484234b454ff3940a2b54a27d5ec4825c2d4003d01d",
+      "gzipSHA256": "3a5c99b8f9021f1cbb67a6fb0006b1cd38924c3a0093a48f9adeddb2a9015b1c"
+    },
+    "prometheus-operator.yaml": {
+      "url": "https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.94.1/bundle.yaml",
+      "sourceSHA256": "7ab177610b271c70c57c7d6fc550a1e934eff4f707a5d8b61dfaa3845d52deea",
+      "gzipSHA256": "c64a43a17d5c2fe69809c0da68165e4f232c8b4d755bc0d15260116f6d80ec63"
+    }
+  },
+  "imageSources": {
+    "openbao": "docker.io/openbao/openbao:2.7.1",
+    "keycloak": "quay.io/keycloak/keycloak:26.8.0",
+    "apisix": "docker.io/apache/apisix:3.19.0-debian",
+    "prometheus": "quay.io/prometheus/prometheus:v3.15.0",
+    "grafana": "docker.io/grafana/grafana:13.2.3",
+    "otel-collector": "docker.io/otel/opentelemetry-collector-contrib:0.162.0",
+    "prometheus-config-reloader": "quay.io/prometheus-operator/prometheus-config-reloader:v0.94.1",
+    "knative-queue-proxy": "gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:a3cc71ce80dbc6df8781f15eac2cf3531a4c9815271799afd8776bef9e6aeaf2",
+    "knative-activator": "gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:e5ab46f3b73fa2e3898fe47f6a3a0c2bd765596f4fb36ceb4c28c35d0a74b2e5",
+    "knative-autoscaler": "gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:879da127b23db65d862cafa6b23fb987381d0e44150f0027d44e1f5aee83bde2",
+    "knative-controller": "gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:ca5062ece0329d002a81940cf4268d7898866434d70049bb93f27d3a786d3292",
+    "knative-webhook": "gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:3846e9a416665c5b9ec2e4de246cfcb5c4ab0d01ba19348aa008caf30144b650",
+    "knative-kourier-control": "gcr.io/knative-releases/knative.dev/net-kourier/cmd/kourier@sha256:eedfe3938f1efa93230863099f96400a0567909d383a585021f8727fa3a6cf0b",
+    "knative-kourier-gateway": "docker.io/envoyproxy/envoy:v1.37.7",
+    "prometheus-operator": "quay.io/prometheus-operator/prometheus-operator:v0.94.1"
+  },
+  "images": {
+    "openbao": {
+      "source": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "canonical": "registry.vcloud.example.com/docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "digest": "sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf"
+    },
+    "keycloak": {
+      "source": "quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+      "canonical": "registry.vcloud.example.com/quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+      "digest": "sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc"
+    },
+    "apisix": {
+      "source": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "canonical": "registry.vcloud.example.com/docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "digest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141"
+    },
+    "prometheus": {
+      "source": "quay.io/prometheus/prometheus@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e",
+      "canonical": "registry.vcloud.example.com/quay.io/prometheus/prometheus@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e",
+      "digest": "sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e"
+    },
+    "grafana": {
+      "source": "docker.io/grafana/grafana@sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
+      "canonical": "registry.vcloud.example.com/docker.io/grafana/grafana@sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
+      "digest": "sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572"
+    },
+    "otel-collector": {
+      "source": "docker.io/otel/opentelemetry-collector-contrib@sha256:39923a8e431bd1f57be82411999d389fcfe40857492e4365456d97a4c1f74be6",
+      "canonical": "registry.vcloud.example.com/docker.io/otel/opentelemetry-collector-contrib@sha256:39923a8e431bd1f57be82411999d389fcfe40857492e4365456d97a4c1f74be6",
+      "digest": "sha256:39923a8e431bd1f57be82411999d389fcfe40857492e4365456d97a4c1f74be6"
+    },
+    "prometheus-config-reloader": {
+      "source": "quay.io/prometheus-operator/prometheus-config-reloader@sha256:06b52bd4dbe3ed6dd5905aadaf8b9987d9da4c31d37bb86deaadae68cee2d26b",
+      "canonical": "registry.vcloud.example.com/quay.io/prometheus-operator/prometheus-config-reloader@sha256:06b52bd4dbe3ed6dd5905aadaf8b9987d9da4c31d37bb86deaadae68cee2d26b",
+      "digest": "sha256:06b52bd4dbe3ed6dd5905aadaf8b9987d9da4c31d37bb86deaadae68cee2d26b"
+    },
+    "knative-queue-proxy": {
+      "source": "gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:a3cc71ce80dbc6df8781f15eac2cf3531a4c9815271799afd8776bef9e6aeaf2",
+      "canonical": "registry.vcloud.example.com/gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:a3cc71ce80dbc6df8781f15eac2cf3531a4c9815271799afd8776bef9e6aeaf2",
+      "digest": "sha256:a3cc71ce80dbc6df8781f15eac2cf3531a4c9815271799afd8776bef9e6aeaf2"
+    },
+    "knative-activator": {
+      "source": "gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:e5ab46f3b73fa2e3898fe47f6a3a0c2bd765596f4fb36ceb4c28c35d0a74b2e5",
+      "canonical": "registry.vcloud.example.com/gcr.io/knative-releases/knative.dev/serving/cmd/activator@sha256:e5ab46f3b73fa2e3898fe47f6a3a0c2bd765596f4fb36ceb4c28c35d0a74b2e5",
+      "digest": "sha256:e5ab46f3b73fa2e3898fe47f6a3a0c2bd765596f4fb36ceb4c28c35d0a74b2e5"
+    },
+    "knative-autoscaler": {
+      "source": "gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:879da127b23db65d862cafa6b23fb987381d0e44150f0027d44e1f5aee83bde2",
+      "canonical": "registry.vcloud.example.com/gcr.io/knative-releases/knative.dev/serving/cmd/autoscaler@sha256:879da127b23db65d862cafa6b23fb987381d0e44150f0027d44e1f5aee83bde2",
+      "digest": "sha256:879da127b23db65d862cafa6b23fb987381d0e44150f0027d44e1f5aee83bde2"
+    },
+    "knative-controller": {
+      "source": "gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:ca5062ece0329d002a81940cf4268d7898866434d70049bb93f27d3a786d3292",
+      "canonical": "registry.vcloud.example.com/gcr.io/knative-releases/knative.dev/serving/cmd/controller@sha256:ca5062ece0329d002a81940cf4268d7898866434d70049bb93f27d3a786d3292",
+      "digest": "sha256:ca5062ece0329d002a81940cf4268d7898866434d70049bb93f27d3a786d3292"
+    },
+    "knative-webhook": {
+      "source": "gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:3846e9a416665c5b9ec2e4de246cfcb5c4ab0d01ba19348aa008caf30144b650",
+      "canonical": "registry.vcloud.example.com/gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:3846e9a416665c5b9ec2e4de246cfcb5c4ab0d01ba19348aa008caf30144b650",
+      "digest": "sha256:3846e9a416665c5b9ec2e4de246cfcb5c4ab0d01ba19348aa008caf30144b650"
+    },
+    "knative-kourier-control": {
+      "source": "gcr.io/knative-releases/knative.dev/net-kourier/cmd/kourier@sha256:eedfe3938f1efa93230863099f96400a0567909d383a585021f8727fa3a6cf0b",
+      "canonical": "registry.vcloud.example.com/gcr.io/knative-releases/knative.dev/net-kourier/cmd/kourier@sha256:eedfe3938f1efa93230863099f96400a0567909d383a585021f8727fa3a6cf0b",
+      "digest": "sha256:eedfe3938f1efa93230863099f96400a0567909d383a585021f8727fa3a6cf0b"
+    },
+    "knative-kourier-gateway": {
+      "source": "docker.io/envoyproxy/envoy@sha256:3e5f1b892f15d46a2674ffc81b9f86f4d0df7794e3ef49e92ee7062871b87be1",
+      "canonical": "registry.vcloud.example.com/docker.io/envoyproxy/envoy@sha256:3e5f1b892f15d46a2674ffc81b9f86f4d0df7794e3ef49e92ee7062871b87be1",
+      "digest": "sha256:3e5f1b892f15d46a2674ffc81b9f86f4d0df7794e3ef49e92ee7062871b87be1"
+    },
+    "prometheus-operator": {
+      "source": "quay.io/prometheus-operator/prometheus-operator@sha256:7c88d4e7bae63bd8d0f8da986054337c23b4472fa8d3c6817f5bc4b8407a2d6a",
+      "canonical": "registry.vcloud.example.com/quay.io/prometheus-operator/prometheus-operator@sha256:7c88d4e7bae63bd8d0f8da986054337c23b4472fa8d3c6817f5bc4b8407a2d6a",
+      "digest": "sha256:7c88d4e7bae63bd8d0f8da986054337c23b4472fa8d3c6817f5bc4b8407a2d6a"
+    }
+  }
+}

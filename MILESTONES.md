@@ -9,6 +9,9 @@ not imply ISTQB certification. All four GitHub release milestones remain open.
 
 - [x] Provision the WSL2 K3s foundation and verify its Node, DNS and local network controls on the 20 GiB / six-CPU profile. — **[Flexibility, Reliability]**
 - [x] Configure Cilium eBPF deny-all and record DNS, allowed-control HTTP, denied Service/Pod HTTP and matching policy-drop evidence for the lab test pair. — **[Security, Functional suitability]**
+- [x] Codify the WSL-only host-routing overlay; validate lab/base Helm renders and CI rejection of production/staging/Argo enablement. — **[Compatibility, Security]**
+- [x] Refresh live native/legacy routing, BPF masquerade and effective socket LB status; repeat GitHub fetch, deny-all and ten endpoint gates. — **[Security, Reliability]**
+- [ ] Reconcile the explicit lab socket LB ConfigMap value and repeat WSL reboot acceptance; SPIFFE attestation requires separate deployment/validation. — **[Security, Reliability]**
 - [x] Restore the three platform health probes and Windows loopback Core dashboard with Host Firewall enabled; retain the local probe-port exception. — **[Reliability, Interaction capability]**
 - [ ] Define and verify scoped host and Windows Firewall guards for required vCloud traffic; confirm unrelated traffic remains blocked. — **[Security, Reliability]**
 - [ ] Retest WSL reboot recovery and complete application readiness before claiming the cluster supports all vCloud workloads. — **[Reliability, Functional suitability]**
@@ -22,14 +25,17 @@ of the three health ports to kubelet traffic alone.
 
 ## Milestone 2: Declarative GitOps & Data Layer
 
-- [ ] Restore the single-owner Argo CD controller discovery binding in `platform-services`; verify synchronization and recovery from a failed or interrupted sync. — **[Reliability, Functional suitability]**
+- [x] Restore the single-owner Argo CD controller discovery binding in `platform-services`; verify synchronization and recovery from a failed or interrupted sync. — **[Reliability, Functional suitability]**
 - [ ] Deploy CloudNativePG with a Local PV bounded to 4 GiB; verify TLS, pgvector, bounded CPU/memory growth and persistence across pod restart and reconciliation. — **[Reliability, Performance efficiency]**
 - [ ] Configure Keycloak role-based access control (RBAC) and verify representative authorized and denied access paths. — **[Security, Functional suitability]**
 - [ ] Configure least-privilege OpenBao credentials and demonstrate credential rotation and revocation with access checks. — **[Security, Reliability]**
 
-The current Application is `Healthy / Unknown` with a discovery `ComparisonError`;
-the stale binding targets `argocd`. No CNPG Cluster or PVC is initialized. These
-items remain open even though the controller/operator health probes pass.
+The 2026-10-07 repair restored the discovery binding and missing Git DNS
+Deployment; the Application is now `Synced / Healthy`. CNPG PostgreSQL 18.6 with
+pgvector 0.8.2 passed verified TLS and retained-data checks across a Pod restart.
+Bounded automatic growth under load remains separate acceptance work, so the
+full database item stays open. OpenBao is deployed with durable PostgreSQL
+storage but remains uninitialized/sealed behind the operator PGP-key gate.
 
 ## Milestone: Zero-Trust Streaming & GitOps Core
 
@@ -49,11 +55,11 @@ this entry does not claim a GitHub issue closure. See
 - [ ] Enforce the `vCloud PR gate` in a reviewed GitHub ruleset; `main` is currently unprotected. — **[Security, Maintainability]**
 - [ ] Produce traceable system integration testing (SIT) evidence linking requirements, test cases, results, and defects. — **[Functional suitability, Maintainability]**
 - [ ] Conduct an authorized network-security audit, document findings, remediate them, and record retest results. — **[Security, Reliability]**
-- [ ] Verify Argo CD drift detection and self-healing against a controlled configuration change; record expected and observed outcomes. — **[Reliability, Functional suitability]**
+- [x] Verify Argo CD drift detection and self-healing against a controlled configuration change; record expected and observed outcomes. — **[Reliability, Functional suitability]**
 - [ ] Publish a release test record with scope, environment, results, exceptions, and sign-off status. — **[Maintainability, Functional suitability]**
 
-GitHub CI runs the selected candidate and immutable merged PRs #1–#3, #5 and
-#6. It performs offline validation without cluster credentials. The local
+GitHub CI runs the selected candidate and immutable merged PRs #1–#6.
+It performs offline validation without cluster credentials. The local
 runtime review is recorded separately; neither result replaces full SIT or
 release sign-off. See the [CI guide](docs/github-actions-tests.md).
 
@@ -63,6 +69,21 @@ release sign-off. See the [CI guide](docs/github-actions-tests.md).
 - [ ] Exercise multi-node expansion and node-loss recovery, recording recovery behavior and service availability. — **[Flexibility, Reliability]**
 - [ ] Prepare production runbooks for deployment, operation, troubleshooting, recovery, and security response. — **[Maintainability, Reliability]**
 - [ ] Verify the MIT license, third-party notices, and release artifacts are complete and included with the public release. — **[Functional suitability, Maintainability]**
+
+## Local WSL stages M3–M5 (separate from release milestones)
+
+- [x] M3 endpoints: restricted OpenBao/Keycloak, APISIX and Knative CPU demo deployed; APISIX Host route returned HTTP 200 from WSL and Windows.
+- [x] M4 observability: APISIX, CNPG and Knative Prometheus targets present/up; real demo span exported by OpenTelemetry; Grafana application health and Keycloak verified TLS/discovery passed.
+- [x] M5 local acceptance: ten live gates passed with zero failures, including generated PodSecurity and GPU/Spinifex disabled constraints.
+- [ ] OpenBao activation: provide the four operator public keys, execute the PGP-only initialization, then complete operator unseal and secrets-engine acceptance.
+- [x] M5 hosted publication: candidate and exact-head GitHub gates passed; `vcloud-wsl-endpoints` Synced/Healthy at the tested revision, followed by zero-failure acceptance.
+
+Evidence and executable procedures: [local stages runbook](docs/wsl-local-milestones-3-5.md).
+The [dated acceptance record](docs/acceptance/wsl-2026-10-07.md) records the final
+checks, approved WSL routing workaround and remaining production gates.
+The controlled drift test changed only the existing GitOps marker ConfigMap;
+Argo restored `managed-by-github`. HTTP 200 and telemetry are local acceptance,
+not production release, persistent observability, OIDC authorization or HPC proof.
 
 ## ISO/IEC 25010:2023 tag key
 

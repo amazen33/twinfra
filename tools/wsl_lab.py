@@ -21,6 +21,7 @@ API_PORT = 16443
 sys.path.insert(0, str(ROOT / 'tools'))
 from module2 import audit_objects, load_policy, normalize_pods, verify_bundle
 from wsl_lab_dns_image import IMAGE as DNS_IMAGE
+from check_host_routing import LAB, LAB_VALUES, assert_config, documents
 
 
 def profile():
@@ -105,7 +106,7 @@ def k3s_config(p, node_ip):
     # Mirrored WSL routes node-address access reliably; localhost/wildcard
     # self-bootstrap can be intercepted by the Windows shared network stack.
     return {'node-name': p['nodeName'], 'node-ip': node_ip, 'bind-address': node_ip,
-            'https-listen-port': API_PORT, 'write-kubeconfig-mode': '0600',
+            'https-listen-port': API_PORT, 'write-kubeconfig-mode': '0600', 'secrets-encryption': True,
             'flannel-backend': 'none', 'disable-network-policy': True, 'disable-kube-proxy': True,
             'disable': ['traefik', 'servicelb', 'local-storage', 'metrics-server', 'coredns'],
             'disable-helm-controller': True, 'cluster-cidr': p['podCIDR'],
@@ -215,6 +216,16 @@ def render(build, node_ip, device):
     p = profile()
     build.mkdir(parents=True, exist_ok=True)
     cilium = yaml.safe_load((ROOT / 'module-2/values/cilium.yaml').read_text(encoding='utf-8'))
+    # Narrow local overlay; production inputs remain unchanged. Reject drift
+    # before bootstrap, even when it is invoked without the separate CI guard.
+    overlay = documents((ROOT / LAB).read_text(encoding='utf-8'))
+    if p['name'] != 'vcloud-wsl-local' or overlay != [LAB_VALUES]:
+        raise ValueError('Unexpected WSL routing profile')
+    for key, value in overlay[0].items():
+        if isinstance(value, dict):
+            cilium.setdefault(key, {}).update(value)
+        else:
+            cilium[key] = value
     cilium.update(k8sServiceHost=node_ip, k8sServicePort=API_PORT, devices=[device], cluster={'name': p['name']})
     datasets = {'k3s-config.yaml': k3s_config(p, node_ip), 'cilium-values.yaml': cilium}
     for name, data in datasets.items():
@@ -234,6 +245,7 @@ def validate(build, helm, kubeconform, schemas=None):
     command = [helm, 'template', 'cilium', str(ROOT / 'module-2/vendor/cilium-1.20.2.tgz'),
                '--namespace', 'kube-system', '-f', str(build / 'cilium-values.yaml')]
     output = subprocess.check_output(command, text=True, encoding='utf-8')
+    assert_config(documents(output), True, socket_lb=True)
     audit([obj for obj in yaml.safe_load_all(output) if obj])
     (build / 'cilium-rendered.yaml').write_text(output, encoding='utf-8', newline='\n')
     schema_args = []

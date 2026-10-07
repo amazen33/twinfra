@@ -1,0 +1,1170 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcloud-runtime-config
+  namespace: platform-services
+data:
+  runtime-config.py: "\"\"\"Run inside a restricted init container; private config\
+    \ stays on tmpfs.\"\"\"\nimport json\nfrom pathlib import Path\nimport sys\nfrom\
+    \ urllib.parse import quote\n\nmode=sys.argv[1]\npassword=Path('/auth/password').read_text()\n\
+    host='vcloud-wsl-postgres-rw.platform-services.svc.cluster.local'\nif mode=='openbao':\n\
+    \    url=f'postgresql://openbao:{quote(password,safe=\"\")}@{host}:5432/openbao?sslmode=verify-full&sslrootcert=/pg-ca/ca.crt'\n\
+    \    text=('ui = true\\ndisable_mlock = true\\napi_addr = \"https://openbao.platform-services.svc.cluster.local:8200\"\
+    \\n'\n          'storage \"postgresql\" {\\n connection_url = '+json.dumps(url)+'\\\
+    n max_parallel = \"4\"\\n}\\n'\n          'listener \"tcp\" {\\n address = \"\
+    0.0.0.0:8200\"\\n cluster_address = \"127.0.0.1:8202\"\\n tls_cert_file = \"/tls/tls.crt\"\
+    \\n tls_key_file = \"/tls/tls.key\"\\n}\\n'\n          '# This listener is reachable\
+    \ only inside the Pod network namespace.\\n'\n          '# kubectl port-forward\
+    \ binds the operator endpoint to host loopback.\\n'\n          'listener \"tcp\"\
+    \ {\\n address = \"127.0.0.1:8201\"\\n cluster_address = \"127.0.0.1:8203\"\\\
+    n tls_disable = true\\n}\\n')\n    target=Path('/runtime/openbao.hcl')\nelif mode=='keycloak':\n\
+    \    # The PostgreSQL JDBC driver verifies the CNPG public CA and service name.\n\
+    \    url=f'jdbc:postgresql://{host}:5432/keycloak?sslmode=verify-full&sslrootcert=/pg-ca/ca.crt'\n\
+    \    text=('db=postgres\\ndb-username=keycloak\\ndb-password='+password+'\\ndb-url='+url+'\\\
+    n'\n          'http-enabled=false\\nhttps-certificate-file=/tls/tls.crt\\nhttps-certificate-key-file=/tls/tls.key\\\
+    n'\n          'hostname=https://localhost:18443\\nhealth-enabled=true\\nmetrics-enabled=true\\\
+    ncache=local\\n')\n    target=Path('/runtime/keycloak.conf')\nelse:raise ValueError('Unknown\
+    \ runtime')\ntarget.write_text(text);target.chmod(0o600)\n"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcloud-keycloak-realm
+  namespace: platform-services
+data:
+  vcloud-realm.json: "{\n  \"realm\": \"vcloud\",\n  \"displayName\": \"vCloud\",\n\
+    \  \"enabled\": true,\n  \"sslRequired\": \"all\",\n  \"registrationAllowed\"\
+    : false,\n  \"resetPasswordAllowed\": false,\n  \"rememberMe\": false,\n  \"loginWithEmailAllowed\"\
+    : false,\n  \"duplicateEmailsAllowed\": false,\n  \"editUsernameAllowed\": false,\n\
+    \  \"bruteForceProtected\": true,\n  \"failureFactor\": 5,\n  \"waitIncrementSeconds\"\
+    : 60,\n  \"maxFailureWaitSeconds\": 900,\n  \"accessTokenLifespan\": 300,\n  \"\
+    accessCodeLifespan\": 60,\n  \"ssoSessionIdleTimeout\": 900,\n  \"ssoSessionMaxLifespan\"\
+    : 28800,\n  \"revokeRefreshToken\": true,\n  \"refreshTokenMaxReuse\": 0,\n  \"\
+    defaultSignatureAlgorithm\": \"RS256\",\n  \"eventsEnabled\": true,\n  \"eventsExpiration\"\
+    : 604800,\n  \"adminEventsEnabled\": true,\n  \"adminEventsDetailsEnabled\": false,\n\
+    \  \"roles\": {\n    \"realm\": [\n      {\n        \"name\": \"vcloud-function-reader\"\
+    ,\n        \"description\": \"May request the function.read API scope\"\n    \
+    \  }\n    ]\n  },\n  \"groups\": [\n    {\n      \"name\": \"vcloud\",\n     \
+    \ \"subGroups\": [\n        {\n          \"name\": \"api-users\",\n          \"\
+    realmRoles\": [\n            \"vcloud-function-reader\"\n          ]\n       \
+    \ },\n        {\n          \"name\": \"cluster-observers\"\n        },\n     \
+    \   {\n          \"name\": \"workload-readers\"\n        },\n        {\n     \
+    \     \"name\": \"hpc-readers\"\n        }\n      ]\n    }\n  ],\n  \"users\"\
+    : [],\n  \"clients\": [\n    {\n      \"clientId\": \"vcloud-function\",\n   \
+    \   \"name\": \"vcloud-function\",\n      \"enabled\": true,\n      \"protocol\"\
+    : \"openid-connect\",\n      \"publicClient\": true,\n      \"bearerOnly\": true,\n\
+    \      \"standardFlowEnabled\": false,\n      \"implicitFlowEnabled\": false,\n\
+    \      \"directAccessGrantsEnabled\": false,\n      \"serviceAccountsEnabled\"\
+    : false,\n      \"fullScopeAllowed\": false,\n      \"redirectUris\": [],\n  \
+    \    \"webOrigins\": [],\n      \"defaultClientScopes\": [],\n      \"optionalClientScopes\"\
+    : [],\n      \"attributes\": {\n        \"pkce.code.challenge.method\": \"S256\"\
+    ,\n        \"access.token.lifespan\": \"300\",\n        \"id.token.signed.response.alg\"\
+    : \"RS256\"\n      }\n    },\n    {\n      \"clientId\": \"vcloud-api-cli\",\n\
+    \      \"name\": \"vcloud-api-cli\",\n      \"enabled\": true,\n      \"protocol\"\
+    : \"openid-connect\",\n      \"publicClient\": true,\n      \"bearerOnly\": false,\n\
+    \      \"standardFlowEnabled\": true,\n      \"implicitFlowEnabled\": false,\n\
+    \      \"directAccessGrantsEnabled\": false,\n      \"serviceAccountsEnabled\"\
+    : false,\n      \"fullScopeAllowed\": false,\n      \"redirectUris\": [\n    \
+    \    \"http://127.0.0.1:18000/callback\"\n      ],\n      \"webOrigins\": [],\n\
+    \      \"defaultClientScopes\": [\n        \"function.read\"\n      ],\n     \
+    \ \"optionalClientScopes\": [],\n      \"attributes\": {\n        \"pkce.code.challenge.method\"\
+    : \"S256\",\n        \"access.token.lifespan\": \"300\",\n        \"id.token.signed.response.alg\"\
+    : \"RS256\"\n      }\n    },\n    {\n      \"clientId\": \"vcloud-kubernetes\"\
+    ,\n      \"name\": \"vcloud-kubernetes\",\n      \"enabled\": true,\n      \"\
+    protocol\": \"openid-connect\",\n      \"publicClient\": true,\n      \"bearerOnly\"\
+    : false,\n      \"standardFlowEnabled\": true,\n      \"implicitFlowEnabled\"\
+    : false,\n      \"directAccessGrantsEnabled\": false,\n      \"serviceAccountsEnabled\"\
+    : false,\n      \"fullScopeAllowed\": false,\n      \"redirectUris\": [\n    \
+    \    \"http://localhost:8000\",\n        \"http://localhost:18000\"\n      ],\n\
+    \      \"webOrigins\": [],\n      \"defaultClientScopes\": [\n        \"kubernetes-groups\"\
+    \n      ],\n      \"optionalClientScopes\": [],\n      \"attributes\": {\n   \
+    \     \"pkce.code.challenge.method\": \"S256\",\n        \"access.token.lifespan\"\
+    : \"300\",\n        \"id.token.signed.response.alg\": \"RS256\"\n      }\n   \
+    \ }\n  ],\n  \"clientScopes\": [\n    {\n      \"name\": \"function.read\",\n\
+    \      \"protocol\": \"openid-connect\",\n      \"attributes\": {\n        \"\
+    include.in.token.scope\": \"true\"\n      },\n      \"protocolMappers\": [\n \
+    \       {\n          \"name\": \"function-audience\",\n          \"protocol\"\
+    : \"openid-connect\",\n          \"protocolMapper\": \"oidc-audience-mapper\"\
+    ,\n          \"consentRequired\": false,\n          \"config\": {\n          \
+    \  \"included.client.audience\": \"vcloud-function\",\n            \"access.token.claim\"\
+    : \"true\",\n            \"id.token.claim\": \"false\"\n          }\n        }\n\
+    \      ]\n    },\n    {\n      \"name\": \"kubernetes-groups\",\n      \"protocol\"\
+    : \"openid-connect\",\n      \"attributes\": {\n        \"include.in.token.scope\"\
+    : \"true\"\n      },\n      \"protocolMappers\": [\n        {\n          \"name\"\
+    : \"kubernetes-groups\",\n          \"protocol\": \"openid-connect\",\n      \
+    \    \"protocolMapper\": \"oidc-group-membership-mapper\",\n          \"consentRequired\"\
+    : false,\n          \"config\": {\n            \"claim.name\": \"groups\",\n \
+    \           \"full.path\": \"true\",\n            \"id.token.claim\": \"true\"\
+    ,\n            \"access.token.claim\": \"false\",\n            \"userinfo.token.claim\"\
+    : \"false\"\n          }\n        }\n      ]\n    }\n  ],\n  \"scopeMappings\"\
+    : [\n    {\n      \"clientScope\": \"function.read\",\n      \"roles\": [\n  \
+    \      \"vcloud-function-reader\"\n      ]\n    }\n  ],\n  \"requiredActions\"\
+    : [\n    {\n      \"alias\": \"CONFIGURE_TOTP\",\n      \"name\": \"Configure\
+    \ OTP\",\n      \"providerId\": \"CONFIGURE_TOTP\",\n      \"enabled\": true,\n\
+    \      \"defaultAction\": true,\n      \"priority\": 40,\n      \"config\": {}\n\
+    \    }\n  ]\n}\n"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openbao
+  namespace: platform-services
+  labels: &id001
+    app.kubernetes.io/name: openbao
+spec:
+  selector: *id001
+  ports:
+  - name: http
+    port: 8200
+    targetPort: 8200
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openbao
+  namespace: platform-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &id001
+      app.kubernetes.io/name: openbao
+  template:
+    metadata:
+      labels: *id001
+      annotations:
+        vcloud.io/config-hash: 6cf1c1b7bd1dea91fb7815a1b17a1d593c1f4d9537b69f66821f10d454e04076
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: openbao
+        image: registry.vcloud.example.com/docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf
+        volumeMounts: &id002
+        - name: auth
+          mountPath: /auth
+          readOnly: true
+        - name: tls
+          mountPath: /tls
+          readOnly: true
+        - name: pg-ca
+          mountPath: /pg-ca
+          readOnly: true
+        - name: code
+          mountPath: /code
+          readOnly: true
+        - name: runtime
+          mountPath: /runtime
+          readOnly: false
+        - name: tmp
+          mountPath: /tmp
+          readOnly: false
+        command:
+        - bao
+        - server
+        - -config=/runtime/openbao.hcl
+        ports:
+        - name: https
+          containerPort: 8200
+        startupProbe:
+          httpGet:
+            path: /v1/sys/init
+            port: 8200
+            scheme: HTTPS
+          failureThreshold: 60
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /v1/sys/init
+            port: 8200
+            scheme: HTTPS
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /v1/sys/init
+            port: 8200
+            scheme: HTTPS
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+      volumes:
+      - name: auth
+        secret:
+          secretName: vcloud-wsl-openbao-db
+          defaultMode: 288
+      - name: tls
+        secret:
+          secretName: vcloud-wsl-openbao-tls
+          defaultMode: 288
+      - name: pg-ca
+        secret:
+          secretName: vcloud-wsl-postgres-ca
+          items:
+          - key: ca.crt
+            path: ca.crt
+          defaultMode: 288
+      - name: code
+        configMap:
+          name: vcloud-runtime-config
+      - name: runtime
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Mi
+      - name: tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 32Mi
+      initContainers:
+      - name: config
+        image: registry.vcloud.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e
+        imagePullPolicy: IfNotPresent
+        command:
+        - python
+        - /code/runtime-config.py
+        - openbao
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+        volumeMounts: *id002
+  strategy:
+    type: Recreate
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: vcloud-wsl-openbao
+  namespace: platform-services
+spec:
+  cluster:
+    name: vcloud-wsl-postgres
+  name: openbao
+  owner: openbao
+  ensure: present
+  databaseReclaimPolicy: retain
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: platform-services
+  labels: &id001
+    app.kubernetes.io/name: keycloak
+spec:
+  selector: *id001
+  ports:
+  - name: http
+    port: 443
+    targetPort: 8443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak
+  namespace: platform-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &id001
+      app.kubernetes.io/name: keycloak
+  template:
+    metadata:
+      labels: *id001
+      annotations:
+        vcloud.io/config-hash: caa2a02465d6f45c04218952b1649248757585dffb5678ba850ee63e90be8eb6
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: keycloak
+        image: registry.vcloud.example.com/quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc
+        volumeMounts: &id002
+        - name: auth
+          mountPath: /auth
+          readOnly: true
+        - name: tls
+          mountPath: /tls
+          readOnly: true
+        - name: pg-ca
+          mountPath: /pg-ca
+          readOnly: true
+        - name: code
+          mountPath: /code
+          readOnly: true
+        - name: runtime
+          mountPath: /runtime
+          readOnly: false
+        - name: tmp
+          mountPath: /tmp
+          readOnly: false
+        - name: data
+          mountPath: /opt/keycloak/data
+        - name: realm
+          mountPath: /opt/keycloak/data/import
+          readOnly: true
+        - name: quarkus
+          mountPath: /opt/keycloak/lib/quarkus
+        command:
+        - /opt/keycloak/bin/kc.sh
+        args:
+        - --config-file=/runtime/keycloak.conf
+        - start
+        - --import-realm
+        resources:
+          requests:
+            cpu: 100m
+            memory: 512Mi
+          limits:
+            cpu: '1'
+            memory: 1Gi
+        startupProbe:
+          httpGet:
+            path: /health/started
+            port: 9000
+            scheme: HTTPS
+          failureThreshold: 90
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: 9000
+            scheme: HTTPS
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+      volumes:
+      - name: auth
+        secret:
+          secretName: vcloud-wsl-keycloak-db
+          defaultMode: 288
+      - name: tls
+        secret:
+          secretName: vcloud-wsl-keycloak-tls
+          defaultMode: 288
+      - name: pg-ca
+        secret:
+          secretName: vcloud-wsl-postgres-ca
+          items:
+          - key: ca.crt
+            path: ca.crt
+          defaultMode: 288
+      - name: code
+        configMap:
+          name: vcloud-runtime-config
+      - name: runtime
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Mi
+      - name: tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 32Mi
+      - name: data
+        emptyDir:
+          medium: Memory
+          sizeLimit: 128Mi
+      - name: realm
+        configMap:
+          name: vcloud-keycloak-realm
+      - name: quarkus
+        emptyDir:
+          medium: Memory
+          sizeLimit: 256Mi
+      initContainers:
+      - name: prepare-quarkus
+        image: registry.vcloud.example.com/quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - -ec
+        - cp -R /opt/keycloak/lib/quarkus/. /built/
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+        volumeMounts:
+        - name: quarkus
+          mountPath: /built
+      - name: config
+        image: registry.vcloud.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e
+        imagePullPolicy: IfNotPresent
+        command:
+        - python
+        - /code/runtime-config.py
+        - keycloak
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+        volumeMounts: *id002
+  strategy:
+    type: Recreate
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: vcloud-wsl-keycloak
+  namespace: platform-services
+spec:
+  cluster:
+    name: vcloud-wsl-postgres
+  name: keycloak
+  owner: keycloak
+  ensure: present
+  databaseReclaimPolicy: retain
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcloud-apisix
+  namespace: platform-services
+data:
+  config.yaml: "apisix:\n  node_listen: 9080\n  enable_admin: false\n  enable_ipv6:\
+    \ false\nnginx_config:\n  worker_processes: 1\n  error_log: /dev/stderr\n  error_log_level:\
+    \ warn\n  http:\n    access_log: /dev/stdout\n    client_body_temp_path: /tmp/client-body\n\
+    \    proxy_temp_path: /tmp/proxy\n    fastcgi_temp_path: /tmp/fastcgi\n    uwsgi_temp_path:\
+    \ /tmp/uwsgi\n    scgi_temp_path: /tmp/scgi\ndeployment:\n  role: data_plane\n\
+    \  role_data_plane:\n    config_provider: yaml\nplugin_attr:\n  prometheus:\n\
+    \    export_addr:\n      ip: 0.0.0.0\n      port: 9091\n"
+  apisix.yaml: "routes:\n- id: demo-cpu\n  uri: /*\n  host: demo-cpu-app.workload-apps.example.com\n\
+    \  plugins:\n    prometheus: {}\n    proxy-rewrite:\n      host: demo-cpu-app.workload-apps.vcloud.example.com\n\
+    \  upstream:\n    type: roundrobin\n    nodes:\n      kourier-internal.workload-apps.svc.cluster.local:80:\
+    \ 1\n- id: legacy-smoke\n  uri: /\n  plugins:\n    prometheus: {}\n  upstream:\n\
+    \    type: roundrobin\n    nodes:\n      vcloud-lab-server.platform-services.svc.cluster.local:8080:\
+    \ 1\n#END\n"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apisix
+  namespace: platform-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &id001
+      app.kubernetes.io/name: apisix
+  template:
+    metadata:
+      labels: *id001
+      annotations:
+        vcloud.io/config-hash: f7112d8f81b476766b8cd9dfd8e53cd531e8cbd085a3b10e4156092a7dbc6204
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: apisix
+        image: registry.vcloud.example.com/docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141
+        command:
+        - sh
+        - -ec
+        - cp /config/* /usr/local/apisix/conf/; apisix init; exec /usr/local/openresty/bin/openresty
+          -p /usr/local/apisix -c conf/nginx.conf -g "daemon off;"
+        volumeMounts:
+        - name: config
+          mountPath: /config
+          readOnly: true
+        - name: conf
+          mountPath: /usr/local/apisix/conf
+        - name: logs
+          mountPath: /usr/local/apisix/logs
+        - name: tmp
+          mountPath: /tmp
+        - name: scratch-client-body-temp
+          mountPath: /usr/local/apisix/client_body_temp
+        - name: scratch-proxy-temp
+          mountPath: /usr/local/apisix/proxy_temp
+        - name: scratch-fastcgi-temp
+          mountPath: /usr/local/apisix/fastcgi_temp
+        - name: scratch-uwsgi-temp
+          mountPath: /usr/local/apisix/uwsgi_temp
+        - name: scratch-scgi-temp
+          mountPath: /usr/local/apisix/scgi_temp
+        readinessProbe:
+          tcpSocket:
+            port: 9080
+        livenessProbe:
+          tcpSocket:
+            port: 9080
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+      volumes:
+      - name: config
+        configMap:
+          name: vcloud-apisix
+      - name: conf
+        emptyDir:
+          medium: Memory
+          sizeLimit: 32Mi
+      - name: logs
+        emptyDir:
+          medium: Memory
+          sizeLimit: 32Mi
+      - name: tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 32Mi
+      - name: scratch-client-body-temp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Mi
+      - name: scratch-proxy-temp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Mi
+      - name: scratch-fastcgi-temp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Mi
+      - name: scratch-uwsgi-temp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Mi
+      - name: scratch-scgi-temp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Mi
+      initContainers:
+      - name: prepare-conf
+        image: registry.vcloud.example.com/docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - -ec
+        - cp -R /usr/local/apisix/conf/. /built/
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 100m
+            memory: 64Mi
+        volumeMounts:
+        - name: conf
+          mountPath: /built
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apisix
+  namespace: platform-services
+  labels: &id001
+    app.kubernetes.io/name: apisix
+spec:
+  selector: *id001
+  ports:
+  - name: http
+    port: 9080
+    targetPort: 9080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apisix-metrics
+  namespace: platform-services
+  labels: &id001
+    app.kubernetes.io/name: apisix
+spec:
+  selector: *id001
+  ports:
+  - name: metrics
+    port: 9091
+    targetPort: 9091
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-cpu-app
+  namespace: workload-apps
+data:
+  demo.py: "\"\"\"CPU-only Knative demo; sends a real OTLP/HTTP span for each request.\"\
+    \"\"\nfrom http.server import BaseHTTPRequestHandler,ThreadingHTTPServer\nimport\
+    \ json\nimport secrets\nimport time\nimport urllib.request\n\nclass Handler(BaseHTTPRequestHandler):\n\
+    \    def do_GET(self):\n        start=time.time_ns()\n        body=b'vcloud-knative-cpu-ok\\\
+    n'\n        self.send_response(200);self.send_header('Content-Type','text/plain');self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)\n\
+    \        span={'traceId':secrets.token_hex(16),'spanId':secrets.token_hex(8),'name':'vcloud-demo-request','kind':2,\n\
+    \              'startTimeUnixNano':str(start),'endTimeUnixNano':str(time.time_ns()),'status':{'code':1}}\n\
+    \        payload={'resourceSpans':[{'resource':{'attributes':[{'key':'service.name','value':{'stringValue':'demo-cpu-app'}}]},\n\
+    \                                  'scopeSpans':[{'scope':{'name':'vcloud-local-acceptance'},'spans':[span]}]}]}\n\
+    \        request=urllib.request.Request('http://otel-collector.platform-services.svc.cluster.local:4318/v1/traces',\n\
+    \                                       data=json.dumps(payload).encode(),headers={'Content-Type':'application/json'})\n\
+    \        try:\n            with urllib.request.urlopen(request,timeout=2) as response:response.read()\n\
+    \            print('OTLP span exported for demo-cpu-app',flush=True)\n       \
+    \ except Exception:print('OTLP export failed',flush=True)\n    def log_message(self,*args):pass\n\
+    \nThreadingHTTPServer(('0.0.0.0',8080),Handler).serve_forever()\n"
+---
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: demo-cpu-app
+  namespace: workload-apps
+spec:
+  template:
+    metadata:
+      labels:
+        vcloud.io/component: demo
+      annotations:
+        autoscaling.knative.dev/min-scale: '0'
+        autoscaling.knative.dev/max-scale: '1'
+        vcloud.io/config-hash: 659c2fbafbfef33f57dc0aa0727a472f4fbfdee0ce43b283b0271967c80207c1
+    spec:
+      automountServiceAccountToken: false
+      containerConcurrency: 10
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: demo
+        image: registry.vcloud.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e
+        imagePullPolicy: IfNotPresent
+        command:
+        - python
+        - /app/demo.py
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 25m
+            memory: 32Mi
+          limits:
+            cpu: 200m
+            memory: 64Mi
+        volumeMounts:
+        - name: code
+          mountPath: /app
+          readOnly: true
+        readinessProbe:
+          tcpSocket:
+            port: 0
+          successThreshold: 1
+      volumes:
+      - name: code
+        configMap:
+          name: demo-cpu-app
+      enableServiceLinks: false
+      timeoutSeconds: 300
+  traffic:
+  - latestRevision: true
+    percent: 100
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vcloud-prometheus
+  namespace: platform-services
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: vcloud
+  namespace: platform-services
+spec:
+  replicas: 1
+  image: registry.vcloud.example.com/quay.io/prometheus/prometheus@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e
+  version: v3.15.0
+  serviceAccountName: vcloud-prometheus
+  serviceDiscoveryRole: EndpointSlice
+  serviceMonitorSelector:
+    matchLabels:
+      vcloud.io/monitor: 'true'
+  serviceMonitorNamespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: platform-services
+  podMonitorSelector:
+    matchLabels:
+      vcloud.io/monitor: 'true'
+  retention: 2h
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: '1'
+      memory: 768Mi
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 65532
+    runAsGroup: 65532
+    fsGroup: 65532
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+  - name: prometheus
+    imagePullPolicy: IfNotPresent
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      runAsGroup: 65532
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+        - ALL
+      seccompProfile:
+        type: RuntimeDefault
+  - name: config-reloader
+    imagePullPolicy: IfNotPresent
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      runAsGroup: 65532
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+        - ALL
+      seccompProfile:
+        type: RuntimeDefault
+  initContainers:
+  - name: init-config-reloader
+    imagePullPolicy: IfNotPresent
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      runAsGroup: 65532
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+        - ALL
+      seccompProfile:
+        type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: platform-services
+  labels: &id001
+    prometheus: vcloud
+spec:
+  selector: *id001
+  ports:
+  - name: http
+    port: 9090
+    targetPort: 9090
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: apisix
+  namespace: platform-services
+  labels:
+    vcloud.io/monitor: 'true'
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: apisix
+  namespaceSelector:
+    matchNames:
+    - platform-services
+  endpoints:
+  - port: metrics
+    path: /apisix/prometheus/metrics
+    interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cnpg
+  namespace: platform-services
+  labels:
+    vcloud.io/monitor: 'true'
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cloudnative-pg
+  namespaceSelector:
+    matchNames:
+    - platform-services
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: knative
+  namespace: platform-services
+  labels:
+    vcloud.io/monitor: 'true'
+spec:
+  selector:
+    matchLabels:
+      app: controller
+  namespaceSelector:
+    matchNames:
+    - workload-apps
+  endpoints:
+  - port: metrics
+    path: /metrics
+    interval: 15s
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cnpg-operator-metrics
+  namespace: platform-services
+  labels: &id001
+    app.kubernetes.io/name: cloudnative-pg
+spec:
+  selector: *id001
+  ports:
+  - name: metrics
+    port: 8080
+    targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: knative-controller-metrics
+  namespace: workload-apps
+  labels: &id001
+    app: controller
+spec:
+  selector: *id001
+  ports:
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcloud-otel
+  namespace: platform-services
+data:
+  config.yaml: "receivers:\n  otlp:\n    protocols:\n      grpc:\n        endpoint:\
+    \ 0.0.0.0:4317\n      http:\n        endpoint: 0.0.0.0:4318\nprocessors:\n  memory_limiter:\n\
+    \    check_interval: 1s\n    limit_mib: 160\n    spike_limit_mib: 32\n  batch:\
+    \ {}\nexporters:\n  debug:\n    verbosity: detailed\n  prometheus:\n    endpoint:\
+    \ 0.0.0.0:9464\nextensions:\n  health_check:\n    endpoint: 0.0.0.0:13133\nservice:\n\
+    \  extensions:\n  - health_check\n  pipelines:\n    traces:\n      receivers:\n\
+    \      - otlp\n      processors:\n      - memory_limiter\n      - batch\n    \
+    \  exporters:\n      - debug\n    metrics:\n      receivers:\n      - otlp\n \
+    \     processors:\n      - memory_limiter\n      - batch\n      exporters:\n \
+    \     - prometheus\n"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: platform-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &id001
+      app.kubernetes.io/name: otel-collector
+  template:
+    metadata:
+      labels: *id001
+      annotations:
+        vcloud.io/config-hash: 2e860ff2ed3e18207db5a93de64985d5b198b38d6873717be27e4e271c7c188b
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: collector
+        image: registry.vcloud.example.com/docker.io/otel/opentelemetry-collector-contrib@sha256:39923a8e431bd1f57be82411999d389fcfe40857492e4365456d97a4c1f74be6
+        args:
+        - --config=/conf/config.yaml
+        volumeMounts:
+        - name: config
+          mountPath: /conf
+          readOnly: true
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 13133
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 13133
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+      volumes:
+      - name: config
+        configMap:
+          name: vcloud-otel
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector
+  namespace: platform-services
+  labels: &id001
+    app.kubernetes.io/name: otel-collector
+spec:
+  selector: *id001
+  ports:
+  - name: http
+    port: 4318
+    targetPort: 4318
+  - name: grpc
+    port: 4317
+    targetPort: 4317
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcloud-grafana
+  namespace: platform-services
+data:
+  datasources.yaml: "apiVersion: 1\ndatasources:\n- name: vCloud Prometheus\n  type:\
+    \ prometheus\n  access: proxy\n  url: http://prometheus.platform-services.svc.cluster.local:9090\n\
+    \  isDefault: true\n  editable: false\n"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: platform-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &id001
+      app.kubernetes.io/name: grafana
+  template:
+    metadata:
+      labels: *id001
+      annotations:
+        vcloud.io/config-hash: 990db3bfa82dbb1cbfd30d4de8b2c979bdd9892f05e40a5acc5906d5e08c32ef
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: grafana
+        image: registry.vcloud.example.com/docker.io/grafana/grafana@sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572
+        env:
+        - name: GF_SECURITY_ADMIN_USER__FILE
+          value: /auth/admin-user
+        - name: GF_SECURITY_ADMIN_PASSWORD__FILE
+          value: /auth/admin-password
+        - name: GF_AUTH_ANONYMOUS_ENABLED
+          value: 'false'
+        - name: GF_ANALYTICS_REPORTING_ENABLED
+          value: 'false'
+        - name: GF_ANALYTICS_CHECK_FOR_UPDATES
+          value: 'false'
+        - name: GF_PLUGINS_PREINSTALL_DISABLED
+          value: 'true'
+        volumeMounts:
+        - name: auth
+          mountPath: /auth
+          readOnly: true
+        - name: datasources
+          mountPath: /etc/grafana/provisioning/datasources
+          readOnly: true
+        - name: data
+          mountPath: /var/lib/grafana
+        - name: tmp
+          mountPath: /tmp
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+      volumes:
+      - name: auth
+        secret:
+          secretName: vcloud-wsl-grafana-admin
+          defaultMode: 288
+      - name: datasources
+        configMap:
+          name: vcloud-grafana
+      - name: data
+        emptyDir:
+          medium: Memory
+          sizeLimit: 128Mi
+      - name: tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 32Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: platform-services
+  labels: &id001
+    app.kubernetes.io/name: grafana
+spec:
+  selector: *id001
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000

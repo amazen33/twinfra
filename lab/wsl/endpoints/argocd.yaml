@@ -1,0 +1,223 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vcloud-wsl-endpoints-writer
+  namespace: platform-services
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  - services
+  - serviceaccounts
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - postgresql.cnpg.io
+  resources:
+  - databases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - prometheuses
+  - servicemonitors
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - serving.knative.dev
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vcloud-wsl-endpoints-writer
+  namespace: platform-services
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: vcloud-wsl-endpoints-writer
+subjects:
+- kind: ServiceAccount
+  name: argocd-application-controller
+  namespace: platform-services
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vcloud-wsl-endpoints-writer
+  namespace: workload-apps
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - configmaps
+  - services
+  - serviceaccounts
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - postgresql.cnpg.io
+  resources:
+  - databases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - prometheuses
+  - servicemonitors
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - serving.knative.dev
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vcloud-wsl-endpoints-writer
+  namespace: workload-apps
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: vcloud-wsl-endpoints-writer
+subjects:
+- kind: ServiceAccount
+  name: argocd-application-controller
+  namespace: platform-services
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: vcloud-wsl-endpoints
+  namespace: platform-services
+spec:
+  sourceRepos:
+  - https://github.com/amazen33/vCloud.git
+  destinations:
+  - server: https://kubernetes.default.svc
+    namespace: platform-services
+  - server: https://kubernetes.default.svc
+    namespace: workload-apps
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+  - group: ''
+    kind: ConfigMap
+  - group: ''
+    kind: Service
+  - group: ''
+    kind: ServiceAccount
+  - group: apps
+    kind: Deployment
+  - group: postgresql.cnpg.io
+    kind: Database
+  - group: monitoring.coreos.com
+    kind: Prometheus
+  - group: monitoring.coreos.com
+    kind: ServiceMonitor
+  - group: serving.knative.dev
+    kind: Service
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vcloud-wsl-endpoints
+  namespace: platform-services
+spec:
+  project: vcloud-wsl-endpoints
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: platform-services
+  source:
+    repoURL: https://github.com/amazen33/vCloud.git
+    targetRevision: main
+    path: lab/wsl/endpoints/gitops
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: false
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - CreateNamespace=false
+    - ServerSideApply=true

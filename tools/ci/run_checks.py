@@ -18,6 +18,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'lab/wsl/values': ['lab/wsl/values/cilium-routing.yaml', 'tools/check_host_routing.py',
+                       'tests/test_host_routing.py'],
     'roadmap-automation': ['tools/create_roadmap_issues.py', 'tests/test_roadmap_issues.py'],
     'deploy/network/platform-probes': ['deploy/network/platform-probes/cilium-platform-probes.yaml',
                                       'deploy/network/platform-probes/k8s-platform-probes.yaml',
@@ -43,6 +45,12 @@ OPTIONAL = {
                   'module-5a/README.md'],
     'module-5b': ['tools/module5b.py', 'tools/render_module5b.py', 'tests/test_module5b.py',
                   'tests/module5b-alerts.test.yaml', 'module-5b/reference-profile.json'],
+    'lab/wsl/endpoints': ['lab/wsl/endpoints/artifacts.lock.json', 'lab/wsl/endpoints/deploy.sh', 'lab/wsl/endpoints/access.sh',
+                'lab/wsl/endpoints/runtime-config.py','lab/wsl/endpoints/demo.py','tools/wsl_endpoints.py',
+                'tools/openbao_pgp_init.py','tools/wsl_endpoint_acceptance.py','lab/wsl/test-e2e.sh',
+                'tools/wsl_endpoints_gitops.py','lab/wsl/endpoints/argocd.yaml','lab/wsl/endpoints/gitops/workloads.yaml',
+                'lab/wsl/reconcile-host-routing.sh','tools/wsl_runtime_secrets.py','tools/wsl_git_dns.py',
+                'lab/wsl/openbao-init.sh','tests/test_openbao_pgp_init.py','tests/test_wsl_endpoints.py'],
     'lab/wsl': ['lab/wsl/profile.json', 'lab/wsl/bootstrap.sh', 'lab/wsl/api-firewall.sh',
                 'tools/wsl_lab.py', 'tools/wsl_lab_acceptance.py', 'tools/wsl_lab_dns_image.py', 'tools/stage_wsl_lab.py',
                 'tests/test_wsl_lab.py'],
@@ -190,6 +198,9 @@ def main():
             run('airgap-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests/ci', '-v'], unit=True)
         run('module2-validate', [python, 'tools/module2.py', '--site', 'module-2/site-values.example.yaml',
                                 '--helm', binaries['helm'], '--kubeconform', binaries['kubeconform'], 'validate'])
+        for chart in ('cilium-1.20.2','apisix-2.18.0'):
+            run(chart+'-helm-lint',[binaries['helm'],'lint','module-2/vendor/'+chart+'.tgz',
+                                  '-f','module-2/values/'+chart.split('-')[0]+'.yaml'])
         run('module2-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_module2.py', '-v'], unit=True)
         for module, stem in [('module-3', 'module3'), ('module-4a', 'module4a'), ('module-4b', 'module4b'), ('module-5a', 'module5a'), ('module-5b', 'module5b')]:
             if report['modules'][module] == 'not_present_in_revision':
@@ -203,6 +214,8 @@ def main():
                 run('alert-rules', [binaries['promtool'], 'check', 'rules', 'module-3/observability/rules.yaml'])
                 run('alert-tests', [binaries['promtool'], 'test', 'rules', 'tests/module3-alerts.test.yaml'])
             if stem == 'module5b':
+                run('kueue-helm-lint',[binaries['helm'],'lint','module-5b/vendor/kueue-0.20.0.tgz',
+                                     '-f','module-5b/values/kueue.yaml'])
                 run('hpc-alert-rules', [binaries['promtool'], 'check', 'rules', 'module-5b/observability/rules.yaml'])
                 run('hpc-alert-tests', [binaries['promtool'], 'test', 'rules', 'tests/module5b-alerts.test.yaml'])
         if report['modules']['lab/wsl'] == 'present':
@@ -214,12 +227,28 @@ def main():
                                    '--kubeconform', binaries['kubeconform'], '--schemas', assets / 'schemas',
                                    '--build', wsl_build])
             run('wsl-lab-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_wsl_lab.py', '-v'], unit=True)
+        if report['modules']['lab/wsl/values'] == 'present':
+            run('host-routing-governance', [python, ROOT.parent / 'check_host_routing.py',
+                '--root', source, '--helm', binaries['helm'], '--build', report_dir / 'host-routing'])
+            run('host-routing-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests',
+                                      '-p', 'test_host_routing.py', '-v'], unit=True)
         if report['modules']['lab/wsl/gitops'] == 'present':
             platform_build = report_dir / 'wsl-platform-rendered'
             run('wsl-platform-render', [python, 'tools/wsl_platform.py', 'render', '--build', platform_build])
             run('wsl-platform-validate', [python, 'tools/wsl_platform.py', 'validate', '--build', platform_build,
                                         '--kubeconform', binaries['kubeconform'], '--schemas', assets / 'schemas'])
             run('wsl-platform-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_wsl_platform.py', '-v'], unit=True)
+        if report['modules']['lab/wsl/endpoints'] == 'present':
+            endpoint_build=report_dir/'wsl-endpoints-rendered'
+            run('wsl-endpoints-render',[python,'tools/wsl_endpoints.py','render','--build',endpoint_build])
+            run('wsl-endpoints-schema',[python,'tools/wsl_endpoints.py','validate','--build',endpoint_build,
+                '--kubeconform',binaries['kubeconform'],'--schemas',assets/'schemas'])
+            run('wsl-endpoints-gitops',[python,'tools/wsl_endpoints_gitops.py','--check','--build',endpoint_build,
+                '--kubeconform',binaries['kubeconform'],'--schemas',assets/'schemas'])
+            run('wsl-endpoints-pss',[binaries['conftest'],'test','--namespace','vcloud_wsl','--policy','tests/ci/policy/wsl-endpoints.rego',
+                 endpoint_build/'controllers.yaml',endpoint_build/'identity.yaml',endpoint_build/'application.yaml',endpoint_build/'observability.yaml'])
+            for suite in ('test_wsl_endpoints.py','test_openbao_pgp_init.py'):
+                run(suite[:-3],[python,'-m','unittest','discover','-s','tests','-p',suite,'-v'],unit=True)
         report['status'] = 'passed'
         return 0
     except (ValueError, RuntimeError, OSError) as error:

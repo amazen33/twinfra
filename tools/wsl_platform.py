@@ -178,6 +178,9 @@ def git_dns():
 def workload():
     cluster=resource('Cluster',DB,{'instances':1,'imageName':PG_IMAGE,'imagePullPolicy':'IfNotPresent','postgresUID':26,'postgresGID':26,
         'enableSuperuserAccess':False,'seccompProfile':{'type':'RuntimeDefault'},'securityContext':{'runAsNonRoot':True,'allowPrivilegeEscalation':False,'capabilities':{'drop':['ALL']}},
+        'managed':{'roles':[{'name':name,'ensure':'present','login':True,'superuser':False,'createdb':False,'createrole':False,
+                    'inherit':True,'connectionLimit':-1,
+                    'passwordSecret':{'name':'vcloud-wsl-'+name+'-db'}} for name in ('openbao','keycloak')]},
         'bootstrap':{'initdb':{'database':'vcloud','owner':'vcloud_app','postInitApplicationSQL':['CREATE EXTENSION IF NOT EXISTS vector;']}},
         'postgresql':{'parameters':{'shared_buffers':'128MB','max_connections':'50','huge_pages':'off'},
                       'pg_hba':['hostnossl all all all reject','hostssl all all all scram-sha-256']},
@@ -209,7 +212,7 @@ def application():
             ('rbac.authorization.k8s.io','Role'),('rbac.authorization.k8s.io','RoleBinding'),('batch','CronJob'),
             ('postgresql.cnpg.io','Cluster'),('cilium.io','CiliumNetworkPolicy')]]},NS,'argoproj.io/v1alpha1')
     app=resource('Application','vcloud-wsl-platform',{'project':'vcloud-wsl-local','destination':{'server':'https://kubernetes.default.svc','namespace':NS},
-        'source':{'repoURL':'https://github.com/amazen33/vCloud.git','targetRevision':'codex/wsl-local-bootstrap','path':'lab/wsl/gitops'},
+        'source':{'repoURL':'https://github.com/amazen33/vCloud.git','targetRevision':'main','path':'lab/wsl/gitops'},
         'syncPolicy':{'automated':{'enabled':True,'prune':False,'selfHeal':True,'allowEmpty':False},
                       'syncOptions':['CreateNamespace=false','RespectIgnoreDifferences=true']},
         'ignoreDifferences':[{'group':'postgresql.cnpg.io','kind':'Cluster','name':DB,'namespace':NS,

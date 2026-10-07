@@ -50,7 +50,10 @@ UNIT
     chmod 0700 "$DIRECTORY"
 fi
 mountpoint -q "$DIRECTORY" || { printf 'Dedicated filesystem missing\n' >&2; exit 1; }
-[[ $(findmnt -n -M "$DIRECTORY" -o FSTYPE) == ext4 && $(stat -c %u:%g "$DIRECTORY") == 26:26 && $(stat -c %a "$DIRECTORY") == 700 ]] || exit 1
+# Kubelet's approved CNPG fsGroup=26 changes the mounted root to 2770. Both
+# modes are private to the database UID/GID; never accept world access.
+mode=$(stat -c %a "$DIRECTORY")
+[[ $(findmnt -n -M "$DIRECTORY" -o FSTYPE) == ext4 && $(stat -c %u:%g "$DIRECTORY") == 26:26 && ( $mode == 700 || $mode == 2770 ) ]] || exit 1
 mkdir -p "$ROOT/.build/wsl-platform"
 python3 - "$DIRECTORY" "$IMAGE" "$ROOT/.build/wsl-platform/storage-vetting.json" <<'PY'
 from datetime import datetime,timezone
@@ -60,7 +63,7 @@ fs=os.statvfs(directory)
 v={'status':'passed','timestampUTC':datetime.now(timezone.utc).isoformat(),'node':'vcloud-wsl-local',
  'path':directory,'backingImage':image,'backingBytes':os.stat(image).st_size,'filesystem':'ext4',
  'filesystemBytes':fs.f_blocks*fs.f_frsize,'availableBytes':fs.f_bavail*fs.f_frsize,
- 'uid':26,'gid':26,'mode':'0700','reclaimPolicy':'Retain','expansionEnabled':False,
+ 'uid':26,'gid':26,'mode':oct(os.stat(directory).st_mode & 0o7777),'reclaimPolicy':'Retain','expansionEnabled':False,
  'mountOptions':subprocess.check_output(['findmnt','-n','-M',directory,'-o','OPTIONS'],text=True).strip()}
 if v['backingBytes']!=4294967296:raise SystemExit('Storage size differs')
 pathlib.Path(output).write_text(json.dumps(v,indent=2)+'\n')

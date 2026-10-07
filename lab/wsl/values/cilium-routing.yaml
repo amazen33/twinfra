@@ -1,0 +1,13 @@
+# ONLY vcloud-wsl-local; merged after module-2/values/cilium.yaml.
+# Helm bpf.hostLegacyRouting renders enable-host-legacy-routing (not a Helm key).
+# The measured WSL mirrored-network/veth workaround traverses the host stack.
+# It retains native CNI, socket LB, BPF masquerading and kube-proxy replacement.
+cluster:
+  name: vcloud-wsl-local
+bpf:
+  masquerade: true
+  hostLegacyRouting: true
+kubeProxyReplacement: true
+routingMode: native
+socketLB:
+  enabled: true

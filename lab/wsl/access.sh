@@ -18,6 +18,7 @@ fail() { printf 'FAIL: %s\n' "$*" >&2; exit 1; }
 for command in curl jq systemctl; do command -v "$command" >/dev/null || fail "Missing: $command"; done
 
 status() {
+  if systemctl is-active --quiet vcloud-wsl-apisix-access.service; then HTTP=vcloud-wsl-apisix-access.service; fi
   systemctl is-active "$DASH" "$HTTP" || return 1
   # Check data as well as the HTML shell: an empty/unreachable API is not a UI pass.
   curl --noproxy '*' --fail --silent --show-error --max-time 10 http://127.0.0.1:8080/ >/dev/null
@@ -39,6 +40,11 @@ if [[ $ACTION == stop ]]; then
 elif [[ $ACTION == status ]]; then
   status
   exit 0
+fi
+
+if k -n platform-services get deployment apisix --ignore-not-found -o name | grep -q .; then
+  bash "$ROOT/lab/wsl/endpoints/access.sh" start
+  HTTP=vcloud-wsl-apisix-access.service
 fi
 
 for command in ss sha256sum systemd-run; do command -v "$command" >/dev/null || fail "Missing: $command"; done

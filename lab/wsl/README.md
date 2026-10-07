@@ -1,6 +1,8 @@
 # Local vCloud validation on WSL2
 
 For local browser access, run `sudo bash lab/wsl/access.sh start` inside WSL.
+The [endpoint profile](endpoints/README.md) adds CPU-only applications and
+observability; OpenBao initialization remains gated on operator public keys.
 The [service access runbook](../../docs/service-access.md) lists tested URLs,
 Windows verification and the services that are not deployed.
 
@@ -55,6 +57,14 @@ security contexts, zero added capabilities and read-only roots. Cilium's actual
 Helm output passes the existing frozen node audit before installation.
 
 ## Networking and image staging
+
+The dedicated [routing overlay](values/cilium-routing.yaml) selects legacy
+**host** routing for the measured WSL GitHub-fetch workaround. Native CNI,
+BPF masquerading and kube-proxy replacement remain enabled; socket LB is
+explicit in this local overlay. Base/production keeps legacy routing disabled.
+The [validation runbook](../../docs/WSL_SETUP_GUIDE.md#3-wsl-host-routing-ebpf-validation-and-the-production-boundary)
+and [ADR-0024](../../docs/architecture/adr/ADR-0024-wsl-host-routing.md)
+describe render/CI checks, live status expectations and separate SPIFFE gates.
 
 The API binds the actual WSL node address on port **16443**, avoiding Windows'
 excluded mirrored port 6443 and unreliable wildcard/localhost self-bootstrap. The private

@@ -66,7 +66,7 @@ class Controls(unittest.TestCase):
 
     def test_reviewed_merged_pr_baselines_are_immutable(self):
         lock = json.loads((ROOT / 'pr-baselines.json').read_text())
-        self.assertEqual([p['number'] for p in lock['baselines']], [1, 2, 3, 5, 6])
+        self.assertEqual([p['number'] for p in lock['baselines']], [1, 2, 3, 4, 5, 6])
         for baseline in lock['baselines']:
             self.assertRegex(baseline['commit'], r'^[a-f0-9]{40}$')
             self.assertEqual(baseline['url'], f"https://github.com/amazen33/vCloud/pull/{baseline['number']}")
@@ -144,6 +144,28 @@ class Controls(unittest.TestCase):
         for output in ('', 'Ran 0 tests in 1s\nOK\n', 'Ran 1 test in 1s\nOK (skipped=1)\n', 'Ran 5 tests in 1s\nFAILED (failures=1)\n'):
             with self.subTest(output=output), self.assertRaises(ValueError):
                     checks.require_complete_tests(output)
+
+    def test_host_routing_bundle_is_optional_only_for_historical_revisions(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            self.baseline_fixture(source)
+            self.assertEqual(checks.coverage(source)['lab/wsl/values'], 'not_present_in_revision')
+            (source / 'tools/check_host_routing.py').touch()
+            with self.assertRaisesRegex(ValueError, 'Incomplete lab/wsl/values'):
+                checks.coverage(source)
+            for name in checks.OPTIONAL['lab/wsl/values']:
+                path = source / name; path.parent.mkdir(parents=True, exist_ok=True); path.touch()
+            for name in checks.OPTIONAL['lab/wsl']:
+                path = source / name; path.parent.mkdir(parents=True, exist_ok=True); path.touch()
+            self.assertEqual(checks.coverage(source)['lab/wsl/values'], 'present')
+
+    def test_candidate_routing_guard_runs_before_historical_gates(self):
+        workflow = yaml.safe_load((ROOT.parents[1] / '.github/workflows/pr-tests.yaml').read_text())
+        steps = workflow['jobs']['test']['steps']
+        guard_step = next(s for s in steps if s.get('name') == 'Validate candidate WSL routing boundary')
+        self.assertNotIn('if', guard_step)
+        self.assertIn('.ci-control/tools/check_host_routing.py --root .ci-control', guard_step['run'])
+        self.assertLess(steps.index(guard_step), next(i for i, s in enumerate(steps) if s.get('name') == 'Run offline module gates and air-gapped Kustomize/schema/policy checks'))
 
     def test_hpc_coverage_cannot_be_omitted(self):
         self.assertIn('module-5b', checks.OPTIONAL)
