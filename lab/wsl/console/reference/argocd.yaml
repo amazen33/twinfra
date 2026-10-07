@@ -1,0 +1,45 @@
+# Activate only through apply.sh after OIDC and backend preflight.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: vcloud-wsl-console
+  namespace: platform-services
+spec:
+  sourceRepos:
+  - https://github.com/amazen33/vCloud.git
+  destinations:
+  - server: https://kubernetes.default.svc
+    namespace: platform-services
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+  - group: ''
+    kind: ConfigMap
+  - group: ''
+    kind: Service
+  - group: apps
+    kind: Deployment
+  - group: apisix.apache.org
+    kind: ApisixRoute
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vcloud-wsl-console
+  namespace: platform-services
+spec:
+  project: vcloud-wsl-console
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: platform-services
+  source:
+    repoURL: https://github.com/amazen33/vCloud.git
+    targetRevision: main
+    path: lab/wsl/console/gitops
+  syncPolicy:
+    automated:
+      enabled: true
+      selfHeal: true
+      prune: false
+    syncOptions:
+    - CreateNamespace=false
+    - ServerSideApply=true

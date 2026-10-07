@@ -1,0 +1,182 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vcloud-console-vcloud-console-shell
+  namespace: platform-services
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:app.kubernetes.io/name: vcloud-console-shell
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: apisix
+    toPorts:
+    - ports:
+      - port: '3000'
+        protocol: TCP
+  egress: []
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vcloud-console-storage-ui
+  namespace: platform-services
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:app.kubernetes.io/name: storage-ui
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: apisix
+    toPorts:
+    - ports:
+      - port: '9001'
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: ministack
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: localstack-aws-console
+    toPorts:
+    - ports:
+      - port: '4566'
+        protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vcloud-console-dynamodb-admin
+  namespace: platform-services
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:app.kubernetes.io/name: dynamodb-admin
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: apisix
+    toPorts:
+    - ports:
+      - port: '8081'
+        protocol: TCP
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: ministack
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: localstack-aws-console
+    toPorts:
+    - ports:
+      - port: '4566'
+        protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vcloud-console-ministack
+  namespace: platform-services
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:app.kubernetes.io/name: ministack
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: apisix
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: storage-ui
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: dynamodb-admin
+    toPorts:
+    - ports:
+      - port: '4566'
+        protocol: TCP
+  egress: []
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vcloud-console-localstack-ui
+  namespace: platform-services
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:app.kubernetes.io/name: localstack-aws-console
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: storage-ui
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: dynamodb-admin
+    toPorts:
+    - ports:
+      - port: '4566'
+        protocol: TCP
+  egress: []
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: vcloud-console-gateway
+  namespace: platform-services
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:app.kubernetes.io/name: apisix
+  ingress: []
+  egress:
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: vcloud-console-shell
+    toPorts:
+    - ports:
+      - port: '3000'
+        protocol: TCP
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: storage-ui
+    toPorts:
+    - ports:
+      - port: '9001'
+        protocol: TCP
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: dynamodb-admin
+    toPorts:
+    - ports:
+      - port: '8081'
+        protocol: TCP
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: ministack
+    toPorts:
+    - ports:
+      - port: '4566'
+        protocol: TCP
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: keycloak
+    toPorts:
+    - ports:
+      - port: '8443'
+        protocol: TCP

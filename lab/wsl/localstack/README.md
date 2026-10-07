@@ -50,6 +50,11 @@ Acceptance requires all four states to equal `running`, HTTP 200 for signed
 insufficient. `verify.sh` writes non-secret evidence under `.build/localstack/`.
 The dedicated `vcloud-wsl-localstack-access.service` binds port 4566 to loopback;
 stop it with `sudo systemctl stop vcloud-wsl-localstack-access.service`.
+The helper now waits for backend rollout and four-service health before reporting
+success. Its forward process retries after three seconds with the systemd start
+limit disabled, so a temporary API-server outage does not exhaust rapid retries
+and leave port 4566 permanently unavailable. This transient unit must still be
+started again after WSL shuts down or reboots.
 
 ## Security, state and limits
 
@@ -81,6 +86,21 @@ production gate. Argo's new route grants exclude Secret and cluster-RBAC writes.
 No new node privilege exception is granted.
 
 ## Recovery
+
+When `http://127.0.0.1:4566/` or `/_localstack/health` times out but the Pod is
+Ready, inspect the owned forward rather than changing Cilium policies:
+
+```bash
+sudo systemctl status vcloud-wsl-localstack-access.service
+sudo journalctl -u vcloud-wsl-localstack-access.service -n 35 --no-pager
+sudo bash lab/wsl/localstack/access.sh
+curl --fail http://127.0.0.1:4566/_localstack/health
+```
+
+The 2026-10-07 outage was caused by API connection-refused/ServiceUnavailable
+errors followed by `Start request repeated too quickly`; the backend remained
+Ready. The delayed retry policy and bounded health gate repaired that listener.
+No Windows firewall or Cilium allow rule was added for this recovery.
 
 If readiness fails, inspect `kubectl logs deployment/localstack-aws-console`
 and its events, then verify writable HOME/cache and preinstalled DynamoDB JVM

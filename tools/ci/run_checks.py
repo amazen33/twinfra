@@ -18,6 +18,13 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'lab/wsl/console': ['tools/wsl_console.py', 'tools/wsl_console_preflight.py', 'tests/test_wsl_console.py',
+        'lab/wsl/console/profile.json', 'lab/wsl/console/artifacts.lock.json', 'lab/wsl/console/ui.py',
+        'lab/wsl/console/keycloak-client.json', 'lab/wsl/console/test-backends.py', 'lab/wsl/console/test-denied.py', 'lab/wsl/console/workloads.yaml', 'lab/wsl/console/network.yaml',
+        'lab/wsl/console/apisix-routes.yaml', 'lab/wsl/console/gitops/workloads.yaml',
+        'lab/wsl/console/reference/apisix-routes-disabled.yaml', 'lab/wsl/console/reference/argocd.yaml',
+        'lab/wsl/console/deploy-backends.sh', 'lab/wsl/console/apply.sh', 'lab/wsl/console/verify.sh',
+        'lab/wsl/console/README.md', 'lab/wsl/console/LICENSE'],
     'lab/wsl/localstack': ['lab/wsl/localstack/artifacts.lock.json','lab/wsl/localstack/deployment.yaml',
         'lab/wsl/localstack/service.yaml','lab/wsl/localstack/apisix-route.yaml',
         'lab/wsl/localstack/configure-apisix.py','lab/wsl/localstack/access.sh',
@@ -257,6 +264,14 @@ def main():
                 run(suite[:-3],[python,'-m','unittest','discover','-s','tests','-p',suite,'-v'],unit=True)
         if report['modules']['lab/wsl/localstack'] == 'present':
             run('wsl-localstack-tests',[python,'-m','unittest','discover','-s','tests','-p','test_wsl_localstack.py','-v'],unit=True)
+        if report['modules']['lab/wsl/console'] == 'present':
+            run('wsl-console-render',[python,'tools/wsl_console.py','--check'])
+            run('wsl-console-tests',[python,'-m','unittest','discover','-s','tests','-p','test_wsl_console.py','-v'],unit=True)
+            run('wsl-console-schema',[python,'tools/wsl_console.py','--validate','--build',endpoint_build,
+                '--kubeconform',binaries['kubeconform'],'--schemas',assets/'schemas'])
+            run('wsl-console-pss',[binaries['conftest'],'test','--namespace','vcloud_wsl','--policy','tests/ci/policy/wsl-endpoints.rego',
+                'lab/wsl/console/workloads.yaml','lab/wsl/console/gitops/workloads.yaml'])
+            run('wsl-console-shellcheck',[binaries['shellcheck'],'lab/wsl/console/deploy-backends.sh','lab/wsl/console/apply.sh','lab/wsl/console/verify.sh'])
         report['status'] = 'passed'
         return 0
     except (ValueError, RuntimeError, OSError) as error:

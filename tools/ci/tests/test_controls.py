@@ -253,6 +253,13 @@ class Controls(unittest.TestCase):
             if line and not line.startswith('#'):
                 self.assertRegex(line, r'^[A-Za-z]+==\d+\.\d+\.\d+$')
 
+    def test_console_bundle_cannot_omit_identity_gate_or_tests(self):
+        files = checks.OPTIONAL['lab/wsl/console']
+        for path in ('tools/wsl_console_preflight.py', 'tests/test_wsl_console.py',
+                     'lab/wsl/console/apisix-routes.yaml', 'lab/wsl/console/ui.py',
+                     'lab/wsl/console/apply.sh', 'lab/wsl/console/verify.sh'):
+            self.assertIn(path, files)
+
     def test_localstack_bundle_cannot_omit_runtime_or_tests(self):
         files=checks.OPTIONAL['lab/wsl/localstack']
         self.assertIn('tests/test_wsl_localstack.py',files)

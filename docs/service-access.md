@@ -14,6 +14,39 @@ establish that its backend is deployed or that a browser route exists.
 | Keycloak | <https://localhost:18443/realms/vcloud/.well-known/openid-configuration> | WSL OIDC discovery with verified TLS; browser trust requires its public lab certificate |
 | LocalStack Community AWS API | <http://127.0.0.1:4566/_localstack/health> | Windows and WSL HTTP 200; S3, EC2, IAM and DynamoDB running; JSON API, no console GUI |
 
+Keycloak's discovery URL returns JSON by design; its GUI is
+<https://localhost:18443/admin/>. The operator supplied a working discovery
+document with issuer `https://localhost:18443/realms/vcloud`. Windows and WSL
+independently returned HTTP 200 with the public lab certificate and hostname
+verified. This confirms transport/discovery, not an administrator login.
+
+LocalStack port 4566 was repaired after the owned forward exhausted rapid retries
+during a temporary API-server outage. Its root and health URLs now return HTTP
+200 from Windows. [Recovery instructions](../lab/wsl/localstack/README.md#recovery)
+include the delayed-retry and health-check helper.
+
+OpenBao's `{"initialized":false}` response is successful HTTP 200 from its
+initialization-status API. It is reachable but has not issued unseal shares or a
+root token; initialization remains behind the operator PGP-key gate.
+
+## Unified vCloud console profile
+
+The new [console runbook](../lab/wsl/console/README.md) prepares
+`http://console.vcloud.local:18080` with controller-managed routes, an MIT
+navigation shell, distinct MiniStack/LocalStack API prefixes, and MIT read-only
+S3/DynamoDB views. The four new Deployments are Ready in the WSL lab; both
+emulators passed signed S3, EC2, IAM and DynamoDB reads on 2026-10-07.
+
+**The public console URL is not activated yet.** The operator selected a gated
+Keycloak client/Secret reference; `vcloud-console-oidc` is absent and the current
+Keycloak discovery issuer differs from the console reference. No browser login,
+public console HTTP 200, WebSocket handshake or hostname resolution is claimed.
+`/spinifex/` and `/vault/` are excluded disabled references, not working browser
+links. Complete the identity/CA/DNS/base-path gates in the runbook first.
+
+The remaining URLs below retain their existing access procedures; no console
+port-forward, Windows hosts entry or broad firewall exception was installed.
+
 The HTTP links and Keycloak HTTPS listener bind loopback on this computer only. Keep WSL running.
 The dashboard has been opened in Codex. Core's local dashboard uses the invoking
 process's Kubernetes credentials rather than a separate Argo CD login; this is

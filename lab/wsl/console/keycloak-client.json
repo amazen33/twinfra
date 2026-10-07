@@ -1,0 +1,24 @@
+{
+  "clientId": "vcloud-console",
+  "name": "vCloud local console",
+  "enabled": true,
+  "protocol": "openid-connect",
+  "publicClient": false,
+  "standardFlowEnabled": true,
+  "directAccessGrantsEnabled": false,
+  "serviceAccountsEnabled": false,
+  "fullScopeAllowed": false,
+  "redirectUris": ["http://console.vcloud.local:18080/oidc/callback"],
+  "webOrigins": ["http://console.vcloud.local:18080"],
+  "attributes": {"pkce.code.challenge.method": "S256"},
+  "protocolMappers": [{
+    "name": "vcloud-console-audience",
+    "protocol": "openid-connect",
+    "protocolMapper": "oidc-audience-mapper",
+    "config": {
+      "included.client.audience": "vcloud-console",
+      "id.token.claim": "true",
+      "access.token.claim": "true"
+    }
+  }]
+}
