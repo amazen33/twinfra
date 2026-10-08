@@ -1,5 +1,10 @@
 # Keycloak administrator access in the owned WSL lab
 
+For the new [portal](../console/README.md), use `vcloud-admin` in the **vcloud**
+realm and `deploy/console/copy-password.ps1`. That account has `console.admin`
+only, a separate temporary password and required password change/MFA. The
+master account documented below retains separate full administration authority.
+
 The local GUI is <https://localhost:18443/admin/>. Use the **master** realm and
 username **vcloud-admin**. Working OIDC discovery establishes transport health;
 it does not create an administrator. The original realm import deliberately had

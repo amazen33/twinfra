@@ -1,0 +1,21 @@
+{
+  "base": "registry.vcloud.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e",
+  "tag": "registry.vcloud.example.com/vcloud/vcloud-console:1.0.0",
+  "digest": "sha256:8353b3f6e45704846c5f9ff21feacd56f106ad3ac46f8f76eab688d9d5b79c43",
+  "canonical": "registry.vcloud.example.com/vcloud/vcloud-console@sha256:8353b3f6e45704846c5f9ff21feacd56f106ad3ac46f8f76eab688d9d5b79c43",
+  "filesSHA256": {
+    "console/package.json": "83e42db89265740bef9c272a747e9c3fa96b4f40402a48b9578fafd3c6c8b32c",
+    "console/package-lock.json": "42187f9384f2d16a1b5daaef1512d41ad0903daf8cd37f010a729688457f879c",
+    "console/server.py": "268252552bfa74d227d679b9e8f842bbcfcbdb368c019be51344b512ff5e6702",
+    "lab/wsl/console/ui.py": "cca580ad53eeb5f4ee09c92e4050b7a27404c641d4c4c26809d84df3a7e752f6",
+    "console/src/App.test.tsx": "a21a5255a41656ab40c9778cc7fa39f2b81668ae0d816e66ab7c7cafd3bb8f07",
+    "console/src/App.tsx": "e649701b5627ecacba8183d16ad1428d83e6efb2fa56e6da814e3457011db056",
+    "console/src/api.ts": "f08247cd08d1439a5e31840e36d78ccd40ef02f375d7d5a7a54ad22c004b3b65",
+    "console/src/main.tsx": "eb9dea8e87646ab7e84535d3ac3ef6746115237df2295bc182ce1fe5995c4ff5",
+    "console/src/styles.css": "71f430958cce8806b6272f3d63386ab5bd29ec04511f47d077c4c3f25dcc37a6",
+    "console/index.html": "0d5e360be3893e17a16149782016c9451df128cadd10842aac3f12375fc6c08f",
+    "console/vite.config.ts": "d412b1e7230c243cf789705d92165695d1614938f64add9d62166c1e7c88959a",
+    "console/tsconfig.json": "57bf33164c13756d82c148024d9502ceeecb80a329b88dfee5194aa3ca1729e8",
+    "console/Dockerfile": "be3ef5a63b3941e6cf5676edb41c58e9211b28fb4058645bd41191940c4146b1"
+  }
+}

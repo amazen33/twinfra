@@ -1,0 +1,59 @@
+{
+  "clientId": "vcloud-console",
+  "name": "vCloud control plane",
+  "enabled": true,
+  "protocol": "openid-connect",
+  "publicClient": false,
+  "standardFlowEnabled": true,
+  "implicitFlowEnabled": false,
+  "directAccessGrantsEnabled": false,
+  "serviceAccountsEnabled": false,
+  "fullScopeAllowed": false,
+  "redirectUris": [
+    "http://localhost:18080/console/callback"
+  ],
+  "webOrigins": [
+    "http://localhost:18080"
+  ],
+  "attributes": {
+    "pkce.code.challenge.method": "S256",
+    "post.logout.redirect.uris": "http://localhost:18080/console/"
+  },
+  "protocolMappers": [
+    {
+      "name": "console-audience",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-audience-mapper",
+      "config": {
+        "included.client.audience": "vcloud-console",
+        "id.token.claim": "true",
+        "access.token.claim": "true"
+      }
+    },
+    {
+      "name": "console-roles",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usermodel-client-role-mapper",
+      "config": {
+        "usermodel.clientRoleMapping.clientId": "vcloud-console",
+        "claim.name": "resource_access.vcloud-console.roles",
+        "jsonType.label": "String",
+        "multivalued": "true",
+        "id.token.claim": "true",
+        "access.token.claim": "true"
+      }
+    },
+    {
+      "name": "console-username",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usermodel-property-mapper",
+      "config": {
+        "user.attribute": "username",
+        "claim.name": "preferred_username",
+        "jsonType.label": "String",
+        "id.token.claim": "true",
+        "access.token.claim": "true"
+      }
+    }
+  ]
+}

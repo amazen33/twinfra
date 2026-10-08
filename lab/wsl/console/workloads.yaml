@@ -44,14 +44,14 @@ data:
     \ preview')\n    return raw\n\n\ndef xml_values(raw, tag):\n    if b'<!DOCTYPE'\
     \ in raw.upper() or b'<!ENTITY' in raw.upper():\n        raise ValueError('XML\
     \ entities forbidden')\n    return [el.text or '' for el in ET.fromstring(raw).iter()\
-    \ if el.tag.rsplit('}', 1)[-1] == tag]\n\n\ndef browser(view, backend, selection=''):\n\
-    \    if backend not in ENDPOINTS or view not in ('storage', 'dynamodb'):\n   \
-    \     raise ValueError('Unsupported browser/backend')\n    base = '/' + view +\
-    \ '/?backend=' + backend\n    if view == 'storage':\n        if selection:\n \
-    \           raw = read(signed_request(backend, 's3', path='/' + selection,\n \
-    \                                    query={'list-type': '2', 'max-keys': '100'}))\n\
-    \            items = xml_values(raw, 'Key')\n            body = '<p>First 100\
-    \ object keys in ' + escape(selection) + '</p><ul>' + ''.join('<li>' + escape(x)\
+    \ if el.tag.rsplit('}', 1)[-1] == tag]\n\n\ndef browser(view, backend, selection='',\
+    \ mount=''):\n    if backend not in ENDPOINTS or view not in ('storage', 'dynamodb'):\n\
+    \        raise ValueError('Unsupported browser/backend')\n    base = (mount or\
+    \ '/' + view) + '/?backend=' + backend\n    if view == 'storage':\n        if\
+    \ selection:\n            raw = read(signed_request(backend, 's3', path='/' +\
+    \ selection,\n                                     query={'list-type': '2', 'max-keys':\
+    \ '100'}))\n            items = xml_values(raw, 'Key')\n            body = '<p>First\
+    \ 100 object keys in ' + escape(selection) + '</p><ul>' + ''.join('<li>' + escape(x)\
     \ + '</li>' for x in items) + '</ul>'\n        else:\n            items = xml_values(read(signed_request(backend,\
     \ 's3')), 'Name')\n            body = '<ul>' + ''.join('<li><a href=\"' + base\
     \ + '&bucket=' + quote(x, safe='') + '\">' + escape(x) + '</a></li>' for x in\
@@ -66,19 +66,20 @@ data:
     \ '&table=' + quote(x, safe='') + '\">' + escape(x) + '</a></li>' for x in result.get('TableNames',\
     \ [])) + '</ul>'\n    if (view == 'storage' and not items) or (view == 'dynamodb'\
     \ and not result):\n        body += '<p>No resources found.</p>'\n    return '<p><a\
-    \ href=\"' + base + '\">Refresh</a></p>' + body\n\n\ndef page(title, body):\n\
+    \ href=\"' + base + '\">Refresh</a></p>' + body\n\n\ndef page(title, body, mount=''):\n\
     \    return ('<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"\
     viewport\" content=\"width=device-width,initial-scale=1\">'\n            '<title>'\
-    \ + escape(title) + ' \xB7 vCloud</title><link rel=\"stylesheet\" href=\"/console.css\"\
-    >'\n            '<body><header><a href=\"/\">vCloud console</a></header><main><h1>'\
-    \ + escape(title) + '</h1>' + body + '</main></body></html>').encode()\n\n\ndef\
-    \ navigation(profile):\n    cards = []\n    for item in profile['backends']:\n\
-    \        name = item['name']\n        href = '/' + name + '/'\n        if name\
-    \ in ('localstack', 'ministack'):\n            href += '_' + name + '/health'\n\
-    \        action = '<a href=\"' + href + '\">Open ' + escape(name) + '</a>' if\
-    \ item['enabled'] else '<span>Disabled reference</span>'\n        cards.append('<article><h2>'\
-    \ + escape(name) + '</h2><p>' + escape(item['description']) + '</p><p>' + escape(item['license'])\
-    \ + '</p>' + action + '</article>')\n    return page('Platform services', '<p>Read-only\
+    \ + escape(title) + ' \xB7 vCloud</title><link rel=\"stylesheet\" href=\"' + escape(mount)\
+    \ + '/console.css\">'\n            '<body><header><a href=\"' + ('/console/overview'\
+    \ if mount else '/') + '\">vCloud console</a></header><main><h1>' + escape(title)\
+    \ + '</h1>' + body + '</main></body></html>').encode()\n\n\ndef navigation(profile):\n\
+    \    cards = []\n    for item in profile['backends']:\n        name = item['name']\n\
+    \        href = '/' + name + '/'\n        if name in ('localstack', 'ministack'):\n\
+    \            href += '_' + name + '/health'\n        action = '<a href=\"' + href\
+    \ + '\">Open ' + escape(name) + '</a>' if item['enabled'] else '<span>Disabled\
+    \ reference</span>'\n        cards.append('<article><h2>' + escape(name) + '</h2><p>'\
+    \ + escape(item['description']) + '</p><p>' + escape(item['license']) + '</p>'\
+    \ + action + '</article>')\n    return page('Platform services', '<p>Read-only\
     \ local lab navigation. Backend availability is checked when opened.</p>' + ''.join(cards))\n\
     \n\nclass Handler(BaseHTTPRequestHandler):\n    def log_message(self, *args):\n\
     \        pass  # never log cookies, OIDC codes, credentials or user query values\n\
@@ -98,19 +99,23 @@ data:
     \ page('Not found', '<p>This path is not available.</p>'))\n            return\n\
     \        view = os.environ.get('VCLOUD_VIEW', 'shell')\n        if view == 'shell':\n\
     \            self.respond(200, navigation(json.loads(Path('/app/profile.json').read_text(encoding='utf-8'))))\n\
-    \            return\n        try:\n            query = parse_qs(url.query, max_num_fields=5)\n\
+    \            return\n        try:\n            # Only fixed gateway-owned mount\
+    \ prefixes can affect generated links.\n            mount = self.headers.get('X-Forwarded-Prefix',\
+    \ '')\n            if mount not in ('', '/console/proxy/storage', '/console/proxy/dynamodb'):\n\
+    \                mount = ''\n            query = parse_qs(url.query, max_num_fields=5)\n\
     \            backend = query.get('backend', ['ministack'])[0]\n            selection\
     \ = query.get('bucket' if view == 'storage' else 'table', [''])[0]\n         \
     \   if len(selection) > 255 or '/' in selection or '..' in selection:\n      \
-    \          raise ValueError('Invalid selection')\n            choose = '<p><a\
-    \ href=\"/' + view + '/?backend=ministack\">MiniStack</a> \xB7 <a href=\"/' +\
-    \ view + '/?backend=localstack\">LocalStack</a></p>'\n            self.respond(200,\
-    \ page(view.title(), choose + browser(view, backend, selection)))\n        except\
-    \ (ValueError, KeyError):\n            self.respond(400, page('Invalid request',\
-    \ '<p>Choose a configured emulator and resource.</p>'))\n        except Exception:\n\
-    \            self.respond(503, page('Backend unavailable', '<p>The selected emulator\
-    \ did not return a valid bounded response.</p>'))\n\n\nif __name__ == '__main__':\n\
-    \    ThreadingHTTPServer(('0.0.0.0', int(os.environ.get('PORT', '3000'))), Handler).serve_forever()\n"
+    \          raise ValueError('Invalid selection')\n            base = mount or\
+    \ '/' + view\n            choose = '<p><a href=\"' + base + '/?backend=ministack\"\
+    >MiniStack</a> \xB7 <a href=\"' + base + '/?backend=localstack\">LocalStack</a></p>'\n\
+    \            self.respond(200, page(view.title(), choose + browser(view, backend,\
+    \ selection, mount), mount))\n        except (ValueError, KeyError):\n       \
+    \     self.respond(400, page('Invalid request', '<p>Choose a configured emulator\
+    \ and resource.</p>'))\n        except Exception:\n            self.respond(503,\
+    \ page('Backend unavailable', '<p>The selected emulator did not return a valid\
+    \ bounded response.</p>'))\n\n\nif __name__ == '__main__':\n    ThreadingHTTPServer(('0.0.0.0',\
+    \ int(os.environ.get('PORT', '3000'))), Handler).serve_forever()\n"
   profile.json: "{\n  \"name\": \"vcloud-wsl-local\",\n  \"host\": \"console.vcloud.local\"\
     ,\n  \"origin\": \"http://console.vcloud.local:18080\",\n  \"oidc\": {\n    \"\
     client_id\": \"vcloud-console\",\n    \"secret\": \"vcloud-console-oidc\",\n \
@@ -151,7 +156,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: d44165e694c4084db55736bb00610e29a7bfabcd7b586f088d789d88a675ff0f
+        vcloud.io/config-hash: 62a4e6be1776ec0a15d2298c12bb139c54fbfc81b1658ab92a3626d833ce987f
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -245,7 +250,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: d44165e694c4084db55736bb00610e29a7bfabcd7b586f088d789d88a675ff0f
+        vcloud.io/config-hash: 62a4e6be1776ec0a15d2298c12bb139c54fbfc81b1658ab92a3626d833ce987f
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -339,7 +344,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: d44165e694c4084db55736bb00610e29a7bfabcd7b586f088d789d88a675ff0f
+        vcloud.io/config-hash: 62a4e6be1776ec0a15d2298c12bb139c54fbfc81b1658ab92a3626d833ce987f
     spec:
       automountServiceAccountToken: false
       securityContext:

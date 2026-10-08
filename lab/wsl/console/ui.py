@@ -69,10 +69,10 @@ def xml_values(raw, tag):
     return [el.text or '' for el in ET.fromstring(raw).iter() if el.tag.rsplit('}', 1)[-1] == tag]
 
 
-def browser(view, backend, selection=''):
+def browser(view, backend, selection='', mount=''):
     if backend not in ENDPOINTS or view not in ('storage', 'dynamodb'):
         raise ValueError('Unsupported browser/backend')
-    base = '/' + view + '/?backend=' + backend
+    base = (mount or '/' + view) + '/?backend=' + backend
     if view == 'storage':
         if selection:
             raw = read(signed_request(backend, 's3', path='/' + selection,
@@ -97,10 +97,10 @@ def browser(view, backend, selection=''):
     return '<p><a href="' + base + '">Refresh</a></p>' + body
 
 
-def page(title, body):
+def page(title, body, mount=''):
     return ('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-            '<title>' + escape(title) + ' · vCloud</title><link rel="stylesheet" href="/console.css">'
-            '<body><header><a href="/">vCloud console</a></header><main><h1>' + escape(title) + '</h1>' + body + '</main></body></html>').encode()
+            '<title>' + escape(title) + ' · vCloud</title><link rel="stylesheet" href="' + escape(mount) + '/console.css">'
+            '<body><header><a href="' + ('/console/overview' if mount else '/') + '">vCloud console</a></header><main><h1>' + escape(title) + '</h1>' + body + '</main></body></html>').encode()
 
 
 def navigation(profile):
@@ -146,13 +146,18 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(200, navigation(json.loads(Path('/app/profile.json').read_text(encoding='utf-8'))))
             return
         try:
+            # Only fixed gateway-owned mount prefixes can affect generated links.
+            mount = self.headers.get('X-Forwarded-Prefix', '')
+            if mount not in ('', '/console/proxy/storage', '/console/proxy/dynamodb'):
+                mount = ''
             query = parse_qs(url.query, max_num_fields=5)
             backend = query.get('backend', ['ministack'])[0]
             selection = query.get('bucket' if view == 'storage' else 'table', [''])[0]
             if len(selection) > 255 or '/' in selection or '..' in selection:
                 raise ValueError('Invalid selection')
-            choose = '<p><a href="/' + view + '/?backend=ministack">MiniStack</a> · <a href="/' + view + '/?backend=localstack">LocalStack</a></p>'
-            self.respond(200, page(view.title(), choose + browser(view, backend, selection)))
+            base = mount or '/' + view
+            choose = '<p><a href="' + base + '/?backend=ministack">MiniStack</a> · <a href="' + base + '/?backend=localstack">LocalStack</a></p>'
+            self.respond(200, page(view.title(), choose + browser(view, backend, selection, mount), mount))
         except (ValueError, KeyError):
             self.respond(400, page('Invalid request', '<p>Choose a configured emulator and resource.</p>'))
         except Exception:
