@@ -7,6 +7,13 @@ user's requirements; their integration contracts are proposed designs with expli
 release, security and live acceptance gates.
 See the [Module 1 documentation checks](docs/module-1-validation.json) for validation evidence.
 
+## Repository governance
+
+The [roles and Definition of Done](docs/governance/roles.md) define product ownership,
+architecture review, implementation and tester acceptance. The owner applies the
+[staged branch ruleset](docs/governance/branch-protection.md). Live results use the
+[acceptance receipt template](docs/acceptance/README.md); only the tester signs acceptance.
+
 ## Node diagnostic prerequisites
 
 The [vCloud control-plane portal](console/README.md) provides native health,

@@ -1,5 +1,5 @@
 # WO-01: default reviewer and explicit ownership of platform control boundaries.
-# Required code-owner reviews take effect only after the owner activates rules.
+# Required code-owner reviews take effect in Stage 2 of the owner-applied ruleset.
 * @amazen33
 
 /vcloud-ssot.yaml @amazen33
@@ -9,4 +9,5 @@
 /deploy/ @amazen33
 /lab/ @amazen33
 /docs/adr*/ @amazen33
+/docs/adr-*.md @amazen33
 /docs/architecture/adr/ @amazen33

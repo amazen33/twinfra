@@ -1,9 +1,14 @@
 # vCloud main branch governance — WO-01
 
-The repository owner applies this runbook after reviewing and merging WO-01.
-The implementation adds documentation and review ownership; it does not activate
-GitHub enforcement. Leave the Milestone 3 ruleset item unchecked until the
-owner's blocked-merge test is recorded in a follow-up PR.
+The owner-approved WO-01 follow-up documents two-stage activation: Stage 1 is
+the owner's current stage; Stage 2 waits for Codex's own GitHub machine account.
+This documentation does not change GitHub repository settings or certify live
+enforcement. Leave the Milestone 3 ruleset item unchecked until the owner's
+blocked-merge test is recorded in a follow-up PR.
+
+The [roles and Definition of Done](roles.md) still require Claude's review and
+the owner's merge. Stage 1 changes GitHub's approval settings only; it does not
+waive architecture review or tester sign-off.
 
 ## Prerequisites and review identities
 
@@ -12,19 +17,30 @@ owner's blocked-merge test is recorded in a follow-up PR.
   for read-only verification. Do not include credentials in receipts or logs.
 - `.github/CODEOWNERS` and the existing workflow must be present on `main`.
   The completed check must have the exact name `vCloud PR gate`.
-- The named code owner is `@amazen33`. Normal PRs must have an author identity
-  distinct from that account so it can supply the required code-owner approval.
-  GitHub prohibits an author from approving their own PR. The current Codex
-  connection created PR #26 as `amazen33`; an external Claude review alone
-  does not satisfy GitHub's required approving review. Resolve the PR-opening
-  identity before activating the ruleset. The owner approved proceeding with
-  WO-01's specified ownership after this constraint was reported on 2026-10-08;
-  approval to implement does not waive the ruleset's review requirement.
+- The named code owner is `@amazen33`. Stage 1 permits PRs opened through the
+  current shared owner identity. Stage 2 requires Codex's own GitHub machine
+  account, distinct from `amazen33`, to author PRs so the owner can supply the
+  required code-owner approval. GitHub prohibits an author from approving
+  their own PR. Claude's architecture review does not itself supply GitHub's
+  required approving review in Stage 2.
 
 See GitHub's [approval rules](https://docs.github.com/en/pull-requests/how-tos/review-pull-requests/approving-a-pull-request-with-required-reviews)
 and [CODEOWNERS requirements](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners).
 
-## Exact owner-applied ruleset
+## Two-stage activation
+
+| Stage | When | Required approvals | Require review from Code Owners |
+| --- | --- | --- | --- |
+| Stage 1 (active now) | Current owner-selected stage, while Codex uses the shared GitHub identity | 0 | Off |
+| Stage 2 | After Codex has its own GitHub machine account and can author PRs separately from `amazen33` | 1 | On |
+
+All other rules below stay the same in both stages. Only the owner changes
+settings. To activate Stage 2, verify the separate machine account can open a
+PR, then edit this ruleset to require one approval and code-owner review. Save
+and run the read-only verification again. Retest the blocked-merge behavior and
+review enforcement, recording the stage and tester sign-off in the receipt.
+
+## Exact owner-applied ruleset (Stage 1)
 
 Open **Settings → Rules → Rulesets → New ruleset → New branch ruleset** in
 `amazen33/vCloud`. Use the following configuration:
@@ -37,9 +53,9 @@ Open **Settings → Rules → Rulesets → New ruleset → New branch ruleset** 
 | Target branches | Include by pattern: `main` (`refs/heads/main` in the API); no exclusions |
 | Bypass list | Empty during normal operation, including administrators and apps |
 | Require a pull request before merging | Enabled |
-| Required approvals | 1 |
+| Required approvals | 0 in Stage 1; 1 in Stage 2 |
 | Dismiss stale pull request approvals when new commits are pushed | Enabled |
-| Require review from Code Owners | Enabled |
+| Require review from Code Owners | Disabled in Stage 1; Enabled in Stage 2 |
 | Require approval of the most recent reviewable push | Disabled; WO-01 specifies stale-review dismissal instead |
 | Require conversation resolution | Disabled; not a WO-01 rule |
 | Require status checks to pass before merging | Enabled |
@@ -49,8 +65,9 @@ Open **Settings → Rules → Rulesets → New ruleset → New branch ruleset** 
 | Block force pushes | Enabled |
 
 The rule types are `pull_request`, `required_status_checks`, `deletion` and
-`non_fast_forward`. Save with **Create**. Active rules apply immediately;
-complete the identity prerequisite first. Keep the workflow logic and
+`non_fast_forward`. Save with **Create**, or save the existing ruleset when
+updating its stage. Active rules apply immediately; complete the separate
+machine-account prerequisite before Stage 2. Keep the workflow logic and
 `tools/ci/pr-baselines.json` unchanged.
 
 GitHub documents the [creation procedure](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository)
@@ -76,14 +93,14 @@ gh api --paginate repos/amazen33/vCloud/rules/branches/main \
 
 Replace the example ID with the observed ID. Confirm `enforcement: active`,
 `target: branch`, conditions including only `refs/heads/main`, and an empty
-`bypass_actors` array. Inspect each rule's parameters:
+`bypass_actors` array. For Stage 1, inspect each rule's parameters:
 
 ```json
 {
   "pull_request": {
-    "required_approving_review_count": 1,
+    "required_approving_review_count": 0,
     "dismiss_stale_reviews_on_push": true,
-    "require_code_owner_review": true,
+    "require_code_owner_review": false,
     "require_last_push_approval": false,
     "required_review_thread_resolution": false
   },
@@ -95,6 +112,11 @@ Replace the example ID with the observed ID. Confirm `enforcement: active`,
 }
 ```
 
+For Stage 2, the same projection must show
+`required_approving_review_count: 1` and `require_code_owner_review: true`;
+every other value above stays the same. Record the stage with the effective
+rule response so the receipt cannot confuse the two configurations.
+
 This is a projection of the expected response fields, not an API write payload.
 The GitHub UI may include an integration ID with the selected status check.
 Record the effective values returned by GitHub. A rule that is merely Disabled
@@ -103,26 +125,39 @@ replace the blocked-merge test. See the [REST rules API](https://docs.github.com
 
 ## Owner blocked-merge acceptance test
 
-1. From an author account distinct from `amazen33`, open a disposable test PR
-   targeting `main`. Introduce an intentional failure in an already validated
+Only the owner runs or authorizes this live GitHub acceptance test. Use the
+[receipt template](../acceptance/README.md); implementation and green static
+CI alone do not complete it.
+
+1. Open a disposable test PR targeting `main`. Stage 1 permits the current
+   shared identity; Stage 2 requires Codex's separate machine account as author.
+   Introduce an intentional failure in an already validated
    fixture or manifest. Do not edit workflow logic, baselines or deployment
    state. Identify it clearly as a governance test and never merge its failing
    contents.
-2. Have `amazen33` review and approve as the code owner, with the branch current
-   with `main`. Wait for the actual `vCloud PR gate` to conclude `failure`.
+2. Keep the branch current with `main`. In Stage 1, confirm the effective
+   rules require zero approvals and no code-owner review. In Stage 2, have
+   `amazen33` review and approve as the code owner. Wait for the actual
+   `vCloud PR gate` to conclude `failure`.
    In the merge box confirm the gate is required and merge is blocked. Recording
    only a missing approval or an out-of-date branch does not prove check enforcement.
-3. Record the test PR URL, author and reviewer identities, head SHA, workflow
+3. Record the stage, test PR URL, author and reviewer identities, head SHA, workflow
    run URL, failed gate, ruleset ID, UTC timestamp and observed blocked merge
    state in `docs/acceptance/governance-YYYY-MM-DD.md`. Do not attempt a merge
    API call: a mistaken configuration could merge deliberately failing changes.
-   Close the disposable PR without merging.
-4. Through a reviewed follow-up PR, commit the receipt and tick only the
+   Close the disposable PR without merging. Codex records `Result: Pending`;
+   only the tester changes the sign-off after reviewing the evidence.
+4. Once the owner provides the test PR URL, ruleset ID, head SHA, run URL and
+   UTC timestamp, record the observed results in a reviewed follow-up PR and
+   tick only the
    Milestone 3 ruleset item in `MILESTONES.md`. This is owner acceptance after
-   enforcement, not part of WO-01's implementation PR.
+   enforcement, not part of WO-01's implementation PR. Without those details,
+   do not create a governance receipt or tick the checkbox. Live acceptance
+   remains pending until the tester signs `Accepted`.
 
-For review enforcement, push a harmless update after approval and confirm that
-GitHub dismisses the stale approval. For branch currency, inspect the merge box
+In Stage 2, test review enforcement by pushing a harmless update after approval
+and confirming GitHub dismisses the stale approval. Stage 1 does not establish
+required-review enforcement. For branch currency, inspect the merge box
 when `main` advances. Verify deletion and force-push restrictions from the
 effective rule response; do not probe them destructively on `main`.
 
