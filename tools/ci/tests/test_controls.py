@@ -139,6 +139,17 @@ class Controls(unittest.TestCase):
                 (source / name).touch()
             self.assertEqual(checks.coverage(source)['lab/wsl/proxy-marks'], 'present')
 
+    def test_loopback_recovery_bundle_cannot_omit_tests(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            self.baseline_fixture(source)
+            self.assertEqual(checks.coverage(source)['lab/wsl/loopback'], 'not_present_in_revision')
+            (source / 'tools/wsl_loopback_routing.py').touch()
+            with self.assertRaisesRegex(ValueError, 'Incomplete lab/wsl/loopback'):
+                checks.coverage(source)
+            (source / 'tests/test_wsl_loopback.py').touch()
+            self.assertEqual(checks.coverage(source)['lab/wsl/loopback'], 'present')
+
     def test_zero_tests_skipped_tests_and_failed_suites_rejected(self):
         self.assertEqual(checks.require_complete_tests('Ran 42 tests in 1.0s\n\nOK\n'), 42)
         for output in ('', 'Ran 0 tests in 1s\nOK\n', 'Ran 1 test in 1s\nOK (skipped=1)\n', 'Ran 5 tests in 1s\nFAILED (failures=1)\n'):
