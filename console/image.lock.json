@@ -16,6 +16,6 @@
     "console/index.html": "0d5e360be3893e17a16149782016c9451df128cadd10842aac3f12375fc6c08f",
     "console/vite.config.ts": "d412b1e7230c243cf789705d92165695d1614938f64add9d62166c1e7c88959a",
     "console/tsconfig.json": "57bf33164c13756d82c148024d9502ceeecb80a329b88dfee5194aa3ca1729e8",
-    "console/Dockerfile": "be3ef5a63b3941e6cf5676edb41c58e9211b28fb4058645bd41191940c4146b1"
+    "console/Dockerfile": "a59fdbb0c79f19a1a1d2afa784cabc0f111f50289ae127f56412e9fa236bf73c"
   }
 }
