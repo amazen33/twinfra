@@ -24,6 +24,16 @@ private configuration out of commands, logs and PR text.
 Live results require a dated receipt in `docs/acceptance/`. If a gate remains
 pending, identify it explicitly rather than recording a pass.
 
+## Tester sign-off
+
+State `Not applicable: no live acceptance`, or list each live receipt path and its
+tester result: `Pending`, `Accepted` or `Rejected`.
+
+Use the [acceptance receipt template](../docs/acceptance/README.md). Codex writes
+`Result: Pending`; only Ahmed Mazen (@amazen33), acting as enterprise and cloud
+tester; QoS tester, changes that result. Live acceptance is complete only after
+the tester signs `Accepted`. A rejection reopens the work order with the tester's notes.
+
 ## Licence register
 
 List component/licence-register changes, or state `Not applicable: no component
