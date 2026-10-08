@@ -1,0 +1,571 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcloud-console
+  namespace: platform-services
+  labels:
+    app.kubernetes.io/part-of: vcloud-console
+spec:
+  replicas: 1
+  selector:
+    matchLabels: &id001
+      app.kubernetes.io/name: vcloud-console
+  template:
+    metadata:
+      labels: *id001
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: console
+        image: registry.vcloud.example.com/vcloud/vcloud-console@sha256:8353b3f6e45704846c5f9ff21feacd56f106ad3ac46f8f76eab688d9d5b79c43
+        ports:
+        - name: http
+          containerPort: 3000
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+        volumeMounts:
+        - name: api-identity
+          mountPath: /var/run/secrets/vcloud
+          readOnly: true
+        readinessProbe: &id002
+          exec:
+            command:
+            - python
+            - -c
+            - import urllib.request; urllib.request.urlopen('http://127.0.0.1:3000/healthz',timeout=2)
+          timeoutSeconds: 3
+        livenessProbe: *id002
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+      volumes:
+      - name: api-identity
+        projected:
+          defaultMode: 288
+          sources:
+          - serviceAccountToken:
+              path: token
+              expirationSeconds: 3600
+          - configMap:
+              name: kube-root-ca.crt
+              items:
+              - key: ca.crt
+                path: ca.crt
+      serviceAccountName: vcloud-console
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vcloud-console
+  namespace: platform-services
+spec:
+  selector:
+    app.kubernetes.io/name: vcloud-console
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 3000
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: vcloud-portal-shell
+  namespace: platform-services
+spec:
+  ingressClassName: vcloud-local
+  http:
+  - name: shell
+    priority: 100
+    match:
+      hosts:
+      - localhost
+      paths:
+      - /console
+      - /console/*
+    backends:
+    - serviceName: vcloud-console
+      servicePort: 3000
+      resolveGranularity: service
+    websocket: false
+    plugins:
+    - name: serverless-pre-function
+      enable: true
+      config:
+        phase: rewrite
+        _meta:
+          priority: 10000
+        functions:
+        - return function(conf, ctx) for _,name in ipairs({'X-ID-Token','X-Access-Token','X-Userinfo','X-Refresh-Token','X-Raw-ID-Token'})
+          do ngx.req.clear_header(name) end end
+    - name: openid-connect
+      enable: true
+      secretRef: vcloud-console-oidc
+      config:
+        client_id: vcloud-console
+        discovery: https://keycloak.platform-services.svc.cluster.local/realms/vcloud/.well-known/openid-configuration
+        bearer_only: false
+        unauth_action: auth
+        ssl_verify: true
+        use_pkce: true
+        scope: openid
+        timeout: 5
+        redirect_uri: http://localhost:18080/console/callback
+        logout_path: /console/logout
+        session:
+          cookie_name: vcloud_portal
+          cookie_path: /console
+          cookie_secure: false
+          cookie_http_only: true
+          cookie_same_site: Lax
+          idling_timeout: 900
+          absolute_timeout: 3600
+        set_id_token_header: true
+        set_access_token_header: false
+        set_refresh_token_header: false
+        set_userinfo_header: false
+        accept_none_alg: false
+        accept_unsupported_alg: false
+        token_signing_alg_values_expected: RS256
+        claim_validator:
+          issuer:
+            valid_issuers:
+            - https://localhost:18443/realms/vcloud
+          audience:
+            required: true
+            match_with_client_id: true
+        claim_schema:
+          type: object
+          required:
+          - id_token
+          properties:
+            id_token:
+              type: object
+              required:
+              - resource_access
+              properties:
+                resource_access:
+                  type: object
+                  required:
+                  - vcloud-console
+                  properties:
+                    vcloud-console:
+                      type: object
+                      required:
+                      - roles
+                      properties:
+                        roles:
+                          type: array
+                          contains:
+                            enum:
+                            - console.viewer
+                            - console.admin
+    - name: proxy-rewrite
+      enable: true
+      config:
+        headers:
+          set:
+            X-Forwarded-Host: localhost:18080
+            X-Forwarded-Proto: http
+          remove:
+          - Authorization
+          - Cookie
+          - X-Access-Token
+          - X-Userinfo
+          - X-Refresh-Token
+          - X-Raw-ID-Token
+    - name: response-rewrite
+      enable: true
+      config:
+        headers:
+          set:
+            X-Frame-Options: SAMEORIGIN
+            X-Content-Type-Options: nosniff
+            Cache-Control: no-store
+            Referrer-Policy: same-origin
+    - name: prometheus
+      enable: true
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: vcloud-portal-api
+  namespace: platform-services
+spec:
+  ingressClassName: vcloud-local
+  http:
+  - name: api
+    priority: 150
+    match:
+      hosts:
+      - localhost
+      paths:
+      - /console/api/*
+    backends:
+    - serviceName: vcloud-console
+      servicePort: 3000
+      resolveGranularity: service
+    websocket: false
+    plugins:
+    - name: serverless-pre-function
+      enable: true
+      config:
+        phase: rewrite
+        _meta:
+          priority: 10000
+        functions:
+        - return function(conf, ctx) for _,name in ipairs({'X-ID-Token','X-Access-Token','X-Userinfo','X-Refresh-Token','X-Raw-ID-Token'})
+          do ngx.req.clear_header(name) end end
+    - name: openid-connect
+      enable: true
+      secretRef: vcloud-console-oidc
+      config:
+        client_id: vcloud-console
+        discovery: https://keycloak.platform-services.svc.cluster.local/realms/vcloud/.well-known/openid-configuration
+        bearer_only: false
+        unauth_action: deny
+        ssl_verify: true
+        use_pkce: true
+        scope: openid
+        timeout: 5
+        redirect_uri: http://localhost:18080/console/callback
+        logout_path: /console/logout
+        session:
+          cookie_name: vcloud_portal
+          cookie_path: /console
+          cookie_secure: false
+          cookie_http_only: true
+          cookie_same_site: Lax
+          idling_timeout: 900
+          absolute_timeout: 3600
+        set_id_token_header: true
+        set_access_token_header: false
+        set_refresh_token_header: false
+        set_userinfo_header: false
+        accept_none_alg: false
+        accept_unsupported_alg: false
+        token_signing_alg_values_expected: RS256
+        claim_validator:
+          issuer:
+            valid_issuers:
+            - https://localhost:18443/realms/vcloud
+          audience:
+            required: true
+            match_with_client_id: true
+        claim_schema:
+          type: object
+          required:
+          - id_token
+          properties:
+            id_token:
+              type: object
+              required:
+              - resource_access
+              properties:
+                resource_access:
+                  type: object
+                  required:
+                  - vcloud-console
+                  properties:
+                    vcloud-console:
+                      type: object
+                      required:
+                      - roles
+                      properties:
+                        roles:
+                          type: array
+                          contains:
+                            enum:
+                            - console.viewer
+                            - console.admin
+    - name: proxy-rewrite
+      enable: true
+      config:
+        headers:
+          set:
+            X-Forwarded-Host: localhost:18080
+            X-Forwarded-Proto: http
+          remove:
+          - Authorization
+          - Cookie
+          - X-Access-Token
+          - X-Userinfo
+          - X-Refresh-Token
+          - X-Raw-ID-Token
+    - name: response-rewrite
+      enable: true
+      config:
+        headers:
+          set:
+            X-Frame-Options: SAMEORIGIN
+            X-Content-Type-Options: nosniff
+            Cache-Control: no-store
+            Referrer-Policy: same-origin
+    - name: prometheus
+      enable: true
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: vcloud-portal-storage-view
+  namespace: platform-services
+spec:
+  ingressClassName: vcloud-local
+  http:
+  - name: storage-view
+    priority: 150
+    match:
+      hosts:
+      - localhost
+      paths:
+      - /console/proxy/storage
+      - /console/proxy/storage/*
+    backends:
+    - serviceName: storage-ui
+      servicePort: 9001
+      resolveGranularity: service
+    websocket: false
+    plugins:
+    - name: serverless-pre-function
+      enable: true
+      config:
+        phase: rewrite
+        _meta:
+          priority: 10000
+        functions:
+        - return function(conf, ctx) for _,name in ipairs({'X-ID-Token','X-Access-Token','X-Userinfo','X-Refresh-Token','X-Raw-ID-Token'})
+          do ngx.req.clear_header(name) end end
+    - name: openid-connect
+      enable: true
+      secretRef: vcloud-console-oidc
+      config:
+        client_id: vcloud-console
+        discovery: https://keycloak.platform-services.svc.cluster.local/realms/vcloud/.well-known/openid-configuration
+        bearer_only: false
+        unauth_action: auth
+        ssl_verify: true
+        use_pkce: true
+        scope: openid
+        timeout: 5
+        redirect_uri: http://localhost:18080/console/callback
+        logout_path: /console/logout
+        session:
+          cookie_name: vcloud_portal
+          cookie_path: /console
+          cookie_secure: false
+          cookie_http_only: true
+          cookie_same_site: Lax
+          idling_timeout: 900
+          absolute_timeout: 3600
+        set_id_token_header: true
+        set_access_token_header: false
+        set_refresh_token_header: false
+        set_userinfo_header: false
+        accept_none_alg: false
+        accept_unsupported_alg: false
+        token_signing_alg_values_expected: RS256
+        claim_validator:
+          issuer:
+            valid_issuers:
+            - https://localhost:18443/realms/vcloud
+          audience:
+            required: true
+            match_with_client_id: true
+        claim_schema:
+          type: object
+          required:
+          - id_token
+          properties:
+            id_token:
+              type: object
+              required:
+              - resource_access
+              properties:
+                resource_access:
+                  type: object
+                  required:
+                  - vcloud-console
+                  properties:
+                    vcloud-console:
+                      type: object
+                      required:
+                      - roles
+                      properties:
+                        roles:
+                          type: array
+                          contains:
+                            enum:
+                            - console.viewer
+                            - console.admin
+    - name: proxy-rewrite
+      enable: true
+      config:
+        headers:
+          set:
+            X-Forwarded-Host: localhost:18080
+            X-Forwarded-Proto: http
+            X-Forwarded-Prefix: /console/proxy/storage
+          remove:
+          - Authorization
+          - Cookie
+          - X-Access-Token
+          - X-Userinfo
+          - X-Refresh-Token
+          - X-Raw-ID-Token
+        regex_uri:
+        - ^/console/proxy/storage(?:/(.*))?$
+        - /$1
+    - name: response-rewrite
+      enable: true
+      config:
+        headers:
+          set:
+            X-Frame-Options: SAMEORIGIN
+            X-Content-Type-Options: nosniff
+            Cache-Control: no-store
+            Referrer-Policy: same-origin
+    - name: prometheus
+      enable: true
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: vcloud-portal-dynamodb-view
+  namespace: platform-services
+spec:
+  ingressClassName: vcloud-local
+  http:
+  - name: dynamodb-view
+    priority: 150
+    match:
+      hosts:
+      - localhost
+      paths:
+      - /console/proxy/dynamodb
+      - /console/proxy/dynamodb/*
+    backends:
+    - serviceName: dynamodb-admin
+      servicePort: 8081
+      resolveGranularity: service
+    websocket: false
+    plugins:
+    - name: serverless-pre-function
+      enable: true
+      config:
+        phase: rewrite
+        _meta:
+          priority: 10000
+        functions:
+        - return function(conf, ctx) for _,name in ipairs({'X-ID-Token','X-Access-Token','X-Userinfo','X-Refresh-Token','X-Raw-ID-Token'})
+          do ngx.req.clear_header(name) end end
+    - name: openid-connect
+      enable: true
+      secretRef: vcloud-console-oidc
+      config:
+        client_id: vcloud-console
+        discovery: https://keycloak.platform-services.svc.cluster.local/realms/vcloud/.well-known/openid-configuration
+        bearer_only: false
+        unauth_action: auth
+        ssl_verify: true
+        use_pkce: true
+        scope: openid
+        timeout: 5
+        redirect_uri: http://localhost:18080/console/callback
+        logout_path: /console/logout
+        session:
+          cookie_name: vcloud_portal
+          cookie_path: /console
+          cookie_secure: false
+          cookie_http_only: true
+          cookie_same_site: Lax
+          idling_timeout: 900
+          absolute_timeout: 3600
+        set_id_token_header: true
+        set_access_token_header: false
+        set_refresh_token_header: false
+        set_userinfo_header: false
+        accept_none_alg: false
+        accept_unsupported_alg: false
+        token_signing_alg_values_expected: RS256
+        claim_validator:
+          issuer:
+            valid_issuers:
+            - https://localhost:18443/realms/vcloud
+          audience:
+            required: true
+            match_with_client_id: true
+        claim_schema:
+          type: object
+          required:
+          - id_token
+          properties:
+            id_token:
+              type: object
+              required:
+              - resource_access
+              properties:
+                resource_access:
+                  type: object
+                  required:
+                  - vcloud-console
+                  properties:
+                    vcloud-console:
+                      type: object
+                      required:
+                      - roles
+                      properties:
+                        roles:
+                          type: array
+                          contains:
+                            enum:
+                            - console.viewer
+                            - console.admin
+    - name: proxy-rewrite
+      enable: true
+      config:
+        headers:
+          set:
+            X-Forwarded-Host: localhost:18080
+            X-Forwarded-Proto: http
+            X-Forwarded-Prefix: /console/proxy/dynamodb
+          remove:
+          - Authorization
+          - Cookie
+          - X-Access-Token
+          - X-Userinfo
+          - X-Refresh-Token
+          - X-Raw-ID-Token
+        regex_uri:
+        - ^/console/proxy/dynamodb(?:/(.*))?$
+        - /$1
+    - name: response-rewrite
+      enable: true
+      config:
+        headers:
+          set:
+            X-Frame-Options: SAMEORIGIN
+            X-Content-Type-Options: nosniff
+            Cache-Control: no-store
+            Referrer-Policy: same-origin
+    - name: prometheus
+      enable: true

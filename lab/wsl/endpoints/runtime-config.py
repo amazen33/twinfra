@@ -21,7 +21,8 @@ elif mode=='keycloak':
     url=f'jdbc:postgresql://{host}:5432/keycloak?sslmode=verify-full&sslrootcert=/pg-ca/ca.crt'
     text=('db=postgres\ndb-username=keycloak\ndb-password='+password+'\ndb-url='+url+'\n'
           'http-enabled=false\nhttps-certificate-file=/tls/tls.crt\nhttps-certificate-key-file=/tls/tls.key\n'
-          'hostname=https://localhost:18443\nhealth-enabled=true\nmetrics-enabled=true\ncache=local\n')
+          # Keep the browser issuer stable; allow TLS-verified Service backchannels.
+          'hostname=https://localhost:18443\nhostname-backchannel-dynamic=true\nhealth-enabled=true\nmetrics-enabled=true\ncache=local\n')
     target=Path('/runtime/keycloak.conf')
 else:raise ValueError('Unknown runtime')
 target.write_text(text);target.chmod(0o600)

@@ -35,16 +35,37 @@ root token; initialization remains behind the operator PGP-key gate.
 
 ## Unified vCloud console profile
 
+**Updated 2026-10-08:** the native React portal is activated at
+<http://localhost:18080/console/> with verified OIDC/MFA login, all six views,
+both emulator APIs and positive/negative authorization. Use `localhost`
+consistently. Sign in with the dedicated **vcloud-realm** `vcloud-admin` account;
+retrieve its separate temporary password with `deploy/console/copy-password.ps1`.
+First login requires password change and TOTP. See the
+[portal runbook](../console/README.md) and
+[acceptance record](acceptance/vcloud-console-2026-10-08.md).
+
+| Portal path | Function |
+| --- | --- |
+| <http://localhost:18080/console/overview> | Namespace workload health |
+| <http://localhost:18080/console/storage> | S3 buckets/object keys, either emulator |
+| <http://localhost:18080/console/localstack> | LocalStack/MiniStack health and EC2 metadata |
+| <http://localhost:18080/console/dynamodb> | Table names/metadata, either emulator |
+| <http://localhost:18080/console/gitops> | Argo Application sync/health |
+| <http://localhost:18080/console/iam> | Portal identity and roles |
+
+The following paragraph describes the earlier hostname-based reference;
+it does not supersede the activated localhost portal above.
+
 The new [console runbook](../lab/wsl/console/README.md) prepares
 `http://console.vcloud.local:18080` with controller-managed routes, an MIT
 navigation shell, distinct MiniStack/LocalStack API prefixes, and MIT read-only
 S3/DynamoDB views. The four new Deployments are Ready in the WSL lab; both
 emulators passed signed S3, EC2, IAM and DynamoDB reads on 2026-10-07.
 
-**The public console URL is not activated yet.** The operator selected a gated
-Keycloak client/Secret reference; `vcloud-console-oidc` is absent and the current
-Keycloak discovery issuer differs from the console reference. No browser login,
-public console HTTP 200, WebSocket handshake or hostname resolution is claimed.
+**The earlier `console.vcloud.local` URL remains gated.** Its discovery/hostname
+reference differs from the activated localhost profile. Its historical missing
+Secret gate was satisfied for the new portal by isolated client provisioning;
+no hostname resolution or WebSocket handshake is claimed for this reference.
 `/spinifex/` and `/vault/` are excluded disabled references, not working browser
 links. Complete the identity/CA/DNS/base-path gates in the runbook first.
 

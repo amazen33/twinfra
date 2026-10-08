@@ -1,0 +1,10 @@
+{
+  "name": "vcloud-wsl-local",
+  "origin": "http://localhost:18080",
+  "hosts": ["localhost"],
+  "issuer": "https://localhost:18443/realms/vcloud",
+  "discovery": "https://keycloak.platform-services.svc.cluster.local/realms/vcloud/.well-known/openid-configuration",
+  "client": "vcloud-console",
+  "secret": "vcloud-console-oidc",
+  "roles": ["console.viewer", "console.admin"]
+}

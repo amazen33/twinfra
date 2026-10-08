@@ -271,6 +271,12 @@ class Controls(unittest.TestCase):
                      'lab/wsl/console/apply.sh', 'lab/wsl/console/verify.sh'):
             self.assertIn(path, files)
 
+    def test_portal_bundle_requires_backend_rbac_and_frontend_tests(self):
+        files=checks.OPTIONAL['console']
+        for path in ('console/src/App.test.tsx','tests/test_vcloud_console.py','deploy/console/bootstrap.yaml',
+                     'console/image.lock.json','tools/configure_console_identity.py'):
+            self.assertIn(path,files)
+
     def test_keycloak_admin_bundle_cannot_omit_runtime_or_tests(self):
         files = checks.OPTIONAL['keycloak-admin-bootstrap']
         for path in ('tools/wsl_keycloak_admin.py', 'tests/test_wsl_keycloak_admin.py',

@@ -22,9 +22,10 @@ data:
     \    url=f'jdbc:postgresql://{host}:5432/keycloak?sslmode=verify-full&sslrootcert=/pg-ca/ca.crt'\n\
     \    text=('db=postgres\\ndb-username=keycloak\\ndb-password='+password+'\\ndb-url='+url+'\\\
     n'\n          'http-enabled=false\\nhttps-certificate-file=/tls/tls.crt\\nhttps-certificate-key-file=/tls/tls.key\\\
-    n'\n          'hostname=https://localhost:18443\\nhealth-enabled=true\\nmetrics-enabled=true\\\
-    ncache=local\\n')\n    target=Path('/runtime/keycloak.conf')\nelse:raise ValueError('Unknown\
-    \ runtime')\ntarget.write_text(text);target.chmod(0o600)\n"
+    n'\n          # Keep the browser issuer stable; allow TLS-verified Service backchannels.\n\
+    \          'hostname=https://localhost:18443\\nhostname-backchannel-dynamic=true\\\
+    nhealth-enabled=true\\nmetrics-enabled=true\\ncache=local\\n')\n    target=Path('/runtime/keycloak.conf')\n\
+    else:raise ValueError('Unknown runtime')\ntarget.write_text(text);target.chmod(0o600)\n"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -132,7 +133,8 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: 6cf1c1b7bd1dea91fb7815a1b17a1d593c1f4d9537b69f66821f10d454e04076
+        vcloud.io/runtime-config-hash: 358f97b7db125e5f57c16c54603c150a03de10eebd8f96bf9291f8d4fc579d16
+        vcloud.io/config-hash: e8a8bb242c65829b7734ff7b10e588818abe24b4268afb2a8bbcfec24773dfd0
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -306,7 +308,8 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: caa2a02465d6f45c04218952b1649248757585dffb5678ba850ee63e90be8eb6
+        vcloud.io/runtime-config-hash: 358f97b7db125e5f57c16c54603c150a03de10eebd8f96bf9291f8d4fc579d16
+        vcloud.io/config-hash: 2dd06dc686d61e5f31c6bd9153661aa78af0d480a088d02e2fc16995cff42701
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -497,18 +500,20 @@ metadata:
   name: vcloud-apisix
   namespace: platform-services
 data:
-  config.yaml: "apisix:\n  node_listen: 9080\n  enable_admin: true\n  enable_ipv6:\
-    \ false\nnginx_config:\n  worker_processes: 1\n  error_log: /dev/stderr\n  error_log_level:\
-    \ warn\n  http:\n    access_log: /dev/stdout\n    client_body_temp_path: /tmp/client-body\n\
-    \    proxy_temp_path: /tmp/proxy\n    fastcgi_temp_path: /tmp/fastcgi\n    uwsgi_temp_path:\
-    \ /tmp/uwsgi\n    scgi_temp_path: /tmp/scgi\ndeployment:\n  role: traditional\n\
-    \  role_traditional:\n    config_provider: yaml\n  admin:\n    admin_key_required:\
-    \ true\n    enable_admin_cors: false\n    enable_admin_ui: false\n    allow_admin:\n\
-    \    - 10.42.0.0/16\n    admin_listen:\n      ip: 0.0.0.0\n      port: 9180\n\
-    \    https_admin: true\n    admin_key:\n    - name: controller\n      key: __VCLOUD_ADMIN_KEY__\n\
-    \      role: admin\n    admin_api_mtls:\n      admin_ssl_cert: /admin/tls.crt\n\
-    \      admin_ssl_cert_key: /admin/tls.key\nplugin_attr:\n  prometheus:\n    export_addr:\n\
-    \      ip: 0.0.0.0\n      port: 9091\n"
+  config.yaml: "apisix:\n  enable_admin: true\n  enable_ipv6: false\n  node_listen:\
+    \ 9080\n  ssl:\n    ssl_trusted_certificate: /oidc-trust/tls.crt\ndeployment:\n\
+    \  admin:\n    admin_api_mtls:\n      admin_ssl_cert: /admin/tls.crt\n      admin_ssl_cert_key:\
+    \ /admin/tls.key\n    admin_key:\n    - key: __VCLOUD_ADMIN_KEY__\n      name:\
+    \ controller\n      role: admin\n    admin_key_required: true\n    admin_listen:\n\
+    \      ip: 0.0.0.0\n      port: 9180\n    allow_admin:\n    - 10.42.0.0/16\n \
+    \   enable_admin_cors: false\n    enable_admin_ui: false\n    https_admin: true\n\
+    \  role: traditional\n  role_traditional:\n    config_provider: yaml\nnginx_config:\n\
+    \  error_log: /dev/stderr\n  error_log_level: warn\n  http:\n    access_log: /dev/stdout\n\
+    \    access_log_format: $remote_addr [$time_local] $request_method $uri $status\
+    \ $body_bytes_sent\n    client_body_temp_path: /tmp/client-body\n    fastcgi_temp_path:\
+    \ /tmp/fastcgi\n    proxy_temp_path: /tmp/proxy\n    scgi_temp_path: /tmp/scgi\n\
+    \    uwsgi_temp_path: /tmp/uwsgi\n  worker_processes: 1\nplugin_attr:\n  prometheus:\n\
+    \    export_addr:\n      ip: 0.0.0.0\n      port: 9091\n"
   apisix.yaml: "routes:\n- id: demo-cpu\n  uri: /*\n  host: demo-cpu-app.workload-apps.example.com\n\
     \  plugins:\n    prometheus: {}\n    proxy-rewrite:\n      host: demo-cpu-app.workload-apps.vcloud.example.com\n\
     \  upstream:\n    type: roundrobin\n    nodes:\n      kourier-internal.workload-apps.svc.cluster.local:80:\
@@ -530,7 +535,8 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: bb18ec7bbce0584fb882c838bf1b9ca9452db87044ce995386d2403874318536
+        vcloud.io/gateway-config-hash: 1d29df74cbb2504e02201345e1e6673cf945f5c20f2ad6e5c8be998ebb2c9a4e
+        vcloud.io/config-hash: 95412ca47d172ff9df2f196888cdfa8dec69b637deb06d13b9fbb284dbe31938
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -570,6 +576,9 @@ spec:
           mountPath: /usr/local/apisix/scgi_temp
         - name: admin
           mountPath: /admin
+          readOnly: true
+        - name: oidc-trust
+          mountPath: /oidc-trust
           readOnly: true
         readinessProbe:
           tcpSocket:
@@ -632,6 +641,13 @@ spec:
         emptyDir:
           medium: Memory
           sizeLimit: 8Mi
+      - name: oidc-trust
+        secret:
+          secretName: vcloud-wsl-keycloak-tls
+          items:
+          - key: tls.crt
+            path: tls.crt
+          defaultMode: 288
       - name: admin
         secret:
           secretName: vcloud-wsl-apisix-admin

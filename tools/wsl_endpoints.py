@@ -156,7 +156,9 @@ def identity():
             c['startupProbe']={'httpGet':{'path':'/health/started','port':9000,'scheme':'HTTPS'},'failureThreshold':90,'periodSeconds':5}
             c['readinessProbe']={'httpGet':{'path':'/health/ready','port':9000,'scheme':'HTTPS'}}
             result.append(service(name,443,8443))
-        dep=deployment(name,c,volumes,init);dep['spec']['strategy']={'type':'Recreate'};result.append(dep)
+        dep=deployment(name,c,volumes,init);dep['spec']['strategy']={'type':'Recreate'}
+        dep['spec']['template']['metadata'].setdefault('annotations',{})['vcloud.io/runtime-config-hash']=hashlib.sha256((HERE/'runtime-config.py').read_bytes()).hexdigest()
+        result.append(dep)
         result.append(resource('Database','vcloud-wsl-'+name,{'cluster':{'name':DB},'name':name,'owner':name,
                               'ensure':'present','databaseReclaimPolicy':'retain'},NS,'postgresql.cnpg.io/v1'))
     return result
@@ -229,9 +231,16 @@ def application():
         from wsl_localstack import workloads,routes as aws_routes,ADMIN_SECRET
         c=spec['containers'][0]
         c['command']=['sh','-ec','apisix init; exec /usr/local/openresty/bin/openresty -p /usr/local/apisix -c conf/nginx.conf -g "daemon off;"']
-        spec['volumes'] += [{'name':'admin','secret':{'secretName':ADMIN_SECRET,'defaultMode':0o440}},
+        # OIDC outbound TLS trusts only the mounted public Keycloak certificate.
+        # Existing private APISIX admin TLS and credentials remain unchanged.
+        apisix['nginx_config']['http']['access_log_format']='$remote_addr [$time_local] $request_method $uri $status $body_bytes_sent'
+        apisix['apisix'].setdefault('ssl',{})['ssl_trusted_certificate']='/oidc-trust/tls.crt'
+        next(o for o in result if o['kind']=='ConfigMap' and o['metadata']['name']=='vcloud-apisix')['data']['config.yaml']=yaml.safe_dump(apisix)
+        spec['volumes'] += [{'name':'oidc-trust','secret':{'secretName':'vcloud-wsl-keycloak-tls','items':[{'key':'tls.crt','path':'tls.crt'}],'defaultMode':0o440}},
+                           {'name':'admin','secret':{'secretName':ADMIN_SECRET,'defaultMode':0o440}},
                            {'name':'setup','configMap':{'name':'vcloud-apisix-setup'}}]
         c['volumeMounts'].append({'name':'admin','mountPath':'/admin','readOnly':True})
+        c['volumeMounts'].append({'name':'oidc-trust','mountPath':'/oidc-trust','readOnly':True})
         mounts=[{'name':'config','mountPath':'/config','readOnly':True},
                 {'name':'conf','mountPath':'/conf'},{'name':'admin','mountPath':'/admin','readOnly':True},
                 {'name':'setup','mountPath':'/code','readOnly':True}]
@@ -241,6 +250,8 @@ def application():
         admin=service('apisix-admin',9180,labels={'app.kubernetes.io/name':'apisix'})
         result += [config('vcloud-apisix-setup',{'configure-apisix.py':(HERE.parent/'localstack/configure-apisix.py').read_text()}),
                    admin,*workloads(),*aws_routes()]
+        gateway=next(o for o in result if o['kind']=='Deployment' and o['metadata']['name']=='apisix')
+        gateway['spec']['template']['metadata'].setdefault('annotations',{})['vcloud.io/gateway-config-hash']=hashlib.sha256(yaml.safe_dump(apisix).encode()).hexdigest()
     return result+[demo]
 
 

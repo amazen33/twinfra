@@ -9,6 +9,12 @@ See the [Module 1 documentation checks](docs/module-1-validation.json) for valid
 
 ## Node diagnostic prerequisites
 
+The [vCloud control-plane portal](console/README.md) provides native health,
+storage, dual AWS emulator, DynamoDB, GitOps and identity views at
+<http://localhost:18080/console/> in the owned WSL lab. Its dedicated
+`vcloud/vcloud-admin` account and private first-login procedure are separate
+from master administration. See the [acceptance record](docs/acceptance/vcloud-console-2026-10-08.md).
+
 `kubectl`, **`jq`**, `curl` and `ip` (from `iproute2`) are mandatory for node-level
 cluster diagnostics, including the platform health-probe verification script.
 Both Ubuntu host and WSL provisioning install `jq`; `kubectl` is supplied by the

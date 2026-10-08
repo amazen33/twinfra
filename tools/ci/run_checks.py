@@ -18,6 +18,14 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'console': ['console/package.json', 'console/package-lock.json', 'console/server.py', 'console/Dockerfile',
+        'console/image.lock.json', 'console/src/App.tsx', 'console/src/App.test.tsx', 'console/src/styles.css',
+        'tools/vcloud_console.py', 'tools/configure_console_identity.py', 'tools/build_console_image.py',
+        'tools/test_console_live.py', 'console/browser-acceptance.mjs', 'console/README.md',
+        'deploy/console/deploy-wsl.py', 'deploy/console/copy-password.ps1',
+        'tests/test_vcloud_console.py', 'deploy/console/profile.json', 'deploy/console/deployment.yaml',
+        'deploy/console/service.yaml', 'deploy/console/bootstrap.yaml', 'deploy/console/apisix-routes.yaml',
+        'deploy/console/keycloak-client.json', 'deploy/console/argocd.yaml', 'deploy/console/gitops/workloads.yaml'],
     'keycloak-admin-bootstrap': ['tools/wsl_keycloak_admin.py', 'tests/test_wsl_keycloak_admin.py',
         'lab/wsl/endpoints/copy-keycloak-password.ps1', 'docs/keycloak-admin-access.md'],
     'lab/wsl/console': ['tools/wsl_console.py', 'tools/wsl_console_preflight.py', 'tests/test_wsl_console.py',
@@ -286,6 +294,13 @@ def main():
             run('wsl-console-pss',[binaries['conftest'],'test','--namespace','vcloud_wsl','--policy','tests/ci/policy/wsl-endpoints.rego',
                 'lab/wsl/console/workloads.yaml','lab/wsl/console/gitops/workloads.yaml'])
             run('wsl-console-shellcheck',[binaries['shellcheck'],'lab/wsl/console/deploy-backends.sh','lab/wsl/console/apply.sh','lab/wsl/console/verify.sh'])
+        if report['modules']['console'] == 'present':
+            run('portal-render',[python,'tools/vcloud_console.py','--check'])
+            run('portal-tests',[python,'-m','unittest','discover','-s','tests','-p','test_vcloud_console.py','-v'],unit=True)
+            run('portal-schema',[python,'tools/vcloud_console.py','--validate','--build',report_dir/'portal-schema',
+                '--kubeconform',binaries['kubeconform'],'--schemas',assets/'schemas'])
+            run('portal-pss',[binaries['conftest'],'test','--namespace','vcloud_wsl','--policy','tests/ci/policy/wsl-endpoints.rego',
+                'deploy/console/deployment.yaml','deploy/console/gitops/workloads.yaml'])
         report['status'] = 'passed'
         return 0
     except (ValueError, RuntimeError, OSError) as error:

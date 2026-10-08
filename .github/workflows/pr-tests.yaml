@@ -69,6 +69,12 @@ jobs:
           npm ci --prefix .ci-control/tools/ci/mermaid --ignore-scripts --no-audit --no-fund
       - name: Verify CI controls
         run: python -m unittest discover -s .ci-control/tools/ci/tests -v
+      - name: Build and test unified console frontend
+        if: ${{ hashFiles('source/console/package-lock.json') != '' }}
+        run: |
+          npm ci --prefix source/console --ignore-scripts --no-audit --no-fund
+          npm test --prefix source/console
+          npm run build --prefix source/console
       - name: Validate candidate WSL routing boundary
         run: python .ci-control/tools/check_host_routing.py --root .ci-control
       - name: Install trusted pinned HPC test dependencies

@@ -1,0 +1,34 @@
+# Activate only after publishing the tested image/source and verifying OIDC.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: vcloud-console
+  namespace: platform-services
+spec:
+  sourceRepos: [https://github.com/amazen33/vCloud.git]
+  destinations:
+    - namespace: platform-services
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - {group: '', kind: Service}
+    - {group: apps, kind: Deployment}
+    - {group: apisix.apache.org, kind: ApisixRoute}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vcloud-console
+  namespace: platform-services
+spec:
+  project: vcloud-console
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: platform-services
+  source:
+    repoURL: https://github.com/amazen33/vCloud.git
+    targetRevision: main
+    path: deploy/console/gitops
+  syncPolicy:
+    automated: {enabled: true, selfHeal: true, prune: false}
+    syncOptions: [CreateNamespace=false, ServerSideApply=true]
