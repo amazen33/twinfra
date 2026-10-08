@@ -4,6 +4,14 @@ Scope: owned mirrored WSL2 `vcloud-wsl-local`, 20 GiB RAM/six vCPUs, existing
 APISIX ingress and Keycloak 26.8.0, restricted:v1.30 namespace admission.
 This is local implementation/acceptance, not a production release.
 
+Correction from the later full-browser investigation: this receipt's initial
+protocol test exercised TOTP and PKCE, but its browser view test injected an
+existing authenticated cookie. It did not prove temporary password change or
+a browser-started MFA round trip. The realm's `UPDATE_PASSWORD` provider was
+subsequently found unregistered. See the
+[login recovery receipt](portal-login-recovery-2026-10-08.md) for the correction
+and complete first/returning browser login evidence.
+
 ## Implemented behavior
 
 React/TypeScript + Tailwind shell and read-only Python BFF run as

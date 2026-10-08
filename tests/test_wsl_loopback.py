@@ -32,6 +32,24 @@ class LoopbackTests(unittest.TestCase):
         self.assertTrue(all('delete' in c and '127.0.0.1/32' in c for c in commands))
         self.assertNotIn('flush', batch)
 
+    def test_wsl_boot_ingress_rules_preserved_during_repair_and_remove(self):
+        managed=[{'priority':0,'src':'all','iif':device,'ipproto':proto,'table':'local'}
+                 for device in ('eth0','eth1','eth2','loopback0') for proto in ('tcp','udp')]
+        before=copy.deepcopy(managed)
+        batch,commands=routing.plan(None,managed)
+        self.assertEqual(len(commands),2)
+        self.assertTrue(all('127.0.0.1/32' in c for c in commands))
+        self.assertEqual(managed,before)
+        self.assertEqual(routing.plan(self.fixture(),managed+routing.RULES),('',[]))
+        _,remove=routing.plan(self.fixture(),managed+routing.RULES,remove=True)
+        self.assertEqual(len(remove),2)
+        self.assertTrue(all('127.0.0.1/32' in c for c in remove))
+
+    def test_near_matching_foreign_ingress_rules_still_rejected(self):
+        rule={'priority':0,'src':'all','iif':'eth2','ipproto':'tcp','table':'local'}
+        for mutation in ({'table':'main'},{'src':'10.0.0.0/8'},{'iif':'unowned0'},{'dst':'127.0.0.0/8'},{'ipproto':'icmp'}):
+            with self.assertRaises(ValueError):routing.plan(None,[{**rule,**mutation}])
+
     def test_broader_or_foreign_priority_zero_rules_fail(self):
         for mutation in ({'dst': '127.0.0.0/8'}, {'fwmark': '0x1'}, {'iif': 'eth2'}):
             rules = copy.deepcopy(routing.RULES)

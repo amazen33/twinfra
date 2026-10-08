@@ -44,7 +44,9 @@ def realm():
                {'claim.name':'groups','full.path':'true','id.token.claim':'true','access.token.claim':'false','userinfo.token.claim':'false'})]}],
         'scopeMappings':[{'clientScope':'function.read','roles':['vcloud-function-reader']}],
         'requiredActions':[{'alias':'CONFIGURE_TOTP','name':'Configure OTP','providerId':'CONFIGURE_TOTP',
-                            'enabled':True,'defaultAction':True,'priority':40,'config':{}}]}
+                            'enabled':True,'defaultAction':True,'priority':40,'config':{}},
+                           {'alias':'UPDATE_PASSWORD','name':'Update Password','providerId':'UPDATE_PASSWORD',
+                            'enabled':True,'defaultAction':False,'priority':30,'config':{}}]}
 
 def plugin():
     return {'apiVersion':'apisix.apache.org/v2','kind':'ApisixPluginConfig',

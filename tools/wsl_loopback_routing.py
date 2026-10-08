@@ -8,6 +8,7 @@ Root/CAP_NET_ADMIN is explicitly required. Nothing is installed or scheduled.
 import argparse
 import copy
 import json
+import re
 import socket
 import subprocess
 import sys
@@ -80,6 +81,13 @@ def plan(state, rules, remove=False):
         item = dict(item)
         if item.get('protocol') == 'unspec':
             item.pop('protocol')
+        # Mirrored WSL recreates these protocol-specific ingress rules on boot.
+        # Preserve them verbatim; only the two exact vCloud selectors are owned.
+        if (set(item) == {'priority','src','iif','ipproto','table'} and
+                item['src'] == 'all' and item['table'] == 'local' and
+                item['ipproto'] in ('tcp','udp') and
+                re.fullmatch(r'eth[0-9]+|loopback0',item['iif'])):
+            continue
         if item not in RULES or item in selected:
             raise ValueError('Foreign or duplicate priority-zero rule; refusing mutation')
         selected.append(item)

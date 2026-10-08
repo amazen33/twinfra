@@ -57,6 +57,26 @@ def client_spec():
                         'id.token.claim': 'true', 'access.token.claim': 'true'}}]}
 
 
+def ensure_password_action(request):
+    """Register the imported realm's missing built-in; preserve user credentials."""
+    action = {'alias': 'UPDATE_PASSWORD', 'name': 'Update Password', 'providerId': 'UPDATE_PASSWORD',
+              'enabled': True, 'defaultAction': False, 'priority': 30, 'config': {}}
+    matches = [a for a in request('/authentication/required-actions') if a['alias'] == action['alias']]
+    if len(matches) > 1: raise ValueError('Ambiguous password required action')
+    if matches and matches[0].get('providerId') != action['providerId']:
+        raise ValueError('Refusing a custom provider using the built-in password alias')
+    if not matches:
+        request('/authentication/register-required-action', method='POST',
+                value={'providerId': action['providerId'], 'name': action['name']})
+        request('/authentication/required-actions/UPDATE_PASSWORD', method='PUT', value=action)
+    elif not matches[0].get('enabled'):
+        action = {**matches[0], 'enabled': True}
+        request('/authentication/required-actions/UPDATE_PASSWORD', method='PUT', value=action)
+    matches = [a for a in request('/authentication/required-actions') if a['alias'] == action['alias']]
+    if len(matches) != 1 or not matches[0].get('enabled') or matches[0].get('providerId') != action['providerId']:
+        raise ValueError('Enabled built-in password change required')
+
+
 def guard():
     if os.geteuid() != 0 or 'microsoft' not in os.uname().release or not Path('/var/lib/vcloud-wsl/owner.json').is_file():
         raise ValueError('Owned root WSL lab required')
@@ -72,6 +92,7 @@ def configure(create_admin=False):
     base = '/admin/realms/vcloud'
     request = lambda path, **kwargs: api.request(base + path, token, **kwargs)
     request('')  # Realm must already exist; do not import/reset identity state.
+    ensure_password_action(request)
     matches = request('/clients?clientId=' + p['client'])
     expected = client_spec()
     if not matches:

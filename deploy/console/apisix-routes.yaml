@@ -29,6 +29,30 @@ spec:
         functions:
         - return function(conf, ctx) for _,name in ipairs({'X-ID-Token','X-Access-Token','X-Userinfo','X-Refresh-Token','X-Raw-ID-Token'})
           do ngx.req.clear_header(name) end end
+        - "-- APISIX 3.19: plugin.filter resolves Secret references before rewrite.\n\
+          -- Inspect only session presence; OIDC still validates state, PKCE and tokens.\n\
+          return function(conf, ctx)\n    if ngx.var.uri ~= \"/console/callback\"\
+          \ then\n        return\n    end\n    if ngx.req.get_method() ~= \"GET\"\
+          \ then\n        return 405\n    end\n    local options\n    for i = 1, #(ctx.plugins\
+          \ or {}), 2 do\n        if ctx.plugins[i].name == \"openid-connect\" then\n\
+          \            options = ctx.plugins[i + 1].session\n            break\n \
+          \       end\n    end\n    if not options or not options.secret then\n  \
+          \      return 503\n    end\n    -- open() reads/verifies the cookie without\
+          \ refreshing or saving it.\n    local session = require(\"resty.session\"\
+          ).open(options)\n    local present = session and next(session:get_data())\
+          \ ~= nil\n    if session then\n        session:close()\n    end\n    if\
+          \ present then\n        return\n    end\n    -- No reflection of callback\
+          \ parameters and no automatic retry loop.\n    ngx.header[\"Content-Type\"\
+          ] = \"text/html; charset=utf-8\"\n    ngx.header[\"Cache-Control\"] = \"\
+          no-store\"\n    ngx.header[\"Referrer-Policy\"] = \"no-referrer\"\n    ngx.header[\"\
+          X-Frame-Options\"] = \"SAMEORIGIN\"\n    ngx.header[\"X-Content-Type-Options\"\
+          ] = \"nosniff\"\n    ngx.header[\"Content-Security-Policy\"] = \"default-src\
+          \ 'none'; frame-ancestors 'self'; base-uri 'none'\"\n    return 401, '<!doctype\
+          \ html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\"\
+          \ content=\"width=device-width,initial-scale=1\"><title>Sign in again |\
+          \ vCloud</title><h1>Start sign-in again</h1><p>Your sign-in session is missing\
+          \ or expired. The returned authorization code was not accepted.</p><p><a\
+          \ href=\"/console/\">Start a fresh vCloud sign-in</a></p></html>'\nend\n"
     - name: openid-connect
       enable: true
       secretRef: vcloud-console-oidc
@@ -113,7 +137,7 @@ spec:
             X-Frame-Options: SAMEORIGIN
             X-Content-Type-Options: nosniff
             Cache-Control: no-store
-            Referrer-Policy: same-origin
+            Referrer-Policy: no-referrer
     - name: prometheus
       enable: true
 ---
@@ -147,6 +171,30 @@ spec:
         functions:
         - return function(conf, ctx) for _,name in ipairs({'X-ID-Token','X-Access-Token','X-Userinfo','X-Refresh-Token','X-Raw-ID-Token'})
           do ngx.req.clear_header(name) end end
+        - "-- APISIX 3.19: plugin.filter resolves Secret references before rewrite.\n\
+          -- Inspect only session presence; OIDC still validates state, PKCE and tokens.\n\
+          return function(conf, ctx)\n    if ngx.var.uri ~= \"/console/callback\"\
+          \ then\n        return\n    end\n    if ngx.req.get_method() ~= \"GET\"\
+          \ then\n        return 405\n    end\n    local options\n    for i = 1, #(ctx.plugins\
+          \ or {}), 2 do\n        if ctx.plugins[i].name == \"openid-connect\" then\n\
+          \            options = ctx.plugins[i + 1].session\n            break\n \
+          \       end\n    end\n    if not options or not options.secret then\n  \
+          \      return 503\n    end\n    -- open() reads/verifies the cookie without\
+          \ refreshing or saving it.\n    local session = require(\"resty.session\"\
+          ).open(options)\n    local present = session and next(session:get_data())\
+          \ ~= nil\n    if session then\n        session:close()\n    end\n    if\
+          \ present then\n        return\n    end\n    -- No reflection of callback\
+          \ parameters and no automatic retry loop.\n    ngx.header[\"Content-Type\"\
+          ] = \"text/html; charset=utf-8\"\n    ngx.header[\"Cache-Control\"] = \"\
+          no-store\"\n    ngx.header[\"Referrer-Policy\"] = \"no-referrer\"\n    ngx.header[\"\
+          X-Frame-Options\"] = \"SAMEORIGIN\"\n    ngx.header[\"X-Content-Type-Options\"\
+          ] = \"nosniff\"\n    ngx.header[\"Content-Security-Policy\"] = \"default-src\
+          \ 'none'; frame-ancestors 'self'; base-uri 'none'\"\n    return 401, '<!doctype\
+          \ html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\"\
+          \ content=\"width=device-width,initial-scale=1\"><title>Sign in again |\
+          \ vCloud</title><h1>Start sign-in again</h1><p>Your sign-in session is missing\
+          \ or expired. The returned authorization code was not accepted.</p><p><a\
+          \ href=\"/console/\">Start a fresh vCloud sign-in</a></p></html>'\nend\n"
     - name: openid-connect
       enable: true
       secretRef: vcloud-console-oidc
@@ -231,7 +279,7 @@ spec:
             X-Frame-Options: SAMEORIGIN
             X-Content-Type-Options: nosniff
             Cache-Control: no-store
-            Referrer-Policy: same-origin
+            Referrer-Policy: no-referrer
     - name: prometheus
       enable: true
 ---
@@ -266,6 +314,30 @@ spec:
         functions:
         - return function(conf, ctx) for _,name in ipairs({'X-ID-Token','X-Access-Token','X-Userinfo','X-Refresh-Token','X-Raw-ID-Token'})
           do ngx.req.clear_header(name) end end
+        - "-- APISIX 3.19: plugin.filter resolves Secret references before rewrite.\n\
+          -- Inspect only session presence; OIDC still validates state, PKCE and tokens.\n\
+          return function(conf, ctx)\n    if ngx.var.uri ~= \"/console/callback\"\
+          \ then\n        return\n    end\n    if ngx.req.get_method() ~= \"GET\"\
+          \ then\n        return 405\n    end\n    local options\n    for i = 1, #(ctx.plugins\
+          \ or {}), 2 do\n        if ctx.plugins[i].name == \"openid-connect\" then\n\
+          \            options = ctx.plugins[i + 1].session\n            break\n \
+          \       end\n    end\n    if not options or not options.secret then\n  \
+          \      return 503\n    end\n    -- open() reads/verifies the cookie without\
+          \ refreshing or saving it.\n    local session = require(\"resty.session\"\
+          ).open(options)\n    local present = session and next(session:get_data())\
+          \ ~= nil\n    if session then\n        session:close()\n    end\n    if\
+          \ present then\n        return\n    end\n    -- No reflection of callback\
+          \ parameters and no automatic retry loop.\n    ngx.header[\"Content-Type\"\
+          ] = \"text/html; charset=utf-8\"\n    ngx.header[\"Cache-Control\"] = \"\
+          no-store\"\n    ngx.header[\"Referrer-Policy\"] = \"no-referrer\"\n    ngx.header[\"\
+          X-Frame-Options\"] = \"SAMEORIGIN\"\n    ngx.header[\"X-Content-Type-Options\"\
+          ] = \"nosniff\"\n    ngx.header[\"Content-Security-Policy\"] = \"default-src\
+          \ 'none'; frame-ancestors 'self'; base-uri 'none'\"\n    return 401, '<!doctype\
+          \ html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\"\
+          \ content=\"width=device-width,initial-scale=1\"><title>Sign in again |\
+          \ vCloud</title><h1>Start sign-in again</h1><p>Your sign-in session is missing\
+          \ or expired. The returned authorization code was not accepted.</p><p><a\
+          \ href=\"/console/\">Start a fresh vCloud sign-in</a></p></html>'\nend\n"
     - name: openid-connect
       enable: true
       secretRef: vcloud-console-oidc
@@ -354,7 +426,7 @@ spec:
             X-Frame-Options: SAMEORIGIN
             X-Content-Type-Options: nosniff
             Cache-Control: no-store
-            Referrer-Policy: same-origin
+            Referrer-Policy: no-referrer
     - name: prometheus
       enable: true
 ---
@@ -389,6 +461,30 @@ spec:
         functions:
         - return function(conf, ctx) for _,name in ipairs({'X-ID-Token','X-Access-Token','X-Userinfo','X-Refresh-Token','X-Raw-ID-Token'})
           do ngx.req.clear_header(name) end end
+        - "-- APISIX 3.19: plugin.filter resolves Secret references before rewrite.\n\
+          -- Inspect only session presence; OIDC still validates state, PKCE and tokens.\n\
+          return function(conf, ctx)\n    if ngx.var.uri ~= \"/console/callback\"\
+          \ then\n        return\n    end\n    if ngx.req.get_method() ~= \"GET\"\
+          \ then\n        return 405\n    end\n    local options\n    for i = 1, #(ctx.plugins\
+          \ or {}), 2 do\n        if ctx.plugins[i].name == \"openid-connect\" then\n\
+          \            options = ctx.plugins[i + 1].session\n            break\n \
+          \       end\n    end\n    if not options or not options.secret then\n  \
+          \      return 503\n    end\n    -- open() reads/verifies the cookie without\
+          \ refreshing or saving it.\n    local session = require(\"resty.session\"\
+          ).open(options)\n    local present = session and next(session:get_data())\
+          \ ~= nil\n    if session then\n        session:close()\n    end\n    if\
+          \ present then\n        return\n    end\n    -- No reflection of callback\
+          \ parameters and no automatic retry loop.\n    ngx.header[\"Content-Type\"\
+          ] = \"text/html; charset=utf-8\"\n    ngx.header[\"Cache-Control\"] = \"\
+          no-store\"\n    ngx.header[\"Referrer-Policy\"] = \"no-referrer\"\n    ngx.header[\"\
+          X-Frame-Options\"] = \"SAMEORIGIN\"\n    ngx.header[\"X-Content-Type-Options\"\
+          ] = \"nosniff\"\n    ngx.header[\"Content-Security-Policy\"] = \"default-src\
+          \ 'none'; frame-ancestors 'self'; base-uri 'none'\"\n    return 401, '<!doctype\
+          \ html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\"\
+          \ content=\"width=device-width,initial-scale=1\"><title>Sign in again |\
+          \ vCloud</title><h1>Start sign-in again</h1><p>Your sign-in session is missing\
+          \ or expired. The returned authorization code was not accepted.</p><p><a\
+          \ href=\"/console/\">Start a fresh vCloud sign-in</a></p></html>'\nend\n"
     - name: openid-connect
       enable: true
       secretRef: vcloud-console-oidc
@@ -477,6 +573,6 @@ spec:
             X-Frame-Options: SAMEORIGIN
             X-Content-Type-Options: nosniff
             Cache-Control: no-store
-            Referrer-Policy: same-origin
+            Referrer-Policy: no-referrer
     - name: prometheus
       enable: true
