@@ -1,0 +1,12 @@
+# WO-01: default reviewer and explicit ownership of platform control boundaries.
+# Required code-owner reviews take effect only after the owner activates rules.
+* @amazen33
+
+/vcloud-ssot.yaml @amazen33
+/security/ @amazen33
+/.github/ @amazen33
+/tools/ci/ @amazen33
+/deploy/ @amazen33
+/lab/ @amazen33
+/docs/adr*/ @amazen33
+/docs/architecture/adr/ @amazen33

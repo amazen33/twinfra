@@ -4,6 +4,7 @@ The [vCloud tests workflow](../.github/workflows/pr-tests.yaml) runs on pull
 requests targeting `main`, pushes to `main`, and manual dispatch. Its stable
 aggregate check is **vCloud PR gate**. Require that check in a GitHub branch
 ruleset after the workflow has run; this change does not modify repository rules.
+Apply and verify it using the [WO-01 branch-protection runbook](governance/branch-protection.md).
 
 Every normal run tests the candidate revision and six immutable merged revisions:
 
