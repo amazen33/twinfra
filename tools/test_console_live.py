@@ -23,7 +23,7 @@ import urllib.request
 import uuid
 
 from configure_console_identity import guard, profile
-from wsl_keycloak_admin import API, ADMIN, ADMIN_SECRET, credential, obj
+from wsl_keycloak_admin import API, ADMIN, ADMIN_SECRET, credential, obj, k
 
 ROOT=Path(__file__).resolve().parents[1]
 ORIGIN='http://localhost:18080'
@@ -98,6 +98,14 @@ def main():
     cid=call('/clients?clientId=vcloud-console')[0]['id']
     name='console-acceptance-'+uuid.uuid4().hex[:12]; password=secrets.token_urlsafe(48); uid=None
     try:
+        # Never replay an operator callback. Synthetic codes are discarded when
+        # no valid browser session exists; they must not reach a token exchange.
+        for headers in ({}, {'Cookie':'vcloud_portal=invalid'}):
+            missing=Session(api.context)
+            code,_,body,response_headers=missing.request('/console/callback?code=synthetic-unused-code&state=synthetic-unused-state',headers=headers)
+            if code!=401 or 'Start sign-in again' not in body or 'synthetic-unused-code' in body or response_headers.get('Cache-Control')!='no-store' or response_headers.get('Referrer-Policy')!='no-referrer':
+                raise ValueError('Missing/malformed callback session did not fail closed with recovery')
+        print('PASS: missing and malformed callback sessions -> HTTP 401; fixed fresh-login link; no reflected codes',flush=True)
         call('/users',method='POST',value={'username':name,'enabled':True,'requiredActions':['CONFIGURE_TOTP'],
             'credentials':[{'type':'password','value':password,'temporary':False}]})
         uid=call('/users?username='+name+'&exact=true')[0]['id']
@@ -130,6 +138,33 @@ def main():
             if '/console/proxy/'+path+'/console.css' not in body: raise ValueError('Legacy asset path escaped prefix')
             print('PASS: same-origin '+path+' view and framing headers',flush=True)
         if args.browser:
+            browser_name='console-browser-'+uuid.uuid4().hex[:12]; browser_id=None
+            browser_password=secrets.token_urlsafe(48)
+            try:
+                actions=call('/authentication/required-actions')
+                if not any(a['alias']=='UPDATE_PASSWORD' and a.get('enabled') for a in actions):
+                    raise ValueError('Enabled temporary password change provider required')
+                call('/users',method='POST',value={'username':browser_name,'enabled':True,
+                    'requiredActions':['UPDATE_PASSWORD','CONFIGURE_TOTP'],
+                    'credentials':[{'type':'password','value':browser_password,'temporary':True}]})
+                browser_id=call('/users?username='+browser_name+'&exact=true')[0]['id']
+                call('/users/'+browser_id+'/role-mappings/clients/'+cid,method='POST',value=[role])
+                certificate=base64.b64decode(k(['get','secret','vcloud-wsl-keycloak-tls','-o','jsonpath={.data.tls\\.crt}'])).decode()
+                value={'origin':ORIGIN,'browser':args.browser,'username':browser_name,'password':browser_password,
+                    'newPassword':secrets.token_urlsafe(48),'certificate':certificate}
+                proc=subprocess.run(['/mnt/c/Program Files/nodejs/node.exe','E:/vCloud/console/browser-login.mjs'],
+                    input=json.dumps(value).encode(),capture_output=True,timeout=150)
+                # Browser exceptions may contain private OAuth URLs. Only a
+                # fixed stage classifier or known PASS labels may escape RAM.
+                if proc.returncode:
+                    safe=next((line for line in proc.stdout.decode(errors='replace').splitlines()
+                        if line.startswith('FAIL: browser login stage ') and all(c.isalnum() or c in ' :;_' for c in line)),None)
+                    raise ValueError(safe or 'Full browser login failed; private output withheld')
+                if call('/users/'+browser_id).get('requiredActions'):
+                    raise ValueError('Browser left required actions incomplete')
+                print('PASS: actual browser first login, password change, TOTP enrollment and returning MFA login; required actions complete',flush=True)
+            finally:
+                if browser_id: call('/users/'+browser_id,method='DELETE')
             cookies=[{'name':c.name,'value':c.value,'domain':'localhost','path':c.path,'httpOnly':True,'sameSite':'Lax'} for c in session.cookies if c.name.startswith('vcloud_portal')]
             value={'origin':ORIGIN,'cookies':cookies,'browser':args.browser,'output':'E:/vCloud/.build/console/screenshots'}
             proc=subprocess.run(['/mnt/c/Program Files/nodejs/node.exe','E:/vCloud/console/browser-acceptance.mjs'],

@@ -27,6 +27,8 @@ class IAMContracts(unittest.TestCase):
     def test_public_api_scope_rejected(self):self.reject_realm(lambda r:r.update(scopeMappings=[]))
     def test_default_user_provisioning_rejected(self):self.reject_realm(lambda r:r['users'].append({'username':'example'}))
     def test_mfa_enrollment_removal_rejected(self):self.reject_realm(lambda r:r['requiredActions'][0].update(defaultAction=False))
+    def test_password_change_provider_removal_rejected(self):self.reject_realm(lambda r:r['requiredActions'].pop())
+    def test_password_change_provider_disable_rejected(self):self.reject_realm(lambda r:r['requiredActions'][1].update(enabled=False))
     def test_jwt_none_algorithm_rejected(self):self.reject_plugin(lambda c:c.update(accept_none_alg=True))
     def test_gateway_tls_skip_rejected(self):self.reject_plugin(lambda c:c.update(ssl_verify=False))
     def test_gateway_wrong_issuer_rejected(self):self.reject_plugin(lambda c:c.update(discovery='https://other.example.com/discovery'))

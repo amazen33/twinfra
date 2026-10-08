@@ -142,6 +142,57 @@ class PortalTests(unittest.TestCase):
         role=next(m for m in c['protocolMappers'] if m['name']=='console-roles')
         self.assertEqual(role['config']['claim.name'],'resource_access.vcloud-console.roles')
 
+    def test_password_change_provider_registered_and_idempotent_without_user_reset(self):
+        actions=[]; calls=[]
+        def request(path, **kwargs):
+            calls.append((path,kwargs))
+            if not kwargs: return copy.deepcopy(actions)
+            if kwargs['method']=='POST':
+                self.assertEqual(path,'/authentication/register-required-action')
+                self.assertEqual(kwargs['value'],{'providerId':'UPDATE_PASSWORD','name':'Update Password'})
+                actions.append({'alias':'UPDATE_PASSWORD','providerId':'UPDATE_PASSWORD','enabled':False})
+            else:
+                self.assertEqual(path,'/authentication/required-actions/UPDATE_PASSWORD')
+                self.assertEqual(kwargs['method'],'PUT')
+                actions[0]=copy.deepcopy(kwargs['value'])
+        provisioning.ensure_password_action(request)
+        provisioning.ensure_password_action(request)
+        self.assertEqual(sum(bool(kwargs) for _,kwargs in calls),2)
+        self.assertTrue(actions[0]['enabled']); self.assertFalse(actions[0]['defaultAction'])
+        self.assertTrue(all('/users' not in path for path,_ in calls))
+
+    def test_disabled_password_change_provider_enabled_without_default_action_drift(self):
+        actions=[{'alias':'UPDATE_PASSWORD','providerId':'UPDATE_PASSWORD','enabled':False,'defaultAction':False,'priority':31}]
+        def request(path, **kwargs):
+            if not kwargs: return copy.deepcopy(actions)
+            self.assertEqual(path,'/authentication/required-actions/UPDATE_PASSWORD')
+            self.assertEqual(kwargs['method'],'PUT')
+            actions[0]=copy.deepcopy(kwargs['value'])
+        provisioning.ensure_password_action(request)
+        self.assertTrue(actions[0]['enabled']); self.assertEqual(actions[0]['priority'],31)
+        self.assertFalse(actions[0]['defaultAction'])
+
+    def test_custom_password_action_alias_refused_without_mutation(self):
+        def request(path,**kwargs):
+            self.assertFalse(kwargs)
+            return [{'alias':'UPDATE_PASSWORD','providerId':'unowned-custom','enabled':False}]
+        with self.assertRaises(ValueError):provisioning.ensure_password_action(request)
+
+    def test_callback_guard_precedes_oidc_and_never_weakens_token_validation(self):
+        for route in renderer.routes():
+            plugins=route['spec']['http'][0]['plugins']
+            pre=next(p['config'] for p in plugins if p['name']=='serverless-pre-function')
+            self.assertEqual(pre['_meta']['priority'],10000)
+            self.assertIn('resty.session',pre['functions'][1])
+            self.assertIn('/console/callback',pre['functions'][1])
+            self.assertNotIn('get_uri_args',pre['functions'][1])
+            self.assertNotIn('ngx.redirect',pre['functions'][1])
+            oidc=next(p['config'] for p in plugins if p['name']=='openid-connect')
+            self.assertTrue(oidc['use_pkce']); self.assertFalse(oidc['accept_none_alg'])
+            self.assertEqual(oidc['session']['idling_timeout'],900)
+            headers=next(p['config']['headers']['set'] for p in plugins if p['name']=='response-rewrite')
+            self.assertEqual(headers['Referrer-Policy'],'no-referrer')
+
     def test_gateway_ca_volume_contains_only_public_certificate(self):
         import yaml
         dep=next(o for o in application() if o['kind']=='Deployment' and o['metadata']['name']=='apisix')

@@ -234,6 +234,12 @@ See
 
 ### After a WSL restart: verify the routing interface
 
+Keep an Ubuntu shell open during manual lab acceptance. Microsoft notes that
+[systemd services do not keep a WSL instance alive](https://learn.microsoft.com/en-us/windows/wsl/systemd).
+After a distro stop, verify the current interface and recreate the owned
+transient access units. Do not treat active systemd configuration as an
+unattended availability guarantee.
+
 Mirrored WSL interface names can change across starts. On 2026-10-07 the Node
 address `192.168.1.9` moved from `eth1` to `eth2`, while Cilium still selected
 `eth1`. Cilium reported `direct routing device eth1 has no usable addresses`;
@@ -334,7 +340,13 @@ locally. A separate exact `loopback0` ingress selector delivers Windows
 requests to the local listener; replies retain WSL routing. The mark is bit
 `0x2`, outside Cilium's proxy identity mask. No firewall ACCEPT, physical route
 or Kubernetes policy is added. Foreign priority-zero rules or altered owned
-table contents cause a refusal instead of an overwrite.
+table contents cause a refusal instead of an overwrite. Mirrored WSL also
+recreates protocol-specific priority-zero ingress rules on boot: exact
+`src all`, `iif ethN/loopback0`, `ipproto tcp/udp`, `lookup local` entries.
+The helper preserves these WSL-managed rules verbatim. Its repair and rollback
+touch only the two vCloud selectors targeting `127.0.0.1/32` and the exact
+owned nftables table. Similar rules with a different source, table, interface,
+protocol or additional selector remain a refusal.
 
 ```bash
 # Run on the owned WSL lab after the Cilium agent has started.

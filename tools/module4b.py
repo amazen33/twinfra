@@ -60,6 +60,9 @@ def realm_contract(r):
     if r['scopeMappings']!=[{'clientScope':'function.read','roles':['vcloud-function-reader']}]:raise ValueError('API scope role gate drift')
     otp=r['requiredActions'][0]
     if otp['alias']!='CONFIGURE_TOTP' or not otp['enabled'] or not otp['defaultAction']:raise ValueError('New-user OTP enrollment required')
+    password=[a for a in r['requiredActions'] if a['alias']=='UPDATE_PASSWORD']
+    if len(password)!=1 or not password[0]['enabled'] or password[0]['providerId']!='UPDATE_PASSWORD' or password[0]['defaultAction']:
+        raise ValueError('Enabled built-in temporary password change required')
 
 def plugin_contract(item):
     if item['kind']!='ApisixPluginConfig' or item['apiVersion']!='apisix.apache.org/v2' or item['metadata']['namespace']!='platform-services':

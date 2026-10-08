@@ -103,7 +103,10 @@ data:
     : [\n    {\n      \"alias\": \"CONFIGURE_TOTP\",\n      \"name\": \"Configure\
     \ OTP\",\n      \"providerId\": \"CONFIGURE_TOTP\",\n      \"enabled\": true,\n\
     \      \"defaultAction\": true,\n      \"priority\": 40,\n      \"config\": {}\n\
-    \    }\n  ]\n}\n"
+    \    },\n    {\n      \"alias\": \"UPDATE_PASSWORD\",\n      \"name\": \"Update\
+    \ Password\",\n      \"providerId\": \"UPDATE_PASSWORD\",\n      \"enabled\":\
+    \ true,\n      \"defaultAction\": false,\n      \"priority\": 30,\n      \"config\"\
+    : {}\n    }\n  ]\n}\n"
 ---
 apiVersion: v1
 kind: Service
@@ -309,7 +312,7 @@ spec:
       labels: *id001
       annotations:
         vcloud.io/runtime-config-hash: 358f97b7db125e5f57c16c54603c150a03de10eebd8f96bf9291f8d4fc579d16
-        vcloud.io/config-hash: 2dd06dc686d61e5f31c6bd9153661aa78af0d480a088d02e2fc16995cff42701
+        vcloud.io/config-hash: 8c0fe507feb170e7d083d7ada808edf3ace4a9762dfb6e8cfaf5d342dcf2527f
     spec:
       automountServiceAccountToken: false
       securityContext:

@@ -54,8 +54,11 @@ def plugins(api=False, proxy_prefix=None):
         'required': ['resource_access'], 'properties': {'resource_access': {'type': 'object', 'required': [p['client']],
         'properties': {p['client']: {'type': 'object', 'required': ['roles'], 'properties': {'roles': {'type': 'array',
         'contains': {'enum': p['roles']}}}}}}}}}}
+    # A missing/expired browser session must not produce an opaque OAuth 500.
+    # Keep this before OIDC; session-bearing callbacks retain OIDC CSRF checks.
+    guard = (HERE / 'callback-guard.lua').read_text()
     result = [
-        {'name': 'serverless-pre-function', 'enable': True, 'config': {'phase': 'rewrite', '_meta': {'priority': 10000}, 'functions': [scrub]}},
+        {'name': 'serverless-pre-function', 'enable': True, 'config': {'phase': 'rewrite', '_meta': {'priority': 10000}, 'functions': [scrub, guard]}},
         {'name': 'openid-connect', 'enable': True, 'secretRef': p['secret'], 'config': {
             'client_id': p['client'], 'discovery': p['discovery'], 'bearer_only': False, 'unauth_action': 'deny' if api else 'auth',
             'ssl_verify': True, 'use_pkce': True, 'scope': 'openid', 'timeout': 5,
@@ -69,7 +72,7 @@ def plugins(api=False, proxy_prefix=None):
         {'name': 'proxy-rewrite', 'enable': True, 'config': {'headers': {'set': {'X-Forwarded-Host': 'localhost:18080', 'X-Forwarded-Proto': 'http'},
             'remove': ['Authorization', 'Cookie', 'X-Access-Token', 'X-Userinfo', 'X-Refresh-Token', 'X-Raw-ID-Token']}}},
         {'name': 'response-rewrite', 'enable': True, 'config': {'headers': {'set': {'X-Frame-Options': 'SAMEORIGIN',
-            'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store', 'Referrer-Policy': 'same-origin'}}}},
+            'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer'}}}},
         {'name': 'prometheus', 'enable': True}]
     if proxy_prefix:
         result[2]['config']['regex_uri'] = ['^/console/proxy/' + proxy_prefix + '(?:/(.*))?$', '/$1']

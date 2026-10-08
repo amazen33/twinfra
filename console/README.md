@@ -145,6 +145,44 @@ seeds, codes and cookies remain in process memory. Optional
 `--browser 'C:/Program Files/Google/Chrome/Application/chrome.exe'` checks six
 views/mobile navigation with Playwright; cookies use stdin and no HAR, trace
 or storage-state files are saved. Only public screenshots are retained.
+The browser option also starts a separate disposable user at the portal,
+changes its temporary password, enrolls TOTP and tests a returning MFA login.
+It fails if either required action is skipped. The disposable browser trusts
+only the public-key fingerprint of the lab certificate already verified by the
+Python HTTPS client; it does not disable TLS checks globally or install OS trust.
+
+## Login and callback recovery
+
+Start at <http://localhost:18080/console/> in one browser. Use the **vcloud**
+realm account, complete the required password change, and enter a fresh code
+from its enrolled authenticator. The initial password Secret is not updated
+when you choose your permanent password. Master-realm credentials are separate.
+An OTP consumed during enrollment cannot be reused for a second login in the
+same 30-second interval. Never paste a seed, password or callback URL into logs.
+
+The callback requires the original encrypted `vcloud_portal` browser session.
+Its idle limit is 15 minutes; this is separate from the Keycloak login session.
+If that cookie is missing, expired or malformed, the callback returns a clear
+HTTP 401 page with a fixed fresh-login link. The gateway discards the returned
+code and does not retry automatically. Callbacks with a valid session still
+pass through APISIX state, PKCE, issuer, audience, signature and role checks.
+Changing cookie settings to bypass state validation is prohibited.
+
+An opaque callback 500 previously corresponded to APISIX's missing-session
+error. This establishes the failure point, but does not prove whether the
+browser dropped the cookie or the login exceeded the idle limit. Start again
+from the portal; do not replay a bookmarked Keycloak or callback URL. If needed,
+clear only the site's cookies and reopen the portal in a private window.
+Windows, WSL and Keycloak clocks must agree for TOTP validation. If a seed was
+exposed, replace that OTP credential through an authorized operator procedure;
+the provisioning helper never removes existing MFA or resets a working password.
+
+The imported realm must explicitly register `UPDATE_PASSWORD` as an enabled
+built-in required action. An action name on a user alone does not establish
+that its provider exists. `configure_console_identity.py` repairs only that
+provider and preserves users, passwords, OTP credentials and roles. It enables
+password change for accounts that already require it; it is not a default
+action for all users and does not re-import the realm or restart Keycloak.
 
 Rollback: stop portal reconciliation, remove only the four `vcloud-portal-*`
 routes and scale only `vcloud-console` to zero. Restore the reviewed prior
