@@ -71,6 +71,7 @@ OPTIONAL = {
                 'tests/test_wsl_lab.py'],
     'lab/wsl/proxy-marks': ['tools/wsl_proxy_marks.py', 'lab/wsl/vcloud-wsl-proxy-marks.service',
                           'lab/wsl/vcloud-wsl-proxy-marks.timer'],
+    'lab/wsl/loopback': ['tools/wsl_loopback_routing.py', 'tests/test_wsl_loopback.py'],
     'lab/wsl/gitops': ['tools/wsl_platform.py', 'tools/wsl_db_scaler.py', 'tools/wsl_db_test.py', 'tools/wsl_pg_image.py',
                        'tools/stage_wsl_platform.py', 'lab/wsl/platform.sh', 'lab/wsl/prepare-storage.sh',
                        'lab/wsl/prepare-tls.sh', 'lab/wsl/test-network.sh', 'lab/wsl/platform-artifacts.lock.json',
@@ -242,6 +243,9 @@ def main():
                                    '--kubeconform', binaries['kubeconform'], '--schemas', assets / 'schemas',
                                    '--build', wsl_build])
             run('wsl-lab-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_wsl_lab.py', '-v'], unit=True)
+        if report['modules']['lab/wsl/loopback'] == 'present':
+            run('wsl-loopback-tests', [python, '-m', 'unittest', 'discover', '-s', 'tests',
+                                      '-p', 'test_wsl_loopback.py', '-v'], unit=True)
         if report['modules']['lab/wsl/values'] == 'present':
             run('host-routing-governance', [python, ROOT.parent / 'check_host_routing.py',
                 '--root', source, '--helm', binaries['helm'], '--build', report_dir / 'host-routing'])

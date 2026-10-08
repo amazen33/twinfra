@@ -312,6 +312,54 @@ The bootstrap already rediscovers the route for rendering, but automatic
 post-reboot device reconciliation and agent restart are not implemented.
 Manual recovery passed; unattended reboot acceptance remains open.
 
+### Mirrored localhost recovery after Cilium reconfiguration
+
+On 2026-10-08 the same interface drift recurred (`eth1` selected, actual route
+on `eth2`). Recover the explicitly observed device using the procedure above.
+An automatic device-selection trial selected both the physical LAN and WSL's
+separate `10.20.0.1` interface and failed live acceptance. It was rolled back;
+the repository retains explicit route-derived device selection.
+
+If Linux TCP to its own listener fails with `No route to host`, inspect
+`ip -4 rule show` and `ip -4 route get 127.0.0.1`. In this incident, WSL's
+priority-one table 127 routed both local connections and incoming Windows
+requests through `loopback0` before local delivery. A blanket priority-zero
+local-table rule restored Linux traffic but broke replies to Windows. Do not
+use that blanket rule or remove WSL's routing tables.
+
+The manual helper below requires the exact owned profile, root and mirrored
+mode. It marks only host-originated connections with both IPv4 endpoints
+`127.0.0.1`, restores that mark on their reply packets, and routes those flows
+locally. A separate exact `loopback0` ingress selector delivers Windows
+requests to the local listener; replies retain WSL routing. The mark is bit
+`0x2`, outside Cilium's proxy identity mask. No firewall ACCEPT, physical route
+or Kubernetes policy is added. Foreign priority-zero rules or altered owned
+table contents cause a refusal instead of an overwrite.
+
+```bash
+# Run on the owned WSL lab after the Cilium agent has started.
+sudo python3 tools/wsl_loopback_routing.py          # review the planned changes
+sudo python3 tools/wsl_loopback_routing.py --apply  # idempotent + TCP request/reply check
+sudo bash lab/wsl/endpoints/access.sh start
+sudo bash lab/wsl/localstack/access.sh
+sudo bash lab/wsl/test-e2e.sh
+sudo bash lab/wsl/test-network.sh
+```
+
+Verify Windows independently with the Host-routed APISIX demo and LocalStack
+health URL in [service access](service-access.md). After a Cilium restart,
+existing forwards can retain failed streaming connections: restart only the
+known `vcloud-wsl-{apisix,prometheus,grafana,keycloak}-access.service`,
+`vcloud-wsl-openbao-init.service` and `vcloud-wsl-localstack-access.service`
+units after inspecting their `ExecStart`, then repeat acceptance. An active
+unit alone does not establish endpoint health.
+
+Rollback is `sudo python3 tools/wsl_loopback_routing.py --remove`; it removes
+only the verified recovery table and its two exact rules. In the affected
+state rollback reintroduces the localhost failure. This is a manual lab
+repair, without a startup timer or unattended restart guarantee. See the
+[2026-10-08 acceptance record](acceptance/wsl-restart-recovery-2026-10-08.md).
+
 ## 4. Acceptance after a deliberate repair
 
 For a repo-server that accepts 8084 but times out on `/healthz?full=true`, follow
