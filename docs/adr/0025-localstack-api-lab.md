@@ -1,5 +1,7 @@
 # ADR-0025: Restricted LocalStack AWS API validation on WSL
 
+**Status:** Superseded by [ADR-0030](0030-licence-policy.md) and [WO-06](../work-orders/WO-06-remove-localstack.md). Original record follows unchanged except for relocated links.
+
 Status: Accepted for the local lab, 2026-10-07.
 
 ## Context
@@ -45,4 +47,4 @@ checks all four AWS calls, direct and gateway health, root HTTP 200/302, existin
 GitOps/demo/database/metrics/trace gates and deny-all regression. Report actual
 results separately from this decision. Admin certificates require operator
 renewal within 90 days. Rollback procedure and exact last-good source revision
-are in the [lab runbook](../../../lab/wsl/localstack/README.md).
+are in the [lab runbook](../../lab/wsl/localstack/README.md).

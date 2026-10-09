@@ -99,7 +99,7 @@ newer jsonschema versions. These test dependencies do not affect the Ubuntu runt
 ## Approved node exception and enforcement
 
 The user approved the documented exception on 2026-10-05. See
-[ADR 0001](adr-0001-node-host-mounts.md), the hash-locked
+[ADR 0001](adr/0001-node-host-mounts.md), the hash-locked
 [node policy](../security/node-exceptions.json), and the passing
 [node-agent audit](node-agent-audit.json). The original pre-amendment inventory is retained
 unchanged as approval evidence; its old findings do not describe the amended contract.

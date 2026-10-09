@@ -1,9 +1,10 @@
 # ADR-0002: Kubernetes as the orchestration contract
 
-**Status:** Proposed  
+**Status:** Accepted (lab) — [wsl-2026-10-07.md](../acceptance/wsl-2026-10-07.md); K3s local orchestration only; kubeadm/cloud parity pending.
 **Date:** 2026-10-05  
 **Deciders:** vCloud platform owner and Principal Architect  
 **Selection:** Kubernetes is required by Module 1.  
+**Classification:** Constraint — selection required by Module 1; alternatives assess implementation, not an open component competition.
 **Scope:** [SSoT and shared implementation contract](README.md).
 
 ## Context
@@ -58,4 +59,4 @@ and default deny as described in the
   GPU placement and route reachability on each site.
 - [ ] Exercise node loss, control-plane quorum, etcd restore and staged upgrades.
 - [ ] Apply restricted Pod Security; retain only the exact
-  [approved node exception](../adr-0001-node-host-mounts.md).
+  [approved node exception](0001-node-host-mounts.md).

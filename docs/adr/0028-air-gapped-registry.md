@@ -1,10 +1,10 @@
-# ADR-0020: Air-Gapped Registry Mirroring and Image Pull Policy Standards
+# ADR-0028: Air-Gapped Registry Mirroring and Image Pull Policy Standards
 
-**Status:** Accepted for implementation; offline cold-start acceptance pending.
+**Status:** Accepted (owner) — Implementation approval; offline cold-cache/mirror live acceptance pending.
 **Date:** 2026-10-07
 **Deciders:** vCloud platform owner and Principal Platform Architect
 **Scope:** Architecture registry catalog; this record does not replace the
-legacy [delivery ADR-0020](../../adr-0020-module-3-delivery.md).
+legacy [delivery ADR-0020](0020-module-3-delivery.md).
 
 ## Context
 
@@ -73,7 +73,7 @@ runtime fields and stop rather than discard existing authentication or CA settin
 - [ ] Confirm the single intended Argo installation and GitOps owner on the lab.
 
 Implementation checks are distinct from these live gates. See the
-[image-pull runbook](../../troubleshooting/image-pull-failures.md).
+[image-pull runbook](../troubleshooting/image-pull-failures.md).
 Primary contracts: [Kubernetes image policies](https://kubernetes.io/docs/concepts/containers/images/),
 [containerd hosts](https://github.com/containerd/containerd/blob/main/docs/hosts.md),
 and [containerd path parsing](https://github.com/containerd/containerd/blob/v2.2.2/core/remotes/docker/config/hosts.go).

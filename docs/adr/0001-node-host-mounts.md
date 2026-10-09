@@ -1,9 +1,11 @@
 # ADR 0001: node host mounts under SSoT v2.2
 
+**Status:** Accepted (owner) — 2026-10-05 node exception; no production acceptance.
+
 Status: **Accepted by the user on 2026-10-05: “Approve the documented node exception.”**
 
 SSoT v2.2 now records this narrow amendment in `security.nodeHostMountException`.
-The machine-readable scope is [node-exceptions.json](../security/node-exceptions.json),
+The machine-readable scope is [node-exceptions.json](../../security/node-exceptions.json),
 with a SHA256 recorded in the SSoT. It pins component identity, images, executables,
 container layout, security contexts, host paths and mount modes. There is no global
 hostPath, root or privileged-container bypass.
@@ -23,9 +25,9 @@ and [Cilium system requirements](https://docs.cilium.io/en/stable/operations/sys
 
 The approved scope is restricted to the pinned bootstrap components below.
 The exact rendered Cilium/NVIDIA containers, capabilities, paths, read-only flags and
-images are recorded in [node-agent-inventory.json](node-agent-inventory.json). That file
+images are recorded in [node-agent-inventory.json](../node-agent-inventory.json). That file
 is the original inspection evidence, retained with its original pre-amendment findings;
-its hash is part of the approval record. [node-agent-audit.json](node-agent-audit.json)
+its hash is part of the approval record. [node-agent-audit.json](../node-agent-audit.json)
 records the current allowlist evaluation. Chart changes require a new inventory and review.
 
 | Component | Required access and justification |

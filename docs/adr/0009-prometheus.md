@@ -1,9 +1,10 @@
 # ADR-0009: Prometheus for metrics and service objectives
 
-**Status:** Proposed  
+**Status:** Accepted (lab) — [wsl-2026-10-07.md](../acceptance/wsl-2026-10-07.md); APISIX/CNPG/Knative targets up; durable metrics pending.
 **Date:** 2026-10-05  
 **Deciders:** vCloud platform owner and Principal Architect  
 **Selection:** Prometheus is required by Module 1.  
+**Classification:** Constraint — selection required by Module 1; alternatives assess implementation, not an open component competition.
 **Scope:** [SSoT and shared implementation contract](README.md).
 
 ## Context

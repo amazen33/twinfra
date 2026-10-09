@@ -70,7 +70,7 @@ the new WSL overlay do not suppress the candidate's production/staging boundary
 check. New routing bundles require the overlay, guard and tests together.
 The selected-revision render gate asserts lab legacy routing `"true"`, base
 `"false"`, native mode, BPF masquerade, proxy replacement and explicit lab socket
-LB. The [ADR](architecture/adr/ADR-0024-wsl-host-routing.md) records the exception.
+LB. The [ADR](adr/0024-wsl-host-routing.md) records the exception.
 Require `vCloud PR gate` in a GitHub ruleset for enforced merge prevention;
 the local CI rule alone does not protect an otherwise unprotected `main` branch.
 

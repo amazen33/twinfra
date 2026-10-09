@@ -1,6 +1,6 @@
 # ADR 0023: Bounded DeepSeek planning and disabled Spinifex GPU bursting
 
-**Status:** Accepted for reference implementation; live enablement remains gated
+**Status:** Proposed — implemented/statically validated; full integration live acceptance pending.
 
 **Date:** 2026-10-06
 
@@ -38,14 +38,14 @@ provider ownership checks followed by proven instance termination. Argo CD owns
 configuration reconciliation; Tekton/Alertmanager signal the capacity bridge.
 
 Provide an optional cluster-local Knative GPU vLLM example outside the Argo source.
-This adds a scale-to-zero experiment alongside [ADR 0016's warm inference selection](adrs/0016-vllm.md).
+This adds a scale-to-zero experiment alongside [ADR 0016's warm inference selection](0016-vllm.md).
 The warm Deployment remains the latency-oriented default; this example needs
 cold-start measurement and explicit Knative GPU/PVC feature acceptance. It does
 not change production inference SLOs. Stage model weights at an exact revision.
 
 Native Spinifex daemon/KVM/VFIO/OVN access belongs on dedicated accepted hosts.
 The new public overlay and service gate are configuration references only; they
-do not expand [ADR 0001's approved Kubernetes node scope](adr-0001-node-host-mounts.md).
+do not expand [ADR 0001's approved Kubernetes node scope](0001-node-host-mounts.md).
 Ubuntu 24.04 host compatibility and Kubernetes 1.36.5 worker parity must be proved
 because current Spinifex installation/quickstart examples select other versions.
 
@@ -74,7 +74,7 @@ suite. Offline validation reproduces nine CRD schemas, checks frozen pod policy,
 renders/lints the pinned Kueue chart and requires strict kubeconform coverage.
 Tests exercise disabled zero-I/O paths, pressure/demand rejection, actual SDK
 request validation/signing, durable/concurrent budgets, cleanup ownership and
-local mTLS identities. Follow the [activation prerequisites](../module-5b/README.md#activation-prerequisites)
+local mTLS identities. Follow the [activation prerequisites](../../module-5b/README.md#activation-prerequisites)
 before creating the optional inference service or enabling any queue/bridge.
 
 Sources: [Spinifex 1.21.0](https://github.com/mulgadc/spinifex/tree/v1.21.0),

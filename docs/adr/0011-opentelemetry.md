@@ -1,9 +1,10 @@
 # ADR-0011: OpenTelemetry for instrumentation and telemetry transport
 
-**Status:** Proposed  
+**Status:** Accepted (lab) — [wsl-2026-10-07.md](../acceptance/wsl-2026-10-07.md); real span export to debug logs; durable backend pending.
 **Date:** 2026-10-05  
 **Deciders:** vCloud platform owner and Principal Architect  
 **Selection:** OpenTelemetry is required by Module 1.  
+**Classification:** Constraint — selection required by Module 1; alternatives assess implementation, not an open component competition.
 **Scope:** [SSoT and shared implementation contract](README.md).
 
 ## Context

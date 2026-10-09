@@ -1,9 +1,10 @@
 # ADR-0006: Apache APISIX as the external API gateway
 
-**Status:** Proposed  
+**Status:** Accepted (lab) — [wsl-2026-10-07.md](../acceptance/wsl-2026-10-07.md); local CPU routing; production gateway acceptance pending.
 **Date:** 2026-10-05  
 **Deciders:** vCloud platform owner and Principal Architect  
 **Selection:** APISIX Gateway is required by Module 1.  
+**Classification:** Constraint — selection required by Module 1; alternatives assess implementation, not an open component competition.
 **Scope:** [SSoT and shared implementation contract](README.md).
 
 ## Context

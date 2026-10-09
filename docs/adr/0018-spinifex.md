@@ -1,9 +1,12 @@
 # ADR-0018: Spinifex as an infrastructure provider for HPC capacity
 
+**Status:** Superseded by [ADR-0029](0029-aws-compatible-enterprise-simulator.md), [ADR-0030](0030-licence-policy.md). Original record follows unchanged except for relocated links.
+
 **Status:** Proposed  
 **Date:** 2026-10-05  
 **Deciders:** vCloud platform owner and Principal Architect  
 **Selection:** Spinifex open-source cloud is required by Module 1.  
+**Classification:** Constraint — selection required by Module 1; alternatives assess implementation, not an open component competition.
 **Scope:** [SSoT and shared implementation contract](README.md).
 
 ## Context
@@ -57,7 +60,7 @@ feature equivalence. Pin and test each provider operation used by the adapter.
 ## Consequences
 
 Spinifex-specific host privileges and device/storage interfaces need a separate inventory
-and explicit justification; [ADR 0001](../adr-0001-node-host-mounts.md) grants no Spinifex
+and explicit justification; [ADR 0001](0001-node-host-mounts.md) grants no Spinifex
 node exception. Review the selected release's AGPL/commercial licensing and model/data
 licenses before distribution or hosted operation. Secret recovery and artifact retrieval
 must work at each execution site without depending on an unreachable home cluster.

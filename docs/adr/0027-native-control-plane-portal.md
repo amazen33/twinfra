@@ -1,6 +1,6 @@
 # ADR-0027: Native vCloud portal with isolated realm identity
 
-**Status:** Accepted for local WSL implementation and live acceptance
+**Status:** Accepted (lab) — [vcloud-console-2026-10-08.md](../acceptance/vcloud-console-2026-10-08.md); native portal identity/browser acceptance. Partly superseded by [ADR-0035](0035-console-self-service.md) for the read-only decision only; identity, cookie and isolation decisions remain in force.
 **Date:** 2026-10-08
 
 ## Context and decision
@@ -54,5 +54,5 @@ Static CI and live browser acceptance are separate. Negative role access,
 spoofed headers and post-logout rejection are required. Endpoint reconciliation
 is paused only for the candidate and restored after publication. Portal GitOps
 is opt-in and excludes private/bootstrap resources. See the
-[runbook](../../../console/README.md) and
-[acceptance record](../../acceptance/vcloud-console-2026-10-08.md).
+[runbook](../../console/README.md) and
+[acceptance record](../acceptance/vcloud-console-2026-10-08.md).

@@ -2,7 +2,7 @@
 
 Use this runbook for the Ubuntu/WSL node's **external containerd** CRI socket,
 `unix:///run/containerd/containerd.sock`. It implements
-[architecture ADR-0020](../architecture/adr/ADR-0020-air-gapped-registry.md).
+[architecture ADR-0028](../adr/0028-air-gapped-registry.md).
 Read-only checks need permission to access the CRI socket and local kubeconfig;
 configuration writes need node administrator access. No Pod privilege is added.
 

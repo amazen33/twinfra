@@ -7,5 +7,5 @@
 
 Use **“Designed”** for the current deliverable. “Deployed,” “production-proven,”
 “seamless bursting,” performance improvements and availability claims require the
-corresponding live evidence. See [the ADR index](adrs/README.md) and
+corresponding live evidence. See [the ADR index](adr/README.md) and
 [system topology](module-1-topology.md).

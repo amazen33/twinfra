@@ -1,9 +1,10 @@
 # ADR-0005: pgvector as the application vector store
 
-**Status:** Proposed  
+**Status:** Accepted (lab) — [wsl-2026-10-07.md](../acceptance/wsl-2026-10-07.md); extension/vector query; application RAG pending.
 **Date:** 2026-10-05  
 **Deciders:** vCloud platform owner and Principal Architect  
 **Selection:** PostgreSQL with pgvector is required by Module 1.  
+**Classification:** Constraint — selection required by Module 1; alternatives assess implementation, not an open component competition.
 **Scope:** [SSoT and shared implementation contract](README.md).
 
 ## Context

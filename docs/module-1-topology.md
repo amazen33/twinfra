@@ -1,9 +1,10 @@
 # Module 1: vCloud system topology and flow contract
 
 **Design date:** 2026-10-05. **Status:** Proposed integration architecture; component
-choices are required by Module 1. No Module 1 service or bursting adapter has been
-deployed here. [SSoT v2.2](../vcloud-ssot.yaml) supplies the platform identity and hard
-constraints; [17 component ADRs](adrs/README.md) supply the implementation decisions.
+choices are required by Module 1. No Module 1 service or bursting adapter had been
+deployed at that design revision. Current lab receipts and superseding owner decisions
+are recorded in the ADR log. [SSoT v2.2](../vcloud-ssot.yaml) supplies the platform identity and hard
+constraints; [17 component ADRs](adr/README.md) supply the implementation decisions.
 
 The user-facing chain is **APISIX → Knative → RAG application → vLLM**, with **pgvector
 retrieval owned by the RAG application**. A literal `vLLM → pgvector` database call would
@@ -221,7 +222,7 @@ application and infrastructure clusters with distinct credentials and failure is
 | Infrastructure capacity | One provider reconciler | Spinifex/cloud APIs and VM state; distinct from Kubernetes workload reconciliation |
 | Telemetry | OTel / Prometheus / selected backends | Redacted data, bounded cardinality/queues; no telemetry-store secrets in workloads |
 
-The approved [node exception](adr-0001-node-host-mounts.md) covers its pinned bootstrap
+The approved [node exception](adr/0001-node-host-mounts.md) covers its pinned bootstrap
 components only. New CSI node drivers, hypervisor services, privileged collectors and
 build engines require their own inventory/justification if they need host access.
 

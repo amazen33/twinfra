@@ -1,6 +1,6 @@
 # ADR-0019: Module 2 configuration ownership, local storage and resource growth
 
-**Status:** Implemented and statically validated; live acceptance pending  
+**Status:** Proposed — implemented/statically validated; full integration live acceptance pending.
 **Date:** 2026-10-06  
 **Scope:** vCloud SSoT v2.2 and the existing approved node exception.
 
@@ -9,8 +9,8 @@
 Module 2 requires APISIX Kubernetes routes, scale-to-zero persistent functions and
 CPU/memory autoscaling for CloudNativePG. The selected controllers must coexist with
 restricted namespaces, deny-all policies and an offline bootstrap. The earlier
-[APISIX ADR](adrs/0006-apisix.md) proposed a file watcher, while
-[database ADR](adrs/0004-cloudnativepg.md) left resource changes under operator ownership.
+[APISIX ADR](0006-apisix.md) proposed a file watcher, while
+[database ADR](0004-cloudnativepg.md) left resource changes under operator ownership.
 
 ## Decision
 
@@ -57,9 +57,9 @@ artifacts need connected staging and publication before GitOps can consume them.
 
 ## Validation and acceptance
 
-See the [Module 2 runbook](../module-2/README.md),
-[validation evidence](module-2-validation.json), and
-[guardrail tests](../tests/test_module2.py). Relevant primary references are
+See the [Module 2 runbook](../../module-2/README.md),
+[validation evidence](../module-2-validation.json), and
+[guardrail tests](../../tests/test_module2.py). Relevant primary references are
 [APISIX modes](https://apisix.apache.org/docs/apisix/deployment-modes/) and
 [CNPG resource management](https://cloudnative-pg.io/docs/1.28/resource_management/).
 No Ubuntu host, GPU workload, controller installation or live cluster acceptance

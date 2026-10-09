@@ -1,6 +1,6 @@
 # ADR-0021: OpenBao dynamic database leases and CSI file delivery
 
-**Status:** Implemented configuration and tests; live acceptance pending.
+**Status:** Proposed — implemented/statically validated; full integration live acceptance pending.
 **Date:** 2026-10-06
 **Scope:** Module 4a, following the existing SSoT and ADR 0012.
 
@@ -57,5 +57,5 @@ authentication rejection after synchronous revocation. Network errors cannot pas
 Local tests mock transports and tmpfs inventory and do not establish live behavior.
 SQL privilege boundaries, existing-session termination, CSI group ownership after
 rotation, OpenBao reviewer-token renewal and external API-key issuer revocation
-remain runtime acceptance gates. See the [runbook](../module-4a/README.md) and
-[evidence](module-4a-validation.json).
+remain runtime acceptance gates. See the [runbook](../../module-4a/README.md) and
+[evidence](../module-4a-validation.json).

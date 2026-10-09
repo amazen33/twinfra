@@ -189,4 +189,4 @@ routes and scale only `vcloud-console` to zero. Restore the reviewed prior
 endpoint configuration and exact previous skip-reconcile annotation. Preserve
 credential Secrets and databases; do not reset Keycloak or weaken deny-all.
 See [acceptance](../docs/acceptance/vcloud-console-2026-10-08.md) and
-[ADR-0027](../docs/architecture/adr/ADR-0027-native-control-plane-portal.md).
+[ADR-0027](../docs/adr/0027-native-control-plane-portal.md).

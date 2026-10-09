@@ -98,4 +98,4 @@ the opt-in portal Application; verify Synced/Healthy and rerun platform gates.
 OpenBao remains gated, GPU/vLLM and Spinifex stay disabled, and unattended reboot,
 load/soak, SPIFFE attestation and production security sign-off remain open.
 See [portal runbook](../../console/README.md) and
-[ADR-0027](../architecture/adr/ADR-0027-native-control-plane-portal.md).
+[ADR-0027](../adr/0027-native-control-plane-portal.md).

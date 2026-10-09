@@ -1,6 +1,6 @@
 # ADR-0024: WSL2 lab host-routing compatibility exception
 
-**Status:** Accepted for the local lab only
+**Status:** Accepted (lab) — [wsl-2026-10-07.md](../acceptance/wsl-2026-10-07.md); scoped routing/policy validation; unattended recovery pending.
 **Date:** 2026-10-07
 **Deciders:** vCloud operator; scoped routing test explicitly approved
 **Scope:** Single-node `vcloud-wsl-local`; production/staging excluded
@@ -21,9 +21,9 @@ from the accompanying DaemonSet restart as a complete root-cause experiment.
 
 ## Decision
 
-The dedicated [WSL values overlay](../../../lab/wsl/values/cilium-routing.yaml)
+The dedicated [WSL values overlay](../../lab/wsl/values/cilium-routing.yaml)
 is the only source YAML permitted to enable legacy host routing. Merge it
-after [base Cilium values](../../../module-2/values/cilium.yaml). The renderer
+after [base Cilium values](../../module-2/values/cilium.yaml). The renderer
 checks its exact approved shape and preserves the base's node mount/security
 settings. Cilium remains bootstrap/Helm-owned; Argo manages application resources
 and must not acquire a second owner for this cluster's Cilium installation.
@@ -58,7 +58,7 @@ confirmed `Routing: Network: Native Host: Legacy`, not BPF host routing.
 
 ## Consequences and validation
 
-[The CI guard](../../../tools/check_host_routing.py) rejects enabled options
+[The CI guard](../../tools/check_host_routing.py) rejects enabled options
 outside the exact local file, including Argo inline values, valuesObject,
 parameters, multiple sources, ApplicationSet templates, lab valueFiles
 references, daemon ConfigMaps and JSON patches. Unsupported aliases, duplicate
@@ -90,7 +90,7 @@ Helm release, then explicitly restarted its DaemonSet. Updating the ConfigMap
 alone did not reload the agent's device. The retained database volume was still
 mounted and was not reset. Both Argo applications subsequently reconciled
 `main`; the ten live acceptance gates and three node probes passed. See the
-[interface recovery procedure](../../WSL_SETUP_GUIDE.md#after-a-wsl-restart-verify-the-routing-interface).
+[interface recovery procedure](../WSL_SETUP_GUIDE.md#after-a-wsl-restart-verify-the-routing-interface).
 This establishes manual recovery, without unattended reboot acceptance.
 
 On 2026-10-08 this interface drift recurred. A proposed automatic device
@@ -99,16 +99,16 @@ selection selected both `eth0` (WSL's separate `10.20.0.1` network) and `eth2`
 Explicit route-derived selection remains the supported manual recovery.
 The trial also exposed mirrored localhost policy-routing failure: table 127
 captured local TCP and incoming Windows packets before local delivery.
-The owned manual [loopback helper](../../../tools/wsl_loopback_routing.py)
+The owned manual [loopback helper](../../tools/wsl_loopback_routing.py)
 adds connection-marked local routing and exact loopback-interface ingress
 delivery without firewall allows or changes to namespace deny-all. Linux
 loopback TCP, Windows HTTP, all ten platform gates and three node probes
 passed after scoped forward reconnection. The helper is not installed or
 scheduled and must be rechecked after Cilium restarts. See the separate
-[incident receipt](../../acceptance/wsl-restart-recovery-2026-10-08.md).
+[incident receipt](../acceptance/wsl-restart-recovery-2026-10-08.md).
 
 The live fetch and six policy-denied drops were rechecked at 14:11 UTC in the
-[dated acceptance record](../../acceptance/wsl-2026-10-07.md). SPIFFE/SPIRE
+[dated acceptance record](../acceptance/wsl-2026-10-07.md). SPIFFE/SPIRE
 attestation was not deployed or tested by these checks. Cilium label/security
 identities are not evidence of SPIFFE identity. A claim that all SPIFFE and
 socket behavior is "100% validated" would exceed the available evidence.

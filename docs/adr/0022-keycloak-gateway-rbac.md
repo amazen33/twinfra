@@ -1,6 +1,6 @@
 # ADR-0022: Separate Keycloak API and Kubernetes identity contracts
 
-**Status:** Reference configuration implemented and statically tested; live acceptance pending.
+**Status:** Proposed — implemented/statically validated; full integration live acceptance pending.
 **Date:** 2026-10-06
 
 ## Context
@@ -39,4 +39,4 @@ planes or widen node exceptions. Startup import skips existing realms; changes n
 reviewed private administration. Managed Kubernetes federation requires provider-specific
 integration. JWT/key caches require bounded revocation expectations. Real login, claims,
 RBAC and negative-token acceptance remain pending. See the
-[runbook](../module-4b/README.md) and [evidence](module-4b-validation.json).
+[runbook](../../module-4b/README.md) and [evidence](../module-4b-validation.json).

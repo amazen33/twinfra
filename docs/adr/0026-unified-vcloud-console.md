@@ -1,6 +1,6 @@
 # ADR-0026: Unified vCloud console with gated identity and permissive views
 
-**Status:** Accepted for local reference implementation; public OIDC activation gated
+**Status:** Accepted (lab) — [vcloud-console-wsl-2026-10-07.md](../acceptance/vcloud-console-wsl-2026-10-07.md); backend/reference staging only; public reference OIDC remains gated. Partly superseded by [ADR-0035](0035-console-self-service.md) for the read-only decision only; identity, cookie and isolation decisions remain in force.
 **Date:** 2026-10-07
 **Deciders:** vCloud platform owner and platform engineering
 
@@ -64,6 +64,6 @@ Secret gate and UI escaping tests are mandatory. Live staging/negative access,
 both emulator reads, browser login, logout and socket/backend base-path tests
 are reported individually; static success is not live identity acceptance.
 
-See [console runbook](../../../lab/wsl/console/README.md) for activation and
+See [console runbook](../../lab/wsl/console/README.md) for activation and
 rollback, [APISIX OIDC source](https://github.com/apache/apisix/blob/3.19.0/apisix/plugins/openid-connect.lua),
 and [controller Secret translation](https://github.com/apache/apisix-ingress-controller/blob/2.2.0/internal/adc/translator/apisixroute.go).

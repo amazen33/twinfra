@@ -1,6 +1,6 @@
 # ADR-0020: trusted main builds and automatic digest promotion
 
-**Status:** Implemented; static/local validation and live acceptance are recorded separately.
+**Status:** Proposed — implemented/statically validated; full integration live acceptance pending.
 **Date:** 2026-10-06
 **Deciders:** vCloud platform owner and Principal Architect
 
@@ -67,8 +67,8 @@ Credential rotation, branch protection, reviewed CSI and external builder operat
 become prerequisites. Static validation and local Git/HTTP tests cannot prove Kubernetes
 admission, GitHub webhook verification, OCI build, certificate issuance or telemetry
 delivery. Accept those paths and the outstanding artifact-trust gates before describing
-the platform as production-ready. See the [runbook](../module-3/README.md),
-[manifests](../module-3/manifests/) and [evidence](module-3-validation.json).
+the platform as production-ready. See the [runbook](../../module-3/README.md),
+[manifests](../../module-3/manifests/) and [evidence](../module-3-validation.json).
 
 ## Action items
 
