@@ -7331,6 +7331,26 @@
       "integrities": []
     },
     {
+      "id": "oci-image|docker.io/valkey/valkey|sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "ecosystem": "oci-image",
+      "name": "docker.io/valkey/valkey",
+      "version": "sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "locations": [
+        "deploy/registry-images.lock.json",
+        "deploy/required-images.txt",
+        "lab/wsl/platform-images.txt"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/valkey-io/valkey/8.1.10/COPYING",
+      "verifiedOn": "2026-10-09",
+      "recordedOn": "2026-10-09",
+      "integrities": [
+        "sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507"
+      ],
+      "notes": "WO-25: 8.1.10-alpine, published 2026-09-21; upstream licence text preserved in security/licences/valkey/COPYING."
+    },
+    {
       "id": "oci-image|docker.io/vllm/vllm-openai|v0.31.0",
       "ecosystem": "oci-image",
       "name": "docker.io/vllm/vllm-openai",
@@ -7558,29 +7578,6 @@
       "verifiedOn": "2026-10-09",
       "recordedOn": "2026-10-09",
       "integrities": []
-    },
-    {
-      "id": "oci-image|public.ecr.aws/docker/library/redis|8.2.3-alpine",
-      "ecosystem": "oci-image",
-      "name": "public.ecr.aws/docker/library/redis",
-      "version": "8.2.3-alpine",
-      "locations": [
-        "deploy/kustomize/base/argocd/install.yaml",
-        "deploy/registry-images.lock.json",
-        "deploy/required-images.txt",
-        "deploy/vendor/argocd-v3.5.3-install.yaml.gz",
-        "lab/wsl/platform-images.txt",
-        "lab/wsl/vendor/argocd-core.yaml.gz"
-      ],
-      "spdx": "LicenseRef-RSALv2 OR SSPL-1.0 OR AGPL-3.0-only",
-      "class": "pending-removal",
-      "licenceSource": "https://raw.githubusercontent.com/redis/redis/8.2.3/LICENSE.txt",
-      "verifiedOn": "2026-10-09",
-      "recordedOn": "2026-10-09",
-      "integrities": [],
-      "adr": "0044",
-      "expires": "2026-12-08",
-      "followUp": "WO-25"
     },
     {
       "id": "oci-image|quay.io/argoproj/argocd|sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",

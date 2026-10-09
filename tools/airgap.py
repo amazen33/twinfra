@@ -20,6 +20,39 @@ def argocd_image():
     return json.loads(LOCK.read_text())['images']['argocd']['canonical']
 
 
+def cache_image(mirror=True):
+    image = json.loads(LOCK.read_text())['images']['valkey']['canonical']
+    return image if mirror else image.removeprefix('registry.vcloud.example.com/')
+
+
+def check_cache(objects, mirror=True):
+    for obj in objects:
+        spec = podspec(obj)
+        if spec:
+            for group in ('containers', 'initContainers', 'ephemeralContainers'):
+                for container in spec.get(group, []):
+                    if 'library/redis' in container['image']:
+                        raise ValueError('Upstream cache image reached deployable output')
+            if obj['kind'] == 'Deployment' and obj['metadata']['name'] == 'argocd-redis':
+                if spec['containers'][0]['image'] != cache_image(mirror):
+                    raise ValueError('Valkey immutable cache image drift')
+
+
+def image_lists():
+    """Generate pull inventories from their authoritative lock/source inputs."""
+    lock = json.loads(LOCK.read_text())
+    required = ''.join(entry['canonical'] + '\n' for entry in lock['images'].values())
+    path = ROOT / 'lab/wsl/platform-images.txt'
+    lines = path.read_text().splitlines()
+    # Replace the cache slot, preserving unrelated operator/base-image inputs.
+    slots = [i for i, line in enumerate(lines) if '/library/redis' in line or '/valkey/valkey' in line]
+    if len(slots) != 1:
+        raise ValueError('Expected exactly one cache image in WSL staging inputs')
+    lines[slots[0]] = lock['images']['valkey']['source']
+    (ROOT / 'deploy/required-images.txt').write_text(required, encoding='utf-8', newline='\n')
+    path.write_text('\n'.join(lines) + '\n', encoding='utf-8', newline='\n')
+
+
 def base_text():
     lock = json.loads(LOCK.read_text())['manifest']
     content = (ROOT / lock['vendor']).read_bytes()
@@ -79,11 +112,15 @@ def validate(build, kustomize, kubeconform, conftest):
     if not overlays:
         raise ValueError('No platform overlays found')
     subprocess.run([conftest, 'verify', '--policy', str(ROOT / 'tests/ci/policy')], check=True)
+    base_output = subprocess.check_output([kustomize, 'build', str(BASE.parent)], text=True)
+    check_cache([obj for obj in yaml.safe_load_all(base_output) if obj], mirror=False)
+    (build / 'argocd-base.yaml').write_text(base_output, encoding='utf-8', newline='\n')
     for overlay in overlays:
         output = subprocess.check_output([kustomize, 'build', str(overlay.parent)], text=True)
         path = build / (overlay.parent.name + '.yaml')
         path.write_text(output, encoding='utf-8', newline='\n')
         objects = [obj for obj in yaml.safe_load_all(output) if obj]
+        check_cache(objects)
         count = audit(objects, require_full=True)
         flags = []
         for template in ('lab/wsl/schemas/{{.ResourceKind}}.json', 'module-2/schemas/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json',
@@ -92,18 +129,23 @@ def validate(build, kustomize, kubeconform, conftest):
         subprocess.run([kubeconform, '-strict', '-summary', '-kubernetes-version', '1.36.5', *flags, str(path)], check=True)
         subprocess.run([conftest, 'test', str(path), '--policy', str(ROOT / 'tests/ci/policy')], check=True)
         print(overlay.parent.name + ': ' + str(count) + ' workloads checked; schema and airgap policy passed', flush=True)
+    subprocess.run([kubeconform, '-strict', '-summary', '-kubernetes-version', '1.36.5',
+                    *flags, str(build / 'argocd-base.yaml')], check=True)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--render-base', action='store_true')
+    parser.add_argument('--render-image-lists', action='store_true')
     parser.add_argument('--check-base', action='store_true')
     parser.add_argument('--build', type=Path, default=ROOT / '.build/airgap')
     parser.add_argument('--kustomize', default='kustomize')
     parser.add_argument('--kubeconform', default='kubeconform')
     parser.add_argument('--conftest', default='conftest')
     args = parser.parse_args()
-    if args.render_base:
+    if args.render_image_lists:
+        image_lists()
+    elif args.render_base:
         BASE.parent.mkdir(parents=True, exist_ok=True)
         BASE.write_text(base_text(), encoding='utf-8', newline='\n')
     elif args.check_base:

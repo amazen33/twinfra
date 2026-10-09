@@ -90,6 +90,25 @@ class ADRLog(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn('duplicate/gapped ADR numbers', result.stderr)
 
+    def test_approved_valkey_order_preserves_historical_work_order_requirements(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.fixture(directory)
+            order = root / 'docs/work-orders/WO-25-redis-to-valkey.md'
+            order.write_text('# WO-25: Replace Redis with Valkey\n')
+            result = self.check(root)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            (root / 'docs/work-orders/WO-06-fixture.md').unlink()
+            self.assertNotEqual(self.check(root).returncode, 0)
+
+    def test_valkey_image_requires_its_work_order(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.fixture(directory)
+            (root / 'deploy').mkdir()
+            (root / 'deploy/registry-images.lock.json').write_text('{"images":{"valkey":{}}}')
+            result = self.check(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('missing WO-25 work order', result.stderr)
+
     def test_duplicate_number_hidden_in_title_fails(self):
         with tempfile.TemporaryDirectory() as directory:
             root = self.fixture(directory)

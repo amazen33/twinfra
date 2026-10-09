@@ -1,7 +1,9 @@
 """Registry outage, DNS migration and offline-deployment guard regressions."""
 import copy
+import gzip
 import io
 import json
+import os
 from pathlib import Path
 import ssl
 import subprocess
@@ -198,6 +200,52 @@ class RegistryTests(unittest.TestCase):
                 for group in ('containers', 'initContainers'):
                     for container in spec.get(group, []):
                         self.assertEqual(container['imagePullPolicy'], 'IfNotPresent')
+
+    def test_valkey_base_and_every_overlay_render_without_upstream_cache_image(self):
+        kustomize = os.environ.get('KUSTOMIZE_BINARY', 'kustomize')
+        paths = [ROOT / 'deploy/kustomize/base/argocd']
+        paths += [p.parent for p in sorted((ROOT / 'deploy/kustomize/overlays').glob('*/kustomization.yaml'))]
+        for path in paths:
+            with self.subTest(path=path):
+                output = subprocess.check_output([kustomize, 'build', str(path)], text=True)
+                self.assertNotIn('library/redis', output)
+                objects = [obj for obj in yaml.safe_load_all(output) if obj]
+                mirror = 'overlays' in path.parts
+                airgap.check_cache(objects, mirror)
+                cache = next(obj for obj in objects if obj['kind'] == 'Deployment'
+                             and obj['metadata']['name'] == 'argocd-redis')
+                spec = cache['spec']['template']['spec']
+                container = spec['containers'][0]
+                self.assertEqual(spec['securityContext']['runAsUser'], 999)
+                self.assertTrue(container['securityContext']['readOnlyRootFilesystem'])
+                self.assertEqual(container['args'], ['--save', '', '--appendonly', 'no',
+                                                     '--requirepass $(REDIS_PASSWORD)'])
+                self.assertEqual(container['env'][0]['valueFrom']['secretKeyRef'],
+                                 {'key': 'auth', 'name': 'argocd-redis'})
+                bad = copy.deepcopy(cache)
+                bad['spec']['template']['spec']['containers'][0]['image'] = 'public.ecr.aws/docker/library/redis:8.2.3-alpine'
+                with self.assertRaisesRegex(ValueError, 'deployable output'):
+                    airgap.check_cache([bad], mirror)
+
+    def test_preserved_upstream_sources_still_contain_transform_match_image(self):
+        lock = json.loads(airgap.LOCK.read_text())
+        source = 'public.ecr.aws/docker/library/redis:8.2.3-alpine'
+        self.assertIn(source, airgap.BASE.read_text())
+        self.assertIn(source, gzip.decompress((ROOT / lock['manifest']['vendor']).read_bytes()).decode())
+        airgap.check_base()  # Preserved source and its reviewed archive must not drift.
+
+    def test_valkey_pin_age_and_active_inventories(self):
+        from datetime import datetime, date
+        lock = json.loads(airgap.LOCK.read_text())['images']['valkey']
+        self.assertEqual(lock['tag'], '8.1.10-alpine')
+        self.assertTrue(lock['source'].endswith('@' + lock['digest']))
+        self.assertTrue(lock['canonical'].endswith('@' + lock['digest']))
+        published = datetime.fromisoformat(lock['publishedAt']).date()
+        self.assertGreaterEqual((date.fromisoformat(lock['verifiedOn']) - published).days, 14)
+        for path in ('deploy/registry-images.lock.json', 'deploy/required-images.txt',
+                     'lab/wsl/platform-images.txt', 'security/licence-register.json',
+                     'security/licence-baseline.json'):
+            self.assertNotIn('library/redis', (ROOT / path).read_text())
 
 
 if __name__ == '__main__':

@@ -2,3 +2,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - install.yaml
+images:
+  # WO-25: match the preserved upstream cache image; only Valkey is deployable.
+  - name: public.ecr.aws/docker/library/redis
+    newName: docker.io/valkey/valkey
+    digest: sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507

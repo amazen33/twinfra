@@ -26,6 +26,19 @@ class PlatformTests(unittest.TestCase):
     def test_all_rendered_groups_keep_node_contract(self):
         for group in [platform.infrastructure(),platform.storage(),platform.network(),platform.git_dns(),platform.workload(),platform.application()]:platform.audit(group)
 
+    def test_cache_uses_valkey_binary_and_digest_with_existing_secret(self):
+        objects=platform.infrastructure();platform.check_cache(objects)
+        cache=next(o for o in objects if o['kind']=='Deployment' and o['metadata']['name']=='argocd-redis')
+        spec=cache['spec']['template']['spec'];container=spec['containers'][0]
+        self.assertEqual(container['image'],platform.cache_image())
+        command=container['command'][2]
+        self.assertIn('exec valkey-server /tmp/redis.conf --save',command)
+        self.assertNotIn('exec redis-server',command)
+        self.assertIn('cat /auth/auth',command)
+        self.assertEqual(spec['securityContext']['runAsUser'],999)
+        self.assertTrue(container['securityContext']['readOnlyRootFilesystem'])
+        self.assertEqual(spec['volumes'][0]['secret']['secretName'],'argocd-redis')
+
     def test_storage_path_cannot_be_annotated_into_allowlist(self):
         objects=platform.storage();objects[1]['spec']['local']['path']='/etc'
         with self.assertRaises(ValueError):platform.audit(objects)

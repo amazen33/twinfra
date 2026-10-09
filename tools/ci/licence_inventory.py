@@ -90,10 +90,41 @@ def production_npm(packages):
     return reached
 
 
+def argocd_cache_override(root):
+    """Only the exact WO-25 upstream default may be treated as inert.
+
+    Source checks plus real base/overlay/WSL render checks in CI prevent this
+    exclusion from admitting the old cache into a deployable workload.
+    """
+    lock_path = root / 'deploy/registry-images.lock.json'
+    transform_path = root / 'deploy/kustomize/base/argocd/kustomization.yaml'
+    if not lock_path.is_file() or not transform_path.is_file():
+        return False
+    cache = json.loads(lock_path.read_text()).get('images', {}).get('valkey', {})
+    canonical = cache.get('canonical', '')
+    prefix = 'registry.vcloud.example.com/docker.io/valkey/valkey@'
+    if not canonical.startswith(prefix):
+        return False
+    sha = canonical.removeprefix(prefix)
+    if not re.fullmatch(r'sha256:[a-f0-9]{64}', sha):
+        return False
+    transforms = yaml.safe_load(transform_path.read_text()).get('images', [])
+    return any(t.get('name') == 'public.ecr.aws/docker/library/redis'
+               and t.get('newName') == 'docker.io/valkey/valkey'
+               and t.get('digest') == sha and not t.get('newTag')
+               for t in transforms)
+
+
 def enumerate_inputs(root, rendered=()):
     root = Path(root)
     tracked = files(root)
     components, findings, aliases = {}, {}, {}
+    cache_overridden = argocd_cache_override(root)
+    preserved_cache_sources = {
+        'deploy/kustomize/base/argocd/install.yaml',
+        'deploy/vendor/argocd-v3.5.3-install.yaml.gz',
+        'lab/wsl/vendor/argocd-core.yaml.gz',
+    }
 
     def finding(kind, path, detail):
         key = f'{kind}:{path}'
@@ -130,6 +161,10 @@ def enumerate_inputs(root, rendered=()):
 
     def image(value, path):
         if not isinstance(value, str) or re.search(r'[\s${}]', value) or value.endswith(':'):
+            return
+        if (cache_overridden and path in preserved_cache_sources
+                and value == 'public.ecr.aws/docker/library/redis:8.2.3-alpine'):
+            finding('inert-default', path, 'WO-25 upstream cache default replaced by digest-pinned Valkey')
             return
         value = normal_image(value)
         if value.startswith(('docker.io/vcloud/', 'vcloud/')):
