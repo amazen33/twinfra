@@ -94,6 +94,8 @@ class BootstrapTests(unittest.TestCase):
         self.assertIn("128 x 2 MiB + 1 x 1 GiB", output)
         self.assertIn("Upstream Kubernetes v1.36.5 via kubeadm", output)
         self.assertIn("bootstrap=true", output)
+        self.assertIn("GPU=auto", output)
+        self.assertIn("gpu-smoke=false", output)
 
     def test_source_has_no_host_mutation(self):
         self.assertEqual(bash("printf 'source-safe'").stdout, "source-safe")
@@ -227,6 +229,34 @@ class BootstrapTests(unittest.TestCase):
         for size in ("2Mi", "1Gi"):
             self.assertEqual(container["resources"]["limits"]["hugepages-"+size], container["resources"]["requests"]["hugepages-"+size])
 
+    def test_cuda_smoke_requires_explicit_opt_in_without_affecting_cpu_smoke(self):
+        self.assertEqual(bash('render_gpu_job').stdout, '')
+        self.assertNotIn('/nvidia/cuda:', bash('render_smoke').stdout)
+        self.assertIn('/nvidia/cuda:', bash('GPU_SMOKE_TEST=true; render_gpu_job').stdout)
+        self.assertEqual(bash('GPU_SMOKE_TEST=auto; validate_config', check=False).returncode, 2)
+        for enabled in (False, True):
+            with self.subTest(enabled=enabled), tempfile.TemporaryDirectory(dir=ROOT / '.tools') as temp:
+                code = f'''
+STATE_DIR={shlex.quote(shell_path(temp))}
+GPU_ENABLED=true; GPU_SMOKE_TEST={str(enabled).lower()}
+HUGEPAGES_2M=0; HUGEPAGES_1G=0
+kubectl() {{
+    [[ $1 != get ]] || return 1
+    printf '%s\\n' "$*" >> "$STATE_DIR/commands"
+}}
+validate_manifests() {{ :; }}
+run_smoke_tests
+'''
+                bash(code)
+                state = Path(temp)
+                commands = (state / 'commands').read_text()
+                self.assertIn('job/allowed', commands)
+                self.assertIn('job/denied', commands)
+                self.assertEqual('job/gpu' in commands, enabled)
+                self.assertEqual((state / 'smoke-gpu.yaml').exists(), enabled)
+                rendered = ''.join(p.read_text() for p in state.glob('*.yaml'))
+                self.assertEqual('/nvidia/cuda:' in rendered, enabled)
+
     def mocked_apply(self, reboot):
         with tempfile.TemporaryDirectory(prefix="vcloud-order-", dir=ROOT / ".tools") as temp:
             path = shlex.quote(shell_path(temp))
@@ -304,7 +334,7 @@ main --apply
     def test_gpu_runtime_and_probe_contract(self):
         runtime = yaml.safe_load(bash("render_gpu_runtime_class").stdout)
         self.assertEqual(runtime["handler"], "nvidia")
-        job = yaml.safe_load(bash("render_gpu_job").stdout)
+        job = yaml.safe_load(bash("GPU_SMOKE_TEST=true; render_gpu_job").stdout)
         pod_spec = job["spec"]["template"]["spec"]
         self.assertEqual(pod_spec["runtimeClassName"], runtime["metadata"]["name"])
         self.assertEqual(pod_spec["containers"][0]["resources"]["limits"]["nvidia.com/gpu"], 1)
@@ -341,7 +371,7 @@ main --apply
             self.assertEqual(bash(code + '; validate_config', check=False).returncode, 2)
 
     def test_smoke_workloads_are_nonroot_and_have_no_hostpaths(self):
-        codes = ['render_smoke', 'render_probe_job allowed', 'render_probe_job denied', 'render_hugepage_job', 'render_gpu_job']
+        codes = ['render_smoke', 'render_probe_job allowed', 'render_probe_job denied', 'render_hugepage_job', 'GPU_SMOKE_TEST=true; render_gpu_job']
         for code in codes:
             for obj in yaml.safe_load_all(bash(code).stdout):
                 if obj['kind'] not in ('Pod', 'Job'):
@@ -360,7 +390,7 @@ main --apply
         module = contract_module()
         with tempfile.TemporaryDirectory(dir=ROOT / '.tools') as temp:
             path = Path(temp) / 'pod.yaml'
-            pod = yaml.safe_load(bash('render_gpu_job').stdout)
+            pod = yaml.safe_load(bash('GPU_SMOKE_TEST=true; render_gpu_job').stdout)
             path.write_text(yaml.safe_dump(pod))
             self.assertEqual(module.audit([path])['status'], 'passed')
             spec = pod['spec']['template']['spec']
@@ -570,7 +600,7 @@ def render_artifacts(destination):
         "smoke-allowed.yaml": "render_probe_job allowed",
         "smoke-denied.yaml": "render_probe_job denied",
         "smoke-hugepages.yaml": "render_hugepage_job",
-        "smoke-gpu.yaml": "render_gpu_job",
+        "smoke-gpu.yaml": "GPU_SMOKE_TEST=true; render_gpu_job",
         "runtimeclass.yaml": "render_gpu_runtime_class",
         "containerd-1.toml": "render_containerd 1",
         "containerd-2.toml": "render_containerd 2",

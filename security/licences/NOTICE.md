@@ -16,10 +16,11 @@ remain disabled and time-limited under ADR-0043/0044.
 
 NVIDIA CUDA `12.4.1-base-ubuntu22.04` is an **operator-pulled reference** governed
 by the [NVIDIA CUDA 12.4.1 EULA](https://docs.nvidia.com/cuda/archive/12.4.1/eula/index.html).
-GPU support defaults to false. The operator must accept those terms and obtain
-owner authorization before enabling it; this project does not grant NVIDIA
-rights or include CUDA in a first-party image. The licence gate rejects using
-that reference as a Dockerfile base or enabling the default GPU switch.
+The CUDA smoke test defaults to false (`GPU_SMOKE_TEST`), independently of GPU
+driver/runtime provisioning (`ENABLE_GPU=auto`). The operator must accept those
+terms and obtain owner authorization before enabling the CUDA test; this project
+does not grant NVIDIA rights or include CUDA in a first-party image. The licence gate rejects using
+that reference as a Dockerfile base or enabling the default CUDA smoke-test switch.
 
 Redis, Grafana and LocalStack are pending removal, not approved new platform
 selections. Their frozen expiry dates and follow-up work orders appear in the

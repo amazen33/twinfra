@@ -32,8 +32,8 @@ class Licences(unittest.TestCase):
         self.write('module-5b/reference-profile.json', json.dumps(dict(offload_enabled=False, agent_batch_submission_enabled=False)))
         self.write('module-5b/manifests/queues.yaml', 'spec:\n  nominalQuota: 0\n')
         self.write('module-5b/manifests/workloads.yaml', 'spec:\n  replicas: 0\n')
-        self.write('00-setup-ubuntu-host.sh', ': "${ENABLE_GPU:=false}"\n')
-        self.write('host.env.example', 'ENABLE_GPU=false\n')
+        self.write('00-setup-ubuntu-host.sh', ': "${ENABLE_GPU:=auto}" "${GPU_SMOKE_TEST:=false}"\n')
+        self.write('host.env.example', 'ENABLE_GPU=auto\nGPU_SMOKE_TEST=false\n')
         self.write('notice.txt', 'Package notice\n')
 
     def write(self, path, text):
@@ -151,12 +151,24 @@ class Licences(unittest.TestCase):
                           **{'class': 'operator-pulled'}, notice='notice.txt')
         self.check()
         for default in ('auto', 'true'):
-            self.write('00-setup-ubuntu-host.sh', ': "${ENABLE_GPU:=' + default + '}"')
+            self.write('00-setup-ubuntu-host.sh', ': "${ENABLE_GPU:=auto}" "${GPU_SMOKE_TEST:=' + default + '}"')
             with self.assertRaises(ValueError):
                 self.check()
-        self.write('00-setup-ubuntu-host.sh', ': "${ENABLE_GPU:=false}"')
+        self.write('00-setup-ubuntu-host.sh', ': "${ENABLE_GPU:=auto}" "${GPU_SMOKE_TEST:=false}"')
         self.component['locations'] = ['module-5b/images/worker.Dockerfile']
         with self.assertRaises(ValueError):
+            self.check()
+
+    def test_gpu_auto_provisioning_passes_but_cuda_smoke_default_on_fails(self):
+        self.entry.update(name='docker.io/nvidia/cuda', spdx='LicenseRef-NVIDIA-CUDA-EULA',
+                          **{'class': 'operator-pulled'}, notice='notice.txt')
+        self.check()  # ENABLE_GPU=auto with GPU_SMOKE_TEST=false preserves Module -1.
+        self.write('00-setup-ubuntu-host.sh', ': "${ENABLE_GPU:=auto}" "${GPU_SMOKE_TEST:=true}"')
+        with self.assertRaisesRegex(ValueError, 'CUDA smoke test must default to false'):
+            self.check()
+        self.write('00-setup-ubuntu-host.sh', ': "${ENABLE_GPU:=auto}" "${GPU_SMOKE_TEST:=false}"')
+        self.write('host.env.example', 'ENABLE_GPU=auto\nGPU_SMOKE_TEST=true\n')
+        with self.assertRaisesRegex(ValueError, 'Example environment'):
             self.check()
 
     def test_base_os_allows_gpl_but_not_agpl(self):

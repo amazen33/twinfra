@@ -24,8 +24,9 @@ load_config() {
     : "${KUBECONFORM_VERSION:=v0.8.0}" "${TKN_VERSION:=v0.46.1}"
     : "${ARGOCD_VERSION:=v3.5.3}" "${YQ_VERSION:=v4.54.1}" "${CRICTL_VERSION:=v1.36.0}"
     : "${NVIDIA_TOOLKIT_VERSION:=1.20.1-1}" "${NVIDIA_DEVICE_PLUGIN_VERSION:=0.20.1}"
-    # ADR-0044: proprietary GPU images require explicit operator acceptance.
-    : "${ENABLE_GPU:=false}" "${NVIDIA_DRIVER_PACKAGE:=auto}" "${ENABLE_KVM:=false}"
+    : "${ENABLE_GPU:=auto}" "${NVIDIA_DRIVER_PACKAGE:=auto}" "${ENABLE_KVM:=false}"
+    # ADR-0044 owner clarification: opt in only to the proprietary CUDA smoke image.
+    : "${GPU_SMOKE_TEST:=false}"
     : "${INSTALL_HPC:=true}" "${BOOTSTRAP_K8S:=true}" "${RUN_SMOKE_TESTS:=true}"
     : "${HUGEPAGES_2M:=128}" "${HUGEPAGES_1G:=1}" "${MIN_NORMAL_RAM_MIB:=4096}"
     # BEGIN GENERATED SSOT DEFAULTS
@@ -64,7 +65,7 @@ version_at_least() { [[ "$(printf '%s\n%s\n' "$2" "$1" | sort -V | head -n1)" ==
 validate_config() {
     local name value
     validate_ssot_identity
-    for name in BOOTSTRAP_K8S INSTALL_HPC ENABLE_KVM RUN_SMOKE_TESTS MIRROR_REQUIRED; do
+    for name in BOOTSTRAP_K8S INSTALL_HPC ENABLE_KVM RUN_SMOKE_TESTS GPU_SMOKE_TEST MIRROR_REQUIRED; do
         [[ ${!name} == true || ${!name} == false ]] || bad_config "$name must be true or false"
     done
     [[ $ENABLE_GPU =~ ^(auto|true|false)$ ]] || bad_config 'ENABLE_GPU must be auto, true or false'
@@ -140,7 +141,7 @@ SSoT $SSOT_VERSION: $CLUSTER_NAME, $BASE_DOMAIN, GitOps $GITOPS_REPOSITORY.
 Ubuntu 24.04 LTS, kernel >= 6.8, cgroup v2, bpffs, overlayfs, swap disabled.
 HugeTLB: $HUGEPAGES_2M x 2 MiB + $HUGEPAGES_1G x 1 GiB; ordinary RAM floor $MIN_NORMAL_RAM_MIB MiB.
 System containerd CRI: $CRI_SOCKET, systemd cgroups, TLS mirror $REGISTRY_MIRROR.
-GPU=$ENABLE_GPU, KVM=$ENABLE_KVM, HPC=$INSTALL_HPC, bootstrap=$BOOTSTRAP_K8S, smoke=$RUN_SMOKE_TESTS.
+GPU=$ENABLE_GPU, KVM=$ENABLE_KVM, HPC=$INSTALL_HPC, bootstrap=$BOOTSTRAP_K8S, smoke=$RUN_SMOKE_TESTS, gpu-smoke=$GPU_SMOKE_TEST.
 Pods=$POD_CIDR services=$SERVICE_CIDR. A fresh single-node control plane also schedules workloads.
 Cilium native routing requires underlay routes to every remote node PodCIDR; no overlay is installed.
 Node exception approved: only the pinned kubeadm/Cilium/NVIDIA scope passes manifest checks.
@@ -2192,6 +2193,7 @@ EOF
 }
 
 render_gpu_job() {
+    [[ $GPU_SMOKE_TEST == true ]] || return 0
     cat <<EOF
 apiVersion: batch/v1
 kind: Job
@@ -2256,7 +2258,7 @@ run_smoke_tests() {
         kubectl -n vcloud-host-validation wait --for=condition=complete job/hugepages --timeout=210s
         kubectl -n vcloud-host-validation logs job/hugepages
     fi
-    if [[ $GPU_ENABLED == true ]]; then
+    if [[ $GPU_ENABLED == true && $GPU_SMOKE_TEST == true ]]; then
         render_gpu_job > "$STATE_DIR/smoke-gpu.yaml"
         validate_manifests workloads "$STATE_DIR/smoke-gpu.yaml"
         kubectl apply -f "$STATE_DIR/smoke-gpu.yaml"

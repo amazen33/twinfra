@@ -53,7 +53,7 @@
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "00-setup-ubuntu-host.sh",
-      "fingerprint": "74a42326548e11d5b632f995dc73766e3fc8b843445cc20e43ca823aa165dc0f"
+      "fingerprint": "267472c626f0a93fb52364ee8461fa228661e314e2fb8e156ac377adddf82991"
     },
     {
       "id": "image-digest:deploy/kustomize/base/argocd/install.yaml",

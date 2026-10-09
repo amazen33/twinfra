@@ -171,10 +171,10 @@ def check_component(entry, component, policy, root, today, baseline):
         if any('Dockerfile' in path for path in component['locations']):
             raise ValueError('Operator-pulled image cannot be baked into a Twinfra image')
         text = (root / '00-setup-ubuntu-host.sh').read_text()
-        if not re.search(r'\$\{ENABLE_GPU:=false\}', text):
-            raise ValueError('GPU must default to false, not auto/true')
-        if not re.search(r'^ENABLE_GPU=false$', (root / 'host.env.example').read_text(), re.M):
-            raise ValueError('Example environment must keep the GPU switch off')
+        if not re.search(r'\$\{GPU_SMOKE_TEST:=false\}', text):
+            raise ValueError('CUDA smoke test must default to false')
+        if not re.search(r'^GPU_SMOKE_TEST=false$', (root / 'host.env.example').read_text(), re.M):
+            raise ValueError('Example environment must keep the CUDA smoke test off')
         if not (root / entry['notice']).is_file():
             raise ValueError('Missing operator EULA notice')
         return

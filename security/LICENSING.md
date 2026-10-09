@@ -61,6 +61,8 @@ Quotas/replicas are generated files, not fields currently present in the Module
 Spinifex's six pinned artifacts remain recorded until WO-26 removes all of them.
 
 No deployment, library replacement or runtime image rebuild is performed by
-WO-02. The GPU default changes to false and regenerated Cloud-Init preserves it.
+WO-02. Module -1 retains `ENABLE_GPU=auto` for driver/runtime provisioning;
+`GPU_SMOKE_TEST=false` gates only the proprietary CUDA smoke job and its image.
+Regenerated Cloud-Init preserves both defaults.
 The RAG Dockerfile copies the reviewed licence bundle offline; actual image
 assembly still requires the already-pinned wheel mirror/cache.
