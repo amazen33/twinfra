@@ -390,7 +390,7 @@ class PortalTests(unittest.TestCase):
 
     def test_http_auth_static_traversal_and_readonly_methods(self):
         with tempfile.TemporaryDirectory() as temp:
-            static=Path(temp); (static/'index.html').write_text('<title>vCloud</title>')
+            static=Path(temp); (static/'index.html').write_text('<title>Twinfra</title>')
             http=server.ThreadingHTTPServer(('127.0.0.1',0),server.Handler)
             thread=threading.Thread(target=http.serve_forever,daemon=True); thread.start()
             origin='http://127.0.0.1:'+str(http.server_port)

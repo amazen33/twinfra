@@ -1,7 +1,7 @@
-# Unified vCloud local console
+# Unified Twinfra local console
 
 Opt-in, CPU-only WSL profile for `http://console.vcloud.local:18080` on the
-existing APISIX 3.19.0 / ingress-controller 2.2.0 gateway. vCloud is the only
+existing APISIX 3.19.0 / ingress-controller 2.2.0 gateway. Twinfra is the only
 platform identity. This directory's original navigation and browser code is MIT.
 It does not change the licenses of the proxied applications or dependencies.
 
@@ -23,11 +23,11 @@ the frozen CRD prohibits cross-namespace Service backends. The IngressClass
 
 | Public path | Service DNS and port | Local behavior |
 |---|---|---|
-| `/`, `/console.css`, `/oidc/callback` | `vcloud-console-shell.platform-services.svc.cluster.local:3000` | MIT vCloud navigation; OIDC callback handled by APISIX |
+| `/`, `/console.css`, `/oidc/callback` | `vcloud-console-shell.platform-services.svc.cluster.local:3000` | MIT Twinfra navigation; OIDC callback handled by APISIX |
 | `/ministack`, `/ministack/*` | `ministack.platform-services.svc.cluster.local:4566` | MiniStack 1.5.22 APIs and `/_ministack/health` |
 | `/localstack`, `/localstack/*` | `localstack.platform-services.svc.cluster.local:4566` | Community 4.14.0 APIs and `/_localstack/health` |
-| `/storage`, `/storage/*` | `storage-ui.platform-services.svc.cluster.local:9001` | MIT vCloud read-only bucket/object-key browser |
-| `/dynamodb`, `/dynamodb/*` | `dynamodb-admin.platform-services.svc.cluster.local:8081` | MIT vCloud read-only table list/metadata viewer |
+| `/storage`, `/storage/*` | `storage-ui.platform-services.svc.cluster.local:9001` | MIT Twinfra read-only bucket/object-key browser |
+| `/dynamodb`, `/dynamodb/*` | `dynamodb-admin.platform-services.svc.cluster.local:8081` | MIT Twinfra read-only table list/metadata viewer |
 | `/spinifex`, `/spinifex/*` | `spinifex-console.platform-system.svc.cluster.local:3000` | Disabled reference; no console deployed, offloading stays false |
 | `/vault`, `/vault/*` | `openbao-ui.platform-system.svc.cluster.local:8200` | Disabled reference; this Service is not the existing local OpenBao |
 
@@ -39,7 +39,7 @@ are added. Resource requests are 125m CPU / 224Mi for the four new Pods;
 limits are 1.75 CPU / 896Mi in total, within the 20GB/6-vCPU lab budget.
 
 The two AWS gateways return JSON/XML APIs; they are not AWS web consoles.
-The original vCloud storage/DynamoDB views select `?backend=ministack` or
+The original Twinfra storage/DynamoDB views select `?backend=ministack` or
 `?backend=localstack`, list at most 100 resources and display table metadata only.
 They cannot upload/delete objects, mutate tables, scan rows or launch instances.
 Emulator credentials `test/test` are public test fixtures held in-process;

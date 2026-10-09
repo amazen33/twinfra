@@ -1,4 +1,4 @@
-# Module 1: vCloud system topology and flow contract
+# Module 1: Twinfra system topology and flow contract
 
 **Design date:** 2026-10-05. **Status:** Proposed integration architecture; component
 choices are required by Module 1. No Module 1 service or bursting adapter had been

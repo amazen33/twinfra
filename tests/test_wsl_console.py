@@ -142,7 +142,7 @@ class ConsoleTests(unittest.TestCase):
 
     def test_navigation_shows_disabled_references_without_fake_links(self):
         body = ui.navigation(console.profile()).decode()
-        self.assertIn('vCloud console', body)
+        self.assertIn('Twinfra console', body)
         self.assertNotIn('href="/spinifex/', body)
         self.assertNotIn('href="/vault/', body)
         self.assertIn('/ministack/_ministack/health', body)

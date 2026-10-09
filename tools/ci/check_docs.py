@@ -64,6 +64,11 @@ if canonical:
     assert 'WO-06' in next(adr_dir.glob('0025-*.md')).read_text(encoding='utf-8')
     orders = sorted((root / 'docs/work-orders').glob('WO-*.md'))
     expected_orders = [f'WO-{number:02d}' for number in range(1, 12)]
+    rename_order = root / 'docs/work-orders/WO-20-rename-to-twinfra.md'
+    rename_adr = adr_dir / '0036-product-name-twinfra.md'
+    if rename_adr.is_file() or rename_order.is_file():
+        assert rename_adr.is_file() and rename_order.is_file(), 'incomplete WO-20 / ADR-0036 pair'
+        expected_orders.append('WO-20')
     valkey_order = root / 'docs/work-orders/WO-25-redis-to-valkey.md'
     image_lock = root / 'deploy/registry-images.lock.json'
     if image_lock.is_file() and 'valkey' in json.loads(image_lock.read_text()).get('images', {}):
@@ -111,7 +116,8 @@ for file in all_adrs:
 if canonical:
     assert f'**{max(int(file.name[:4]) for file in all_adrs) + 1:04d}**' in index, 'incorrect next free number'
     if reserved:
-        assert '**0036–0041**' in index, 'missing reserved ADR range'
+        reserved_range = f'**{min(reserved):04d}–{max(reserved):04d}**'
+        assert reserved_range in index, 'missing reserved ADR range'
     for status in ('Proposed', 'Accepted (lab)', 'Accepted (production)', 'Superseded', 'Constraint'):
         assert status in index, status
     ssot = (root / 'vcloud-ssot.yaml').read_text(encoding='utf-8')

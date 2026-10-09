@@ -33,7 +33,7 @@ OpenBao's `{"initialized":false}` response is successful HTTP 200 from its
 initialization-status API. It is reachable but has not issued unseal shares or a
 root token; initialization remains behind the operator PGP-key gate.
 
-## Unified vCloud console profile
+## Unified Twinfra console profile
 
 **Updated 2026-10-08:** the native React portal is activated at
 <http://localhost:18080/console/> with verified OIDC/MFA login, all six views,

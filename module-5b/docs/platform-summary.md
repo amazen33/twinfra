@@ -1,6 +1,6 @@
 # Commercial capability summary
 
-- **Recruiter:** Designed and implemented a disabled vCloud reference for
+- **Recruiter:** Designed and implemented a disabled Twinfra reference for
   Keycloak/APISIX-secured DeepSeek planning, private Knative/vLLM inference,
   Kueue/MultiKueue GPU admission and SigV4 Spinifex capacity requests, with
   OpenBao CSI identities, durable resource limits and executable security tests.

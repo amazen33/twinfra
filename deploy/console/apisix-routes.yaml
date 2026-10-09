@@ -50,9 +50,9 @@ spec:
           \ 'none'; frame-ancestors 'self'; base-uri 'none'\"\n    return 401, '<!doctype\
           \ html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\"\
           \ content=\"width=device-width,initial-scale=1\"><title>Sign in again |\
-          \ vCloud</title><h1>Start sign-in again</h1><p>Your sign-in session is missing\
-          \ or expired. The returned authorization code was not accepted.</p><p><a\
-          \ href=\"/console/\">Start a fresh vCloud sign-in</a></p></html>'\nend\n"
+          \ Twinfra</title><h1>Start sign-in again</h1><p>Your sign-in session is\
+          \ missing or expired. The returned authorization code was not accepted.</p><p><a\
+          \ href=\"/console/\">Start a fresh Twinfra sign-in</a></p></html>'\nend\n"
     - name: openid-connect
       enable: true
       secretRef: vcloud-console-oidc
@@ -192,9 +192,9 @@ spec:
           \ 'none'; frame-ancestors 'self'; base-uri 'none'\"\n    return 401, '<!doctype\
           \ html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\"\
           \ content=\"width=device-width,initial-scale=1\"><title>Sign in again |\
-          \ vCloud</title><h1>Start sign-in again</h1><p>Your sign-in session is missing\
-          \ or expired. The returned authorization code was not accepted.</p><p><a\
-          \ href=\"/console/\">Start a fresh vCloud sign-in</a></p></html>'\nend\n"
+          \ Twinfra</title><h1>Start sign-in again</h1><p>Your sign-in session is\
+          \ missing or expired. The returned authorization code was not accepted.</p><p><a\
+          \ href=\"/console/\">Start a fresh Twinfra sign-in</a></p></html>'\nend\n"
     - name: openid-connect
       enable: true
       secretRef: vcloud-console-oidc
@@ -335,9 +335,9 @@ spec:
           \ 'none'; frame-ancestors 'self'; base-uri 'none'\"\n    return 401, '<!doctype\
           \ html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\"\
           \ content=\"width=device-width,initial-scale=1\"><title>Sign in again |\
-          \ vCloud</title><h1>Start sign-in again</h1><p>Your sign-in session is missing\
-          \ or expired. The returned authorization code was not accepted.</p><p><a\
-          \ href=\"/console/\">Start a fresh vCloud sign-in</a></p></html>'\nend\n"
+          \ Twinfra</title><h1>Start sign-in again</h1><p>Your sign-in session is\
+          \ missing or expired. The returned authorization code was not accepted.</p><p><a\
+          \ href=\"/console/\">Start a fresh Twinfra sign-in</a></p></html>'\nend\n"
     - name: openid-connect
       enable: true
       secretRef: vcloud-console-oidc
@@ -482,9 +482,9 @@ spec:
           \ 'none'; frame-ancestors 'self'; base-uri 'none'\"\n    return 401, '<!doctype\
           \ html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\"\
           \ content=\"width=device-width,initial-scale=1\"><title>Sign in again |\
-          \ vCloud</title><h1>Start sign-in again</h1><p>Your sign-in session is missing\
-          \ or expired. The returned authorization code was not accepted.</p><p><a\
-          \ href=\"/console/\">Start a fresh vCloud sign-in</a></p></html>'\nend\n"
+          \ Twinfra</title><h1>Start sign-in again</h1><p>Your sign-in session is\
+          \ missing or expired. The returned authorization code was not accepted.</p><p><a\
+          \ href=\"/console/\">Start a fresh Twinfra sign-in</a></p></html>'\nend\n"
     - name: openid-connect
       enable: true
       secretRef: vcloud-console-oidc

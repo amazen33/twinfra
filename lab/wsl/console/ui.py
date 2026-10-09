@@ -99,8 +99,8 @@ def browser(view, backend, selection='', mount=''):
 
 def page(title, body, mount=''):
     return ('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-            '<title>' + escape(title) + ' · vCloud</title><link rel="stylesheet" href="' + escape(mount) + '/console.css">'
-            '<body><header><a href="' + ('/console/overview' if mount else '/') + '">vCloud console</a></header><main><h1>' + escape(title) + '</h1>' + body + '</main></body></html>').encode()
+            '<title>' + escape(title) + ' · Twinfra</title><link rel="stylesheet" href="' + escape(mount) + '/console.css">'
+            '<body><header><a href="' + ('/console/overview' if mount else '/') + '">Twinfra console</a></header><main><h1>' + escape(title) + '</h1>' + body + '</main></body></html>').encode()
 
 
 def navigation(profile):

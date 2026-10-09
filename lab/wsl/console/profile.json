@@ -11,8 +11,8 @@
     {"name": "spinifex", "namespace": "platform-system", "service": "spinifex-console", "port": 3000, "enabled": false, "websocket": true, "license": "AGPL-3.0", "description": "Reference only: console not deployed; HPC offloading disabled."},
     {"name": "ministack", "namespace": "platform-services", "service": "ministack", "port": 4566, "enabled": true, "websocket": false, "license": "MIT", "description": "AWS API emulator; this endpoint returns API responses, not a web console."},
     {"name": "localstack", "namespace": "platform-services", "service": "localstack", "port": 4566, "enabled": true, "websocket": false, "license": "Apache-2.0", "description": "Pinned Community 4.14.0 API emulator; ephemeral lab data."},
-    {"name": "storage", "namespace": "platform-services", "service": "storage-ui", "port": 9001, "enabled": true, "websocket": false, "license": "MIT", "description": "vCloud read-only S3 browser; select either emulator."},
-    {"name": "dynamodb", "namespace": "platform-services", "service": "dynamodb-admin", "port": 8081, "enabled": true, "websocket": true, "license": "MIT", "description": "vCloud read-only DynamoDB table viewer; no mutation controls."},
+    {"name": "storage", "namespace": "platform-services", "service": "storage-ui", "port": 9001, "enabled": true, "websocket": false, "license": "MIT", "description": "Twinfra read-only S3 browser; select either emulator."},
+    {"name": "dynamodb", "namespace": "platform-services", "service": "dynamodb-admin", "port": 8081, "enabled": true, "websocket": true, "license": "MIT", "description": "Twinfra read-only DynamoDB table viewer; no mutation controls."},
     {"name": "vault", "namespace": "platform-system", "service": "openbao-ui", "port": 8200, "enabled": false, "websocket": true, "license": "MPL-2.0", "description": "Reference only: local OpenBao is sealed in platform-services; native /ui and /v1 paths need a separate verified integration."}
   ]
 }

@@ -55,7 +55,7 @@ export function App() {
     <a className="skip-link" href="#content">Skip to content</a>
     {open && <button className="sidebar-scrim" aria-label="Close navigation" onClick={() => setOpen(false)} />}
     <aside className={`sidebar ${open ? 'is-open' : ''}`} aria-label="Platform navigation">
-      <a className="brand" href="/console/overview"><span className="brand-symbol">v</span><span>vCloud<small>CONTROL PLANE</small></span></a>
+      <a className="brand" href="/console/overview"><span className="brand-symbol">T</span><span>Twinfra<small>CONTROL PLANE</small></span></a>
       <div className="environment"><span className="status-dot" /><span>WSL local lab<small>vcloud-wsl-local</small></span><span className="environment-tag">LOCAL</span></div>
       <p className="nav-label">WORKSPACE</p>
       <nav aria-label="Platform navigation">{tabs.map(t => <button key={t.id} className={`nav-item ${tab === t.id ? 'active' : ''}`} aria-current={tab === t.id ? 'page' : undefined} onClick={() => navigate(t.id)}>
@@ -70,7 +70,7 @@ export function App() {
         <div className="account"><span className="avatar">{identity?.username.slice(0, 1).toUpperCase() || '?'}</span><span>{identity?.username || 'Session'}<small>{identity?.roles.includes('console.admin') ? 'Console administrator' : 'Console viewer'}</small></span><a href="/console/logout">Sign out</a></div>
       </header>
       <main id="content" tabIndex={-1}>
-        <div className="page-heading"><div><p className="eyebrow">VCLOUD WORKSPACE</p><h1>{selected.label === 'Identity' ? 'Identity & access' : selected.label}</h1><p className="subtitle">{selected.description} across your local platform.</p></div>
+        <div className="page-heading"><div><p className="eyebrow">TWINFRA WORKSPACE</p><h1>{selected.label === 'Identity' ? 'Identity & access' : selected.label}</h1><p className="subtitle">{selected.description} across your local platform.</p></div>
           <button className="button secondary" onClick={() => setRefresh(x => x + 1)} disabled={loading}><span aria-hidden="true">⟳</span> Refresh</button>
         </div>
         <nav className="tabs" aria-label="Workspace tabs">{tabs.map(t => <button key={t.id} className={tab === t.id ? 'selected' : ''} aria-current={tab === t.id ? 'page' : undefined} onClick={() => navigate(t.id)}>{t.label}</button>)}</nav>
@@ -90,7 +90,7 @@ export function App() {
           {tab === 'localstack' && cloud && <><Card title="AWS service health"><div className="service-grid">{Object.entries(cloud.services).map(([name, state]) => <div key={name}><strong>{name.toUpperCase()}</strong><Badge value={state} /></div>)}</div></Card><Card title="EC2 instances"><div className="table-scroll"><table><thead><tr><th>Instance</th><th>Type</th><th>State</th></tr></thead><tbody>{cloud.instances.map(i => <tr key={i.id}><td><code>{i.id}</code></td><td>{i.type}</td><td><Badge value={i.state} /></td></tr>)}</tbody></table></div>{!cloud.instances.length && <Empty>No emulated EC2 instances.</Empty>}<p className="note">API emulation uses ephemeral lab state. These instances do not launch real virtual machines.</p></Card></>}
           {tab === 'iam' && user && <><Card title="Your Keycloak session"><dl><dt>Signed in as</dt><dd>{user.username}</dd><dt>Console roles</dt><dd>{user.roles.map(role => <Badge key={role} value={role} />)}</dd><dt>Realm issuer</dt><dd><code>{user.issuer}</code></dd><dt>OIDC client</dt><dd><code>{user.client}</code></dd></dl></Card><Card title="Identity administration"><p>Portal roles grant access to these read-only views. They do not grant Kubernetes administration or Keycloak realm-management permissions.</p>{user.roles.includes('console.admin') ? <a className="button" href={user.adminUrl} target="_blank" rel="noopener noreferrer">Open Keycloak administration ↗</a> : <p className="note">A console administrator can open the dedicated Keycloak administration endpoint.</p>}</Card></>}
         </>}
-        <footer>vCloud <span>Local validation environment</span><span>Single origin · authenticated session</span></footer>
+        <footer>Twinfra <span>Local validation environment</span><span>Single origin · authenticated session</span></footer>
       </main>
     </div>
   </div>

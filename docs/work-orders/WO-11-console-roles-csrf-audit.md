@@ -6,7 +6,7 @@
 ## Goal
 
 Lay the groundwork for a self-service console without enabling writes yet. The write path arrives with the
-vCloud gateway in Phase 3, so no temporary write path is built here.
+Twinfra gateway in Phase 3, so no temporary write path is built here.
 
 ## Verified context
 

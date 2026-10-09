@@ -1,7 +1,7 @@
 # Module 5a: private GPU inference and pgvector RAG
 
 This module provides a GPU Knative Service and an executable LangChain retrieval
-pipeline for vCloud. It is a disabled integration reference: no resource here is
+pipeline for Twinfra. It is a disabled integration reference: no resource here is
 included in the current Argo Applications. The GPU example requires an accepted
 H100 node; the 20 GB WSL lab keeps AI/HPC bypassed.
 
@@ -202,7 +202,7 @@ or unsuspending a Job cannot bypass the configuration gate.
 For ingestion, supply `vcloud-rag-ingest-input` with `documents.json`:
 
 ```json
-[{"source":"vcloud-architecture-v1","text":"vCloud uses Kubernetes, Cilium and CloudNativePG."}]
+[{"source":"vcloud-architecture-v1","text":"Twinfra uses Kubernetes, Cilium and CloudNativePG."}]
 ```
 
 Run ingestion serially from trusted inputs. Source identifiers are immutable;
@@ -219,7 +219,7 @@ Inside the accepted image/CSI environment, the code is executable directly:
 python /opt/vcloud/pipeline.py --config /etc/vcloud/rag.yaml \
   ingest --documents /input/documents.json
 python /opt/vcloud/pipeline.py --config /etc/vcloud/rag.yaml \
-  query --question 'Which database stores vCloud vectors?'
+  query --question 'Which database stores Twinfra vectors?'
 ```
 
 The returned JSON contains an answer and retrieved source/chunk references.

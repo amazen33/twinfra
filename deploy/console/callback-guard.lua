@@ -33,5 +33,5 @@ return function(conf, ctx)
     ngx.header["X-Frame-Options"] = "SAMEORIGIN"
     ngx.header["X-Content-Type-Options"] = "nosniff"
     ngx.header["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'self'; base-uri 'none'"
-    return 401, '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in again | vCloud</title><h1>Start sign-in again</h1><p>Your sign-in session is missing or expired. The returned authorization code was not accepted.</p><p><a href="/console/">Start a fresh vCloud sign-in</a></p></html>'
+    return 401, '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in again | Twinfra</title><h1>Start sign-in again</h1><p>Your sign-in session is missing or expired. The returned authorization code was not accepted.</p><p><a href="/console/">Start a fresh Twinfra sign-in</a></p></html>'
 end

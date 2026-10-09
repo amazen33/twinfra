@@ -1,4 +1,4 @@
-# vCloud capacity and agent API contract
+# Twinfra capacity and agent API contract
 
 All API endpoints require TLS 1.3 and a certificate issued by the mounted CA.
 The certificate must contain one URI SAN, with exact role identity:

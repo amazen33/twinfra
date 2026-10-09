@@ -1,10 +1,10 @@
-# vCloud handoff pack: Wave 1
+# Twinfra handoff pack: Wave 1
 
 Prepared 2026-10-08 by Claude (platform architecture and software engineering lead) for Codex,
 the only implementer. Owner approval: D1-D8 approved on 2026-10-08; D9-D12 still open.
 Plan: https://claude.ai/artifact/PGbvxpbveSfJDTr2PBbFyY (private; the owner shares it).
 
-Nothing in this pack has been written to the vCloud repository. Codex adds it there in WO-03.
+Nothing in this pack has been written to the Twinfra repository. Codex adds it there in WO-03.
 
 ## Contents
 
@@ -12,6 +12,7 @@ Nothing in this pack has been written to the vCloud repository. Codex adds it th
 | --- | --- |
 | [ADRs 0029–0035](../adr/README.md) | Accepted decision records for D1-D8 |
 | [WO-01](WO-01-repository-governance.md) to [WO-11](WO-11-console-roles-csrf-audit.md) | Wave 1 work orders (Phases 0 and 1), approved for implementation |
+| [WO-20](WO-20-rename-to-twinfra.md) | Staged product rename under [ADR-0036](../adr/0036-product-name-twinfra.md); Stage A branding precedes the owner's Stage B repository rename; technical identifiers wait for Stage C |
 | [WO-25](WO-25-redis-to-valkey.md) | Redis to digest-pinned Valkey cache replacement, including owner-approved Amendment 1 |
 
 ADR-0028 is reserved. The registry decision currently numbered ADR-0020 gets 0028 when WO-03

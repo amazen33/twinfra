@@ -84,7 +84,7 @@ class Session:
         # the BFF returns 403 for a valid identity without a permitted client role.
         if code in (401,403) and url.startswith(ORIGIN+'/console/'):
             raise RoleDenied('Authenticated callback denied by gateway role policy')
-        if code!=200 or not url.startswith(ORIGIN+'/console/') or '<title>vCloud' not in html:
+        if code!=200 or not url.startswith(ORIGIN+'/console/') or '<title>Twinfra' not in html:
             raise ValueError('Authenticated callback failed (HTTP '+str(code)+', portal origin '+str(url.startswith(ORIGIN+'/console/'))+')')
         return headers
 

@@ -1,6 +1,6 @@
-# Module 2: vCloud infrastructure bootstrap and guardrails
+# Module 2: Twinfra infrastructure bootstrap and guardrails
 
-This module implements the **vCloud** SSoT v2.2 in `amazen33/vCloud`, for the prepared
+This module implements the **Twinfra** SSoT v2.2 in `amazen33/vCloud`, for the prepared
 Ubuntu 24.04 Kubernetes host. The example is a single-VM acceptance profile. It is
 statically validated; Ubuntu, GPU, TLS, scheduling and service integration still need
 the live acceptance steps below. The approved kubeadm/Cilium/NVIDIA exception remains

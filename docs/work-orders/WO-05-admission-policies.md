@@ -29,7 +29,7 @@ script or by hand can no longer break them.
    - No `hostPath` volumes, except exact matches from the node-exception allowlist.
    - No `privileged`, no `allowPrivilegeEscalation: true`, no added capabilities, and `runAsNonRoot` required.
      Exceptions come only from the allowlist.
-3. Bindings cover the vCloud namespaces (`platform-services`, `workload-apps`, `hpc-compute` and other vCloud-owned ones).
+3. Bindings cover the Twinfra namespaces (`platform-services`, `workload-apps`, `hpc-compute` and other Twinfra-owned ones).
    Before binding, inventory the running images and namespaces read-only with `kubectl get pods -A -o json`.
    K3s system namespaces are excluded at first, and the PR lists each exclusion with its reason.
 4. Rollout: ship with `validationActions: [Audit, Warn]`. Switch to `[Deny]` in a separate small PR
@@ -45,7 +45,7 @@ Signature verification (a later work order, after image signing). Changing the n
 
 - The generator, drift check and fixture tests pass in CI.
 - In the lab, audit mode shows zero violations from current workloads (evidence: audit log excerpt).
-- After enforcement, these three Pods are each rejected with a clear message in a vCloud namespace:
+- After enforcement, these three Pods are each rejected with a clear message in a Twinfra namespace:
   one with a floating tag, one with a hostPath, and one from an unknown registry. Existing workloads still roll out.
 - Receipt: `docs/acceptance/admission-policies-<date>.md`.
 

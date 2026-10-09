@@ -1,4 +1,4 @@
-# Module 5b: vCloud agent and disabled hybrid HPC reference
+# Module 5b: Twinfra agent and disabled hybrid HPC reference
 
 This module supplies a DeepSeek planning agent, a bounded EC2 capacity bridge,
 Kueue/MultiKueue queues, GPU workload examples and telemetry for

@@ -1,6 +1,15 @@
-# vCloud platform bootstrap and architecture
+# Twinfra platform bootstrap and architecture
 
-[The ADR log](docs/adr/README.md) contains 38 records, including 17 Module 1 component ADRs,
+Twinfra (formerly vCloud) — *your AWS twin, on your own infrastructure.*
+
+[ADR-0036](docs/adr/0036-product-name-twinfra.md) and
+[WO-20](docs/work-orders/WO-20-rename-to-twinfra.md) define the staged rename.
+Stage A changes branding only. Repository references stay `amazen33/vCloud` until
+the owner renames the repository in Stage B. The `vcloud` realm, client IDs,
+labels, resource names, domains and SSoT identity stay unchanged until Stage C's
+separate work order and Ubuntu VM rebuild. Historical records retain their original names.
+
+[The ADR log](docs/adr/README.md) contains 39 records, including 17 Module 1 component ADRs,
 the [complete Mermaid/ASCII topology](docs/module-1-topology.md), and a
 [recruiter-friendly summary](docs/module-1-summary.md). Component choices follow the
 user's requirements. The log distinguishes receipt-backed lab acceptance, proposed
@@ -22,7 +31,7 @@ architecture review, implementation and tester acceptance. The owner applies the
 
 ## Node diagnostic prerequisites
 
-The [vCloud control-plane portal](console/README.md) provides native health,
+The [Twinfra control-plane portal](console/README.md) provides native health,
 storage, dual AWS emulator, DynamoDB, GitOps and identity views at
 <http://localhost:18080/console/> in the owned WSL lab. Its dedicated
 `vcloud/vcloud-admin` account and private first-login procedure are separate
@@ -102,7 +111,8 @@ Module 2 is available in the [infrastructure runbook](module-2/README.md),
 with [rendered reference YAML](module-2/manifests/README.md),
 [Helm chart](module-2/chart/Chart.yaml), [Cilium overrides](module-2/values/cilium.yaml),
 the [Makefile](Makefile), and [static validation evidence](docs/module-2-validation.json).
-It uses vCloud / amazen33/vCloud throughout; physical and live acceptance remain explicit gates.
+It presents Twinfra with the existing `amazen33/vCloud` repository reference;
+physical and live acceptance remain explicit gates.
 
 The [pre-push validation record](docs/pre-push-validation.json) preserves the Module
 -1/1/2 checks for commit `8615b0c` (PR #1). Live Ubuntu, GPU and cluster acceptance
