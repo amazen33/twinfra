@@ -225,6 +225,18 @@ class Controls(unittest.TestCase):
         self.assertIn("hashFiles('source/module-5b/reference-profile.json')", step['if'])
         self.assertIn('--require-hashes', step['run']); self.assertIn('.ci-control/tools/ci/hpc-requirements.txt', step['run'])
 
+    def test_console_dependencies_use_hashed_control_lock_only_when_present(self):
+        lines=(ROOT.parents[1]/'console/requirements.txt').read_text().splitlines()
+        packages=[line for line in lines if line and not line.startswith('#')]
+        for line in packages:
+            self.assertRegex(line,r'^[A-Za-z0-9_.-]+==[^ ]+(?: --hash=sha256:[a-f0-9]{64})+$')
+        self.assertEqual({line.split('==')[0].lower() for line in packages},{'pyjwt','cryptography','cffi','pycparser'})
+        workflow=yaml.safe_load((ROOT.parents[1]/'.github/workflows/pr-tests.yaml').read_text())
+        step=next(s for s in workflow['jobs']['test']['steps'] if s.get('name')=='Install trusted pinned console verification dependencies')
+        self.assertIn("hashFiles('source/console/requirements.txt')",step['if'])
+        self.assertIn('--require-hashes',step['run']);self.assertIn('--only-binary=:all:',step['run'])
+        self.assertIn('.ci-control/console/requirements.txt',step['run'])
+
     def test_fresh_workspace_has_empty_schema_cache(self):
         with tempfile.TemporaryDirectory() as temp:
             source = Path(temp)

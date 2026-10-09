@@ -8032,6 +8032,25 @@
       "notice": "security/licences/rag/NOTICE.md"
     },
     {
+      "id": "pip|cffi|2.0.0",
+      "ecosystem": "pip",
+      "name": "cffi",
+      "version": "2.0.0",
+      "locations": [
+        "console/requirements.txt"
+      ],
+      "spdx": "MIT-0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/python-cffi/cffi/v2.0.0/LICENSE",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:203a48d1fb583fc7d78a4c6655692963b860a417c0528492a6bc21f1aaefab25",
+        "sha256:afb8db5439b81cf9c9d0c80404b60c3cc9c3add93e114dcae767f1477cb53775"
+      ],
+      "notes": "Unmodified runtime and unit-test dependency; official wheel and bundled licence verified. Wheel dist-info licence notices are retained in the image. PyPI metadata says MIT; the shipped LICENSE and version-tagged upstream text specify MIT No Attribution (MIT-0)."
+    },
+    {
       "id": "pip|charset-normalizer|3.5.2",
       "ecosystem": "pip",
       "name": "charset-normalizer",
@@ -8252,6 +8271,25 @@
       "integrities": [
         "sha256:9acb47f6afd73f60dc1df93bb801b472f05ff42fa6c84167d25cb206be1fbf4a"
       ]
+    },
+    {
+      "id": "pip|cryptography|50.0.1",
+      "ecosystem": "pip",
+      "name": "cryptography",
+      "version": "50.0.1",
+      "locations": [
+        "console/requirements.txt"
+      ],
+      "spdx": "Apache-2.0 OR BSD-3-Clause",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/pyca/cryptography/50.0.1/LICENSE",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:51593d180cf6d179bde5c5d065bed81386b1f381656ae7d042b7ffc87a9895ad",
+        "sha256:aed8db4f6d71c51efb89530e12d9464e7bf2923d46c3205dc794a2a93f8c0648"
+      ],
+      "notes": "Unmodified runtime and unit-test dependency; official wheel and bundled licence verified. Wheel dist-info licence notices are retained in the image."
     },
     {
       "id": "pip|distro|1.9.0",
@@ -9164,6 +9202,24 @@
       "notice": "security/licences/rag/NOTICE.md"
     },
     {
+      "id": "pip|pycparser|3.0",
+      "ecosystem": "pip",
+      "name": "pycparser",
+      "version": "3.0",
+      "locations": [
+        "console/requirements.txt"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "allowed",
+      "licenceSource": "https://pypi.org/project/pycparser/3.0/",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992"
+      ],
+      "notes": "Unmodified runtime and unit-test dependency; official wheel and bundled licence verified. Wheel dist-info licence notices are retained in the image."
+    },
+    {
       "id": "pip|pydantic-core|2.46.5",
       "ecosystem": "pip",
       "name": "pydantic-core",
@@ -9333,6 +9389,24 @@
       "integrities": [
         "sha256:2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9"
       ]
+    },
+    {
+      "id": "pip|pyjwt|2.15.0",
+      "ecosystem": "pip",
+      "name": "pyjwt",
+      "version": "2.15.0",
+      "locations": [
+        "console/requirements.txt"
+      ],
+      "spdx": "MIT",
+      "class": "allowed",
+      "licenceSource": "https://pypi.org/project/PyJWT/2.15.0/",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:7a3742debf6b879e912dbb9819ceec1594be812452b78c5f2e2dfc56564954f8"
+      ],
+      "notes": "Unmodified runtime and unit-test dependency; official wheel and bundled licence verified. Wheel dist-info licence notices are retained in the image."
     },
     {
       "id": "pip|pyrsistent|0.20.0",

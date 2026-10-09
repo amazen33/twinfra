@@ -1,6 +1,8 @@
 """Portal authorization, read-only data boundaries and Kubernetes regression gates."""
 import base64
 import copy
+import hashlib
+import hmac
 import importlib.util
 import json
 from pathlib import Path
@@ -9,9 +11,15 @@ import tempfile
 import threading
 import time
 import unittest
+from unittest.mock import Mock
 from unittest.mock import patch
 import urllib.error
 import urllib.request
+import zipfile
+
+import jwt
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec, rsa
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
@@ -26,16 +34,56 @@ def load(name, path):
 aws = load('aws_views', ROOT / 'lab/wsl/console/ui.py')
 sys.modules['aws_views'] = aws
 server = load('portal_server', ROOT / 'console/server.py')
+builder = load('console_builder', ROOT / 'tools/build_console_image.py')
 
-def claims(**changes):
+# Ephemeral keys exist only in this test process, never as committed fixtures.
+RSA = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+OTHER_RSA = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+EC = ec.generate_private_key(ec.SECP256R1())
+
+
+def jwk(key=RSA, kid='rsa-key', algorithm='RS256'):
+    converter = jwt.algorithms.RSAAlgorithm if algorithm == 'RS256' else jwt.algorithms.ECAlgorithm
+    result = json.loads(converter.to_jwk(key.public_key()))
+    result.update(kid=kid, alg=algorithm, use='sig', key_ops=['verify'])
+    return result
+
+def claims(key=RSA, kid='rsa-key', algorithm='RS256', **changes):
     obj = {'sub': 'subject', 'preferred_username': 'operator', 'iss': server.ISSUER,
            'aud': server.CLIENT, 'exp': time.time() + 120,
            'resource_access': {server.CLIENT: {'roles': ['console.viewer']}}}
     obj.update(changes)
-    return base64.b64encode(json.dumps(obj).encode()).decode()
+    return jwt.encode(obj, key, algorithm=algorithm, headers={'kid': kid})
+
+
+def public_key_hmac_token():
+    # Construct the attack independently: PyJWT itself refuses asymmetric HMAC keys.
+    public = RSA.public_key().public_bytes(serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo)
+    encode = lambda raw: base64.urlsafe_b64encode(raw).rstrip(b'=')
+    body = encode(b'{"alg":"HS256","kid":"rsa-key"}') + b'.' + encode(json.dumps({
+        'iss':server.ISSUER,'aud':server.CLIENT,'sub':'subject','exp':time.time()+120,
+        'resource_access':{server.CLIENT:{'roles':['console.admin']}}}).encode())
+    return (body+b'.'+encode(hmac.new(public,body,hashlib.sha256).digest())).decode()
+
+
+def unauthorized_tokens():
+    return {
+        'forged signature': claims(key=OTHER_RSA), 'unknown kid': claims(kid='unknown'),
+        'expired': claims(exp=time.time()-server.LEEWAY-60),
+        'not yet valid': claims(nbf=time.time()+server.LEEWAY+60),
+        'wrong issuer': claims(iss='https://attacker.invalid'), 'wrong audience': claims(aud='other'),
+        'alg none': claims(key=None, algorithm='none'),
+        'HS256 public key': public_key_hmac_token(),
+        'malformed header': 'not.a.jwt', 'missing header': None,
+    }
 
 
 class PortalTests(unittest.TestCase):
+    def setUp(self):
+        self.fetch = Mock(return_value={'keys': [jwk(), jwk(EC, 'ec-key', 'ES256')]})
+        self.cache = server.JWKSCache(fetch=self.fetch)
+        self.patcher = patch.object(server, 'JWKS', self.cache)
+        self.patcher.start(); self.addCleanup(self.patcher.stop)
     def test_sources_and_image_inputs_are_current(self):
         renderer.publish(True); renderer.image()
 
@@ -44,12 +92,129 @@ class PortalTests(unittest.TestCase):
         self.assertEqual(result['roles'], ['console.viewer'])
         self.assertEqual(set(result), {'username', 'roles', 'issuer', 'client', 'adminUrl'})
 
-    def test_missing_malformed_expired_wrong_issuer_or_audience_rejected(self):
-        for value in (None, 'bad-base64', 'e30=', claims(exp=time.time()-1), claims(iss='https://attacker.invalid'), claims(aud='other'), claims(exp='bad')):
-            with self.subTest(value=bool(value)), self.assertRaises(server.Unauthorized): server.identity(value)
+    def test_work_order_401_matrix(self):
+        for name, token in unauthorized_tokens().items():
+            with self.subTest(case=name), self.assertRaises(server.Unauthorized): server.identity(token)
+
+    def test_es256_and_authorized_party_client_are_accepted(self):
+        self.assertEqual(server.identity(claims(key=EC, kid='ec-key', algorithm='ES256'))['roles'], ['console.viewer'])
+        self.assertEqual(server.identity(claims(aud='account', azp=server.CLIENT))['client'], server.CLIENT)
+        self.assertEqual(server.identity(claims(aud=[], azp=server.CLIENT))['client'], server.CLIENT)
+        token=jwt.encode({'iss':server.ISSUER,'sub':'subject','azp':server.CLIENT,'exp':time.time()+120,
+                          'resource_access':{server.CLIENT:{'roles':['console.viewer']}}},
+                         RSA,algorithm='RS256',headers={'kid':'rsa-key'})
+        self.assertEqual(server.identity(token)['client'],server.CLIENT)
+
+    def test_time_claims_required_typed_and_bounded_leeway(self):
+        for values in ({'exp': None}, {'exp': 'bad'}, {'exp': True}, {'exp': float('inf')},
+                       {'nbf': 'bad'}, {'nbf': float('nan')}, {'iss': server.ISSUER+'/'}, {'aud': [42]}, {'azp':'other','aud':'other'}):
+            with self.subTest(case=tuple(values)), self.assertRaises(server.Unauthorized): server.identity(claims(**values))
+        token = jwt.encode({'iss': server.ISSUER, 'sub':'subject', 'aud':server.CLIENT}, RSA, algorithm='RS256', headers={'kid':'rsa-key'})
+        with self.assertRaises(server.Unauthorized): server.identity(token)
+        self.assertLessEqual(server.LEEWAY, 60)
+        self.assertEqual(server.identity(claims(exp=time.time()-server.LEEWAY+5))['client'],server.CLIENT)
+        self.assertEqual(server.identity(claims(nbf=time.time()+server.LEEWAY-5))['client'],server.CLIENT)
+
+    def test_bad_header_algorithms_never_trigger_key_fetch(self):
+        cases = [claims(key=None,algorithm='none'), public_key_hmac_token(),
+                 claims(key=b'test'*12,algorithm='HS384'), claims(key=b'test'*16,algorithm='HS512'),
+                 claims(algorithm='RS512'),
+                 jwt.encode({'exp':time.time()+60}, RSA, algorithm='RS256'),
+                 claims(headers='unused')+' ', 'x'*32769, 'not.a.jwt']
+        for token in cases:
+            with self.assertRaises(server.Unauthorized): server.identity(token)
+        self.fetch.assert_not_called()
+
+    def test_unknown_kid_rotation_refresh_rate_is_global(self):
+        clock = Mock(return_value=0)
+        fetch = Mock(side_effect=[{'keys':[jwk()]}, {'keys':[jwk(OTHER_RSA, 'rotated')]}])
+        cache = server.JWKSCache(fetch=fetch,clock=clock)
+        with patch.object(server,'JWKS',cache):
+            server.identity(claims())
+            with self.assertRaises(server.Unauthorized): server.identity(claims(key=OTHER_RSA,kid='rotated'))
+            self.assertEqual(fetch.call_count,1)
+            clock.return_value=60
+            self.assertEqual(server.identity(claims(key=OTHER_RSA,kid='rotated'))['client'],server.CLIENT)
+            for number in range(10):
+                with self.assertRaises(server.Unauthorized): server.identity(claims(kid='unknown-'+str(number)))
+            self.assertEqual(fetch.call_count,2)
+            with self.assertRaises(server.Unauthorized): server.identity(claims())  # Removed key revoked on refresh.
+
+    def test_expired_cache_and_failed_fetch_are_fail_closed_and_rate_limited(self):
+        clock=Mock(return_value=0); fetch=Mock(side_effect=[{'keys':[jwk()]}, OSError('offline')])
+        cache=server.JWKSCache(fetch=fetch,clock=clock)
+        with patch.object(server,'JWKS',cache):
+            server.identity(claims())
+            clock.return_value=301
+            with self.assertRaises(server.Unauthorized): server.identity(claims())
+            clock.return_value=320
+            with self.assertRaises(server.Unauthorized): server.identity(claims())
+            self.assertEqual(fetch.call_count,2)
+
+    def test_jwks_key_type_curve_usage_and_ambiguity_rejected(self):
+        invalid = [[], [jwk(),jwk()], [dict(jwk(),kty='oct')], [dict(jwk(),alg='HS256')],
+                   [dict(jwk(),use='enc')], [dict(jwk(),key_ops=['sign'])], [dict(jwk(),d='private')],
+                   [dict(jwk(EC,'ec-key','ES256'),crv='P-384')]]
+        for keys in invalid:
+            with self.subTest(case=len(keys)), patch.object(server,'JWKS',server.JWKSCache(fetch=lambda:{'keys':keys})):
+                token=claims(key=EC,kid='ec-key',algorithm='ES256') if keys and keys[0].get('kid')=='ec-key' else claims()
+                with self.assertRaises(server.Unauthorized): server.identity(token)
+
+    def test_jwks_uses_fixed_url_private_ca_no_redirect_and_bounded_response(self):
+        import ssl
+        context=ssl.create_default_context()
+        self.assertTrue(context.check_hostname); self.assertEqual(context.verify_mode,ssl.CERT_REQUIRED)
+        response=Mock(); response.__enter__=Mock(return_value=response); response.__exit__=Mock(return_value=False)
+        response.read.return_value=b'{"keys":[]}'
+        opener=Mock(); opener.open.return_value=response
+        with patch.object(server.ssl,'create_default_context',return_value=context) as trust, patch.object(server.urllib.request,'build_opener',return_value=opener) as create:
+            server.fetch_jwks()
+            trust.assert_called_once_with(cafile=str(server.OIDC_CA))
+            opener.open.assert_called_once_with(server.JWKS_URL,timeout=4)
+            self.assertIsInstance(create.call_args.args[0],server.NoRedirect)
+            self.assertIsNone(create.call_args.args[0].redirect_request(None,None,None,None,None,None))
+            response.read.assert_called_once_with(65537)
+            response.read.return_value=b'x'*65537
+            with self.assertRaises(ValueError): server.fetch_jwks()
+
+    def test_jwks_tls_failure_returns_unauthorized(self):
+        import ssl
+        with patch.object(server,'JWKS',server.JWKSCache(fetch=Mock(side_effect=ssl.SSLError('untrusted')))):
+            with self.assertRaises(server.Unauthorized): server.identity(claims())
+
+    def test_concurrent_unknown_kids_do_not_multiply_fetches(self):
+        clock=Mock(return_value=0); fetch=Mock(return_value={'keys':[jwk()]})
+        cache=server.JWKSCache(fetch=fetch,clock=clock)
+        errors=[]
+        def attempt(number):
+            try: cache.key('unknown-'+str(number),'RS256')
+            except ValueError: errors.append(number)
+        threads=[threading.Thread(target=attempt,args=(number,)) for number in range(12)]
+        for thread in threads:thread.start()
+        for thread in threads:thread.join()
+        self.assertEqual(len(errors),12); self.assertEqual(fetch.call_count,1)
+
+    def test_dependency_payload_preserves_notices_and_rejects_bad_artifacts(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp); (root/'console').mkdir(); wheels=root/'wheels'; wheels.mkdir()
+            path=wheels/'sample-1.0-py3-none-any.whl'
+            def fixture(member='sample/__init__.py', altered_hash=False):
+                with zipfile.ZipFile(path,'w') as archive:
+                    archive.writestr(member,b'# fixture')
+                    archive.writestr('sample-1.0.dist-info/licenses/LICENSE',b'fixture licence notice')
+                value='0'*64 if altered_hash else hashlib.sha256(path.read_bytes()).hexdigest()
+                (root/'console/requirements.txt').write_text('sample==1.0 --hash=sha256:'+value+'\n')
+            with patch.object(builder,'ROOT',root):
+                fixture()
+                self.assertEqual(builder.dependencies(wheels)['app/vendor/sample-1.0.dist-info/licenses/LICENSE'],b'fixture licence notice')
+                for member,changed in [('sample/__init__.py',True),('../escape.py',False),('startup.pth',False)]:
+                    fixture(member,changed)
+                    with self.assertRaises(ValueError): builder.dependencies(wheels)
+                path.unlink()
+                with self.assertRaises(ValueError): builder.dependencies(wheels)
 
     def test_roleless_authenticated_user_is_forbidden(self):
-        for roles in ([], ['realm-admin'], ['console.admin-other'], None):
+        for roles in ([], ['realm-admin'], ['console.admin-other'], None, [{}]):
             with self.assertRaises(server.Forbidden): server.identity(claims(resource_access={server.CLIENT: {'roles': roles}}))
 
     def test_admin_and_array_audience_are_accepted(self):
@@ -119,7 +284,11 @@ class PortalTests(unittest.TestCase):
             self.assertIn('resource_access',json.dumps(conf['claim_schema']))
             self.assertNotIn('client_secret',conf)
             rewrite=next(p['config'] for p in rule['plugins'] if p['name']=='proxy-rewrite')
-            self.assertIn('Cookie',rewrite['headers']['remove']); self.assertNotIn('X-ID-Token',rewrite['headers']['remove'])
+            self.assertIn('Cookie',rewrite['headers']['remove']); self.assertIn('X-ID-Token',rewrite['headers']['remove'])
+            self.assertNotIn('X-Access-Token',rewrite['headers']['remove'])
+            self.assertTrue(conf['set_access_token_header']); self.assertFalse(conf['set_id_token_header'])
+            scrub=next(p['config']['functions'][0] for p in rule['plugins'] if p['name']=='serverless-pre-function')
+            self.assertIn("'X-Access-Token'",scrub); self.assertIn("'X-ID-Token'",scrub)
             self.assertFalse(any(p['name']=='cors' for p in rule['plugins']))
 
     def test_route_priority_and_prefix_boundaries(self):
@@ -141,6 +310,10 @@ class PortalTests(unittest.TestCase):
         self.assertNotIn('secret',c)
         role=next(m for m in c['protocolMappers'] if m['name']=='console-roles')
         self.assertEqual(role['config']['claim.name'],'resource_access.vcloud-console.roles')
+        self.assertEqual(role['config']['access.token.claim'],'true')
+        audience=next(m for m in c['protocolMappers'] if m['name']=='console-audience')
+        self.assertEqual(audience['config']['included.client.audience'],server.CLIENT)
+        self.assertEqual(audience['config']['access.token.claim'],'true')
 
     def test_password_change_provider_registered_and_idempotent_without_user_reset(self):
         actions=[]; calls=[]
@@ -203,6 +376,18 @@ class PortalTests(unittest.TestCase):
         self.assertEqual(value['apisix']['ssl']['ssl_trusted_certificate'],'/oidc-trust/tls.crt')
         self.assertNotIn('$request_uri',value['nginx_config']['http']['access_log_format'])
 
+    def test_backend_has_public_ca_and_only_scoped_keycloak_egress(self):
+        pod=renderer.workloads()[0]['spec']['template']['spec']
+        trust=next(v for v in pod['volumes'] if v['name']=='oidc-trust')
+        self.assertEqual(trust['secret']['items'],[{'key':'tls.crt','path':'tls.crt'}])
+        policies={v['metadata']['name']:v['spec'] for v in renderer.bootstrap() if v['kind']=='CiliumNetworkPolicy'}
+        outgoing=policies['vcloud-portal']['egress']
+        self.assertTrue(any(r.get('toEndpoints',[{}])[0].get('matchLabels',{}).get('k8s:app.kubernetes.io/name')=='keycloak'
+                            and r['toPorts'][0]['ports']==[{'port':'8443','protocol':'TCP'}] for r in outgoing))
+        self.assertFalse(any('world' in r.get('toEntities',[]) for r in outgoing))
+        allowed=policies['vcloud-portal-keycloak']['ingress'][0]['fromEndpoints']
+        self.assertEqual({p['matchLabels']['k8s:app.kubernetes.io/name'] for p in allowed},{'apisix','vcloud-console'})
+
     def test_http_auth_static_traversal_and_readonly_methods(self):
         with tempfile.TemporaryDirectory() as temp:
             static=Path(temp); (static/'index.html').write_text('<title>vCloud</title>')
@@ -211,8 +396,8 @@ class PortalTests(unittest.TestCase):
             origin='http://127.0.0.1:'+str(http.server_port)
             try:
                 with patch.object(server,'STATIC',static):
-                    for path,headers,expected in [('/console/',{},401),('/console/',{'X-ID-Token':claims()},200),
-                        ('/healthz',{},200),('/console/assets/../../server.py',{'X-ID-Token':claims()},404)]:
+                    for path,headers,expected in [('/console/',{},401),('/console/',{'X-Access-Token':claims()},200),
+                        ('/healthz',{},200),('/console/assets/../../server.py',{'X-Access-Token':claims()},404)]:
                         req=urllib.request.Request(origin+path,headers=headers)
                         try: response=urllib.request.urlopen(req,timeout=2)
                         except urllib.error.HTTPError as e: response=e
@@ -225,6 +410,30 @@ class PortalTests(unittest.TestCase):
                     self.assertEqual(error.exception.headers['Connection'],'close')
                     error.exception.close()
             finally: http.shutdown(); http.server_close(); thread.join()
+
+    def test_http_work_order_matrix_json_errors_and_direct_spoof_rejection(self):
+        from http.client import HTTPConnection
+        http=server.ThreadingHTTPServer(('127.0.0.1',0),server.Handler)
+        thread=threading.Thread(target=http.serve_forever,daemon=True); thread.start()
+        try:
+            tests=[(name, [] if token is None else [('X-Access-Token',token)],401)
+                   for name,token in unauthorized_tokens().items()]
+            tests += [('old unsigned header',[('X-ID-Token',base64.b64encode(b'{"role":"console.admin"}').decode())],401),
+                      ('duplicate header',[('X-Access-Token',claims()),('X-Access-Token',claims())],401),
+                      ('roleless',[('X-Access-Token',claims(resource_access={}))],403),
+                      ('valid',[('X-Access-Token',claims())],200)]
+            for name,headers,expected in tests:
+                with self.subTest(case=name):
+                    conn=HTTPConnection('127.0.0.1',http.server_port,timeout=2)
+                    try:
+                        conn.putrequest('GET','/console/api/identity')
+                        for header,value in headers:conn.putheader(header,value)
+                        conn.endheaders(); response=conn.getresponse(); body=json.loads(response.read())
+                        self.assertEqual(response.status,expected)
+                        if expected!=200:self.assertEqual(body,{'error':'Console role required' if expected==403 else 'Session required'})
+                        self.assertFalse(any(value and value in json.dumps(body) for _,value in headers))
+                    finally:conn.close()
+        finally:http.shutdown(); http.server_close(); thread.join()
 
 
 if __name__=='__main__': unittest.main()

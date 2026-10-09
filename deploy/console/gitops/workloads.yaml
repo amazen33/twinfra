@@ -24,7 +24,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: console
-        image: registry.vcloud.example.com/vcloud/vcloud-console@sha256:8353b3f6e45704846c5f9ff21feacd56f106ad3ac46f8f76eab688d9d5b79c43
+        image: registry.vcloud.example.com/vcloud/vcloud-console@sha256:f5bf8ddc64cb61d5ce4f35fadf1e8e9e384c4a6e766b3668470a6e299b598986
         ports:
         - name: http
           containerPort: 3000
@@ -38,6 +38,9 @@ spec:
         volumeMounts:
         - name: api-identity
           mountPath: /var/run/secrets/vcloud
+          readOnly: true
+        - name: oidc-trust
+          mountPath: /oidc-trust
           readOnly: true
         readinessProbe: &id002
           exec:
@@ -72,6 +75,13 @@ spec:
               items:
               - key: ca.crt
                 path: ca.crt
+      - name: oidc-trust
+        secret:
+          secretName: vcloud-wsl-keycloak-tls
+          items:
+          - key: tls.crt
+            path: tls.crt
+          defaultMode: 288
       serviceAccountName: vcloud-console
 ---
 apiVersion: v1
@@ -164,8 +174,8 @@ spec:
           cookie_same_site: Lax
           idling_timeout: 900
           absolute_timeout: 3600
-        set_id_token_header: true
-        set_access_token_header: false
+        set_id_token_header: false
+        set_access_token_header: true
         set_refresh_token_header: false
         set_userinfo_header: false
         accept_none_alg: false
@@ -214,7 +224,7 @@ spec:
           remove:
           - Authorization
           - Cookie
-          - X-Access-Token
+          - X-ID-Token
           - X-Userinfo
           - X-Refresh-Token
           - X-Raw-ID-Token
@@ -306,8 +316,8 @@ spec:
           cookie_same_site: Lax
           idling_timeout: 900
           absolute_timeout: 3600
-        set_id_token_header: true
-        set_access_token_header: false
+        set_id_token_header: false
+        set_access_token_header: true
         set_refresh_token_header: false
         set_userinfo_header: false
         accept_none_alg: false
@@ -356,7 +366,7 @@ spec:
           remove:
           - Authorization
           - Cookie
-          - X-Access-Token
+          - X-ID-Token
           - X-Userinfo
           - X-Refresh-Token
           - X-Raw-ID-Token
@@ -449,8 +459,8 @@ spec:
           cookie_same_site: Lax
           idling_timeout: 900
           absolute_timeout: 3600
-        set_id_token_header: true
-        set_access_token_header: false
+        set_id_token_header: false
+        set_access_token_header: true
         set_refresh_token_header: false
         set_userinfo_header: false
         accept_none_alg: false
@@ -500,7 +510,7 @@ spec:
           remove:
           - Authorization
           - Cookie
-          - X-Access-Token
+          - X-ID-Token
           - X-Userinfo
           - X-Refresh-Token
           - X-Raw-ID-Token
@@ -596,8 +606,8 @@ spec:
           cookie_same_site: Lax
           idling_timeout: 900
           absolute_timeout: 3600
-        set_id_token_header: true
-        set_access_token_header: false
+        set_id_token_header: false
+        set_access_token_header: true
         set_refresh_token_header: false
         set_userinfo_header: false
         accept_none_alg: false
@@ -647,7 +657,7 @@ spec:
           remove:
           - Authorization
           - Cookie
-          - X-Access-Token
+          - X-ID-Token
           - X-Userinfo
           - X-Refresh-Token
           - X-Raw-ID-Token

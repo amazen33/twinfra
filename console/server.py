@@ -4,21 +4,25 @@
 
 The gateway validates signed OIDC tokens, scrubs spoofed identity headers, and
 enforces console roles. Cilium admits only APISIX. This server repeats claim/RBAC
-checks; it does NOT independently verify the gateway's base64 JSON ID header.
+checks after independently verifying the signed access token against Keycloak JWKS.
 No token, cookie, password, query string or upstream response is logged.
 """
-import base64
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import math
 import mimetypes
 import os
 from pathlib import Path
+import re
 import ssl
+import threading
 import time
 from urllib.parse import parse_qs, quote, urlsplit
 import urllib.request
 import xml.etree.ElementTree as ET
+
+import jwt
 
 from aws_views import read, signed_request, xml_values
 
@@ -29,34 +33,109 @@ ROLES = {'console.viewer', 'console.admin'}
 STATIC = Path(os.environ.get('VCLOUD_STATIC', '/app/public'))
 SA = Path('/var/run/secrets/vcloud')
 MAX_BYTES = 1024 * 1024
+JWKS_URL = 'https://keycloak.platform-services.svc.cluster.local/realms/vcloud/protocol/openid-connect/certs'
+OIDC_CA = Path('/oidc-trust/tls.crt')
+ALGORITHMS = {'RS256': 'RSA', 'ES256': 'EC'}
+LEEWAY = 30  # Seconds, never more than the work order's 60-second limit.
 
 
 class Unauthorized(ValueError): pass
 class Forbidden(ValueError): pass
 
 
-def identity(header):
-    if not header or len(header) > 32768:
-        raise Unauthorized('Missing gateway session')
-    try:
-        claims = json.loads(base64.b64decode(header, validate=True))
-        audience = claims['aud']
-        if not isinstance(audience, list): audience = [audience]
-        if claims['iss'] != ISSUER or CLIENT not in audience or float(claims['exp']) <= time.time():
-            raise Unauthorized('Invalid gateway session')
-        roles = claims.get('resource_access', {}).get(CLIENT, {}).get('roles', [])
-        if not isinstance(roles, list) or not any(role in ROLES for role in roles):
-            raise Forbidden('Console role required')
-        return {'username': str(claims.get('preferred_username') or claims['sub'])[:128],
-                'roles': sorted(ROLES.intersection(roles)), 'issuer': ISSUER,
-                'client': CLIENT, 'adminUrl': 'https://localhost:18443/admin/'}
-    except (KeyError, TypeError, json.JSONDecodeError, ValueError) as error:
-        if isinstance(error, (Unauthorized, Forbidden)): raise
-        raise Unauthorized('Invalid gateway session') from None
-
-
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, *args): return None
+
+
+def fetch_jwks():
+    # Fixed private TLS endpoint: never follow token-provided jku/x5u or redirects.
+    context = ssl.create_default_context(cafile=str(OIDC_CA))
+    opener = urllib.request.build_opener(NoRedirect(), urllib.request.HTTPSHandler(context=context))
+    with opener.open(JWKS_URL, timeout=4) as response:
+        raw = response.read(65537)
+    if len(raw) > 65536: raise ValueError('Bounded JWKS response exceeded')
+    return json.loads(raw)
+
+
+class JWKSCache:
+    """Thread-safe, five-minute key cache; all fetch attempts have a 60s cooldown.
+
+    Unknown kids can request a refresh after the cooldown, including during key
+    rotation. Failed fetches also consume the cooldown and never renew stale keys.
+    """
+    def __init__(self, fetch=None, clock=None):
+        self.fetch = fetch or fetch_jwks
+        self.clock = clock or time.monotonic
+        self.keys = {}
+        self.fetched_at = float('-inf')
+        self.attempted_at = float('-inf')
+        self.lock = threading.Lock()
+
+    def key(self, kid, algorithm):
+        with self.lock:
+            now = self.clock()
+            fresh = now - self.fetched_at < 300
+            if (not fresh or kid not in self.keys) and now - self.attempted_at >= 60:
+                self.attempted_at = now
+                value = self.fetch()
+                keys = value.get('keys') if isinstance(value, dict) else None
+                if not isinstance(keys, list) or not 1 <= len(keys) <= 64:
+                    raise ValueError('Invalid JWKS')
+                accepted = {}
+                for key in keys:
+                    if not isinstance(key, dict): raise ValueError('Invalid JWK')
+                    key_id = key.get('kid')
+                    if not isinstance(key_id, str) or not 1 <= len(key_id) <= 256:
+                        raise ValueError('Invalid key ID')
+                    if key_id in accepted: raise ValueError('Ambiguous key ID')
+                    accepted[key_id] = key
+                self.keys, self.fetched_at = accepted, now
+                fresh = True
+            if not fresh or kid not in self.keys: raise ValueError('Unknown or stale key')
+            key = self.keys[kid]
+            if (key.get('kty') != ALGORITHMS[algorithm] or key.get('alg', algorithm) != algorithm
+                    or key.get('use', 'sig') != 'sig' or 'd' in key
+                    or ('key_ops' in key and key['key_ops'] != ['verify'])
+                    or (algorithm == 'ES256' and key.get('crv') != 'P-256')):
+                raise ValueError('Incompatible signing key')
+            return jwt.PyJWK.from_dict(key, algorithm=algorithm).key
+
+
+JWKS = JWKSCache()
+
+
+def identity(header):
+    try:
+        if not isinstance(header, str) or len(header) > 32768 or not re.fullmatch(r'[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+', header):
+            raise ValueError('Malformed or missing token')
+        untrusted = jwt.get_unverified_header(header)
+        algorithm, kid = untrusted.get('alg'), untrusted.get('kid')
+        if (algorithm not in ALGORITHMS or not isinstance(kid, str) or not 1 <= len(kid) <= 256
+                or untrusted.get('crit') or untrusted.get('b64') is False):
+            raise ValueError('Unsupported signing header')
+        claims = jwt.decode(header, JWKS.key(kid, algorithm), algorithms=[algorithm],
+            issuer=ISSUER, leeway=LEEWAY, options={'require': ['iss', 'exp', 'sub'], 'verify_aud': False})
+        audience = claims.get('aud', [])
+        if isinstance(audience, str): audience = [audience]
+        if not isinstance(audience, list) or not all(isinstance(v, str) for v in audience):
+            raise ValueError('Malformed audience')
+        if CLIENT not in audience and claims.get('azp') != CLIENT:
+            raise ValueError('Wrong client')
+        # Reject non-finite/coerced NumericDates, not just expired/future values.
+        for name in ('exp', 'nbf'):
+            if name in claims and (type(claims[name]) not in (int, float) or not math.isfinite(claims[name])):
+                raise ValueError('Invalid time claim')
+    except Exception:
+        # Library/network/TLS errors are fail-closed and never expose token data.
+        raise Unauthorized('Invalid gateway session') from None
+    access = claims.get('resource_access', {})
+    client = access.get(CLIENT, {}) if isinstance(access, dict) else {}
+    roles = client.get('roles', []) if isinstance(client, dict) else []
+    roles = {r for r in roles if isinstance(r, str)} if isinstance(roles, list) else set()
+    if not ROLES.intersection(roles): raise Forbidden('Console role required')
+    return {'username': str(claims.get('preferred_username') or claims['sub'])[:128],
+            'roles': sorted(ROLES.intersection(roles)), 'issuer': ISSUER,
+            'client': CLIENT, 'adminUrl': 'https://localhost:18443/admin/'}
 
 
 def kube(path):
@@ -155,7 +234,9 @@ class Handler(BaseHTTPRequestHandler):
             url = urlsplit(self.path)
             if url.path == '/healthz':
                 self.respond(200, b'{"status":"running"}'); return
-            user = identity(self.headers.get('X-ID-Token'))
+            headers = self.headers.get_all('X-Access-Token', [])
+            if len(headers) != 1: raise Unauthorized('Missing or ambiguous token')
+            user = identity(headers[0])
             if url.path.startswith('/console/api/'):
                 view = url.path.removeprefix('/console/api/')
                 query = parse_qs(url.query, max_num_fields=4, strict_parsing=True)

@@ -20,10 +20,12 @@ reference remains gated and is not this implementation's activated hostname.
 
 Use confidential code flow, PKCE S256, exact callback and validated TLS,
 signature, issuer, audience and client roles. APISIX owns the encrypted
-HttpOnly session and scrubs spoofed headers. The read-only Python BFF repeats
-claims/roles checks and is reachable only from APISIX under Cilium. It trusts
-gateway signature validation; its decoded identity header is not a separately
-signed token. Expose no JWT/cookie/emulator credential to browser code.
+HttpOnly session and scrubs spoofed headers. The read-only Python BFF verifies
+the access token independently and is reachable only from APISIX under Cilium.
+APISIX forwards the signed `X-Access-Token`; the BFF verifies RS256/ES256 against
+cached Keycloak JWKS over the validated private TLS backchannel, exact issuer,
+console audience or authorized party, time claims and client roles. Expose no
+JWT/cookie/emulator credential to browser code.
 
 `console.viewer` and `console.admin` grant portal access only. The dedicated
 realm account receives `console.admin`, required password change and MFA,
@@ -49,6 +51,15 @@ The portal is MIT; upstream projects retain their licenses. Emulator state is
 ephemeral. No real VM provisioning, MinIO server, Spinifex offload or OpenBao
 unseal is implied. Strict PSS, immutable digest/cache-first images, no host
 mounts, bounded responses and fixed backends are enforced and tested.
+
+WO-04 removes reliance on gateway signature validation alone. Missing/invalid
+tokens receive 401; independently verified roleless tokens receive 403. Unknown
+key IDs can refresh the cache at most once per minute; stale keys and TLS/fetch
+failures fail closed. The BFF mounts only the existing public Keycloak certificate
+and gains only scoped Keycloak TLS egress. This adds hash-pinned PyJWT,
+cryptography and their registered dependencies; no login/cookie or write API
+change is included. WO-04's browser and direct-backend live acceptance remain
+Pending on VM `lab-1` after WO-21; the earlier WSL receipt is historical evidence.
 
 Static CI and live browser acceptance are separate. Negative role access,
 spoofed headers and post-logout rejection are required. Endpoint reconciliation
