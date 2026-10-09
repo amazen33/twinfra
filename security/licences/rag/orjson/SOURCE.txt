@@ -1,0 +1,4 @@
+orjson 3.12.0
+Corresponding unmodified source: https://files.pythonhosted.org/packages/0f/f3/742fb1f62b825f2c010697eaf4e828004bc2a81e7e806666989c132c7c42/orjson-3.12.0.tar.gz
+SHA256: d14203fb1aae2ad9b3d52f8a0e82aeb10197ef1c9bc61da7f358bd70b00123d5
+The upstream source is referenced, not vendored. Preserve source availability and review obligations before distribution.

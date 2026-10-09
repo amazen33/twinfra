@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "decision": "0044",
+  "permitted": [
+    "MIT",
+    "MIT-0",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "0BSD",
+    "PostgreSQL",
+    "BlueOak-1.0.0",
+    "CC0-1.0",
+    "PSF-2.0",
+    "Python-2.0",
+    "CNRI-Python",
+    "Zlib",
+    "Unlicense",
+    "BSL-1.0",
+    "BSD-3-Clause-Open-MPI",
+    "ICU"
+  ],
+  "permittedExceptions": [
+    "GCC-exception-3.1",
+    "LLVM-exception"
+  ],
+  "classes": [
+    "allowed",
+    "build-tool",
+    "weak-copyleft",
+    "base-os",
+    "operator-pulled",
+    "disabled-module",
+    "exception",
+    "pending-removal",
+    "blocked"
+  ],
+  "blocked": [
+    "AGPL-*",
+    "GPL-*",
+    "LGPL-*",
+    "SSPL-1.0",
+    "BUSL-1.1",
+    "Elastic-2.0",
+    "account-gated"
+  ],
+  "disabledModules": [
+    "module-5a/",
+    "module-5b/"
+  ],
+  "baseOSRepositories": [
+    "docker.io/library/python",
+    "docker.io/library/busybox",
+    "docker.io/rancher/mirrored-library-busybox",
+    "docker.io/library/alpine",
+    "docker.io/library/debian",
+    "docker.io/library/ubuntu"
+  ],
+  "operatorPulledRepositories": [
+    "docker.io/nvidia/cuda"
+  ],
+  "pendingRemoval": [
+    "public.ecr.aws/docker/library/redis",
+    "docker.io/grafana/grafana",
+    "docker.io/localstack/localstack"
+  ],
+  "baselineKinds": [
+    "apt-pins",
+    "image-sbom",
+    "schema-source",
+    "inert-default",
+    "image-digest",
+    "licence-source",
+    "artifact-integrity",
+    "notice-evidence"
+  ],
+  "exceptions": {
+    "psycopg": {
+      "spdx": "LGPL-3.0-only",
+      "adr": "0043",
+      "module": "module-5a/"
+    },
+    "psycopg-binary": {
+      "spdx": "LGPL-3.0-only",
+      "adr": "0043",
+      "module": "module-5a/"
+    },
+    "psycopg-pool": {
+      "spdx": "LGPL-3.0-only",
+      "adr": "0043",
+      "module": "module-5a/"
+    }
+  },
+  "historicalExceptions": [
+    {
+      "component": "OpenBao",
+      "spdx": "MPL-2.0",
+      "adr": "0030",
+      "currentClass": "weak-copyleft"
+    },
+    {
+      "component": "certifi",
+      "spdx": "MPL-2.0",
+      "adr": "0043",
+      "currentClass": "weak-copyleft"
+    }
+  ],
+  "expiryAnchor": "Initial approval 2026-10-09; conservative fixed dates, no later than merge + 60/120 days. No automatic extensions."
+}

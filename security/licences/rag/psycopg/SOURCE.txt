@@ -1,0 +1,4 @@
+psycopg 3.3.6
+Corresponding unmodified source: https://files.pythonhosted.org/packages/76/26/3ea4ca5eaea1c0debcdf7ee7c1613fbe721dc27a03c461c0817ffd8a0601/psycopg-3.3.6.tar.gz
+SHA256: c081f2250df751a943036e42db6df4571c66cd0aabe8291a7a506512b12007d2
+The upstream source is referenced, not vendored. Preserve source availability and review obligations before distribution.

@@ -1,0 +1,4 @@
+psycopg-pool 3.3.3
+Corresponding unmodified source: https://files.pythonhosted.org/packages/74/5e/c0664b968b102ff68b811d999c728546c48d5c1eec03e3bbaf88c0cb4472/psycopg_pool-3.3.3.tar.gz
+SHA256: df87b5d9d0ad7db37f6cdad4fa8ce113d250f5997f6db38e9a99192fb67f9e1d
+The upstream source is referenced, not vendored. Preserve source availability and review obligations before distribution.

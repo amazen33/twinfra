@@ -1,5 +1,7 @@
 # ADR-0030: Licence policy, MIT-first
 
+Amended by [ADR-0042](0042-build-time-tools-and-reference-only-artifacts.md) and [ADR-0044](0044-licence-gate-scope-and-classes.md).
+
 **Status:** Accepted (owner, 2026-10-08)
 **Author:** Claude (platform architecture). **Decider:** vCloud owner. **Records:** D2.
 

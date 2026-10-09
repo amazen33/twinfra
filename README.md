@@ -1,6 +1,6 @@
 # vCloud platform bootstrap and architecture
 
-[The ADR log](docs/adr/README.md) contains 35 records, including 17 Module 1 component ADRs,
+[The ADR log](docs/adr/README.md) contains 38 records, including 17 Module 1 component ADRs,
 the [complete Mermaid/ASCII topology](docs/module-1-topology.md), and a
 [recruiter-friendly summary](docs/module-1-summary.md). Component choices follow the
 user's requirements. The log distinguishes receipt-backed lab acceptance, proposed
@@ -8,6 +8,12 @@ integration gates and superseding owner decisions; production acceptance remains
 See the [original Module 1 documentation checks](docs/module-1-validation.json) for historical static evidence.
 
 ## Repository governance
+
+The offline [licence policy](security/licence-policy.json),
+[component register](security/licence-register.json), and
+[dated evidence baseline](security/licence-baseline.json) implement WO-02.
+See the [licence gate runbook](security/LICENSING.md) for classes, expiry dates,
+disabled-module guards and the candidate-only historical CI boundary.
 
 The [roles and Definition of Done](docs/governance/roles.md) define product ownership,
 architecture review, implementation and tester acceptance. The owner applies the
