@@ -1,0 +1,19 @@
+{
+  "security/licences/rag/certifi/LICENSE": "e93716da6b9c0d5a4a1df60fe695b370f0695603d21f6f83f053e42cfc10caf7",
+  "security/licences/rag/certifi/SOURCE.txt": "15bd6d527abf426bc6bbac2f08a670343d7499931176e7cd5cfaaf0efb862c55",
+  "security/licences/rag/GPL-3.0.txt": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+  "security/licences/rag/MPL-2.0.txt": "a370fb74ebae555472e6c27650ef446fbd82b87fcba8416c58a10184f5ef5289",
+  "security/licences/rag/NOTICE.md": "8310fd26f968b4a87e00dbec2fa195ade4038471005dc4a2f21761dcd0e24e83",
+  "security/licences/rag/orjson/LICENSE-APACHE": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+  "security/licences/rag/orjson/LICENSE-MIT": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+  "security/licences/rag/orjson/LICENSE-MPL-2.0": "66a3107d5ad6a058aab753eaac2047ccb2ed0e39465dd0fe5844da3e300d5172",
+  "security/licences/rag/orjson/SOURCE.txt": "6f392432393a0df3ebae6dd6bd9ae88fa9eb215497966be4cb7b150bbaba6358",
+  "security/licences/rag/psycopg/LICENSE.txt": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+  "security/licences/rag/psycopg/SOURCE.txt": "53580324429d1b0c2aa75349343be209e825ca7e06cff1f7a36232ce189a93ab",
+  "security/licences/rag/psycopg-binary/LICENSE.txt": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+  "security/licences/rag/psycopg-binary/SOURCE.txt": "073e41ee88e88492eaad93c67dee1fa67e287b5e161ff037034b03bd5e83a5d2",
+  "security/licences/rag/psycopg-pool/LICENSE.txt": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+  "security/licences/rag/psycopg-pool/SOURCE.txt": "a00d6bd2d8cf4486764c9a65f390bf069c54bc8573c46ce45561854a0fcf81d1",
+  "security/licences/rag/tqdm/LICENCE": "fcff87c3a47ce8028a8512aa182d4fcf0ad1c90544ee75cf9b343684cac194de",
+  "security/licences/rag/tqdm/SOURCE.txt": "623771d75ba93f7d25b51013712f92b28747d04c6d7de77934006ae88c5aa6ef"
+}

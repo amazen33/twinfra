@@ -1,0 +1,5 @@
+psycopg-binary 3.3.6
+Corresponding extension source: https://github.com/psycopg/psycopg/tree/a67654d1e7afbf9b3a619557838f62de1c790e7c/psycopg_c
+Release tag 3.3.6 resolves to commit a67654d1e7afbf9b3a619557838f62de1c790e7c.
+Source archive: https://github.com/psycopg/psycopg/archive/a67654d1e7afbf9b3a619557838f62de1c790e7c.tar.gz
+The upstream source is referenced, not vendored. Preserve source availability and review redistribution obligations, including bundled client libraries, before distribution.

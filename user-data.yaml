@@ -1,5 +1,5 @@
 #cloud-config
-# Generated; script SHA256=afa163a136469ba64a4bee20bf53bd3f22bbc33943ca1222a2d3c02f44407970.
+# Generated; script SHA256=74a42326548e11d5b632f995dc73766e3fc8b843445cc20e43ca823aa165dc0f.
 # Source template. Run `python3 tools/render_cloud_init.py` after changing the script.
 # The generated user-data.yaml embeds the complete script; it requires no script URL.
 package_update: true
@@ -29,7 +29,7 @@ write_files:
       HUGEPAGES_2M=128
       HUGEPAGES_1G=1
       MIN_NORMAL_RAM_MIB=4096
-      ENABLE_GPU=auto
+      ENABLE_GPU=false
       NVIDIA_DRIVER_PACKAGE=auto
       ENABLE_KVM=false
       INSTALL_HPC=true
@@ -73,7 +73,8 @@ write_files:
           : "${KUBECONFORM_VERSION:=v0.8.0}" "${TKN_VERSION:=v0.46.1}"
           : "${ARGOCD_VERSION:=v3.5.3}" "${YQ_VERSION:=v4.54.1}" "${CRICTL_VERSION:=v1.36.0}"
           : "${NVIDIA_TOOLKIT_VERSION:=1.20.1-1}" "${NVIDIA_DEVICE_PLUGIN_VERSION:=0.20.1}"
-          : "${ENABLE_GPU:=auto}" "${NVIDIA_DRIVER_PACKAGE:=auto}" "${ENABLE_KVM:=false}"
+          # ADR-0044: proprietary GPU images require explicit operator acceptance.
+          : "${ENABLE_GPU:=false}" "${NVIDIA_DRIVER_PACKAGE:=auto}" "${ENABLE_KVM:=false}"
           : "${INSTALL_HPC:=true}" "${BOOTSTRAP_K8S:=true}" "${RUN_SMOKE_TESTS:=true}"
           : "${HUGEPAGES_2M:=128}" "${HUGEPAGES_1G:=1}" "${MIN_NORMAL_RAM_MIB:=4096}"
           # BEGIN GENERATED SSOT DEFAULTS

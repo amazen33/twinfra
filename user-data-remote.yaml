@@ -1,5 +1,5 @@
 #cloud-config
-# Generated; script SHA256=afa163a136469ba64a4bee20bf53bd3f22bbc33943ca1222a2d3c02f44407970.
+# Generated; script SHA256=74a42326548e11d5b632f995dc73766e3fc8b843445cc20e43ca823aa165dc0f.
 # Source template. Run `python3 tools/render_cloud_init.py` after changing the script.
 # Remote variant for small user-data limits: publish the script at the HTTPS URL below.
 package_update: true
@@ -29,7 +29,7 @@ write_files:
       HUGEPAGES_2M=128
       HUGEPAGES_1G=1
       MIN_NORMAL_RAM_MIB=4096
-      ENABLE_GPU=auto
+      ENABLE_GPU=false
       NVIDIA_DRIVER_PACKAGE=auto
       ENABLE_KVM=false
       INSTALL_HPC=true
@@ -50,7 +50,7 @@ write_files:
       #!/usr/bin/env bash
       # Small-provider bootstrap: host the exact companion script at this URL first.
       set -Eeuo pipefail
-      expected='afa163a136469ba64a4bee20bf53bd3f22bbc33943ca1222a2d3c02f44407970'
+      expected='74a42326548e11d5b632f995dc73766e3fc8b843445cc20e43ca823aa165dc0f'
       url='https://artifacts.example.com/vcloud/00-setup-ubuntu-host.sh'
       target=/usr/local/sbin/00-setup-ubuntu-host.sh
       if [[ -f $target ]] && [[ $(sha256sum "$target" | cut -d' ' -f1) == "$expected" ]]; then exit 0; fi

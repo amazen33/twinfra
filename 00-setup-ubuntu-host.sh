@@ -24,7 +24,8 @@ load_config() {
     : "${KUBECONFORM_VERSION:=v0.8.0}" "${TKN_VERSION:=v0.46.1}"
     : "${ARGOCD_VERSION:=v3.5.3}" "${YQ_VERSION:=v4.54.1}" "${CRICTL_VERSION:=v1.36.0}"
     : "${NVIDIA_TOOLKIT_VERSION:=1.20.1-1}" "${NVIDIA_DEVICE_PLUGIN_VERSION:=0.20.1}"
-    : "${ENABLE_GPU:=auto}" "${NVIDIA_DRIVER_PACKAGE:=auto}" "${ENABLE_KVM:=false}"
+    # ADR-0044: proprietary GPU images require explicit operator acceptance.
+    : "${ENABLE_GPU:=false}" "${NVIDIA_DRIVER_PACKAGE:=auto}" "${ENABLE_KVM:=false}"
     : "${INSTALL_HPC:=true}" "${BOOTSTRAP_K8S:=true}" "${RUN_SMOKE_TESTS:=true}"
     : "${HUGEPAGES_2M:=128}" "${HUGEPAGES_1G:=1}" "${MIN_NORMAL_RAM_MIB:=4096}"
     # BEGIN GENERATED SSOT DEFAULTS

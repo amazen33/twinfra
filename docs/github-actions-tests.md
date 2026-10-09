@@ -35,6 +35,13 @@ Manual dispatch is available after the workflow exists on the default branch.
 
 ## Executed gates
 
+WO-02 adds an offline licence gate against the **candidate CI control checkout**
+on each matrix job. Historical inventories are not reclassified. The runner
+uploads `licences.json` alongside its normal summary, and prints every open
+baseline/pending-removal entry and its fixed expiry. See the
+[licence gate runbook](../security/LICENSING.md). New components, changed evidence
+inputs, expired entries and invalid class conditions fail the required gate.
+
 | Revision content | Required validation |
 | --- | --- |
 | Module -1 | Exact SSoT and Cloud-Init generation, upstream Cloud-Init schema, Bash syntax and ShellCheck, Cilium/NVIDIA Helm renders, strict offline Kubernetes schemas, all 42 host regression tests including the node exception policy |

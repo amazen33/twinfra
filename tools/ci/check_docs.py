@@ -35,7 +35,11 @@ files = adrs + [adr_dir / 'README.md', root / 'docs/module-1-topology.md',
                root / 'docs/module-1-summary.md', root / 'README.md']
 if canonical:
     numbers = [int(file.name[:4]) for file in all_adrs]
-    assert len(numbers) >= 35 and numbers == list(range(1, len(numbers) + 1)), ('duplicate/gapped ADR numbers', numbers)
+    reserved = set(range(36, 42)) - set(numbers) if any(n >= 42 for n in numbers) else set()
+    expected_numbers = [n for n in range(1, max(numbers) + 1) if n not in reserved]
+    assert len(numbers) >= 35 and numbers == expected_numbers, ('duplicate/gapped ADR numbers', numbers)
+    if reserved:
+        assert {42, 43, 44}.issubset(numbers), 'incomplete WO-02 decision bundle'
     assert not list((root / 'docs').glob('adr-*.md')), 'individual ADRs remain in docs/'
     for old_dir in ('docs/adrs', 'docs/architecture/adr'):
         remaining = list((root / old_dir).glob('*.md'))
@@ -98,7 +102,9 @@ index = (adr_dir / 'README.md').read_text(encoding='utf-8')
 for file in all_adrs:
     assert file.name in index
 if canonical:
-    assert f'**{len(all_adrs) + 1:04d}**' in index, 'incorrect next free number'
+    assert f'**{max(int(file.name[:4]) for file in all_adrs) + 1:04d}**' in index, 'incorrect next free number'
+    if reserved:
+        assert '**0036–0041**' in index, 'missing reserved ADR range'
     for status in ('Proposed', 'Accepted (lab)', 'Accepted (production)', 'Superseded', 'Constraint'):
         assert status in index, status
     ssot = (root / 'vcloud-ssot.yaml').read_text(encoding='utf-8')

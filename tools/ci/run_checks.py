@@ -162,6 +162,10 @@ def main():
         report['workingTreeChanges'] = run('selected-tree', ['git', 'status', '--porcelain']).splitlines()
         report['modules'] = coverage(source)
         python = sys.executable
+        # Governance is evaluated against the CI control checkout (the candidate),
+        # never against the dependencies of the six pre-policy historical revisions.
+        run('candidate-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
+                                  '--report', report_dir / 'licences.json'])
         run('ssot-drift', [python, 'tools/render_ssot.py', '--check'])
         run('cloud-init-drift', [python, 'tools/render_cloud_init.py', '--check'])
         prepare_workspace(source)
@@ -301,6 +305,14 @@ def main():
                 '--kubeconform',binaries['kubeconform'],'--schemas',assets/'schemas'])
             run('portal-pss',[binaries['conftest'],'test','--namespace','vcloud_wsl','--policy','tests/ci/policy/wsl-endpoints.rego',
                 'deploy/console/deployment.yaml','deploy/console/gitops/workloads.yaml'])
+        control_sha = subprocess.check_output(['git', '-C', str(ROOT.parents[1]), 'rev-parse', 'HEAD'], text=True).strip()
+        if sha == control_sha:
+            # Inspect actual locked-chart renders as well as checked-in generator output.
+            # Do not classify historical render contents using the new policy.
+            render_inputs = [rendered / 'cilium-rendered.yaml', rendered / 'nvidia-rendered.yaml']
+            render_options = [part for file in render_inputs for part in ('--rendered', file)]
+            run('candidate-rendered-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
+                                              '--report', report_dir / 'licences.json', *render_options])
         report['status'] = 'passed'
         return 0
     except (ValueError, RuntimeError, OSError) as error:

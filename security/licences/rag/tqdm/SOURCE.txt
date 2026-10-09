@@ -1,0 +1,4 @@
+tqdm 4.70.1
+Corresponding unmodified source: https://files.pythonhosted.org/packages/0d/ea/b2a5bd54b28a324dae8211928b2d730b6547500342c7e6c6dea08bd0a485/tqdm-4.70.1.tar.gz
+SHA256: cefd0eca11b2a37a3aee776544d4f4ae913f02688135b5556b8788dfa474afc4
+The upstream source is referenced, not vendored. Preserve source availability and review obligations before distribution.
