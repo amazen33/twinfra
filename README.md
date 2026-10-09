@@ -1,11 +1,11 @@
 # vCloud platform bootstrap and architecture
 
-[Module 1](docs/adrs/README.md) contains 17 component ADRs for the requested platform,
+[The ADR log](docs/adr/README.md) contains 35 records, including 17 Module 1 component ADRs,
 the [complete Mermaid/ASCII topology](docs/module-1-topology.md), and a
 [recruiter-friendly summary](docs/module-1-summary.md). Component choices follow the
-user's requirements; their integration contracts are proposed designs with explicit
-release, security and live acceptance gates.
-See the [Module 1 documentation checks](docs/module-1-validation.json) for validation evidence.
+user's requirements. The log distinguishes receipt-backed lab acceptance, proposed
+integration gates and superseding owner decisions; production acceptance remains open.
+See the [original Module 1 documentation checks](docs/module-1-validation.json) for historical static evidence.
 
 ## Repository governance
 
@@ -146,7 +146,7 @@ database acceptance pass. Run `make module5a-validate module5a-test`; see the
 example, Kueue/MultiKueue queues and a feature-gated Spinifex SigV4 capacity bridge.
 Region `vcloud-hpc-1` and `vcloud.io/offload-target` preserve the platform identity.
 Offloading stays disabled, quotas and deployment replicas stay zero, and live
-GPU/site acceptance remains pending. See [ADR 0023](docs/adr-0023-module-5b-hybrid-hpc.md)
+GPU/site acceptance remains pending. See [ADR 0023](docs/adr/0023-module-5b-hybrid-hpc.md)
 and the [hybrid flow](module-5b/docs/hybrid-topology.md).
 
 ## WSL local validation

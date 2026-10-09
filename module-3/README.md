@@ -30,7 +30,7 @@ Tekton/Argo metrics -> Prometheus -> Grafana dashboard + Prometheus alerts
 | Trusted runtime/promotion code | [runner.py](runtime/runner.py), [final verifier](runtime/validate_workload.py) |
 | CI tooling image | [Dockerfile](images/ci-tooling.Dockerfile) |
 | Version/source/schema hashes | [artifact lock](artifacts.lock.json), [toolchain lock](toolchain.lock.json) |
-| Architecture and limitations | [ADR 0020](../docs/adr-0020-module-3-delivery.md) |
+| Architecture and limitations | [ADR 0020](../docs/adr/0020-module-3-delivery.md) |
 
 ## Security and ownership
 

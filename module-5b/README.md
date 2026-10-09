@@ -28,7 +28,7 @@ provider address `ec2.spinifex.pcloud.example.com` is preserved.
 | Metrics, recording rules and alerts | [observability.yaml](manifests/observability.yaml), [Alertmanager owner snippet](config/alertmanager-receiver.reference.yaml) |
 | Native host partial configuration | [public overlay](host/spinifex-public-overlay.toml), [service gate](host/spinifex-daemon-gate.conf), [acceptance inventory](host/node-integration.json) |
 | API and integration contract | [webhook-spec.md](api/webhook-spec.md) |
-| Architecture and commercial summary | [topology](docs/hybrid-topology.md), [summary](docs/platform-summary.md), [ADR 0023](../docs/adr-0023-module-5b-hybrid-hpc.md) |
+| Architecture and commercial summary | [topology](docs/hybrid-topology.md), [summary](docs/platform-summary.md), [ADR 0023](../docs/adr/0023-module-5b-hybrid-hpc.md) |
 
 ## Version and capacity contract
 

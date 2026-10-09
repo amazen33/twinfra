@@ -69,4 +69,4 @@ Admin TLS is verified with the mounted public CA and certificates require
 operator renewal within 90 days. No new node exception is granted.
 
 Runbook: [LocalStack](../../lab/wsl/localstack/README.md).
-Decision: [ADR-0025](../architecture/adr/ADR-0025-localstack-api-lab.md).
+Decision: [ADR-0025](../adr/0025-localstack-api-lab.md).

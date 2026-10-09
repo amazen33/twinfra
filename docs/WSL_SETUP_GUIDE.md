@@ -229,7 +229,7 @@ The owned Helm reconciliation also converged ConfigMap `bpf-lb-sock: "true"`;
 the strict ConfigMap check above now passes. SPIFFE/SPIRE is not established by Cilium's label identities:
 `mesh-auth-enabled` is false and the auth certificate provider reports Disabled.
 See
-[ADR-0024](architecture/adr/ADR-0024-wsl-host-routing.md) and the
+[ADR-0024](adr/0024-wsl-host-routing.md) and the
 [dated acceptance record](acceptance/wsl-2026-10-07.md) for evidence and limits.
 
 ### After a WSL restart: verify the routing interface

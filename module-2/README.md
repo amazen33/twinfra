@@ -21,7 +21,7 @@ is introduced.
 | [resource scaler](chart/files/scaler.py) | Bounded VPA recommendation to CNPG Cluster resource growth |
 | [pgvector image](images/postgresql-pgvector.Dockerfile) | Bake pgvector into PostgreSQL; containerd ImageVolume support is not assumed |
 | [APISIX image](images/apisix.Dockerfile) | Build-time directory ownership; runtime UID/GID 65532 |
-| [bootstrap decisions](../docs/adr-0019-module-2-bootstrap.md) | Configuration ownership, storage limits and scaling constraints |
+| [bootstrap decisions](../docs/adr/0019-module-2-bootstrap.md) | Configuration ownership, storage limits and scaling constraints |
 | [validation evidence](../docs/module-2-validation.json) | Exact static results and outstanding live gates |
 
 | Component | Pinned version / API |

@@ -1,7 +1,7 @@
 # Module -1 runbook
 
 SSoT v2.2 is authoritative in `vcloud-ssot.yaml`. The user approved the narrow node
-exception in [ADR 0001](adr-0001-node-host-mounts.md) on 2026-10-05. The exact allowlist
+exception in [ADR 0001](adr/0001-node-host-mounts.md) on 2026-10-05. The exact allowlist
 is `security/node-exceptions.json`; application hostPath volumes and privileged containers
 remain prohibited. Default bootstrap is enabled for the approved pinned versions; drift
 returns 42 before host mutation. `BOOTSTRAP_K8S=false` prepares only the host.

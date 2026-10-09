@@ -31,6 +31,6 @@ security:
     approvedBy: user
     approvedOn: '2026-10-05'
     decision: Approve the documented node exception
-    adr: docs/adr-0001-node-host-mounts.md
+    adr: docs/adr/0001-node-host-mounts.md
     policyFile: security/node-exceptions.json
     policySHA256: d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253

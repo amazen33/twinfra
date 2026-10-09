@@ -65,7 +65,7 @@ The dedicated [routing overlay](values/cilium-routing.yaml) selects legacy
 BPF masquerading and kube-proxy replacement remain enabled; socket LB is
 explicit in this local overlay. Base/production keeps legacy routing disabled.
 The [validation runbook](../../docs/WSL_SETUP_GUIDE.md#3-wsl-host-routing-ebpf-validation-and-the-production-boundary)
-and [ADR-0024](../../docs/architecture/adr/ADR-0024-wsl-host-routing.md)
+and [ADR-0024](../../docs/adr/0024-wsl-host-routing.md)
 describe render/CI checks, live status expectations and separate SPIFFE gates.
 
 The API binds the actual WSL node address on port **16443**, avoiding Windows'

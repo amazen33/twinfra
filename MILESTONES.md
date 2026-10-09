@@ -40,7 +40,7 @@ storage but remains uninitialized/sealed behind the operator PGP-key gate.
 
 ## Milestone: Zero-Trust Streaming & GitOps Core
 
-- [x] FIX: Enforce air-gapped imagePullPolicy: IfNotPresent and containerd path-rewrite rules (Issue #412).
+- [x] FIX: Enforce air-gapped imagePullPolicy: IfNotPresent and containerd path-rewrite rules (Issue #412; ADR-0028).
 - [ ] QA: Validate offline cluster bootstrap from cold CRI cache without internet egress.
 
 The checked registry item covers implementation and automated policy, schema,
@@ -49,7 +49,7 @@ rollout remain open. Cold-cache QA requires vetted offline image imports or a
 reachable internal mirror; no external runtime fallback is enabled. Issue #412
 was supplied in the task and does not resolve in this repository at review time;
 this entry does not claim a GitHub issue closure. See
-[registry ADR-0020](docs/architecture/adr/ADR-0020-air-gapped-registry.md).
+[registry ADR-0028](docs/adr/0028-air-gapped-registry.md).
 
 ## Milestone 3: Quality Assurance & ISTQB Verification
 
