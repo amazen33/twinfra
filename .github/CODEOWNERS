@@ -8,6 +8,6 @@
 /tools/ci/ @amazen33
 /deploy/ @amazen33
 /lab/ @amazen33
-/docs/adr*/ @amazen33
-/docs/adr-*.md @amazen33
-/docs/architecture/adr/ @amazen33
+/docs/adr/ @amazen33
+/docs/work-orders/ @amazen33
+/docs/governance/ @amazen33

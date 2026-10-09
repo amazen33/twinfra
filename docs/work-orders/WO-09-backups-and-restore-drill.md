@@ -40,7 +40,8 @@ High availability and replicas (Phase 2 onward), and cross-region replication (P
 
 ## Owner actions
 
-Provide the backup target and credentials outside Git. Approve the RPO and RTO.
+Provide the backup target and credentials outside Git. As QoS tester, Ahmed Mazen approves the RPO and RTO
+targets, witnesses the restore drill, and signs off the receipt.
 
 ## Report back
 

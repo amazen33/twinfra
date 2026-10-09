@@ -12,7 +12,8 @@
    for Go v2, boto3, AWS CLI scripts, a CloudFormation template set and CDK sample apps. Every API
    operation is scored Match, Partial or Missing.
 3. A service is labelled Real (ADR-0029) only when its scored operations match. The scorecard is
-   published with each release's acceptance receipt.
+   published with each release's acceptance receipt and signed off by the enterprise and cloud tester,
+   Ahmed Mazen (@amazen33).
 4. Every run cleans up the resources it created. A leftover-resource check fails the run.
 
 ## Consequences

@@ -50,6 +50,12 @@ removes the duplicate number.
 - Report back with the PR link, the tests run with their results, the receipt path, deviations,
   and any open owner actions.
 
+## Roles, tester sign-off and Definition of Done
+
+See [roles and Definition of Done](../governance/roles.md) and the
+[acceptance receipt template and tester sign-off](../acceptance/README.md).
+Codex records live receipts as Pending; only the tester changes their result.
+
 ## Review
 
 Claude reviews each PR against its work order before the owner merges. No agent approves its own work.

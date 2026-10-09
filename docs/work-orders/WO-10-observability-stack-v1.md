@@ -51,6 +51,8 @@ AWS exporters (Phase 4 and D7), the CloudWatch API (Phase 3), Thanos (Phase 5), 
 ## Owner actions
 
 Approve the node exceptions, choose the alert receiver, and approve the live rollout.
+As QoS tester, Ahmed Mazen approves the SLO targets and alert thresholds before alerts are enabled,
+and signs off the receipt.
 
 ## Report back
 
