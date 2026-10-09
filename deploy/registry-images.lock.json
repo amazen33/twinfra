@@ -16,9 +16,33 @@
       "source": "ghcr.io/dexidp/dex:v2.45.1",
       "canonical": "registry.vcloud.example.com/ghcr.io/dexidp/dex:v2.45.1"
     },
-    "redis": {
-      "source": "public.ecr.aws/docker/library/redis:8.2.3-alpine",
-      "canonical": "registry.vcloud.example.com/public.ecr.aws/docker/library/redis:8.2.3-alpine"
+    "valkey": {
+      "source": "docker.io/valkey/valkey:8.1.10-alpine@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "canonical": "registry.vcloud.example.com/docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "tag": "8.1.10-alpine",
+      "digest": "sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "digestSource": "https://registry-1.docker.io/v2/valkey/valkey/manifests/8.1.10-alpine",
+      "publicationSource": "https://hub.docker.com/v2/repositories/valkey/valkey/tags/8.1.10-alpine",
+      "publishedAt": "2026-09-21T09:26:21.884226Z",
+      "releaseDate": "2026-09-01",
+      "verifiedOn": "2026-10-09",
+      "verification": {
+        "amd64Digest": "sha256:32627109abf6f741121096b45c732f758876803efd7b2e1018ebc0350d117119",
+        "configDigest": "sha256:09f1cebdbddf5d5c6e7521bd66e488a55bc11c47736572c101d9d0cf628121d0",
+        "entrypointLayerDigest": "sha256:9656719ba5a4d1c4230ffb6c648be4479a4f24678ba7066024c67448f905a28f",
+        "entrypointSHA256": "2a8a83f3265e56d6282b715b9101efa590e1c9c096283aa08df97087fce8c30a",
+        "entrypoint": [
+          "tini",
+          "--",
+          "docker-entrypoint.sh"
+        ],
+        "cmd": [
+          "valkey-server"
+        ],
+        "workingDir": "/data",
+        "buildUserId": 999,
+        "buildGroupId": 1000
+      }
     }
   }
 }

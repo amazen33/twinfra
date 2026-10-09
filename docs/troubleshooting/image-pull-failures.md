@@ -1,5 +1,27 @@
 # Air-gapped image pull failures
 
+## Argo CD cache image (WO-25)
+
+| Component | Pinned source tag | Canonical registry path | Published |
+| --- | --- | --- | --- |
+| Argo CD cache (Valkey, BSD-3-Clause) | `docker.io/valkey/valkey:8.1.10-alpine` | `registry.vcloud.example.com/docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507` | 2026-09-21 |
+
+The base Kustomize transformer replaces the unchanged upstream cache image;
+the local overlay then renames Valkey to the canonical mirror path. Stage the
+digest-pinned image from the regenerated pull inventories. Regenerate them with
+`python3 tools/airgap.py --render-image-lists` after changing their image lock.
+Do not apply the preserved `install.yaml` directly: it is upstream source input,
+not the deployable output. Build the base or the desired overlay with Kustomize.
+The WSL generator also uses the shared Valkey pin and `valkey-server`.
+
+The Redis protocol, port 6379, Service/Secret `argocd-redis`, key `auth`, and
+Argo CD `REDIS_*` settings remain unchanged; persistence is disabled. There is
+no data migration or Redis fallback. Image metadata/entrypoint findings and the
+future WO-21 live acceptance checklist are in the
+[Pending receipt](../acceptance/valkey-2026-10-09.md).
+
+## Node registry diagnostics
+
 Use this runbook for the Ubuntu/WSL node's **external containerd** CRI socket,
 `unix:///run/containerd/containerd.sock`. It implements
 [architecture ADR-0028](../adr/0028-air-gapped-registry.md).

@@ -266,7 +266,7 @@ def audit(root, today=None, rendered=()):
         if entry and entry['class'] not in ('disabled-module', 'operator-pulled'):
             forbidden = ['AGPL-*', 'SSPL-*', 'BUSL-*', 'Elastic-*', 'LicenseRef-*EULA*']
             known = identifiers(expression(entry['spdx']))
-            if any(fnmatch.fnmatchcase(term, pattern) for term in known for pattern in forbidden) and entry['name'] != 'public.ecr.aws/docker/library/redis':
+            if any(fnmatch.fnmatchcase(term, pattern) for term in known for pattern in forbidden):
                 errors.append('Known prohibited deployed licence cannot enter baseline: ' + item['id'])
     for key in sorted(entries.keys() - components.keys()):
         errors.append('Stale register entry (remove with component): ' + key)

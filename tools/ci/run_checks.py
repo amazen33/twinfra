@@ -310,6 +310,11 @@ def main():
             # Inspect actual locked-chart renders as well as checked-in generator output.
             # Do not classify historical render contents using the new policy.
             render_inputs = [rendered / 'cilium-rendered.yaml', rendered / 'nvidia-rendered.yaml']
+            # WO-25: classify the actual Argo base, every overlay, and WSL output.
+            if report['modules']['deploy/kustomize'] == 'present':
+                render_inputs.extend(sorted((report_dir / 'airgap-rendered').glob('*.yaml')))
+            if report['modules']['lab/wsl/gitops'] == 'present':
+                render_inputs.extend(sorted(platform_build.glob('*.yaml')))
             render_options = [part for file in render_inputs for part in ('--rendered', file)]
             run('candidate-rendered-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
                                               '--report', report_dir / 'licences.json', *render_options])

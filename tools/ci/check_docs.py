@@ -63,7 +63,14 @@ if canonical:
             assert '**Status:** Superseded' in content, file
     assert 'WO-06' in next(adr_dir.glob('0025-*.md')).read_text(encoding='utf-8')
     orders = sorted((root / 'docs/work-orders').glob('WO-*.md'))
-    assert [file.name[:5] for file in orders] == [f'WO-{number:02d}' for number in range(1, 12)], orders
+    expected_orders = [f'WO-{number:02d}' for number in range(1, 12)]
+    valkey_order = root / 'docs/work-orders/WO-25-redis-to-valkey.md'
+    image_lock = root / 'deploy/registry-images.lock.json'
+    if image_lock.is_file() and 'valkey' in json.loads(image_lock.read_text()).get('images', {}):
+        assert valkey_order.is_file(), 'missing WO-25 work order for Valkey replacement'
+    if valkey_order.is_file():
+        expected_orders.append('WO-25')
+    assert [file.name[:5] for file in orders] == expected_orders, orders
     assert (root / 'docs/work-orders/README.md').is_file()
     assert not (root / 'docs/work-orders/CODEX-PROMPTS.md').exists()
     # Controls validate whichever selected revision CI checked out.

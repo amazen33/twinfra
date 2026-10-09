@@ -61,7 +61,6 @@
     "docker.io/nvidia/cuda"
   ],
   "pendingRemoval": [
-    "public.ecr.aws/docker/library/redis",
     "docker.io/grafana/grafana",
     "docker.io/localstack/localstack"
   ],

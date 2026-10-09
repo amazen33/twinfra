@@ -34,6 +34,15 @@ records both parent digests, layer digests and runtime UID/GID 26. No privileged
 builder or Docker socket is mounted. Runtime private registry fallback remains
 disabled; staging does not establish air-gap or private registry availability.
 
+Argo CD's ephemeral `argocd-redis` cache now renders Valkey 8.1.10-alpine
+(BSD-3-Clause) from the shared registry image lock. The WSL generator uses
+`valkey-server`, retaining UID 999, the read-only filesystem, the secret file
+at `/auth/auth`, and the memory-backed `/tmp` config. Persistence stays off;
+there is no data migration. The Redis protocol, port 6379, Service/Secret
+`argocd-redis`, Secret key `auth` and Argo CD's `REDIS_*` variables are unchanged.
+This is a static replacement; VM live acceptance remains Pending in the
+[Valkey receipt](../../docs/acceptance/valkey-2026-10-09.md).
+
 ## Vetted Local PV
 
 `prepare-storage.sh` verifies ownership and actual host state before creating

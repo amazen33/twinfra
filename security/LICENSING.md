@@ -45,7 +45,7 @@ infer a licence clearance merely from the existence of an SBOM.
 
 The initial dates use the owner approval on **2026-10-09**, conservatively:
 
-- Redis (WO-25), Grafana (WO-07), LocalStack (WO-06): **2026-12-08**.
+- Grafana (WO-07), LocalStack (WO-06): **2026-12-08**.
 - Open baseline evidence: **2027-01-07** (90 days).
 - psycopg, psycopg-binary and psycopg-pool (WO-27): **2027-02-06**, or before
   Module 5a is enabled. Certifi is now weak-copyleft under Amendment 3.
@@ -53,6 +53,18 @@ The initial dates use the owner approval on **2026-10-09**, conservatively:
 These dates do not slide with each CI run or a delayed merge. If the merge date
 differs, these are earlier deadlines than the maximum merge-relative windows;
 any later date requires an explicit reviewed update.
+
+[WO-25 Amendment 1](../docs/work-orders/WO-25-redis-to-valkey.md) removes the
+Redis register entry and pending-removal authorization. Valkey 8.1.10-alpine is
+`allowed` (BSD-3-Clause), pinned to its multi-platform digest. Its complete
+image SBOM remains a dated evidence gap, expiring **2027-01-07**.
+The preserved Argo CD full/Core archives and generated upstream base retain
+the original cache image as inert-default evidence. This exclusion applies
+only to the exact upstream reference at those three source paths while the
+base transformer matches the locked Valkey digest. Removing/changing that
+transform re-enumerates the upstream image and fails the licence gate.
+The candidate gate also scans real base, overlay and WSL renders; an upstream
+image appearing there is never exempt. Unrelated baseline dates are unchanged.
 
 Module 5a's `enabled` flag and Module 5b's profile flags, generated replicas and
 queue quotas must remain off while their disabled-module findings are open.

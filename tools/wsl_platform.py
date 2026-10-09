@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 import subprocess
 import yaml
-from airgap import argocd_image
+from airgap import argocd_image, cache_image, check_cache
 from wsl_lab import ROOT,load_policy,normalize_pods,resource,security
 from manifest_contract import audit_objects,podspec
 from wsl_pg_image import IMAGE as PG_IMAGE
@@ -68,7 +68,8 @@ def infrastructure():
                 if obj['metadata']['name']=='argocd-redis':
                     spec.pop('initContainers',None);spec['automountServiceAccountToken']=False
                     c=spec['containers'][0];c.pop('env',None);c.pop('args',None)
-                    c['command']=['sh','-ec',"umask 077; printf 'requirepass %s\\n' \"$(cat /auth/auth)\" > /tmp/redis.conf; exec redis-server /tmp/redis.conf --save '' --appendonly no"]
+                    c['image']=cache_image()
+                    c['command']=['sh','-ec',"umask 077; printf 'requirepass %s\\n' \"$(cat /auth/auth)\" > /tmp/redis.conf; exec valkey-server /tmp/redis.conf --save '' --appendonly no"]
                     c['volumeMounts']=[{'name':'auth','mountPath':'/auth','readOnly':True},{'name':'tmp','mountPath':'/tmp'}]
                     spec['volumes']=[{'name':'auth','secret':{'secretName':'argocd-redis','defaultMode':0o440}}, {'name':'tmp','emptyDir':{'medium':'Memory','sizeLimit':'16Mi'}}]
                 if name=='cnpg.yaml':
@@ -236,7 +237,7 @@ def render(build,gitops=False):
     build.mkdir(parents=True,exist_ok=True)
     for name,objects in [('infrastructure.yaml',infrastructure()),('storage.yaml',storage()),('network.yaml',network()),
                          ('git-dns.yaml',git_dns()),('workload.yaml',workload()),('application.yaml',application())]:
-        audit(objects);(build/name).write_text(yaml.safe_dump_all(objects,sort_keys=False),encoding='utf-8',newline='\n')
+        check_cache(objects);audit(objects);(build/name).write_text(yaml.safe_dump_all(objects,sort_keys=False),encoding='utf-8',newline='\n')
     if gitops:
         target=ROOT/'lab/wsl/gitops';target.mkdir(exist_ok=True)
         (target/'workload.yaml').write_bytes((build/'workload.yaml').read_bytes())

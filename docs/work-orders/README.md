@@ -12,6 +12,7 @@ Nothing in this pack has been written to the vCloud repository. Codex adds it th
 | --- | --- |
 | [ADRs 0029–0035](../adr/README.md) | Accepted decision records for D1-D8 |
 | [WO-01](WO-01-repository-governance.md) to [WO-11](WO-11-console-roles-csrf-audit.md) | Wave 1 work orders (Phases 0 and 1), approved for implementation |
+| [WO-25](WO-25-redis-to-valkey.md) | Redis to digest-pinned Valkey cache replacement, including owner-approved Amendment 1 |
 
 ADR-0028 is reserved. The registry decision currently numbered ADR-0020 gets 0028 when WO-03
 removes the duplicate number.

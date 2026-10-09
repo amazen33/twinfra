@@ -75,7 +75,7 @@
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "deploy/registry-images.lock.json",
-      "fingerprint": "d4640655a6849bcf31f332385cab2d945ad8fe47e8d0bf1e1b5421c1b26bd3ba"
+      "fingerprint": "01f4eefd78d174759df0fdba702bc6b069b8d4b6027ff20ff2495f38ef8318d2"
     },
     {
       "id": "image-digest:deploy/required-images.txt",
@@ -86,7 +86,7 @@
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "deploy/required-images.txt",
-      "fingerprint": "1f0df2d7b3568954c6e89b7566998ce292c6c953c26c0c53088fd1dce5cf7d30"
+      "fingerprint": "50f8a1968eff1855495a86ede6c4a0bb3e1b9f86a0fe2ed8d9b5e79b2e190f92"
     },
     {
       "id": "image-digest:deploy/vendor/argocd-v3.5.3-install.yaml.gz",
@@ -108,7 +108,7 @@
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "lab/wsl/platform-images.txt",
-      "fingerprint": "ef0b27ddb1c5a084677985eb7a49cdf137072e553fbc6f8f45a9789e50174aa4"
+      "fingerprint": "0f19dd02c814ad949a65ad7c5d24ec155690320ee4d6f2ecad747171fcab1f3c"
     },
     {
       "id": "image-digest:lab/wsl/profile.json",
@@ -369,6 +369,16 @@
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "component": "oci-image|docker.io/rancher/mirrored-pause|3.10.2"
+    },
+    {
+      "id": "image-sbom:oci-image|docker.io/valkey/valkey|sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "kind": "image-sbom",
+      "component": "oci-image|docker.io/valkey/valkey|sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "reason": "Valkey image package-level SBOM and embedded notice review remain outstanding (ADR-0044, WO-25).",
+      "requiredEvidence": "Reviewed complete SBOM and embedded licence notices for the exact multi-platform image digest.",
+      "owner": "Ahmed Mazen (@amazen33)",
+      "recordedOn": "2026-10-09",
+      "expires": "2027-01-07"
     },
     {
       "id": "image-sbom:oci-image|docker.io/vllm/vllm-openai|v0.31.0",
@@ -651,6 +661,28 @@
       "component": "oci-image|registry.k8s.io/pause|3.10.1"
     },
     {
+      "id": "inert-default:deploy/kustomize/base/argocd/install.yaml",
+      "kind": "inert-default",
+      "path": "deploy/kustomize/base/argocd/install.yaml",
+      "fingerprint": "7d2b574af7b21fdb34e25276087bec184d4270d1f25489081fe909f8af7c2e27",
+      "reason": "WO-25 upstream cache default replaced by digest-pinned Valkey",
+      "requiredEvidence": "Prove the replacement in base, every overlay and WSL generator output; preserve reviewed upstream checksums.",
+      "owner": "Ahmed Mazen (@amazen33)",
+      "recordedOn": "2026-10-09",
+      "expires": "2027-01-07"
+    },
+    {
+      "id": "inert-default:deploy/vendor/argocd-v3.5.3-install.yaml.gz",
+      "kind": "inert-default",
+      "path": "deploy/vendor/argocd-v3.5.3-install.yaml.gz",
+      "fingerprint": "a7f90e64b36375ac2938a856c3e465027d50f4eb97d7c4f6450947a36c34a2f0",
+      "reason": "WO-25 upstream cache default replaced by digest-pinned Valkey",
+      "requiredEvidence": "Prove the replacement in base, every overlay and WSL generator output; preserve reviewed upstream checksums.",
+      "owner": "Ahmed Mazen (@amazen33)",
+      "recordedOn": "2026-10-09",
+      "expires": "2027-01-07"
+    },
+    {
       "id": "inert-default:lab/wsl/endpoints/vendor/kourier.yaml.gz",
       "kind": "inert-default",
       "reason": "Site pins the gateway; upstream latest default must stay inert",
@@ -660,6 +692,17 @@
       "expires": "2027-01-07",
       "path": "lab/wsl/endpoints/vendor/kourier.yaml.gz",
       "fingerprint": "3a5c99b8f9021f1cbb67a6fb0006b1cd38924c3a0093a48f9adeddb2a9015b1c"
+    },
+    {
+      "id": "inert-default:lab/wsl/vendor/argocd-core.yaml.gz",
+      "kind": "inert-default",
+      "path": "lab/wsl/vendor/argocd-core.yaml.gz",
+      "fingerprint": "04bbf8bc31b6d0db09de10c6221af135851bb5cbc03004ee329a0d5ad832bfc4",
+      "reason": "WO-25 upstream cache default replaced by digest-pinned Valkey",
+      "requiredEvidence": "Prove the replacement in base, every overlay and WSL generator output; preserve reviewed upstream checksums.",
+      "owner": "Ahmed Mazen (@amazen33)",
+      "recordedOn": "2026-10-09",
+      "expires": "2027-01-07"
     },
     {
       "id": "inert-default:module-2/vendor/apisix-2.18.0.tgz",

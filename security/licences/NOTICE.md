@@ -4,6 +4,11 @@ The [register](../licence-register.json) records exact versions, licence sources
 integrities and owner decisions. Open baseline findings in
 [the evidence baseline](../licence-baseline.json) are not verified SBOMs.
 
+Valkey 8.1.10-alpine replaces Argo CD's cache image under WO-25. Its pinned
+version's BSD-3-Clause notices are preserved in [valkey/COPYING](valkey/COPYING).
+The complete image SBOM/embedded-notice review remains an open dated baseline;
+the service/secret name `argocd-redis` does not refer to a Redis image.
+
 OpenBao server 2.7.1, Helm chart 0.30.2 and CSI provider 2.0.3 are unmodified,
 separate MPL-2.0 units under ADR-0044. Preserve upstream LICENSE and NOTICE files
 when mirroring/distributing them. Their distributed notice evidence and the

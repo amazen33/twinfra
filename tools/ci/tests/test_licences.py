@@ -180,15 +180,40 @@ class Licences(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.check()
 
-    def test_redis_expiry_and_unapproved_pending_removal(self):
-        self.entry.update(name='public.ecr.aws/docker/library/redis', spdx='AGPL-3.0-only',
+    def test_pending_removal_expiry_and_completed_removal_cannot_return(self):
+        self.entry.update(name='docker.io/grafana/grafana', spdx='AGPL-3.0-only',
                           **{'class': 'pending-removal'}, expires='2026-12-08')
         self.check()
         with self.assertRaises(ValueError):
             gate.check_component(self.entry, self.component, self.policy, self.root, date(2026, 12, 8), {})
-        self.entry['name'] = 'new-agpl-image'
-        with self.assertRaises(ValueError):
-            self.check()
+        for name in ('new-agpl-image', 'public.ecr.aws/docker/library/redis'):
+            self.entry['name'] = name
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                self.check()
+
+    def test_cache_exclusion_is_exact_and_requires_matching_digest_transform(self):
+        source = 'public.ecr.aws/docker/library/redis:8.2.3-alpine'
+        sha = 'sha256:' + 'a' * 64
+        preserved = 'deploy/kustomize/base/argocd/install.yaml'
+        transform = 'deploy/kustomize/base/argocd/kustomization.yaml'
+        self.write(preserved, 'kind: Pod\nspec:\n  containers:\n  - image: ' + source)
+        self.write('deploy/registry-images.lock.json', json.dumps({'images': {'valkey': {
+            'canonical': 'registry.vcloud.example.com/docker.io/valkey/valkey@' + sha}}}))
+        self.write(transform, 'images:\n- name: public.ecr.aws/docker/library/redis\n'
+                   '  newName: docker.io/valkey/valkey\n  digest: ' + sha)
+        old_id = inventory.identity('oci-image', 'public.ecr.aws/docker/library/redis', '8.2.3-alpine')
+        with patch.object(inventory, 'files', return_value=[preserved]):
+            components, findings = inventory.enumerate_inputs(self.root)
+            self.assertNotIn(old_id, components)
+            self.assertIn('inert-default:' + preserved, findings)
+            # Rendered/other active inputs never inherit the upstream exclusion.
+            components, _ = inventory.enumerate_inputs(self.root, [self.root / preserved])
+            self.assertIn(old_id, components)
+            for replacement in ('images: []', 'images:\n- name: public.ecr.aws/docker/library/redis\n'
+                                '  newName: docker.io/valkey/valkey\n  digest: sha256:' + 'b' * 64):
+                self.write(transform, replacement)
+                components, _ = inventory.enumerate_inputs(self.root)
+                self.assertIn(old_id, components)
 
     def test_runtime_exception_fails_when_module_enabled(self):
         self.entry.update(name='psycopg', spdx='LGPL-3.0-only', **{'class': 'exception'}, adr='0043', expires='2027-02-06')
