@@ -75,8 +75,8 @@ spec:
           cookie_same_site: Lax
           idling_timeout: 900
           absolute_timeout: 3600
-        set_id_token_header: true
-        set_access_token_header: false
+        set_id_token_header: false
+        set_access_token_header: true
         set_refresh_token_header: false
         set_userinfo_header: false
         accept_none_alg: false
@@ -125,7 +125,7 @@ spec:
           remove:
           - Authorization
           - Cookie
-          - X-Access-Token
+          - X-ID-Token
           - X-Userinfo
           - X-Refresh-Token
           - X-Raw-ID-Token
@@ -217,8 +217,8 @@ spec:
           cookie_same_site: Lax
           idling_timeout: 900
           absolute_timeout: 3600
-        set_id_token_header: true
-        set_access_token_header: false
+        set_id_token_header: false
+        set_access_token_header: true
         set_refresh_token_header: false
         set_userinfo_header: false
         accept_none_alg: false
@@ -267,7 +267,7 @@ spec:
           remove:
           - Authorization
           - Cookie
-          - X-Access-Token
+          - X-ID-Token
           - X-Userinfo
           - X-Refresh-Token
           - X-Raw-ID-Token
@@ -360,8 +360,8 @@ spec:
           cookie_same_site: Lax
           idling_timeout: 900
           absolute_timeout: 3600
-        set_id_token_header: true
-        set_access_token_header: false
+        set_id_token_header: false
+        set_access_token_header: true
         set_refresh_token_header: false
         set_userinfo_header: false
         accept_none_alg: false
@@ -411,7 +411,7 @@ spec:
           remove:
           - Authorization
           - Cookie
-          - X-Access-Token
+          - X-ID-Token
           - X-Userinfo
           - X-Refresh-Token
           - X-Raw-ID-Token
@@ -507,8 +507,8 @@ spec:
           cookie_same_site: Lax
           idling_timeout: 900
           absolute_timeout: 3600
-        set_id_token_header: true
-        set_access_token_header: false
+        set_id_token_header: false
+        set_access_token_header: true
         set_refresh_token_header: false
         set_userinfo_header: false
         accept_none_alg: false
@@ -558,7 +558,7 @@ spec:
           remove:
           - Authorization
           - Cookie
-          - X-Access-Token
+          - X-ID-Token
           - X-Userinfo
           - X-Refresh-Token
           - X-Raw-ID-Token

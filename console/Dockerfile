@@ -11,10 +11,12 @@ RUN npm run build
 
 FROM python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e
 WORKDIR /app
+COPY console/requirements.txt /app/requirements.txt
+RUN python -m pip install --require-hashes --only-binary=:all: --no-compile --no-cache-dir --target /app/vendor -r /app/requirements.txt
 COPY --from=frontend --chown=65532:65532 /home/node/dist/ /app/public/
 COPY --chown=65532:65532 console/server.py /app/server.py
 COPY --chown=65532:65532 lab/wsl/console/ui.py /app/aws_views.py
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PORT=3000
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app/vendor PORT=3000
 USER 65532:65532
 EXPOSE 3000
 HEALTHCHECK --interval=20s --timeout=3s CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3000/healthz',timeout=2)"]

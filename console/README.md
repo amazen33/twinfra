@@ -53,12 +53,30 @@ APISIX validates OIDC signature, issuer/audience and client roles using
 confidential code flow with PKCE S256. Anonymous APIs and roleless authenticated
 ID tokens return 401 at the gateway; the BFF's role check returns 403.
 Spoofed identity headers are scrubbed before authentication. Authorization,
-Cookie and access/refresh token headers are removed before upstream forwarding.
+Cookie, ID/userinfo/refresh token headers are removed before upstream forwarding.
+Only the gateway-issued signed access token is forwarded in `X-Access-Token`.
 JavaScript receives only reduced identity metadata, never JWTs or cookies.
 
-The BFF repeats claims/expiry/role checks on APISIX's decoded `X-ID-Token`
-header; it does **not** independently verify a signature. Cilium permits only
-APISIX to reach Pod port 3000. Direct BFF exposure needs a new security design.
+The BFF independently verifies each signed access token with PyJWT/cryptography.
+It accepts only RS256 or ES256, requires the exact canonical issuer and console
+client in `aud` or `azp`, requires `exp`, checks optional `nbf`, and allows only
+30 seconds of clock leeway. Roles come from `resource_access.vcloud-console.roles`.
+Invalid/missing/duplicate token headers return 401 with `{"error":"Session required"}`;
+valid tokens with neither console role return 403 with `{"error":"Console role required"}`.
+Old unsigned `X-ID-Token` headers provide no identity. Write methods remain 405.
+
+JWKS is fetched only from the fixed private HTTPS Keycloak certs endpoint, with
+hostname/certificate verification against `/oidc-trust/tls.crt` and no redirects.
+The existing `vcloud-wsl-keycloak-tls` mount exposes only public `tls.crt`, never
+the private key. The thread-safe key cache lives for five minutes. An unknown
+`kid` can refetch at most once a minute across all requests; failed fetches also
+consume the cooldown. A successful refresh replaces removed keys. An expired
+cache or unavailable/untrusted JWKS fails closed; no stale-key fallback is used.
+Token-provided key URLs are never fetched. Cilium allows only APISIX to reach
+Pod port 3000 and adds only the BFF-to-Keycloak TCP 8443 TLS flow.
+
+The client generator already maps console audience, client roles and username
+into access tokens; WO-04 requires no mapper or live Keycloak change.
 The namespace Role allows only get/list of Pods, Deployments and Applications;
 no Secret, exec, write, node or cluster authority. Exec probes avoid world/node
 health-port exceptions.
@@ -88,8 +106,39 @@ npm run build --prefix console
 docker build -f console/Dockerfile -t registry.vcloud.example.com/vcloud/vcloud-console:1.0.0 .
 ```
 
-The WSL deployment uses a deterministic OCI layer on the vetted cached Python
-base without a Docker socket, daemon or privileged build Pod:
+Python dependencies are pinned with official wheel hashes in
+[`requirements.txt`](requirements.txt); licence sources and hashes are in
+[`licence-register.json`](../security/licence-register.json). The pins are PyJWT
+2.15.0 (MIT), cryptography 50.0.1 (Apache-2.0 OR BSD-3-Clause), cffi 2.0.0 (its
+shipped upstream licence is MIT-0), and pycparser 3.0 (BSD-3-Clause). All bundled
+wheel licence notices are retained in `/app/vendor/*dist-info/licenses/`.
+
+WO-04 is static only: the WSL lab is being retired. Browser acceptance and the
+direct-backend hand-made-header negative test are **Pending** on VM `lab-1`
+after WO-21 and owner-approved redeployment. See the
+[WO-04 receipt](../docs/acceptance/console-token-verification-2026-10-10.md).
+The existing WSL deployment instructions below are historical; do not run them
+for WO-04. WO-21 must establish the VM's reviewed issuer, CA and gateway profile.
+
+The deterministic builder composes the vetted Python base and verified Linux
+amd64 CPython 3.14 wheels without a Docker socket or privileged build Pod:
+
+```bash
+python3 -m pip download --require-hashes --only-binary=:all: \
+  -r console/requirements.txt -d .build/console/wheels
+python3 -m pip install --require-hashes --only-binary=:all: -r console/requirements.txt
+python3 tools/build_console_image.py --base /path/to/verified-python-base.oci.tar \
+  --output .build/console/vcloud-console.oci.tar --wheels .build/console/wheels
+python3 tools/vcloud_console.py
+python3 -m unittest discover -s tests -p test_vcloud_console.py -v
+```
+
+The static builder verifies every base blob and wheel hash; it never imports
+an image unless `--import` is explicitly supplied. Both build recipes include
+the same pinned runtime libraries. CI installs the candidate control checkout's
+hash-locked requirements only for revisions that contain this verification lock.
+
+Historical owned-WSL import and deployment commands:
 
 ```bash
 cd /mnt/e/vCloud

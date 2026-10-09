@@ -35,12 +35,15 @@ def workloads():
     probe = {'exec': {'command': ['python', '-c', "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3000/healthz',timeout=2)"]}, 'timeoutSeconds': 3}
     c = {'name': 'console', 'image': image(), 'ports': [{'name': 'http', 'containerPort': 3000}],
         'resources': {'requests': {'cpu': '50m', 'memory': '64Mi'}, 'limits': {'cpu': '500m', 'memory': '256Mi'}},
-        'volumeMounts': [{'name': 'api-identity', 'mountPath': '/var/run/secrets/vcloud', 'readOnly': True}],
+        'volumeMounts': [{'name': 'api-identity', 'mountPath': '/var/run/secrets/vcloud', 'readOnly': True},
+                        {'name': 'oidc-trust', 'mountPath': '/oidc-trust', 'readOnly': True}],
         'readinessProbe': probe, 'livenessProbe': probe}
     volume = {'name': 'api-identity', 'projected': {'defaultMode': 0o440, 'sources': [
         {'serviceAccountToken': {'path': 'token', 'expirationSeconds': 3600}},
         {'configMap': {'name': 'kube-root-ca.crt', 'items': [{'key': 'ca.crt', 'path': 'ca.crt'}]}}]}}
-    d = deploy('vcloud-console', [c], [volume])
+    trust = {'name': 'oidc-trust', 'secret': {'secretName': 'vcloud-wsl-keycloak-tls',
+        'items': [{'key': 'tls.crt', 'path': 'tls.crt'}], 'defaultMode': 0o440}}
+    d = deploy('vcloud-console', [c], [volume, trust])
     d['spec']['template']['spec']['serviceAccountName'] = 'vcloud-console'
     d['metadata']['labels'] = {'app.kubernetes.io/part-of': 'vcloud-console'}
     check([d])
@@ -65,12 +68,12 @@ def plugins(api=False, proxy_prefix=None):
             'redirect_uri': p['origin'] + '/console/callback', 'logout_path': '/console/logout',
             'session': {'cookie_name': 'vcloud_portal', 'cookie_path': '/console', 'cookie_secure': False,
                 'cookie_http_only': True, 'cookie_same_site': 'Lax', 'idling_timeout': 900, 'absolute_timeout': 3600},
-            'set_id_token_header': True, 'set_access_token_header': False, 'set_refresh_token_header': False, 'set_userinfo_header': False,
+            'set_id_token_header': False, 'set_access_token_header': True, 'set_refresh_token_header': False, 'set_userinfo_header': False,
             'accept_none_alg': False, 'accept_unsupported_alg': False, 'token_signing_alg_values_expected': 'RS256',
             'claim_validator': {'issuer': {'valid_issuers': [p['issuer']]}, 'audience': {'required': True, 'match_with_client_id': True}},
             'claim_schema': role_schema}},
         {'name': 'proxy-rewrite', 'enable': True, 'config': {'headers': {'set': {'X-Forwarded-Host': 'localhost:18080', 'X-Forwarded-Proto': 'http'},
-            'remove': ['Authorization', 'Cookie', 'X-Access-Token', 'X-Userinfo', 'X-Refresh-Token', 'X-Raw-ID-Token']}}},
+            'remove': ['Authorization', 'Cookie', 'X-ID-Token', 'X-Userinfo', 'X-Refresh-Token', 'X-Raw-ID-Token']}}},
         {'name': 'response-rewrite', 'enable': True, 'config': {'headers': {'set': {'X-Frame-Options': 'SAMEORIGIN',
             'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer'}}}},
         {'name': 'prometheus', 'enable': True}]
@@ -109,14 +112,14 @@ def bootstrap():
     result = [sa, role, binding,
         cnp('vcloud-portal', {'k8s:app.kubernetes.io/name': 'vcloud-console'},
             [{'fromEndpoints': [peer('apisix')], 'toPorts': ports(3000)}],
-            [{'toEndpoints': emulators, 'toPorts': ports(4566)}, {'toEntities': ['kube-apiserver'],
+            [{'toEndpoints': emulators, 'toPorts': ports(4566)}, {'toEndpoints': [peer('keycloak')], 'toPorts': ports(8443)}, {'toEntities': ['kube-apiserver'],
                 'toPorts': [{'ports': [{'port': str(port), 'protocol': 'TCP'} for port in (443, 16443)]}]}]),
         cnp('vcloud-portal-emulators', {'k8s:app.kubernetes.io/name': 'ministack'}, [{'fromEndpoints': [peer('vcloud-console')], 'toPorts': ports(4566)}], []),
         cnp('vcloud-portal-localstack', {'k8s:app.kubernetes.io/name': 'localstack-aws-console'}, [{'fromEndpoints': [peer('vcloud-console')], 'toPorts': ports(4566)}], []),
         cnp('vcloud-portal-gateway', {'k8s:app.kubernetes.io/name': 'apisix'}, [],
             [{'toEndpoints': [peer('vcloud-console')], 'toPorts': ports(3000)}, {'toEndpoints': [peer('keycloak')], 'toPorts': ports(8443)}]),
         cnp('vcloud-portal-keycloak', {'k8s:app.kubernetes.io/name': 'keycloak'},
-            [{'fromEndpoints': [peer('apisix')], 'toPorts': ports(8443)}], [])]
+            [{'fromEndpoints': [peer('apisix'), peer('vcloud-console')], 'toPorts': ports(8443)}], [])]
     # Name-resolution baseline is separately owned by the platform; no world egress.
     return result
 

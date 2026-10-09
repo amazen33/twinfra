@@ -77,6 +77,14 @@ spec:
     - ports:
       - port: '4566'
         protocol: TCP
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: keycloak
+    toPorts:
+    - ports:
+      - port: '8443'
+        protocol: TCP
   - toEntities:
     - kube-apiserver
     toPorts:
@@ -168,6 +176,9 @@ spec:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: platform-services
         k8s:app.kubernetes.io/name: apisix
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: platform-services
+        k8s:app.kubernetes.io/name: vcloud-console
     toPorts:
     - ports:
       - port: '8443'
