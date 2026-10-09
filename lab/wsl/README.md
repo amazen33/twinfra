@@ -1,4 +1,4 @@
-# Local vCloud validation on WSL2
+# Local Twinfra validation on WSL2
 
 For local browser access, run `sudo bash lab/wsl/access.sh start` inside WSL.
 The [endpoint profile](endpoints/README.md) adds CPU-only applications and

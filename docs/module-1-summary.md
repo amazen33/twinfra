@@ -1,6 +1,6 @@
 # Module 1: recruiter-friendly summary
 
-- Designed **vCloud**, a Kubernetes hybrid-cloud reference architecture combining
+- Designed **Twinfra**, a Kubernetes hybrid-cloud reference architecture combining
   Knative serverless APIs, tenant-aware LangChain RAG, vLLM GPU inference and
   CloudNativePG/pgvector, with APISIX, Argo CD/Tekton, OpenBao/Keycloak,
   Kafka/Strimzi, full observability design and a proposed Spinifex HPC bursting adapter.

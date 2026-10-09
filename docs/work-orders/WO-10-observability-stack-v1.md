@@ -18,7 +18,7 @@ and an SLO breach alerts a person. This stack later serves the CloudWatch API.
 
 ## Scope
 
-1. **vCloud Collector build.** Built with the Collector Builder (`cmd/builder`, matching version) from
+1. **Twinfra Collector build.** Built with the Collector Builder (`cmd/builder`, matching version) from
    stable- or beta-stability components only. The PR lists each component with its stability level.
    The image is built reproducibly in CI, with an SBOM, and pinned by digest. The agent runs as a DaemonSet and the gateway as a Deployment.
 2. **Host access.** Pod-log collection (read-only `/var/log/pods`) and node_exporter need host mounts.

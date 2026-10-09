@@ -1,4 +1,4 @@
-# vCloud main branch governance — WO-01
+# Twinfra main branch governance — WO-01
 
 The owner-approved WO-01 follow-up documents two-stage activation: Stage 1 is
 the owner's current stage; Stage 2 waits for Codex's own GitHub machine account.

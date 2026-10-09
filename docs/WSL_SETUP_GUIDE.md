@@ -102,7 +102,7 @@ uses this ordering. Missing namespaces cause installation failures. A missing or
 unreachable repo server can subsequently cause `ComparisonError`; this status
 alone does not prove a namespace is missing.
 
-### Existing vCloud WSL lab: `platform-services`
+### Existing Twinfra WSL lab: `platform-services`
 
 This repository deliberately installs Argo CD **Core 3.5.3** in
 `platform-services`, with relocated service references and RBAC subjects.
@@ -149,8 +149,8 @@ resolve a controller RBAC mismatch.
 Use only a separately reviewed cluster with no existing Argo CD installation.
 The upstream `/stable/manifests/install.yaml` URL is a moving branch; use the
 explicit `v3.5.3` release below. Bash commands use plain URLs, not Markdown links.
-This is a full upstream reference installation, not the vetted vCloud Core profile.
-Its security/RBAC settings require review before adopting it into vCloud.
+This is a full upstream reference installation, not the vetted Twinfra Core profile.
+Its security/RBAC settings require review before adopting it into Twinfra.
 
 ```bash
 : "${REVIEWED_CONTEXT:?Set REVIEWED_CONTEXT to the separate target cluster}"
@@ -344,7 +344,7 @@ table contents cause a refusal instead of an overwrite. Mirrored WSL also
 recreates protocol-specific priority-zero ingress rules on boot: exact
 `src all`, `iif ethN/loopback0`, `ipproto tcp/udp`, `lookup local` entries.
 The helper preserves these WSL-managed rules verbatim. Its repair and rollback
-touch only the two vCloud selectors targeting `127.0.0.1/32` and the exact
+touch only the two Twinfra selectors targeting `127.0.0.1/32` and the exact
 owned nftables table. Similar rules with a different source, table, interface,
 protocol or additional selector remain a refusal.
 

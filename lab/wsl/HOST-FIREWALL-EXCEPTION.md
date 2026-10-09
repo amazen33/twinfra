@@ -21,7 +21,7 @@ guard does not inspect Windows rules. A Windows allowance therefore cannot
 satisfy the guard or authorize disabling Cilium Host Firewall.
 
 Pre-create `argocd` before applying a standalone upstream Argo CD installation.
-The existing vCloud lab uses `platform-services`, which the foundation creates
+The existing Twinfra lab uses `platform-services`, which the foundation creates
 before installing its relocated Argo CD Core manifests. That namespace and repo
 server Pods already exist. The observed `ComparisonError` is not evidence of a
 missing `argocd` namespace. Do not install overlapping Argo CD controllers as a

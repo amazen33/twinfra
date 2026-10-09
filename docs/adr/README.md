@@ -1,6 +1,6 @@
-# vCloud architecture decision log
+# Twinfra architecture decision log
 
-This is the single ADR log. Numbers 0001–0035 are unique; the next free number is
+This is the single ADR log. Numbers 0001–0036 are unique; the next free number is
 **0045**. Module 3 delivery retains 0020; registry mirroring is 0028. The accepted
 D1–D8 owner decisions are copied verbatim in 0029–0035. D9–D12 remain open.
 Use the [work-order handoff](../work-orders/README.md) for implementation order.
@@ -69,11 +69,12 @@ only redirect here; no individual-file stubs remain.
 | [0033: AWS sandbox account and parity testing](0033-aws-sandbox-and-parity-testing.md) | Accepted (owner) | None — owner design/static evidence only | D1-D8 design approved 2026-10-08; implementation/live acceptance not implied |
 | [0034: Observability baseline (Apache-2.0) and managed observability on AWS](0034-observability-baseline.md) | Accepted (owner) | None — owner design/static evidence only | D1-D8 design approved 2026-10-08; implementation/live acceptance not implied |
 | [0035: Self-service console through the vCloud API](0035-console-self-service.md) | Accepted (owner) | None — owner design/static evidence only | D1-D8 design approved 2026-10-08; implementation/live acceptance not implied |
+| [0036: The product is named Twinfra (formerly vCloud)](0036-product-name-twinfra.md) | Accepted (owner) | None — owner decision 2026-10-09 | [WO-20](../work-orders/WO-20-rename-to-twinfra.md) Stage A branding; repository references and technical identifiers remain staged; no live acceptance implied |
 | [0042: Build-time tools and reference-only artifacts (amends ADR-0030)](0042-build-time-tools-and-reference-only-artifacts.md) | Accepted (owner) | None — owner decision 2026-10-09 | WO-02 static licence governance; no live acceptance implied |
 | [0043: Time-boxed runtime exceptions for the Module 5a RAG image (amends ADR-0042 decision 4)](0043-module-5a-runtime-exceptions.md) | Accepted (owner) | None — owner decision 2026-10-09 | WO-02 static licence governance; no live acceptance implied |
 | [0044: Licence gate scope, SPDX evaluation and the remaining classes (amends ADR-0030, ADR-0042, ADR-0043)](0044-licence-gate-scope-and-classes.md) | Accepted (owner) | None — owner decision 2026-10-09 | WO-02 static licence governance; decision 5 implemented by [WO-25](../work-orders/WO-25-redis-to-valkey.md); live Valkey acceptance pending WO-21 |
 
-ADR numbers **0036–0041** are reserved for other approved work orders.
+ADR numbers **0037–0041** are reserved for other approved work orders.
 
 ## Shared contract for every ADR
 

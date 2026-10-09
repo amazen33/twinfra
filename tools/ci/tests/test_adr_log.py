@@ -100,6 +100,39 @@ class ADRLog(unittest.TestCase):
             (root / 'docs/work-orders/WO-06-fixture.md').unlink()
             self.assertNotEqual(self.check(root).returncode, 0)
 
+    def test_rename_pair_with_remaining_reserved_adrs_passes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.fixture(directory)
+            names = ['0036-product-name-twinfra.md', '0042-fixture.md',
+                     '0043-fixture.md', '0044-fixture.md']
+            for name in names:
+                (root / 'docs/adr' / name).write_text(
+                    f'# ADR-{name[:4]}: fixture\n\n**Status:** Accepted (owner)\n', encoding='utf-8')
+            index = root / 'docs/adr/README.md'
+            index.write_text(index.read_text().replace('**0036**', '**0045**') +
+                             '\n'.join(names) + '\n**0037–0041**\n', encoding='utf-8')
+            (root / 'docs/work-orders/WO-20-rename-to-twinfra.md').write_text('# WO-20: Rename\n')
+            result = self.check(root)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads((root / 'report.json').read_text())['adrCount'], 39)
+            index.write_text(index.read_text(encoding='utf-8').replace('**0037–0041**', '**0036–0041**'), encoding='utf-8')
+            result = self.check(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('missing reserved ADR range', result.stderr)
+
+    def test_incomplete_rename_pair_fails(self):
+        for missing in ('adr', 'order'):
+            with self.subTest(missing=missing), tempfile.TemporaryDirectory() as directory:
+                root = self.fixture(directory)
+                if missing == 'adr':
+                    (root / 'docs/work-orders/WO-20-rename-to-twinfra.md').write_text('# WO-20: Rename\n')
+                else:
+                    name = '0036-product-name-twinfra.md'
+                    (root / 'docs/adr' / name).write_text('# ADR-0036: fixture\n\n**Status:** Accepted (owner)\n')
+                result = self.check(root)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn('incomplete WO-20 / ADR-0036 pair', result.stderr)
+
     def test_valkey_image_requires_its_work_order(self):
         with tempfile.TemporaryDirectory() as directory:
             root = self.fixture(directory)

@@ -1,4 +1,4 @@
-# vCloud Development Roadmap
+# Twinfra Development Roadmap
 
 Reviewed on **2026-10-07**. Checked items have the scoped evidence linked below;
 unchecked items remain planned or blocked. Passing local WSL checks does not
@@ -14,8 +14,8 @@ not imply ISTQB certification. All four GitHub release milestones remain open.
 - [x] Reconcile the explicit lab socket LB ConfigMap value through the owned Helm release; validate manual recovery after WSL changed the active routing interface. — **[Compatibility, Reliability]**
 - [ ] Validate unattended WSL restart/interface recovery; SPIFFE attestation requires separate deployment/validation. — **[Security, Reliability]**
 - [x] Restore the three platform health probes and Windows loopback Core dashboard with Host Firewall enabled; retain the local probe-port exception. — **[Reliability, Interaction capability]**
-- [ ] Define and verify scoped host and Windows Firewall guards for required vCloud traffic; confirm unrelated traffic remains blocked. — **[Security, Reliability]**
-- [ ] Retest WSL reboot recovery and complete application readiness before claiming the cluster supports all vCloud workloads. — **[Reliability, Functional suitability]**
+- [ ] Define and verify scoped host and Windows Firewall guards for required Twinfra traffic; confirm unrelated traffic remains blocked. — **[Security, Reliability]**
+- [ ] Retest WSL reboot recovery and complete application readiness before claiming the cluster supports all Twinfra workloads. — **[Reliability, Functional suitability]**
 
 Evidence: [correction review](docs/correction-review.md),
 [dated runtime and test record](docs/correction-review-validation.json),
@@ -82,7 +82,7 @@ release sign-off. See the [CI guide](docs/github-actions-tests.md).
 - [x] Local URL recovery: restored port 4566 after forward restart-limit exhaustion, added delayed retries and a health gate, and verified scoped forward-failure recovery; Keycloak discovery HTTP 200 and OpenBao uninitialized status documented. See [recovery acceptance](docs/acceptance/local-url-recovery-2026-10-07.md).
 - [x] Local WSL restart recovery: reconciled Cilium with the observed interface, rolled back failed automatic selection, and restored Linux/Windows localhost routing plus owned forwards; ten platform gates, three probes and deny-all passed. See [2026-10-08 receipt](docs/acceptance/wsl-restart-recovery-2026-10-08.md). Unattended reboot recovery remains open.
 - [x] Local Keycloak administrator: created `vcloud-admin`, verified password authentication and authorized master-realm administration over validated TLS, removed the temporary recovery account, and verified idempotent rerun without password reset. Private retrieval and operator MFA/password custody remain in the [admin runbook](docs/keycloak-admin-access.md).
-- [x] Unified vCloud console reference: controller-managed prefix routes, MIT navigation/read-only S3 and DynamoDB views, immutable dual-emulator profile and fail-closed OIDC activation gate implemented. See [console runbook](lab/wsl/console/README.md).
+- [x] Unified Twinfra console reference: controller-managed prefix routes, MIT navigation/read-only S3 and DynamoDB views, immutable dual-emulator profile and fail-closed OIDC activation gate implemented. See [console runbook](lab/wsl/console/README.md).
 - [x] Native unified portal: restricted React/TypeScript + Tailwind Deployment, same-origin APISIX paths, read-only native health/storage/EC2/DynamoDB/GitOps/IAM views, and isolated `vcloud/vcloud-admin` mapped to `console.admin`; temporary password only in encrypted Kubernetes Secret.
 - [x] Native portal identity acceptance: validated private TLS backchannel, actual PKCE/MFA login, both emulator reads, desktop/mobile navigation, logout and roleless denial at `localhost:18080/console/`. See [2026-10-08 portal receipt](docs/acceptance/vcloud-console-2026-10-08.md).
 - [x] Portal login recovery: fail-closed missing/malformed callback session page, enabled temporary-password required-action provider, complete browser first/returning MFA login and preserved operator credentials; WSL restart repair and deny-all retested. See [login recovery receipt](docs/acceptance/portal-login-recovery-2026-10-08.md).

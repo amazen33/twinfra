@@ -69,17 +69,17 @@ data:
     \ href=\"' + base + '\">Refresh</a></p>' + body\n\n\ndef page(title, body, mount=''):\n\
     \    return ('<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"\
     viewport\" content=\"width=device-width,initial-scale=1\">'\n            '<title>'\
-    \ + escape(title) + ' \xB7 vCloud</title><link rel=\"stylesheet\" href=\"' + escape(mount)\
-    \ + '/console.css\">'\n            '<body><header><a href=\"' + ('/console/overview'\
-    \ if mount else '/') + '\">vCloud console</a></header><main><h1>' + escape(title)\
-    \ + '</h1>' + body + '</main></body></html>').encode()\n\n\ndef navigation(profile):\n\
-    \    cards = []\n    for item in profile['backends']:\n        name = item['name']\n\
-    \        href = '/' + name + '/'\n        if name in ('localstack', 'ministack'):\n\
-    \            href += '_' + name + '/health'\n        action = '<a href=\"' + href\
-    \ + '\">Open ' + escape(name) + '</a>' if item['enabled'] else '<span>Disabled\
-    \ reference</span>'\n        cards.append('<article><h2>' + escape(name) + '</h2><p>'\
-    \ + escape(item['description']) + '</p><p>' + escape(item['license']) + '</p>'\
-    \ + action + '</article>')\n    return page('Platform services', '<p>Read-only\
+    \ + escape(title) + ' \xB7 Twinfra</title><link rel=\"stylesheet\" href=\"' +\
+    \ escape(mount) + '/console.css\">'\n            '<body><header><a href=\"' +\
+    \ ('/console/overview' if mount else '/') + '\">Twinfra console</a></header><main><h1>'\
+    \ + escape(title) + '</h1>' + body + '</main></body></html>').encode()\n\n\ndef\
+    \ navigation(profile):\n    cards = []\n    for item in profile['backends']:\n\
+    \        name = item['name']\n        href = '/' + name + '/'\n        if name\
+    \ in ('localstack', 'ministack'):\n            href += '_' + name + '/health'\n\
+    \        action = '<a href=\"' + href + '\">Open ' + escape(name) + '</a>' if\
+    \ item['enabled'] else '<span>Disabled reference</span>'\n        cards.append('<article><h2>'\
+    \ + escape(name) + '</h2><p>' + escape(item['description']) + '</p><p>' + escape(item['license'])\
+    \ + '</p>' + action + '</article>')\n    return page('Platform services', '<p>Read-only\
     \ local lab navigation. Backend availability is checked when opened.</p>' + ''.join(cards))\n\
     \n\nclass Handler(BaseHTTPRequestHandler):\n    def log_message(self, *args):\n\
     \        pass  # never log cookies, OIDC codes, credentials or user query values\n\
@@ -132,15 +132,15 @@ data:
     license\": \"Apache-2.0\", \"description\": \"Pinned Community 4.14.0 API emulator;\
     \ ephemeral lab data.\"},\n    {\"name\": \"storage\", \"namespace\": \"platform-services\"\
     , \"service\": \"storage-ui\", \"port\": 9001, \"enabled\": true, \"websocket\"\
-    : false, \"license\": \"MIT\", \"description\": \"vCloud read-only S3 browser;\
+    : false, \"license\": \"MIT\", \"description\": \"Twinfra read-only S3 browser;\
     \ select either emulator.\"},\n    {\"name\": \"dynamodb\", \"namespace\": \"\
     platform-services\", \"service\": \"dynamodb-admin\", \"port\": 8081, \"enabled\"\
-    : true, \"websocket\": true, \"license\": \"MIT\", \"description\": \"vCloud read-only\
-    \ DynamoDB table viewer; no mutation controls.\"},\n    {\"name\": \"vault\",\
-    \ \"namespace\": \"platform-system\", \"service\": \"openbao-ui\", \"port\": 8200,\
-    \ \"enabled\": false, \"websocket\": true, \"license\": \"MPL-2.0\", \"description\"\
-    : \"Reference only: local OpenBao is sealed in platform-services; native /ui and\
-    \ /v1 paths need a separate verified integration.\"}\n  ]\n}\n"
+    : true, \"websocket\": true, \"license\": \"MIT\", \"description\": \"Twinfra\
+    \ read-only DynamoDB table viewer; no mutation controls.\"},\n    {\"name\": \"\
+    vault\", \"namespace\": \"platform-system\", \"service\": \"openbao-ui\", \"port\"\
+    : 8200, \"enabled\": false, \"websocket\": true, \"license\": \"MPL-2.0\", \"\
+    description\": \"Reference only: local OpenBao is sealed in platform-services;\
+    \ native /ui and /v1 paths need a separate verified integration.\"}\n  ]\n}\n"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -156,7 +156,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: 62a4e6be1776ec0a15d2298c12bb139c54fbfc81b1658ab92a3626d833ce987f
+        vcloud.io/config-hash: 7e82e6a1363e4181597297c66d49180668d3ce69f5b0cfff1a7af297bbb6b8fc
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -250,7 +250,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: 62a4e6be1776ec0a15d2298c12bb139c54fbfc81b1658ab92a3626d833ce987f
+        vcloud.io/config-hash: 7e82e6a1363e4181597297c66d49180668d3ce69f5b0cfff1a7af297bbb6b8fc
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -344,7 +344,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: 62a4e6be1776ec0a15d2298c12bb139c54fbfc81b1658ab92a3626d833ce987f
+        vcloud.io/config-hash: 7e82e6a1363e4181597297c66d49180668d3ce69f5b0cfff1a7af297bbb6b8fc
     spec:
       automountServiceAccountToken: false
       securityContext:
