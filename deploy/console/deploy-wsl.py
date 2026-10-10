@@ -25,10 +25,8 @@ SKIP = 'argocd.argoproj.io/skip-reconcile'
 
 
 def apply(values):
-    raw = yaml.safe_dump_all(values).encode()
-    flags = ['--server-side', '--field-manager=vcloud-console-bootstrap', '--force-conflicts', '-f', '-']
-    k(['apply', '--dry-run=server'] + flags, raw)
-    k(['apply'] + flags, raw)
+    from platform_apply import apply as platform_apply
+    platform_apply(values, k, "vcloud-console-bootstrap")
 
 
 def scoped(values):

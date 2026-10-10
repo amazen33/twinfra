@@ -105,5 +105,8 @@
       "currentClass": "weak-copyleft"
     }
   ],
-  "expiryAnchor": "Initial approval 2026-10-09; conservative fixed dates, no later than merge + 60/120 days. No automatic extensions."
+  "expiryAnchor": "Initial approval 2026-10-09; conservative fixed dates, no later than merge + 60/120 days. No automatic extensions.",
+  "baseOSCloudImages": [
+    "cloud-images.ubuntu.com/noble/20260926/noble-server-cloudimg-amd64.img"
+  ]
 }

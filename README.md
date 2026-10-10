@@ -181,3 +181,5 @@ and remaining gates. Use the [service access runbook](docs/service-access.md)
 for tested Windows URLs. GitOps controller RBAC, database initialization and
 the full application stack remain pending; working health probes and a dashboard
 do not establish those outcomes.
+
+The new Hyper-V development environment is prepared statically in [the cairo-1 runbook](docs/dev-environment.md); [live acceptance](docs/acceptance/dev-environment-2026-10-10.md) remains Pending. Existing WSL material is preserved until WO-28.

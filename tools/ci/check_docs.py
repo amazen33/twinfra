@@ -49,7 +49,7 @@ if canonical:
         content = file.read_text(encoding='utf-8')
         title_number = re.match(r'# ADR[ -](\d{4}):', content)
         assert title_number and int(title_number[1]) == int(file.name[:4]), ('ADR title/filename mismatch', file)
-        assert re.search(r'\*\*Status:\*\* (Proposed|Accepted \((lab|production|owner)[,)]|Superseded)', content), file
+        assert re.search(r'\*\*Status:\*\* (Proposed|Accepted \((lab|production|owner)[ ,)]|Superseded)', content), file
         if '**Status:** Accepted (lab)' in content:
             assert re.search(r'\]\(\.\./acceptance/[^)]+\)', content), ('missing lab receipt', file)
     successors = {10: [34], 18: [29, 30], 25: [30], 26: [35], 27: [35]}
@@ -75,7 +75,11 @@ if canonical:
         assert valkey_order.is_file(), 'missing WO-25 work order for Valkey replacement'
     if valkey_order.is_file():
         expected_orders.append('WO-25')
-    assert [file.name[:5] for file in orders] == expected_orders, orders
+    dev_order=root/'docs/work-orders/WO-21-twinfra-dev-environment.md'
+    if dev_order.is_file():
+        expected_orders.append('WO-21')
+        assert {32,38,45,46,47}.issubset(numbers), 'incomplete WO-21 ADR bundle'
+    assert [file.name[:5] for file in orders] == sorted(expected_orders), orders
     assert (root / 'docs/work-orders/README.md').is_file()
     assert not (root / 'docs/work-orders/CODEX-PROMPTS.md').exists()
     # Controls validate whichever selected revision CI checked out.
@@ -116,8 +120,14 @@ for file in all_adrs:
 if canonical:
     assert f'**{max(int(file.name[:4]) for file in all_adrs) + 1:04d}**' in index, 'incorrect next free number'
     if reserved:
-        reserved_range = f'**{min(reserved):04d}–{max(reserved):04d}**'
-        assert reserved_range in index, 'missing reserved ADR range'
+        # A later work order may fill part of a reserved range (WO-21 adds 0038).
+        groups=[]
+        for number in sorted(reserved):
+            if groups and number==groups[-1][-1]+1:groups[-1].append(number)
+            else:groups.append([number])
+        for group in groups:
+            label=f'**{group[0]:04d}**' if len(group)==1 else f'**{group[0]:04d}–{group[-1]:04d}**'
+            assert label in index, 'missing reserved ADR range: '+label
     for status in ('Proposed', 'Accepted (lab)', 'Accepted (production)', 'Superseded', 'Constraint'):
         assert status in index, status
     ssot = (root / 'vcloud-ssot.yaml').read_text(encoding='utf-8')

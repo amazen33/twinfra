@@ -82,6 +82,12 @@
       "sha256": "67f54077f51405558420e26b227a641c62c010fbc3bd168bca3a450a2541d32c",
       "output": "bin/conftest",
       "member": "conftest"
+    },
+    "powershell": {
+      "url": "https://github.com/PowerShell/PowerShell/releases/download/v7.6.6/powershell-7.6.6-linux-x64.tar.gz",
+      "sha256": "ddbc4a2d113bbd46d283cfedcbcd117a70caefd7673f41f2b4e0000badf103bc",
+      "output": "lib/powershell/pwsh",
+      "runtimeArchive": true
     }
   }
 }

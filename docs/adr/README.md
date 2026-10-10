@@ -1,7 +1,7 @@
 # Twinfra architecture decision log
 
 This is the single ADR log. Numbers 0001–0036 are unique; the next free number is
-**0045**. Module 3 delivery retains 0020; registry mirroring is 0028. The accepted
+**0048**. Module 3 delivery retains 0020; registry mirroring is 0028. The accepted
 D1–D8 owner decisions are copied verbatim in 0029–0035. D9–D12 remain open.
 Use the [work-order handoff](../work-orders/README.md) for implementation order.
 
@@ -74,7 +74,12 @@ only redirect here; no individual-file stubs remain.
 | [0043: Time-boxed runtime exceptions for the Module 5a RAG image (amends ADR-0042 decision 4)](0043-module-5a-runtime-exceptions.md) | Accepted (owner) | None — owner decision 2026-10-09 | WO-02 static licence governance; no live acceptance implied |
 | [0044: Licence gate scope, SPDX evaluation and the remaining classes (amends ADR-0030, ADR-0042, ADR-0043)](0044-licence-gate-scope-and-classes.md) | Accepted (owner) | None — owner decision 2026-10-09 | WO-02 static licence governance; decision 5 implemented by [WO-25](../work-orders/WO-25-redis-to-valkey.md); live Valkey acceptance pending WO-21 |
 
-ADR numbers **0037–0041** are reserved for other approved work orders.
+| [0038: environment-neutral names](0038-naming-and-environment-labels.md) | Accepted (owner) | None | WO-21 rebuild; live acceptance Pending |
+| [0045: WSL retirement](0045-wsl-retirement.md) | Accepted (owner) | None | WO-28 gated on dev acceptance |
+| [0046: environment and region names](0046-naming-dev-environment-and-regions.md) | Accepted (owner) | None | VM, contexts and conformance names |
+| [0047: upstream-owned names](0047-upstream-owned-resource-names.md) | Accepted (owner delegated to architect) | None | WO-21 static naming inventory; live acceptance Pending |
+
+ADR numbers **0037** and **0039–0041** are reserved for other approved work orders.
 
 ## Shared contract for every ADR
 

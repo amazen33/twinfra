@@ -162,8 +162,9 @@ def check_component(entry, component, policy, root, today, baseline):
             raise ValueError('Missing redistribution notice')
     elif kind == 'base-os':
         permitted += ['GPL-*', 'LGPL-*']
-        if component['ecosystem'] != 'oci-image' or not any(
-                fnmatch.fnmatchcase(entry['name'], name) for name in policy['baseOSRepositories']):
+        distribution_image=component['ecosystem']=='oci-image' and any(fnmatch.fnmatchcase(entry['name'], name) for name in policy['baseOSRepositories'])
+        cloud_image=component['ecosystem']=='manifest' and entry['name'] in policy.get('baseOSCloudImages',[]) and component['locations']==['deploy/hyperv/ubuntu-image.lock.json']
+        if not (distribution_image or cloud_image):
             raise ValueError('base-os is restricted to distribution images')
     elif kind == 'operator-pulled':
         if entry['name'] not in policy['operatorPulledRepositories']:

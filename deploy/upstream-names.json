@@ -1,0 +1,433 @@
+{
+  "schemaVersion": 1,
+  "migration": "ADR-0038 decision 5: enforcement covers newly rebuilt environments; preserved WSL and reference profiles remain unchanged.",
+  "projects": [
+    {
+      "project": "argo-cd",
+      "version": "3.5.3",
+      "source": "https://github.com/argoproj/argo-cd/tree/v3.5.3",
+      "sources": [
+        {
+          "path": "deploy/common/vendor/argocd-core.yaml.gz",
+          "format": "gzip",
+          "sha256": "04bbf8bc31b6d0db09de10c6221af135851bb5cbc03004ee329a0d5ad832bfc4"
+        },
+        {
+          "path": "deploy/vendor/argocd-v3.5.3-install.yaml.gz",
+          "format": "gzip",
+          "sha256": "a7f90e64b36375ac2938a856c3e465027d50f4eb97d7c4f6450947a36c34a2f0"
+        }
+      ],
+      "names": [
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "applications.argoproj.io"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "applicationsets.argoproj.io"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "appprojects.argoproj.io"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "argocd-application-controller"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "argocd-redis"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "argocd-repo-server"
+        },
+        {
+          "kind": "Role",
+          "name": "argocd-application-controller"
+        },
+        {
+          "kind": "Role",
+          "name": "argocd-redis"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "argocd-application-controller"
+        },
+        {
+          "kind": "RoleBinding",
+          "name": "argocd-application-controller"
+        },
+        {
+          "kind": "RoleBinding",
+          "name": "argocd-redis"
+        },
+        {
+          "kind": "ClusterRoleBinding",
+          "name": "argocd-application-controller"
+        },
+        {
+          "kind": "ConfigMap",
+          "name": "argocd-cm"
+        },
+        {
+          "kind": "ConfigMap",
+          "name": "argocd-cmd-params-cm"
+        },
+        {
+          "kind": "ConfigMap",
+          "name": "argocd-gpg-keys-cm"
+        },
+        {
+          "kind": "ConfigMap",
+          "name": "argocd-rbac-cm"
+        },
+        {
+          "kind": "ConfigMap",
+          "name": "argocd-ssh-known-hosts-cm"
+        },
+        {
+          "kind": "ConfigMap",
+          "name": "argocd-tls-certs-cm"
+        },
+        {
+          "kind": "Secret",
+          "name": "argocd-secret"
+        },
+        {
+          "kind": "Service",
+          "name": "argocd-metrics"
+        },
+        {
+          "kind": "Service",
+          "name": "argocd-redis"
+        },
+        {
+          "kind": "Service",
+          "name": "argocd-repo-server"
+        },
+        {
+          "kind": "Deployment",
+          "name": "argocd-redis"
+        },
+        {
+          "kind": "Deployment",
+          "name": "argocd-repo-server"
+        },
+        {
+          "kind": "StatefulSet",
+          "name": "argocd-application-controller"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "argocd-server"
+        },
+        {
+          "kind": "Role",
+          "name": "argocd-server"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "argocd-server"
+        },
+        {
+          "kind": "RoleBinding",
+          "name": "argocd-server"
+        },
+        {
+          "kind": "ClusterRoleBinding",
+          "name": "argocd-server"
+        },
+        {
+          "kind": "Service",
+          "name": "argocd-server"
+        },
+        {
+          "kind": "Service",
+          "name": "argocd-server-metrics"
+        },
+        {
+          "kind": "Deployment",
+          "name": "argocd-server"
+        }
+      ]
+    },
+    {
+      "project": "cloudnative-pg",
+      "version": "1.30.1",
+      "source": "https://github.com/cloudnative-pg/cloudnative-pg/tree/v1.30.1",
+      "sources": [
+        {
+          "path": "deploy/common/vendor/cnpg.yaml.gz",
+          "format": "gzip",
+          "sha256": "e097810cc9f36a081c57fdd0cc7814cbdee6e8e8d9db115dc5622e9d6441c824"
+        }
+      ],
+      "names": [
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "backups.postgresql.cnpg.io"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "clusterimagecatalogs.postgresql.cnpg.io"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "clusters.postgresql.cnpg.io"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "databaseroles.postgresql.cnpg.io"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "databases.postgresql.cnpg.io"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "failoverquorums.postgresql.cnpg.io"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "imagecatalogs.postgresql.cnpg.io"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "poolers.postgresql.cnpg.io"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "publications.postgresql.cnpg.io"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "scheduledbackups.postgresql.cnpg.io"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "subscriptions.postgresql.cnpg.io"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "cnpg-manager"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "cnpg-database-editor-role"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "cnpg-database-viewer-role"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "cnpg-manager"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "cnpg-publication-editor-role"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "cnpg-publication-viewer-role"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "cnpg-subscription-editor-role"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "cnpg-subscription-viewer-role"
+        },
+        {
+          "kind": "ClusterRoleBinding",
+          "name": "cnpg-manager-rolebinding"
+        },
+        {
+          "kind": "ConfigMap",
+          "name": "cnpg-default-monitoring"
+        },
+        {
+          "kind": "Service",
+          "name": "cnpg-webhook-service"
+        },
+        {
+          "kind": "Deployment",
+          "name": "cnpg-controller-manager"
+        },
+        {
+          "kind": "MutatingWebhookConfiguration",
+          "name": "cnpg-mutating-webhook-configuration"
+        },
+        {
+          "kind": "ValidatingWebhookConfiguration",
+          "name": "cnpg-validating-webhook-configuration"
+        }
+      ]
+    },
+    {
+      "project": "cilium",
+      "version": "1.20.2",
+      "source": "https://helm.cilium.io",
+      "release": "cilium",
+      "namespace": "kube-system",
+      "sources": [
+        {
+          "path": "module-2/vendor/cilium-1.20.2.tgz",
+          "format": "chart",
+          "sha256": "b2afd87b7f75f875f92a14559f14f59b7babbb479d968e3fd625a20bf30ec20e"
+        }
+      ],
+      "names": [
+        {
+          "kind": "Namespace",
+          "name": "cilium-secrets"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "cilium"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "cilium-envoy"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "cilium-operator"
+        },
+        {
+          "kind": "Secret",
+          "name": "cilium-ca"
+        },
+        {
+          "kind": "Secret",
+          "name": "hubble-server-certs"
+        },
+        {
+          "kind": "ConfigMap",
+          "name": "cilium-config"
+        },
+        {
+          "kind": "ConfigMap",
+          "name": "cilium-envoy-config"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "cilium"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "cilium-operator"
+        },
+        {
+          "kind": "ClusterRoleBinding",
+          "name": "cilium"
+        },
+        {
+          "kind": "ClusterRoleBinding",
+          "name": "cilium-operator"
+        },
+        {
+          "kind": "Role",
+          "name": "cilium-config-agent"
+        },
+        {
+          "kind": "Role",
+          "name": "cilium-tlsinterception-secrets"
+        },
+        {
+          "kind": "Role",
+          "name": "cilium-operator-tlsinterception-secrets"
+        },
+        {
+          "kind": "Role",
+          "name": "cilium-operator-ztunnel"
+        },
+        {
+          "kind": "RoleBinding",
+          "name": "cilium-config-agent"
+        },
+        {
+          "kind": "RoleBinding",
+          "name": "cilium-tlsinterception-secrets"
+        },
+        {
+          "kind": "RoleBinding",
+          "name": "cilium-operator-tlsinterception-secrets"
+        },
+        {
+          "kind": "RoleBinding",
+          "name": "cilium-operator-ztunnel"
+        },
+        {
+          "kind": "Service",
+          "name": "cilium-envoy"
+        },
+        {
+          "kind": "Service",
+          "name": "hubble-peer"
+        },
+        {
+          "kind": "DaemonSet",
+          "name": "cilium"
+        },
+        {
+          "kind": "DaemonSet",
+          "name": "cilium-envoy"
+        },
+        {
+          "kind": "Deployment",
+          "name": "cilium-operator"
+        }
+      ]
+    },
+    {
+      "project": "knative-serving",
+      "version": "1.23.0",
+      "source": "https://github.com/knative/serving/releases/download/knative-v1.23.0/serving-core.yaml",
+      "sources": [
+        {
+          "path": "deploy/common/vendor/serving-core.yaml.gz",
+          "format": "gzip",
+          "sha256": "d0355dbc3bb40062a06853b2a434698aeccbe4fa8eb3ac0dfb2f9f798f0c75cc"
+        }
+      ],
+      "names": [],
+      "note": "Not installed in WO-21; registry reserves source provenance, no name exceptions yet."
+    },
+    {
+      "project": "keycloak",
+      "version": "26.8.0",
+      "source": "https://github.com/keycloak/keycloak/tree/26.8.0",
+      "sources": [],
+      "names": [],
+      "note": "Only pinned image used. Deployment/Service/configuration are Twinfra-owned; no upstream name exemption."
+    },
+    {
+      "project": "apisix",
+      "version": "3.19.0",
+      "source": "https://github.com/apache/apisix/tree/3.19.0",
+      "sources": [],
+      "names": [],
+      "note": "Only pinned image used. Deployment/Service/configuration are Twinfra-owned; no upstream name exemption."
+    },
+    {
+      "project": "openbao",
+      "version": "2.7.1",
+      "source": "https://github.com/openbao/openbao/tree/v2.7.1",
+      "sources": [],
+      "names": [],
+      "note": "Only pinned image used. Deployment/Service/configuration are Twinfra-owned; no upstream name exemption."
+    },
+    {
+      "project": "ministack",
+      "version": "1.5.22",
+      "source": "https://github.com/ministackorg/ministack",
+      "sources": [],
+      "names": [],
+      "note": "Only pinned image used. Deployment/Service/configuration are Twinfra-owned; no upstream name exemption."
+    }
+  ]
+}

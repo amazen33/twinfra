@@ -180,6 +180,17 @@ class Licences(unittest.TestCase):
             with self.assertRaises(ValueError):
                 self.check()
 
+    def test_cloud_base_os_exemption_is_exact_artifact_and_location(self):
+        self.entry.update(name=self.policy['baseOSCloudImages'][0],spdx='GPL-2.0-only',
+                          **{'class':'base-os'},unmodified=True)
+        self.component.update(ecosystem='manifest',locations=['deploy/hyperv/ubuntu-image.lock.json'])
+        self.check()
+        self.component['locations'].append('deploy/another-image.lock.json')
+        with self.assertRaisesRegex(ValueError,'distribution images'):self.check()
+        self.component['locations']=['deploy/hyperv/ubuntu-image.lock.json']
+        self.entry['name']='unreviewed.example.com/cloud.img'
+        with self.assertRaisesRegex(ValueError,'distribution images'):self.check()
+
     def test_pending_removal_expiry_and_completed_removal_cannot_return(self):
         self.entry.update(name='docker.io/grafana/grafana', spdx='AGPL-3.0-only',
                           **{'class': 'pending-removal'}, expires='2026-12-08')

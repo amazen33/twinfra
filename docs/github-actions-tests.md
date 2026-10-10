@@ -59,6 +59,7 @@ inputs, expired entries and invalid class conditions fail the required gate.
 | Registry overlay, when present | Strict kubeconform with no skipped resources; explicit `IfNotPresent`, immutable Argo images and pull-secret references; Rego rules and DNS/TLS/cache/private-path fixtures |
 | Platform probe correction, when present | Both policy schemas, workload/port scope, dependency prechecks, dynamic CIDR preservation, multi-pod health/stability and fail-closed restart recovery fixtures |
 | Roadmap automation, when present | Mocked pagination, exact-title reuse, milestone assignment, dry-run no-writes and closed-milestone rejection; no GitHub mutation |
+| Rebuilt dev environments, when present | Pure Hyper-V planner fixtures (including six Amendment 3 cases), generic image conversion guards, naming/source mutation tests, deterministic dev/seed generation, strict kubeconform, restricted Pod policy and unchanged node-agent mount/security projection; no provisioner entry-point execution |
 | CI controls | Historical revision selection, invalid input/commit rejection, checksum and archive safety, partial module rejection, no skipped or empty suites, immutable action/tool pins |
 
 The [runner](../tools/ci/run_checks.py) always requires the original modules.
@@ -90,6 +91,9 @@ Mermaid dependencies use a checked-in integrity lock. Downloaded executables,
 the NVIDIA chart and extra host schemas are SHA256 verified against the
 [CI tool lock](../tools/ci/toolchain.lock.json); Kubernetes and operator schemas
 already vendored in the selected revision remain subject to its integrity checks.
+WO-21 also stages the official MIT PowerShell 7.6.6 runtime by SHA256 into the
+disposable CI workspace. Archive entries are bounded and checked individually;
+links and parent paths are refused. Its tests import only the pure fixture planner.
 When Module 5b is present, the workflow installs its seven SDK test dependencies
 from the CI control checkout's hash-locked `hpc-requirements.txt`. Historical
 revisions without the module do not install or run that optional dependency set.

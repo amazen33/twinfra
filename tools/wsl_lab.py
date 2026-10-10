@@ -117,21 +117,7 @@ def k3s_config(p, node_ip):
             'kube-apiserver-arg': ['anonymous-auth=false']}
 
 
-def resource(kind, name, spec=None, namespace=None, api='v1', labels=None):
-    obj = {'apiVersion': api, 'kind': kind, 'metadata': {'name': name}}
-    if namespace:
-        obj['metadata']['namespace'] = namespace
-    if labels:
-        obj['metadata']['labels'] = labels
-    if spec is not None:
-        obj['spec'] = spec
-    return obj
-
-
-def security():
-    return {'runAsNonRoot': True, 'runAsUser': 65532, 'runAsGroup': 65532,
-            'allowPrivilegeEscalation': False, 'readOnlyRootFilesystem': True,
-            'capabilities': {'drop': ['ALL']}, 'seccompProfile': {'type': 'RuntimeDefault'}}
+from platform_resources import resource, security
 
 
 def manifests(p):

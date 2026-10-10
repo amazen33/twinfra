@@ -13,6 +13,7 @@ Nothing in this pack has been written to the Twinfra repository. Codex adds it t
 | [ADRs 0029–0035](../adr/README.md) | Accepted decision records for D1-D8 |
 | [WO-01](WO-01-repository-governance.md) to [WO-11](WO-11-console-roles-csrf-audit.md) | Wave 1 work orders (Phases 0 and 1), approved for implementation |
 | [WO-20](WO-20-rename-to-twinfra.md) | Staged product rename under [ADR-0036](../adr/0036-product-name-twinfra.md); Stage A branding precedes the owner's Stage B repository rename; technical identifiers wait for Stage C |
+| [WO-21](WO-21-twinfra-dev-environment.md) | Hyper-V dev environment and WSL retirement amendments; upstream names under ADR-0047 |
 | [WO-25](WO-25-redis-to-valkey.md) | Redis to digest-pinned Valkey cache replacement, including owner-approved Amendment 1 |
 
 ADR-0028 is reserved. The registry decision currently numbered ADR-0020 gets 0028 when WO-03
@@ -61,3 +62,7 @@ Codex records live receipts as Pending; only the tester changes their result.
 ## Review
 
 Claude reviews each PR against its work order before the owner merges. No agent approves its own work.
+
+Where an older work order says lab, read the dev environment (twinfra-dev-cairo-1); see ADR-0046.
+
+[ADR-0046](../adr/0046-naming-dev-environment-and-regions.md) governs environment and region names.

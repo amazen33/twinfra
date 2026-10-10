@@ -10,7 +10,7 @@ data:
     \ ThreadingHTTPServer\nimport json\nimport os\nfrom pathlib import Path\nfrom\
     \ urllib.parse import parse_qs, quote, urlencode, urlsplit\nimport urllib.request\n\
     import xml.etree.ElementTree as ET\nfrom datetime import datetime, timezone\n\n\
-    ENDPOINTS = {\n    'ministack': 'http://ministack.platform-services.svc.cluster.local:4566',\n\
+    ENDPOINTS = {\n    'ministack': os.environ.get('MINISTACK_ENDPOINT','http://ministack.platform-services.svc.cluster.local:4566'),\n\
     \    'localstack': 'http://localstack.platform-services.svc.cluster.local:4566',\n\
     }\nMAX_RESPONSE = 1024 * 1024\n\n\ndef signed_request(backend, service, method='GET',\
     \ path='/', query=None, payload=b'', target=None, now=None):\n    \"\"\"SigV4\
@@ -156,7 +156,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: 7e82e6a1363e4181597297c66d49180668d3ce69f5b0cfff1a7af297bbb6b8fc
+        vcloud.io/config-hash: d8e4b4e3186c384ee34b4402c9232568f68cafc1faa99b05171bdb42824567e5
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -250,7 +250,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: 7e82e6a1363e4181597297c66d49180668d3ce69f5b0cfff1a7af297bbb6b8fc
+        vcloud.io/config-hash: d8e4b4e3186c384ee34b4402c9232568f68cafc1faa99b05171bdb42824567e5
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -344,7 +344,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: 7e82e6a1363e4181597297c66d49180668d3ce69f5b0cfff1a7af297bbb6b8fc
+        vcloud.io/config-hash: d8e4b4e3186c384ee34b4402c9232568f68cafc1faa99b05171bdb42824567e5
     spec:
       automountServiceAccountToken: false
       securityContext:

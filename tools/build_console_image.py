@@ -69,7 +69,7 @@ def dependencies(wheels):
 def payload(wheels):
     dist = ROOT / 'console/dist'
     if not (dist / 'index.html').is_file(): raise ValueError('Run npm ci/test/build in console first')
-    files = {'app/server.py': ROOT / 'console/server.py', 'app/aws_views.py': ROOT / 'lab/wsl/console/ui.py',
+    files = {'app/server.py': ROOT / 'console/server.py', 'app/aws_views.py': ROOT / 'console/aws_views.py',
              'app/requirements.txt': ROOT / 'console/requirements.txt'}
     files.update({'app/public/' + str(p.relative_to(dist)).replace('\\', '/'): p for p in dist.rglob('*') if p.is_file()})
     if any(p.is_symlink() for p in files.values()): raise ValueError('Symlinks forbidden in application layer')
@@ -131,7 +131,7 @@ def build(base_path, target, wheels=ROOT / '.build/console/wheels'):
             add('oci-layout', encoded({'imageLayoutVersion': '1.0.0'}))
             add('index.json', encoded({'schemaVersion': 2, 'manifests': [result]}))
     inputs = [ROOT / p for p in ('console/package.json', 'console/package-lock.json', 'console/requirements.txt',
-                               'console/server.py', 'lab/wsl/console/ui.py', 'tools/build_console_image.py')]
+                               'console/server.py', 'console/aws_views.py', 'tools/build_console_image.py')]
     inputs += sorted((ROOT / 'console/src').rglob('*'))
     inputs += [ROOT / 'console/index.html', ROOT / 'console/vite.config.ts', ROOT / 'console/tsconfig.json', ROOT / 'console/Dockerfile']
     receipt = {'base': BASE, 'tag': TAG, 'digest': result['digest'], 'canonical': TAG.split(':')[0] + '@' + result['digest'],

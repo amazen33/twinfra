@@ -1,4 +1,3 @@
-# Authoritative platform contract supplied by the user. This is configuration, not a K8s object.
 version: '2.2'
 host:
   os: ubuntu
@@ -11,7 +10,10 @@ cluster:
   minimumKubernetesVersion: '1.30'
   baseDomain: vcloud.example.com
   gitOpsRepository: amazen33/twinfra
-  namespaces: [platform-services, workload-apps, hpc-compute]
+  namespaces:
+  - platform-services
+  - workload-apps
+  - hpc-compute
 network:
   cni: cilium
   routingMode: native
@@ -34,3 +36,47 @@ security:
     adr: docs/adr/0001-node-host-mounts.md
     policyFile: security/node-exceptions.json
     policySHA256: d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253
+environments:
+  dev:
+    region: cairo-1
+    context: twinfra-dev-cairo-1
+    baseDomain: twinfra.example.com
+    registry: registry.twinfra.example.com
+    controlPlaneEndpoint: api.dev.cairo-1.twinfra.example.com:6443
+    zone: cairo-1a
+    realm: twinfra
+    client: twinfra-console
+    podCidr: 10.110.0.0/16
+    serviceCidr: 10.111.0.0/16
+    ipAddress: 10.50.0.10
+    gitRevision: main
+    namespaces:
+      platform: twinfra-platform-services
+      workloads: twinfra-workload-apps
+      hpc: twinfra-hpc-compute
+addressPlan:
+- environment: dev
+  region: cairo-1
+  podCidr: 10.110.0.0/16
+  serviceCidr: 10.111.0.0/16
+  ipAddress: 10.50.0.10
+- environment: dev
+  region: cairo-2
+  podCidr: 10.120.0.0/16
+  serviceCidr: 10.121.0.0/16
+  ipAddress: 10.50.0.11
+- environment: production
+  region: cairo-1
+  podCidr: 10.130.0.0/16
+  serviceCidr: 10.131.0.0/16
+  ipAddress: null
+- environment: production
+  region: cairo-2
+  podCidr: 10.140.0.0/16
+  serviceCidr: 10.141.0.0/16
+  ipAddress: null
+- environment: staging
+  region: reserved
+  podCidr: 10.150.0.0/16
+  serviceCidr: 10.151.0.0/16
+  ipAddress: null

@@ -1,4 +1,4 @@
-export type Identity = { username: string; roles: string[]; issuer: string; client: string; adminUrl: string }
+export type Identity = { environment?: string; region?: string; backends?: string[]; username: string; roles: string[]; issuer: string; client: string; adminUrl: string }
 export type Overview = { pods: number; ready: number; deployments: number; healthyDeployments: number; namespace: string; checkedAt: string }
 export type Application = { name: string; sync: string; health: string; revision: string; message: string }
 export type Cloud = { backend: string; services: Record<string, string>; instances: { id: string; type: string; state: string }[]; ephemeral: boolean }
@@ -8,7 +8,7 @@ export type Tab = 'overview' | 'storage' | 'localstack' | 'dynamodb' | 'gitops' 
 export const tabs: { id: Tab; label: string; description: string; icon: string }[] = [
   { id: 'overview', label: 'Overview', description: 'Cluster health', icon: '◈' },
   { id: 'storage', label: 'Storage', description: 'S3 buckets & objects', icon: '▦' },
-  { id: 'localstack', label: 'AWS emulation', description: 'LocalStack & MiniStack', icon: '☁' },
+  { id: 'localstack', label: 'AWS emulation', description: 'AWS-compatible services', icon: '☁' },
   { id: 'dynamodb', label: 'DynamoDB', description: 'Tables & metadata', icon: '▤' },
   { id: 'gitops', label: 'GitOps', description: 'Argo CD reconciliation', icon: '⥁' },
   { id: 'iam', label: 'Identity', description: 'Keycloak & access', icon: '◇' }

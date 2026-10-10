@@ -130,7 +130,7 @@ def audit_objects(objects, policy, mode='workloads'):
             spec = obj.get('spec', {})
             if 'hostPath' in spec:
                 problems.append(f'{key}: forbidden hostPath PV')
-            if 'local' in spec and (not spec.get('nodeAffinity') or obj.get('metadata', {}).get('annotations', {}).get('vcloud.io/vetted') != 'true'):
+            if 'local' in spec and (not spec.get('nodeAffinity') or obj.get('metadata', {}).get('annotations', {}).get('vcloud.io/vetted', obj.get('metadata', {}).get('annotations', {}).get('twinfra.io/vetted')) != 'true'):
                 problems.append(f'{key}: Local PV requires documented vetting and nodeAffinity')
             if 'local' in spec:
                 # An annotation alone is not approval to expose an arbitrary host path.

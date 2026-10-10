@@ -19,6 +19,14 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 describe('console navigation and read-only state', () => {
+  it('reads its environment badge and enabled emulators from configuration', async () => {
+    vi.mocked(fetch).mockImplementation(async (url) => new Response(JSON.stringify(String(url).includes('/identity') ? { ...user, environment: 'dev', region: 'cairo-1', backends: ['ministack'] } : { services: {}, instances: [] }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
+    window.history.replaceState(null, '', '/console/localstack')
+    render(<App />)
+    expect(await screen.findByText('Dev · cairo-1')).toBeTruthy()
+    expect(screen.queryByRole('option', { name: /LocalStack/ })).toBeNull()
+    expect(screen.queryByText('vcloud-wsl-local')).toBeNull()
+  })
   it('shows live health and navigates to GitOps without leaving the shell', async () => {
     render(<App />)
     expect(await screen.findByText('Your control plane is ready.')).toBeTruthy()
