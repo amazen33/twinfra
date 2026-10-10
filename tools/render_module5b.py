@@ -280,12 +280,12 @@ def argocd():
              ('secrets-store.csi.x-k8s.io', 'SecretProviderClass'), ('kueue.x-k8s.io', 'LocalQueue'),
              ('apisix.apache.org', 'ApisixRoute'), ('apisix.apache.org', 'ApisixUpstream'),
              ('apisix.apache.org', 'ApisixPluginConfig'), ('apisix.apache.org', 'ApisixTls')]
-    project = resource('AppProject', 'vcloud-hpc', {'sourceRepos': ['https://github.com/amazen33/vCloud.git'],
+    project = resource('AppProject', 'vcloud-hpc', {'sourceRepos': ['https://github.com/amazen33/twinfra.git'],
         'destinations': [{'server': 'https://kubernetes.default.svc', 'namespace': n} for n in [NS, 'platform-services']],
         'clusterResourceWhitelist': [{'group': 'kueue.x-k8s.io', 'kind': k} for k in ['ClusterQueue', 'ResourceFlavor', 'AdmissionCheck', 'MultiKueueConfig', 'MultiKueueCluster']],
         'namespaceResourceWhitelist': [{'group': group, 'kind': kind} for group, kind in kinds]}, api='argoproj.io/v1alpha1', namespace='platform-services')
     app = resource('Application', 'vcloud-hpc-reference', {'project': 'vcloud-hpc',
-        'source': {'repoURL': 'https://github.com/amazen33/vCloud.git', 'targetRevision': 'main', 'path': 'module-5b/manifests', 'directory': {'recurse': False}},
+        'source': {'repoURL': 'https://github.com/amazen33/twinfra.git', 'targetRevision': 'main', 'path': 'module-5b/manifests', 'directory': {'recurse': False}},
         'destination': {'server': 'https://kubernetes.default.svc', 'namespace': NS},
         'syncPolicy': {'automated': {'enabled': False, 'prune': False, 'selfHeal': False, 'allowEmpty': False},
                        'syncOptions': ['CreateNamespace=false']}}, api='argoproj.io/v1alpha1', namespace='platform-services')

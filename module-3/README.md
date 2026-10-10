@@ -1,6 +1,6 @@
 # Module 3: end-to-end GitOps delivery
 
-Authenticated pushes to protected `main` in `amazen33/vCloud` start the Tekton
+Authenticated pushes to protected `main` in `amazen33/twinfra` start the Tekton
 `vcloud-ci` pipeline. It checks out the exact commit, runs application and repository
 tests, builds and pushes an OCI image, then updates its source tag **and SHA-256 digest**
 on `gitops/prod` in the same repository. Argo CD continuously reconciles that branch.

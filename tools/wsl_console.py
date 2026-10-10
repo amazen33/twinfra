@@ -139,13 +139,13 @@ def network():
 
 def definitions():
     project = resource('AppProject', 'vcloud-wsl-console', {
-        'sourceRepos': ['https://github.com/amazen33/vCloud.git'],
+        'sourceRepos': ['https://github.com/amazen33/twinfra.git'],
         'destinations': [{'server': 'https://kubernetes.default.svc', 'namespace': NS}],
         'clusterResourceWhitelist': [], 'namespaceResourceWhitelist': [{'group': g, 'kind': k} for g, k in
             [('', 'ConfigMap'), ('', 'Service'), ('apps', 'Deployment'), ('apisix.apache.org', 'ApisixRoute')]]}, NS, 'argoproj.io/v1alpha1')
     app = resource('Application', 'vcloud-wsl-console', {'project': 'vcloud-wsl-console',
         'destination': {'server': 'https://kubernetes.default.svc', 'namespace': NS},
-        'source': {'repoURL': 'https://github.com/amazen33/vCloud.git', 'targetRevision': 'main', 'path': 'lab/wsl/console/gitops'},
+        'source': {'repoURL': 'https://github.com/amazen33/twinfra.git', 'targetRevision': 'main', 'path': 'lab/wsl/console/gitops'},
         'syncPolicy': {'automated': {'enabled': True, 'selfHeal': True, 'prune': False},
                        'syncOptions': ['CreateNamespace=false', 'ServerSideApply=true']}}, NS, 'argoproj.io/v1alpha1')
     return [project, app]

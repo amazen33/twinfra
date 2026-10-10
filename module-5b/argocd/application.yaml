@@ -9,7 +9,7 @@ metadata:
   namespace: platform-services
 spec:
   sourceRepos:
-  - https://github.com/amazen33/vCloud.git
+  - https://github.com/amazen33/twinfra.git
   destinations:
   - server: https://kubernetes.default.svc
     namespace: hpc-compute
@@ -75,7 +75,7 @@ metadata:
 spec:
   project: vcloud-hpc
   source:
-    repoURL: https://github.com/amazen33/vCloud.git
+    repoURL: https://github.com/amazen33/twinfra.git
     targetRevision: main
     path: module-5b/manifests
     directory:

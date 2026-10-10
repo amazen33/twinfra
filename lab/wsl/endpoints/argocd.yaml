@@ -199,7 +199,7 @@ metadata:
   namespace: platform-services
 spec:
   sourceRepos:
-  - https://github.com/amazen33/vCloud.git
+  - https://github.com/amazen33/twinfra.git
   destinations:
   - server: https://kubernetes.default.svc
     namespace: platform-services
@@ -239,7 +239,7 @@ spec:
     server: https://kubernetes.default.svc
     namespace: platform-services
   source:
-    repoURL: https://github.com/amazen33/vCloud.git
+    repoURL: https://github.com/amazen33/twinfra.git
     targetRevision: main
     path: lab/wsl/endpoints/gitops
   syncPolicy:

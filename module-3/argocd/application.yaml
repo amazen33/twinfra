@@ -8,7 +8,7 @@ metadata:
   namespace: platform-services
 spec:
   sourceRepos:
-  - https://github.com/amazen33/vCloud.git
+  - https://github.com/amazen33/twinfra.git
   destinations:
   - server: https://kubernetes.default.svc
     namespace: workload-apps
@@ -31,7 +31,7 @@ metadata:
 spec:
   project: vcloud-delivery
   source:
-    repoURL: https://github.com/amazen33/vCloud.git
+    repoURL: https://github.com/amazen33/twinfra.git
     targetRevision: gitops/prod
     path: module-3/gitops
     directory:
@@ -63,7 +63,7 @@ metadata:
   namespace: platform-services
 spec:
   sourceRepos:
-  - https://github.com/amazen33/vCloud.git
+  - https://github.com/amazen33/twinfra.git
   destinations:
   - server: https://kubernetes.default.svc
     namespace: platform-services
@@ -118,7 +118,7 @@ metadata:
 spec:
   project: vcloud-ci
   source:
-    repoURL: https://github.com/amazen33/vCloud.git
+    repoURL: https://github.com/amazen33/twinfra.git
     targetRevision: main
     path: module-3/manifests
     directory:

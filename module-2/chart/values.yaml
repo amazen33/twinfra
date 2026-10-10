@@ -4,8 +4,8 @@ registry: registry.vcloud.example.com
 clusterName: vCloud-prod-01
 baseDomain: vcloud.example.com
 git:
-  repoURL: https://git.vcloud.example.com/amazen33/vCloud.git
-  upstream: https://github.com/amazen33/vCloud.git
+  repoURL: https://git.vcloud.example.com/amazen33/twinfra.git
+  upstream: https://github.com/amazen33/twinfra.git
   revision: vcloud-module-2-v0.2.0
   path: module-2/chart
   mirrorReady: false

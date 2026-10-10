@@ -23,6 +23,6 @@ trap restore EXIT
 k -n kube-system patch configmap cilium-config --type=merge -p '{"data":{"enable-host-legacy-routing":"true"}}'
 k -n kube-system rollout restart daemonset/cilium
 k -n kube-system rollout status daemonset/cilium --timeout=180s
-k -n platform-services exec deployment/argocd-repo-server -- timeout 25 git ls-remote https://github.com/amazen33/vCloud.git HEAD
+k -n platform-services exec deployment/argocd-repo-server -- timeout 25 git ls-remote https://github.com/amazen33/twinfra.git HEAD
 trap - EXIT
 printf 'PASS: GitHub fetch succeeded; WSL host-routing workaround retained.\n'

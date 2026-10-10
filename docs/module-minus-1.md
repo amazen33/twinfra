@@ -8,7 +8,7 @@ returns 42 before host mutation. `BOOTSTRAP_K8S=false` prepares only the host.
 
 The literal cluster identity is `vCloud-prod-01`; the Cilium DNS-safe name is its lowercase
 derivative `vcloud-prod-01`. Domain `vcloud.example.com` and GitOps repository
-`amazen33/vCloud` are metadata/configuration only; this module creates no DNS zone,
+`amazen33/twinfra` are metadata/configuration only; this module creates no DNS zone,
 repository, Argo CD Application or cloud resources. Regenerate identity/foundation with
 `python3 tools/render_ssot.py`, then Cloud-Init with `python3 tools/render_cloud_init.py`.
 

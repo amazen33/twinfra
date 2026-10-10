@@ -60,8 +60,8 @@ def check_values(v, live=False, dependencies=True):
             v['baseDomain'] != ssot['cluster']['baseDomain'] or
             v['git']['upstream'] != 'https://github.com/' + ssot['cluster']['gitOpsRepository'] + '.git'):
         raise ValueError('Module 2 identity must agree with SSoT v2.2')
-    if not v['git']['repoURL'].endswith('/amazen33/vCloud.git') or not v['git']['repoURL'].startswith('https://'):
-        raise ValueError('Git transport must be HTTPS and mirror amazen33/vCloud')
+    if not v['git']['repoURL'].endswith('/amazen33/twinfra.git') or not v['git']['repoURL'].startswith('https://'):
+        raise ValueError('Git transport must be HTTPS and mirror amazen33/twinfra')
     if not re.fullmatch(r'[a-f0-9]{40}|vcloud-module-2-v\d+\.\d+\.\d+', v['git']['revision']):
         raise ValueError('Use an immutable Git commit or the documented release tag')
     if v['function']['maxScale'] != 1:
@@ -132,7 +132,7 @@ def check_values(v, live=False, dependencies=True):
             if any(ipaddress.ip_network(cidr).overlaps(ipaddress.ip_network(c)) for c in ('192.0.2.0/24','198.51.100.0/24','203.0.113.0/24') if ipaddress.ip_network(cidr).version == 4):
                 raise ValueError('Replace all documentation CIDRs before live bootstrap')
         if not v['git']['mirrorReady']:
-            raise ValueError('Publish the immutable amazen33/vCloud tree to the internal Git mirror first')
+            raise ValueError('Publish the immutable amazen33/twinfra tree to the internal Git mirror first')
         flags = [v['knative']['controllerProfileReady'], v['knative']['internalTLSReady'], v['apisix']['profileReady']]
         if dependencies and not all(flags + [v['dependencies'][x] for x in ('cnpgReady','vpaReady','argocdReady')]):
             raise ValueError('Pinned dependency, restricted-pod and verified TLS profiles are not recorded ready')

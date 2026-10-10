@@ -64,7 +64,7 @@ This finite development volume has no HA, external backup or DR guarantee.
 
 ## Continuous reconciliation
 
-Argo CD Core uses the public Git repository `https://github.com/amazen33/vCloud.git`,
+Argo CD Core uses the public Git repository `https://github.com/amazen33/twinfra.git`,
 the lab source branch `codex/wsl-local-bootstrap`, and `lab/wsl/gitops`. Publish
 the tested source before applying `.build/wsl-platform/application.yaml`.
 The AppProject permits only the `platform-services` destination and explicit

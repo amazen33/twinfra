@@ -1,6 +1,6 @@
 # DevSecOps review of the WSL corrections
 
-Review date: **2026-10-07**. Repository: `amazen33/vCloud`. Runtime scope:
+Review date: **2026-10-07**. Repository: `amazen33/twinfra`. Runtime scope:
 `vcloud-wsl-local`, Ubuntu 26.04 WSL2, mirrored networking, six CPUs and about
 20 GiB RAM. Production `vCloud-prod-01` retains its Ubuntu 24.04/kubeadm contract.
 
@@ -93,20 +93,20 @@ backup/restore and production release gates remain open.
 ## Milestones and PR disposition
 
 [MILESTONES.md](../MILESTONES.md) retains the roadmap merged through PRs
-[#5](https://github.com/amazen33/vCloud/pull/5) and
-[#6](https://github.com/amazen33/vCloud/pull/6), and maps these corrections to
+[#5](https://github.com/amazen33/twinfra/pull/5) and
+[#6](https://github.com/amazen33/twinfra/pull/6), and maps these corrections to
 its local-runtime, platform-services and verification gates. All four GitHub
 release milestones remain open:
 
 | GitHub milestone | Existing open acceptance issues |
 | --- | --- |
-| `v0.1.0-alpha` | [#13](https://github.com/amazen33/vCloud/issues/13): align the bootstrap target and complete live foundation acceptance |
-| `v0.2.0-beta` | [#15](https://github.com/amazen33/vCloud/issues/15): live GitOps and platform-services integration |
-| `v0.3.0-rc` | [#12](https://github.com/amazen33/vCloud/issues/12): drift/failure recovery; [#14](https://github.com/amazen33/vCloud/issues/14): SIT/compliance acceptance |
-| `v1.0.0-GA` | [#16](https://github.com/amazen33/vCloud/issues/16): release checks; [#17](https://github.com/amazen33/vCloud/issues/17): multi-node recovery; [#18](https://github.com/amazen33/vCloud/issues/18): performance |
+| `v0.1.0-alpha` | [#13](https://github.com/amazen33/twinfra/issues/13): align the bootstrap target and complete live foundation acceptance |
+| `v0.2.0-beta` | [#15](https://github.com/amazen33/twinfra/issues/15): live GitOps and platform-services integration |
+| `v0.3.0-rc` | [#12](https://github.com/amazen33/twinfra/issues/12): drift/failure recovery; [#14](https://github.com/amazen33/twinfra/issues/14): SIT/compliance acceptance |
+| `v1.0.0-GA` | [#16](https://github.com/amazen33/twinfra/issues/16): release checks; [#17](https://github.com/amazen33/twinfra/issues/17): multi-node recovery; [#18](https://github.com/amazen33/twinfra/issues/18): performance |
 
 PRs #1–#3, #5 and #6 were already merged when
-this audit began; [PR #4](https://github.com/amazen33/vCloud/pull/4) carries the
+this audit began; [PR #4](https://github.com/amazen33/twinfra/pull/4) carries the
 remaining WSL/reference implementation and corrections. Its fresh candidate and
 integration checks must pass before merge; the old green run at `1ab9714` does
 not validate these changes.

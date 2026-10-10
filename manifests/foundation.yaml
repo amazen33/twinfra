@@ -14,7 +14,7 @@ metadata:
   annotations:
     vcloud.io/cluster: vCloud-prod-01
     vcloud.io/base-domain: vcloud.example.com
-    vcloud.io/gitops-repository: amazen33/vCloud
+    vcloud.io/gitops-repository: amazen33/twinfra
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -44,7 +44,7 @@ metadata:
   annotations:
     vcloud.io/cluster: vCloud-prod-01
     vcloud.io/base-domain: vcloud.example.com
-    vcloud.io/gitops-repository: amazen33/vCloud
+    vcloud.io/gitops-repository: amazen33/twinfra
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -74,7 +74,7 @@ metadata:
   annotations:
     vcloud.io/cluster: vCloud-prod-01
     vcloud.io/base-domain: vcloud.example.com
-    vcloud.io/gitops-repository: amazen33/vCloud
+    vcloud.io/gitops-repository: amazen33/twinfra
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

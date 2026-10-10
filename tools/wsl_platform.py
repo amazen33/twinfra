@@ -207,13 +207,13 @@ def workload():
 
 
 def application():
-    project=resource('AppProject','vcloud-wsl-local',{'sourceRepos':['https://github.com/amazen33/vCloud.git'],
+    project=resource('AppProject','vcloud-wsl-local',{'sourceRepos':['https://github.com/amazen33/twinfra.git'],
         'destinations':[{'server':'https://kubernetes.default.svc','namespace':NS}], 'clusterResourceWhitelist':[],
         'namespaceResourceWhitelist':[{'group':group,'kind':kind} for group,kind in [('', 'ConfigMap'),('', 'ServiceAccount'),
             ('rbac.authorization.k8s.io','Role'),('rbac.authorization.k8s.io','RoleBinding'),('batch','CronJob'),
             ('postgresql.cnpg.io','Cluster'),('cilium.io','CiliumNetworkPolicy')]]},NS,'argoproj.io/v1alpha1')
     app=resource('Application','vcloud-wsl-platform',{'project':'vcloud-wsl-local','destination':{'server':'https://kubernetes.default.svc','namespace':NS},
-        'source':{'repoURL':'https://github.com/amazen33/vCloud.git','targetRevision':'main','path':'lab/wsl/gitops'},
+        'source':{'repoURL':'https://github.com/amazen33/twinfra.git','targetRevision':'main','path':'lab/wsl/gitops'},
         'syncPolicy':{'automated':{'enabled':True,'prune':False,'selfHeal':True,'allowEmpty':False},
                       'syncOptions':['CreateNamespace=false','RespectIgnoreDifferences=true']},
         'ignoreDifferences':[{'group':'postgresql.cnpg.io','kind':'Cluster','name':DB,'namespace':NS,

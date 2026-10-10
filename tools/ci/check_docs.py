@@ -122,8 +122,13 @@ if canonical:
         assert status in index, status
     ssot = (root / 'vcloud-ssot.yaml').read_text(encoding='utf-8')
     assert 'adr: docs/adr/0001-node-host-mounts.md' in ssot, 'active SSoT ADR reference is stale'
+# The selected revision supplies its contract: frozen baselines precede Stage B.
+ssot_text = (root / 'vcloud-ssot.yaml').read_text(encoding='utf-8')
+repository = re.search(r'(?m)^  gitOpsRepository: (\S+)$', ssot_text)
+repository = repository[1] if repository else 'amazen33/vCloud'
+assert repository in ('amazen33/vCloud', 'amazen33/twinfra'), 'unapproved GitOps repository'
 for identity in ('vCloud-prod-01', 'vcloud-prod-01', 'vcloud.example.com',
-                 'amazen33/vCloud', 'registry.vcloud.example.com', 'platform-services',
+                 repository, 'registry.vcloud.example.com', 'platform-services',
                  'workload-apps', 'hpc-compute'):
     assert identity in index, identity
 

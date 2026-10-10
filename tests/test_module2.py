@@ -256,7 +256,7 @@ class ExecutionGates(unittest.TestCase):
             m.check_values(self.values, live=True)
 
     def test_identity_cannot_use_another_repository(self):
-        self.values['git']['upstream'] = 'https://github.com/amazen33/vCloud-other.git'
+        self.values['git']['upstream'] = 'https://github.com/amazen33/twinfra-other.git'
         with self.assertRaisesRegex(ValueError, 'identity'):
             m.check_values(self.values)
 

@@ -12,7 +12,7 @@ waive architecture review or tester sign-off.
 
 ## Prerequisites and review identities
 
-- Repository: `amazen33/vCloud`; target branch: `main`.
+- Repository: `amazen33/twinfra`; target branch: `main`.
 - The owner has repository administration access and an authenticated `gh` CLI
   for read-only verification. Do not include credentials in receipts or logs.
 - `.github/CODEOWNERS` and the existing workflow must be present on `main`.
@@ -43,7 +43,7 @@ review enforcement, recording the stage and tester sign-off in the receipt.
 ## Exact owner-applied ruleset (Stage 1)
 
 Open **Settings → Rules → Rulesets → New ruleset → New branch ruleset** in
-`amazen33/vCloud`. Use the following configuration:
+`amazen33/twinfra`. Use the following configuration:
 
 | Setting | Required value |
 |---|---|
@@ -78,16 +78,16 @@ and [rule semantics](https://docs.github.com/en/repositories/configuring-branche
 These commands only read GitHub state. Run them as the owner after saving:
 
 ```bash
-gh api --paginate repos/amazen33/vCloud/rulesets \
+gh api --paginate repos/amazen33/twinfra/rulesets \
   --jq '.[] | {id, name, target, enforcement, source_type, source}'
 
 # Use the id returned for vcloud-main-governance.
 RULESET_ID=12345
-gh api "repos/amazen33/vCloud/rulesets/$RULESET_ID" \
+gh api "repos/amazen33/twinfra/rulesets/$RULESET_ID" \
   --jq '{name, target, enforcement, bypass_actors, conditions, rules}'
 
 # Check the rules that actually apply to main, including inherited rulesets.
-gh api --paginate repos/amazen33/vCloud/rules/branches/main \
+gh api --paginate repos/amazen33/twinfra/rules/branches/main \
   --jq '.[] | {type, parameters, ruleset_id, ruleset_source_type, ruleset_source}'
 ```
 

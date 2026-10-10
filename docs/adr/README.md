@@ -82,7 +82,7 @@ ADR numbers **0037–0041** are reserved for other approved work orders.
   cgroups, Cilium eBPF with native routing. Kubernetes minimum **1.30** is a floor,
   not a claim that every newer component supports every release above it.
 - Cluster identity: **vCloud-prod-01**; DNS-safe derivative: **vcloud-prod-01**;
-  base domain: **vcloud.example.com**; GitOps repository: **amazen33/vCloud**;
+  base domain: **vcloud.example.com**; GitOps repository: **amazen33/twinfra**;
   image registry: **registry.vcloud.example.com**.
 - Core namespaces: **platform-services**, **workload-apps**, **hpc-compute**.
   Infrastructure is intended for `platform-services`, applications for `workload-apps`,

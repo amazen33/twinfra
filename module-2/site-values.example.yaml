@@ -1,5 +1,5 @@
 # Replace EVERY documentation address/node with the real site. Keep secrets out of this file.
-# An internal Git mirror must contain the exact amazen33/vCloud release below.
+# An internal Git mirror must contain the exact amazen33/twinfra release below.
 site:
   referenceOnly: true # Change only after editing and inspecting the real site.
   nodeName: vcloud-node-01

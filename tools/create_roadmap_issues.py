@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 
-REPOSITORY = 'amazen33/vCloud'
+REPOSITORY = 'amazen33/twinfra'
 API_BASE = 'https://api.github.com'
 PAGE_SIZE = 100
 
