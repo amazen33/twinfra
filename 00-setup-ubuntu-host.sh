@@ -39,6 +39,8 @@ load_config() {
     # END GENERATED SSOT DEFAULTS
     : "${REGISTRY_MIRROR:=https://$IMAGE_REGISTRY}" "${REGISTRY_CA_FILE:=}"
     : "${MIRROR_REQUIRED:=true}" "${REGISTRY_PROBE_IMAGE:=$IMAGE_REGISTRY/docker.io/library/busybox:1.37.0}"
+    # WO-29: explicit owner/NoCloud image staging is a dev-only bootstrap step.
+    : "${IMAGE_STAGING:=false}"
     : "${POD_CIDR:=10.42.0.0/16}" "${SERVICE_CIDR:=10.43.0.0/16}" "${NODE_IP:=}"
     : "${PLATFORM_PROFILE:=production}" "${CONTROL_PLANE_ENDPOINT:=}"
     : "${NODE_NAME:=}" "${PAUSE_IMAGE:=$IMAGE_REGISTRY/registry.k8s.io/pause:3.10.1}"
@@ -66,7 +68,7 @@ version_at_least() { [[ "$(printf '%s\n%s\n' "$2" "$1" | sort -V | head -n1)" ==
 validate_config() {
     local name value
     validate_ssot_identity
-    for name in BOOTSTRAP_K8S INSTALL_HPC ENABLE_KVM RUN_SMOKE_TESTS GPU_SMOKE_TEST MIRROR_REQUIRED; do
+    for name in BOOTSTRAP_K8S INSTALL_HPC ENABLE_KVM RUN_SMOKE_TESTS GPU_SMOKE_TEST MIRROR_REQUIRED IMAGE_STAGING; do
         [[ ${!name} == true || ${!name} == false ]] || bad_config "$name must be true or false"
     done
     [[ $ENABLE_GPU =~ ^(auto|true|false)$ ]] || bad_config 'ENABLE_GPU must be auto, true or false'
@@ -122,9 +124,9 @@ validate_ssot_identity() {
        $GITOPS_REPOSITORY == amazen33/twinfra &&
        $IMAGE_REGISTRY == registry.vcloud.example.com &&
        $REGISTRY_MIRROR == https://registry.vcloud.example.com &&
-       $MIRROR_REQUIRED == true ]] ;;
-    dev-cairo-1) [[ $SSOT_VERSION == 2.2 && $CLUSTER_NAME == twinfra-dev-cairo-1 && $CLUSTER_DNS_NAME == twinfra-dev-cairo-1 && $BASE_DOMAIN == twinfra.example.com && $GITOPS_REPOSITORY == amazen33/twinfra && $IMAGE_REGISTRY == registry.twinfra.example.com && $REGISTRY_MIRROR == https://registry.twinfra.example.com && $MIRROR_REQUIRED == true ]] ;;
-    dev-cairo-2) [[ $SSOT_VERSION == 2.2 && $CLUSTER_NAME == twinfra-dev-cairo-2 && $CLUSTER_DNS_NAME == twinfra-dev-cairo-2 && $BASE_DOMAIN == twinfra.example.com && $GITOPS_REPOSITORY == amazen33/twinfra && $IMAGE_REGISTRY == registry.twinfra.example.com && $REGISTRY_MIRROR == https://registry.twinfra.example.com && $MIRROR_REQUIRED == true ]] ;;
+       $MIRROR_REQUIRED == true && $IMAGE_STAGING == false ]] ;;
+    dev-cairo-1) [[ $SSOT_VERSION == 2.2 && $CLUSTER_NAME == twinfra-dev-cairo-1 && $CLUSTER_DNS_NAME == twinfra-dev-cairo-1 && $BASE_DOMAIN == twinfra.example.com && $GITOPS_REPOSITORY == amazen33/twinfra && $IMAGE_REGISTRY == registry.twinfra.example.com && $REGISTRY_MIRROR == https://registry.twinfra.example.com && $MIRROR_REQUIRED == true && ( $IMAGE_STAGING == false || $IMAGE_STAGING == true ) ]] ;;
+    dev-cairo-2) [[ $SSOT_VERSION == 2.2 && $CLUSTER_NAME == twinfra-dev-cairo-2 && $CLUSTER_DNS_NAME == twinfra-dev-cairo-2 && $BASE_DOMAIN == twinfra.example.com && $GITOPS_REPOSITORY == amazen33/twinfra && $IMAGE_REGISTRY == registry.twinfra.example.com && $REGISTRY_MIRROR == https://registry.twinfra.example.com && $MIRROR_REQUIRED == true && ( $IMAGE_STAGING == false || $IMAGE_STAGING == true ) ]] ;;
     *) return 2 ;;
     esac || bad_config 'Identity/registry drift from vcloud-ssot.yaml; change the contract and regenerate first'
 }
@@ -585,6 +587,10 @@ EOF
     if [[ $changed == true ]]; then systemctl restart containerd; else systemctl start containerd; fi
     timeout 60 bash -c 'until crictl info >/dev/null 2>&1; do sleep 2; done'
     crictl info | jq -e '.status.conditions[] | select(.type == "RuntimeReady") | .status == true' >/dev/null
+    if [[ $IMAGE_STAGING == true ]]; then
+        stage_bootstrap_images
+        return
+    fi
     # A 401 response proves TLS reachability but not permission to pull the probe image.
     local -a ca_args=()
     [[ -z $REGISTRY_CA_FILE ]] || ca_args=(--cacert "$REGISTRY_CA_FILE")
@@ -599,6 +605,15 @@ EOF
     fi
     crictl pull "$REGISTRY_PROBE_IMAGE"
     [[ $MIRROR_REQUIRED == false ]] || MIRROR_STATUS=verified-cri-pull-mirror-only
+}
+
+stage_bootstrap_images() {
+    [[ $PLATFORM_PROFILE == dev-cairo-1 || $PLATFORM_PROFILE == dev-cairo-2 ]] || die 'IMAGE_STAGING is dev-only'
+    [[ $MIRROR_REQUIRED == true ]] || die 'Dev staging requires mirror-only CRI; no upstream fallback'
+    [[ -r /etc/twinfra/bootstrap-images.lock.json && -r /usr/local/lib/twinfra/stage-images.py ]] || die 'Missing generated dev bootstrap image lock/staging agent'
+    PHASE=bootstrap-image-staging
+    python3 /usr/local/lib/twinfra/stage-images.py --lock /etc/twinfra/bootstrap-images.lock.json || die 'Bootstrap image staging failed; inspect missing/mismatched image report'
+    MIRROR_STATUS=staged-verified
 }
 
 install_tooling() {
@@ -677,7 +692,9 @@ install_hpc_kvm() {
 }
 
 render_kubeadm() {
-    local resolv_conf=/etc/resolv.conf endpoint=${CONTROL_PLANE_ENDPOINT:-"$NODE_IP:6443"}
+    local resolv_conf=/etc/resolv.conf endpoint=${CONTROL_PLANE_ENDPOINT:-"$NODE_IP:6443"} dev_proxy=
+    # skipPhases alone does not disable kubeadm's kube-proxy image preflight.
+    [[ ${IMAGE_STAGING:-false} != true ]] || dev_proxy=$'proxy:\n  disabled: true\n'
     [[ ! -e /run/systemd/resolve/resolv.conf ]] || resolv_conf=/run/systemd/resolve/resolv.conf
     cat <<EOF
 apiVersion: kubeadm.k8s.io/v1beta4
@@ -702,7 +719,7 @@ kind: ClusterConfiguration
 kubernetesVersion: "$KUBERNETES_VERSION"
 clusterName: "$CLUSTER_NAME"
 imageRepository: "$IMAGE_REGISTRY/registry.k8s.io"
-controlPlaneEndpoint: "$endpoint"
+${dev_proxy}controlPlaneEndpoint: "$endpoint"
 networking:
   podSubnet: "$POD_CIDR"
   serviceSubnet: "$SERVICE_CIDR"

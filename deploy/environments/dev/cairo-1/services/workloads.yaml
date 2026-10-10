@@ -62,10 +62,10 @@ data:
     ,\n      \"publicClient\": false,\n      \"standardFlowEnabled\": true,\n    \
     \  \"implicitFlowEnabled\": false,\n      \"directAccessGrantsEnabled\": false,\n\
     \      \"serviceAccountsEnabled\": false,\n      \"fullScopeAllowed\": false,\n\
-    \      \"redirectUris\": [\n        \"http://console.dev.cairo-1.twinfra.example.com:18080/console/callback\"\
-    \n      ],\n      \"webOrigins\": [\n        \"http://console.dev.cairo-1.twinfra.example.com:18080\"\
+    \      \"redirectUris\": [\n        \"https://console.dev.cairo-1.twinfra.example.com:18444/console/callback\"\
+    \n      ],\n      \"webOrigins\": [\n        \"https://console.dev.cairo-1.twinfra.example.com:18444\"\
     \n      ],\n      \"attributes\": {\n        \"pkce.code.challenge.method\": \"\
-    S256\",\n        \"post.logout.redirect.uris\": \"http://console.dev.cairo-1.twinfra.example.com:18080/console/\"\
+    S256\",\n        \"post.logout.redirect.uris\": \"https://console.dev.cairo-1.twinfra.example.com:18444/console/\"\
     \n      },\n      \"protocolMappers\": [\n        {\n          \"name\": \"console-audience\"\
     ,\n          \"protocol\": \"openid-connect\",\n          \"protocolMapper\":\
     \ \"oidc-audience-mapper\",\n          \"config\": {\n            \"included.client.audience\"\
@@ -138,8 +138,6 @@ spec:
         app.kubernetes.io/name: twinfra-openbao
     spec:
       automountServiceAccountToken: false
-      imagePullSecrets:
-      - name: twinfra-registry-cred
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -301,8 +299,6 @@ spec:
         app.kubernetes.io/name: twinfra-keycloak
     spec:
       automountServiceAccountToken: false
-      imagePullSecrets:
-      - name: twinfra-registry-cred
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -544,8 +540,6 @@ spec:
         app.kubernetes.io/name: twinfra-ministack
     spec:
       automountServiceAccountToken: false
-      imagePullSecrets:
-      - name: twinfra-registry-cred
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -719,8 +713,6 @@ spec:
         app.kubernetes.io/name: twinfra-console
     spec:
       automountServiceAccountToken: false
-      imagePullSecrets:
-      - name: twinfra-registry-cred
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -844,10 +836,12 @@ metadata:
     app.kubernetes.io/part-of: twinfra
 data:
   config.yaml: "apisix:\n  enable_admin: false\n  enable_ipv6: false\n  node_listen:\
-    \ 9080\n  ssl:\n    ssl_trusted_certificate: /oidc-trust/tls.crt\ndeployment:\n\
-    \  role: data_plane\n  role_data_plane:\n    config_provider: yaml\nnginx_config:\n\
-    \  error_log: /dev/stderr\n  http:\n    access_log: /dev/stdout\n    access_log_format:\
-    \ $remote_addr $request_method $uri $status\n  worker_processes: 1\n"
+    \ []\n  ssl:\n    enable: true\n    listen:\n    - port: 9443\n    ssl_cert: /tls/tls.crt\n\
+    \    ssl_cert_key: /tls/tls.key\n    ssl_trusted_certificate: /oidc-trust/tls.crt\n\
+    deployment:\n  role: data_plane\n  role_data_plane:\n    config_provider: yaml\n\
+    nginx_config:\n  error_log: /dev/stderr\n  http:\n    access_log: /dev/stdout\n\
+    \    access_log_format: $remote_addr $request_method $uri $status\n  worker_processes:\
+    \ 1\n"
   apisix.template.json: "{\n  \"routes\": [\n    {\n      \"id\": 1,\n      \"name\"\
     : \"twinfra-shell\",\n      \"priority\": 100,\n      \"uris\": [\n        \"\
     /console\",\n        \"/console/*\"\n      ],\n      \"host\": \"console.dev.cairo-1.twinfra.example.com\"\
@@ -884,10 +878,10 @@ data:
     ,\n          \"bearer_only\": false,\n          \"unauth_action\": \"auth\",\n\
     \          \"ssl_verify\": true,\n          \"use_pkce\": true,\n          \"\
     scope\": \"openid\",\n          \"timeout\": 5,\n          \"redirect_uri\": \"\
-    http://console.dev.cairo-1.twinfra.example.com:18080/console/callback\",\n   \
-    \       \"logout_path\": \"/console/logout\",\n          \"session\": {\n    \
-    \        \"cookie_name\": \"twinfra_portal\",\n            \"cookie_path\": \"\
-    /console\",\n            \"cookie_secure\": false,\n            \"cookie_http_only\"\
+    https://console.dev.cairo-1.twinfra.example.com:18444/console/callback\",\n  \
+    \        \"logout_path\": \"/console/logout\",\n          \"session\": {\n   \
+    \         \"cookie_name\": \"twinfra_portal\",\n            \"cookie_path\": \"\
+    /console\",\n            \"cookie_secure\": true,\n            \"cookie_http_only\"\
     : true,\n            \"cookie_same_site\": \"Lax\",\n            \"idling_timeout\"\
     : 900,\n            \"absolute_timeout\": 3600\n          },\n          \"set_id_token_header\"\
     : false,\n          \"set_access_token_header\": true,\n          \"set_refresh_token_header\"\
@@ -916,9 +910,9 @@ data:
     \              }\n                      }\n                    }\n           \
     \       }\n                }\n              }\n            }\n          }\n  \
     \      },\n        \"proxy-rewrite\": {\n          \"headers\": {\n          \
-    \  \"set\": {\n              \"X-Forwarded-Host\": \"console.dev.cairo-1.twinfra.example.com:18080\"\
-    ,\n              \"X-Forwarded-Proto\": \"http\"\n            },\n           \
-    \ \"remove\": [\n              \"Authorization\",\n              \"Cookie\",\n\
+    \  \"set\": {\n              \"X-Forwarded-Host\": \"console.dev.cairo-1.twinfra.example.com:18444\"\
+    ,\n              \"X-Forwarded-Proto\": \"https\"\n            },\n          \
+    \  \"remove\": [\n              \"Authorization\",\n              \"Cookie\",\n\
     \              \"X-ID-Token\",\n              \"X-Userinfo\",\n              \"\
     X-Refresh-Token\",\n              \"X-Raw-ID-Token\"\n            ]\n        \
     \  }\n        },\n        \"response-rewrite\": {\n          \"headers\": {\n\
@@ -963,10 +957,10 @@ data:
     ,\n          \"bearer_only\": false,\n          \"unauth_action\": \"deny\",\n\
     \          \"ssl_verify\": true,\n          \"use_pkce\": true,\n          \"\
     scope\": \"openid\",\n          \"timeout\": 5,\n          \"redirect_uri\": \"\
-    http://console.dev.cairo-1.twinfra.example.com:18080/console/callback\",\n   \
-    \       \"logout_path\": \"/console/logout\",\n          \"session\": {\n    \
-    \        \"cookie_name\": \"twinfra_portal\",\n            \"cookie_path\": \"\
-    /console\",\n            \"cookie_secure\": false,\n            \"cookie_http_only\"\
+    https://console.dev.cairo-1.twinfra.example.com:18444/console/callback\",\n  \
+    \        \"logout_path\": \"/console/logout\",\n          \"session\": {\n   \
+    \         \"cookie_name\": \"twinfra_portal\",\n            \"cookie_path\": \"\
+    /console\",\n            \"cookie_secure\": true,\n            \"cookie_http_only\"\
     : true,\n            \"cookie_same_site\": \"Lax\",\n            \"idling_timeout\"\
     : 900,\n            \"absolute_timeout\": 3600\n          },\n          \"set_id_token_header\"\
     : false,\n          \"set_access_token_header\": true,\n          \"set_refresh_token_header\"\
@@ -995,9 +989,9 @@ data:
     \              }\n                      }\n                    }\n           \
     \       }\n                }\n              }\n            }\n          }\n  \
     \      },\n        \"proxy-rewrite\": {\n          \"headers\": {\n          \
-    \  \"set\": {\n              \"X-Forwarded-Host\": \"console.dev.cairo-1.twinfra.example.com:18080\"\
-    ,\n              \"X-Forwarded-Proto\": \"http\"\n            },\n           \
-    \ \"remove\": [\n              \"Authorization\",\n              \"Cookie\",\n\
+    \  \"set\": {\n              \"X-Forwarded-Host\": \"console.dev.cairo-1.twinfra.example.com:18444\"\
+    ,\n              \"X-Forwarded-Proto\": \"https\"\n            },\n          \
+    \  \"remove\": [\n              \"Authorization\",\n              \"Cookie\",\n\
     \              \"X-ID-Token\",\n              \"X-Userinfo\",\n              \"\
     X-Refresh-Token\",\n              \"X-Raw-ID-Token\"\n            ]\n        \
     \  }\n        },\n        \"response-rewrite\": {\n          \"headers\": {\n\
@@ -1010,17 +1004,20 @@ data:
   configure.py: "# SPDX-License-Identifier: MIT\n\"\"\"APISIX init container: insert\
     \ mounted credentials into memory-backed conf only.\"\"\"\nimport copy\nimport\
     \ json\nfrom pathlib import Path\nimport shutil\n\n\ndef configure(source, auth,\
-    \ target):\n    data = json.loads((source / 'apisix.template.json').read_text())\n\
+    \ target, tls=None):\n    data = json.loads((source / 'apisix.template.json').read_text())\n\
     \    for route in data['routes']:\n        oidc = route['plugins']['openid-connect']\n\
     \        oidc['client_secret'] = (auth / 'client_secret').read_text().strip()\n\
     \        oidc['session']['secret'] = (auth / 'session_secret').read_text().strip()\n\
     \        if not oidc['client_secret'] or len(oidc['session']['secret']) < 32:\n\
     \            raise ValueError('Missing OIDC credentials; gateway remains gated')\n\
-    \    # YAML accepts JSON; the APISIX standalone loader requires its EOF sentinel.\n\
-    \    config = target / 'apisix.yaml'\n    config.write_text(json.dumps(data, indent=2)\
-    \ + '\\n#END\\n')\n    config.chmod(0o600)\n    shutil.copyfile(source / 'config.yaml',\
-    \ target / 'config.yaml')\n\n\nif __name__ == '__main__':\n    configure(Path('/source'),\
-    \ Path('/auth'), Path('/conf'))\n"
+    \    if tls is not None:\n        data['ssls'] = [{'id': 1, 'snis': sorted({r['host']\
+    \ for r in data['routes']}),\n                         'cert': (tls / 'tls.crt').read_text(),\
+    \ 'key': (tls / 'tls.key').read_text()}]\n    # YAML accepts JSON; the APISIX\
+    \ standalone loader requires its EOF sentinel.\n    config = target / 'apisix.yaml'\n\
+    \    config.write_text(json.dumps(data, indent=2) + '\\n#END\\n')\n    config.chmod(0o600)\n\
+    \    shutil.copyfile(source / 'config.yaml', target / 'config.yaml')\n\n\nif __name__\
+    \ == '__main__':\n    configure(Path('/source'), Path('/auth'), Path('/conf'),\
+    \ Path('/tls'))\n"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -1049,8 +1046,6 @@ spec:
         app.kubernetes.io/name: twinfra-gateway
     spec:
       automountServiceAccountToken: false
-      imagePullSecrets:
-      - name: twinfra-registry-cred
       securityContext:
         runAsNonRoot: true
         runAsUser: 65532
@@ -1069,6 +1064,9 @@ spec:
         volumeMounts:
         - name: conf
           mountPath: /usr/local/apisix/conf
+        - name: tls
+          mountPath: /tls
+          readOnly: true
         - name: oidc-trust
           mountPath: /oidc-trust
           readOnly: true
@@ -1088,7 +1086,7 @@ spec:
           mountPath: /usr/local/apisix/scgi_temp
         readinessProbe:
           tcpSocket:
-            port: 9080
+            port: 9443
         securityContext:
           runAsNonRoot: true
           runAsUser: 65532
@@ -1149,6 +1147,9 @@ spec:
         - name: auth
           mountPath: /auth
           readOnly: true
+        - name: tls
+          mountPath: /tls
+          readOnly: true
         - name: conf
           mountPath: /conf
         securityContext:
@@ -1181,6 +1182,10 @@ spec:
       - name: auth
         secret:
           secretName: twinfra-console-oidc
+          defaultMode: 288
+      - name: tls
+        secret:
+          secretName: twinfra-gateway-tls
           defaultMode: 288
       - name: oidc-trust
         secret:
@@ -1240,5 +1245,5 @@ spec:
     app.kubernetes.io/name: twinfra-gateway
   ports:
   - name: http
-    port: 9080
-    targetPort: 9080
+    port: 9443
+    targetPort: 9443

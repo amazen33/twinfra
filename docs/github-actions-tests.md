@@ -60,6 +60,7 @@ inputs, expired entries and invalid class conditions fail the required gate.
 | Platform probe correction, when present | Both policy schemas, workload/port scope, dependency prechecks, dynamic CIDR preservation, multi-pod health/stability and fail-closed restart recovery fixtures |
 | Roadmap automation, when present | Mocked pagination, exact-title reuse, milestone assignment, dry-run no-writes and closed-milestone rejection; no GitHub mutation |
 | Rebuilt dev environments, when present | Pure Hyper-V planner fixtures (including six Amendment 3 cases), generic image conversion guards, naming/source mutation tests, deterministic dev/seed generation, strict kubeconform, restricted Pod policy and unchanged node-agent mount/security projection; no provisioner entry-point execution |
+| WO-29 runnable dev profile, when present | 7.4 requirement/resource-bound fixtures; fake SSH/ctr staging, cache/mismatch/readonly checks; two-region rendered bootstrap-image inventory equality; in-memory dev CA SAN/key-usage and Git-boundary tests; HTTPS-only gateway/realm and saved production-render byte identity |
 | CI controls | Historical revision selection, invalid input/commit rejection, checksum and archive safety, partial module rejection, no skipped or empty suites, immutable action/tool pins |
 
 The [runner](../tools/ci/run_checks.py) always requires the original modules.

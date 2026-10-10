@@ -715,6 +715,23 @@
       ]
     },
     {
+      "id": "manifest|kubernetes/kubernetes/cmd/kubeadm/app/constants/constants.go|v1.36.5",
+      "ecosystem": "manifest",
+      "name": "kubernetes/kubernetes/cmd/kubeadm/app/constants/constants.go",
+      "version": "v1.36.5",
+      "locations": [
+        "deploy/common/bootstrap-images.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/kubernetes/kubernetes/v1.36.5/LICENSE",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:4d761e887f86abcc784725e5b6c09bb0affbd36441fcde7bb95a03caa7c1aa1c"
+      ]
+    },
+    {
       "id": "manifest|mulgadc/spinifex/LICENSE|dd9c9666f260959f0145441838b82e328b4eb4be",
       "ecosystem": "manifest",
       "name": "mulgadc/spinifex/LICENSE",
@@ -7126,19 +7143,22 @@
       "followUp": "WO-07"
     },
     {
-      "id": "oci-image|docker.io/library/busybox|1.37.0",
+      "id": "oci-image|docker.io/library/busybox|sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e",
       "ecosystem": "oci-image",
       "name": "docker.io/library/busybox",
-      "version": "1.37.0",
+      "version": "sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e",
       "locations": [
-        "00-setup-ubuntu-host.sh"
+        "00-setup-ubuntu-host.sh",
+        "deploy/common/bootstrap-images.lock.json"
       ],
       "spdx": "GPL-2.0-only",
       "class": "base-os",
       "licenceSource": "https://busybox.net/downloads/busybox-1.37.0.tar.bz2#LICENSE",
-      "verifiedOn": "2026-10-09",
+      "verifiedOn": "2026-10-10",
       "recordedOn": "2026-10-09",
-      "integrities": [],
+      "integrities": [
+        "sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e"
+      ],
       "unmodified": true,
       "adr": "0044"
     },
@@ -7655,6 +7675,7 @@
       "name": "quay.io/cilium/cilium-envoy",
       "version": "sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
       "locations": [
+        "deploy/common/bootstrap-images.lock.json",
         "security/node-exceptions.json"
       ],
       "spdx": "Apache-2.0",
@@ -7672,6 +7693,7 @@
       "name": "quay.io/cilium/cilium",
       "version": "sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
       "locations": [
+        "deploy/common/bootstrap-images.lock.json",
         "security/node-exceptions.json"
       ],
       "spdx": "Apache-2.0",
@@ -7689,6 +7711,7 @@
       "name": "quay.io/cilium/operator-generic",
       "version": "sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
       "locations": [
+        "deploy/common/bootstrap-images.lock.json",
         "security/node-exceptions.json"
       ],
       "spdx": "Apache-2.0",
@@ -7774,65 +7797,94 @@
       ]
     },
     {
-      "id": "oci-image|registry.k8s.io/etcd|3.6.8-0",
+      "id": "oci-image|registry.k8s.io/coredns/coredns|sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "ecosystem": "oci-image",
+      "name": "registry.k8s.io/coredns/coredns",
+      "version": "sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/coredns/coredns/v1.14.2/LICENSE",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9"
+      ],
+      "locations": [
+        "deploy/common/bootstrap-images.lock.json"
+      ]
+    },
+    {
+      "id": "oci-image|registry.k8s.io/etcd|sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
       "ecosystem": "oci-image",
       "name": "registry.k8s.io/etcd",
-      "version": "3.6.8-0",
+      "version": "sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
       "locations": [
+        "deploy/common/bootstrap-images.lock.json",
         "security/node-exceptions.json"
       ],
       "spdx": "NOASSERTION",
       "class": "allowed",
       "licenceSource": "https://github.com/amazen33/twinfra/blob/5628062275953bd92fd920a1887468a2c516ab86/security/node-exceptions.json",
-      "verifiedOn": "2026-10-09",
+      "verifiedOn": "2026-10-10",
       "recordedOn": "2026-10-09",
-      "integrities": [],
+      "integrities": [
+        "sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5"
+      ],
       "evidencePending": true
     },
     {
-      "id": "oci-image|registry.k8s.io/kube-apiserver|v1.36.5",
+      "id": "oci-image|registry.k8s.io/kube-apiserver|sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
       "ecosystem": "oci-image",
       "name": "registry.k8s.io/kube-apiserver",
-      "version": "v1.36.5",
+      "version": "sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
       "locations": [
+        "deploy/common/bootstrap-images.lock.json",
         "security/node-exceptions.json"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",
       "licenceSource": "https://raw.githubusercontent.com/kubernetes/kubernetes/v1.36.5/LICENSE",
-      "verifiedOn": "2026-10-09",
+      "verifiedOn": "2026-10-10",
       "recordedOn": "2026-10-09",
-      "integrities": []
+      "integrities": [
+        "sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48"
+      ]
     },
     {
-      "id": "oci-image|registry.k8s.io/kube-controller-manager|v1.36.5",
+      "id": "oci-image|registry.k8s.io/kube-controller-manager|sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
       "ecosystem": "oci-image",
       "name": "registry.k8s.io/kube-controller-manager",
-      "version": "v1.36.5",
+      "version": "sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
       "locations": [
+        "deploy/common/bootstrap-images.lock.json",
         "security/node-exceptions.json"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",
       "licenceSource": "https://raw.githubusercontent.com/kubernetes/kubernetes/v1.36.5/LICENSE",
-      "verifiedOn": "2026-10-09",
+      "verifiedOn": "2026-10-10",
       "recordedOn": "2026-10-09",
-      "integrities": []
+      "integrities": [
+        "sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d"
+      ]
     },
     {
-      "id": "oci-image|registry.k8s.io/kube-scheduler|v1.36.5",
+      "id": "oci-image|registry.k8s.io/kube-scheduler|sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
       "ecosystem": "oci-image",
       "name": "registry.k8s.io/kube-scheduler",
-      "version": "v1.36.5",
+      "version": "sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
       "locations": [
+        "deploy/common/bootstrap-images.lock.json",
         "security/node-exceptions.json"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",
       "licenceSource": "https://raw.githubusercontent.com/kubernetes/kubernetes/v1.36.5/LICENSE",
-      "verifiedOn": "2026-10-09",
+      "verifiedOn": "2026-10-10",
       "recordedOn": "2026-10-09",
-      "integrities": []
+      "integrities": [
+        "sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f"
+      ]
     },
     {
       "id": "oci-image|registry.k8s.io/kueue/kueue|v0.20.0",
@@ -7868,19 +7920,39 @@
       "evidencePending": true
     },
     {
-      "id": "oci-image|registry.k8s.io/pause|3.10.1",
+      "id": "oci-image|registry.k8s.io/pause|sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c",
       "ecosystem": "oci-image",
       "name": "registry.k8s.io/pause",
-      "version": "3.10.1",
+      "version": "sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c",
       "locations": [
-        "00-setup-ubuntu-host.sh"
+        "00-setup-ubuntu-host.sh",
+        "deploy/common/bootstrap-images.lock.json"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",
       "licenceSource": "https://raw.githubusercontent.com/kubernetes/kubernetes/v1.36.5/LICENSE",
-      "verifiedOn": "2026-10-09",
+      "verifiedOn": "2026-10-10",
       "recordedOn": "2026-10-09",
-      "integrities": []
+      "integrities": [
+        "sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c"
+      ]
+    },
+    {
+      "id": "oci-image|registry.k8s.io/pause|sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
+      "ecosystem": "oci-image",
+      "name": "registry.k8s.io/pause",
+      "version": "sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/kubernetes/kubernetes/v1.36.5/LICENSE",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4"
+      ],
+      "locations": [
+        "deploy/common/bootstrap-images.lock.json"
+      ]
     },
     {
       "id": "pip|annotated-doc|0.0.5",

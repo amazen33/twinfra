@@ -29,12 +29,12 @@
           "use_pkce": true,
           "scope": "openid",
           "timeout": 5,
-          "redirect_uri": "http://console.dev.cairo-1.twinfra.example.com:18080/console/callback",
+          "redirect_uri": "https://console.dev.cairo-1.twinfra.example.com:18444/console/callback",
           "logout_path": "/console/logout",
           "session": {
             "cookie_name": "twinfra_portal",
             "cookie_path": "/console",
-            "cookie_secure": false,
+            "cookie_secure": true,
             "cookie_http_only": true,
             "cookie_same_site": "Lax",
             "idling_timeout": 900,
@@ -103,8 +103,8 @@
         "proxy-rewrite": {
           "headers": {
             "set": {
-              "X-Forwarded-Host": "console.dev.cairo-1.twinfra.example.com:18080",
-              "X-Forwarded-Proto": "http"
+              "X-Forwarded-Host": "console.dev.cairo-1.twinfra.example.com:18444",
+              "X-Forwarded-Proto": "https"
             },
             "remove": [
               "Authorization",
@@ -162,12 +162,12 @@
           "use_pkce": true,
           "scope": "openid",
           "timeout": 5,
-          "redirect_uri": "http://console.dev.cairo-1.twinfra.example.com:18080/console/callback",
+          "redirect_uri": "https://console.dev.cairo-1.twinfra.example.com:18444/console/callback",
           "logout_path": "/console/logout",
           "session": {
             "cookie_name": "twinfra_portal",
             "cookie_path": "/console",
-            "cookie_secure": false,
+            "cookie_secure": true,
             "cookie_http_only": true,
             "cookie_same_site": "Lax",
             "idling_timeout": 900,
@@ -236,8 +236,8 @@
         "proxy-rewrite": {
           "headers": {
             "set": {
-              "X-Forwarded-Host": "console.dev.cairo-1.twinfra.example.com:18080",
-              "X-Forwarded-Proto": "http"
+              "X-Forwarded-Host": "console.dev.cairo-1.twinfra.example.com:18444",
+              "X-Forwarded-Proto": "https"
             },
             "remove": [
               "Authorization",

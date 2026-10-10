@@ -1,3 +1,4 @@
+#Requires -Version 7.4
 # SPDX-License-Identifier: MIT
 # Pure planning and an explicit mutation boundary. Importing this module reads no host state.
 Set-StrictMode -Version Latest
@@ -32,7 +33,7 @@ function Test-ExcludedRoute([string]$Cidr) {
 function New-TwinfraPlan {
     param([Parameter(Mandatory)][hashtable]$Inventory,
           [Parameter(Mandatory)][hashtable]$Image,
-          [string]$Region='cairo-1',[int]$Cpu=8,[int]$MemoryGB=24,[int]$DiskGB=100,
+          [string]$Region='cairo-1',[int]$Cpu=8,[int]$MemoryGB=20,[int]$DiskGB=100,
           [string]$IpAddress='10.50.0.10',[string]$PodCidr='10.110.0.0/16',
           [string]$ServiceCidr='10.111.0.0/16',[string]$Root='E:\Twinfra',
           [string]$Environment='dev')
@@ -113,17 +114,19 @@ function New-TwinfraPlan {
         }
     }
     $noop=$vm.Count -eq 1
-    # Reserve full dynamic-disk growth plus 35 GiB for the extracted Canonical VHD/cache/seed, never overcommit.
-    if (-not $noop -and $Inventory.FreeMemoryGB -lt $MemoryGB+4) { throw 'Insufficient free RAM (VM plus 4 GiB host reserve); stop/shrink WSL and other guests yourself' }
-    if (-not $noop -and $Inventory.FreeDiskGB -lt $DiskGB+35) { throw 'Insufficient E: disk (full VHDX growth plus 35 GiB conversion/cache reserve)' }
+    # Reserve full dynamic-disk growth plus 10 GiB for the extracted Canonical VHD/cache/seed, never overcommit.
+    if (-not $noop -and $Inventory.FreeMemoryGB -lt $MemoryGB+4) { throw "Insufficient free RAM: measured $($Inventory.FreeMemoryGB) GiB, require $($MemoryGB+4) GiB; close browsers/desktop apps and stop WSL or other guests yourself" }
+    if (-not $noop -and $Inventory.FreeDiskGB -lt $DiskGB+10) { throw 'Insufficient E: disk (full VHDX growth plus 10 GiB conversion/cache reserve)' }
     return @{ Settings=$settings; Stamp=$stamp; Image=$Image; OwnedNetwork=$owned;
-        NoChanges=$noop; Actions=@(if(-not $noop){'Verify Canonical download';'Create NoCloud ISO';'Create/verify owned NAT';'Convert/resize dynamic VHDX';'Create Generation 2 VM (left Off)'}) }
+        FreeMemoryGB=$Inventory.FreeMemoryGB; FreeDiskGB=$Inventory.FreeDiskGB; NoChanges=$noop; Actions=@(if(-not $noop){'Verify Canonical download';'Create NoCloud ISO';'Create/verify owned NAT';'Convert/resize dynamic VHDX';'Create Generation 2 VM (left Off)'}) }
 }
 function Format-TwinfraPlan([hashtable]$Plan) {
     $s=$Plan.Settings; $i=$Plan.Image
     return @"
 PLAN ONLY: no downloads, files, network or VM changes
 VM: $($s.Name) | Generation 2 | $($s.Cpu) vCPU | $($s.MemoryGB) GiB static RAM | $($s.DiskGB) GiB dynamic VHDX
+Free RAM measured: $($Plan.FreeMemoryGB) GiB | Required: $($s.MemoryGB+4) GiB; if short, close browsers/desktop apps and stop WSL or other guests yourself
+Free E: disk measured: $($Plan.FreeDiskGB) GiB | Required: $($s.DiskGB+10) GiB
 Nested virtualization: enabled; VM remains Off until owner starts it
 Switch: twinfra-nat | 10.50.0.0/24 | gateway 10.50.0.1 | VM $($s.IpAddress)
 Pods: $($s.PodCidr) | Services: $($s.ServiceCidr)
@@ -139,7 +142,7 @@ function Assert-TwinfraImage([string]$File,[hashtable]$Lock,[string]$Checksums) 
     $entry='(?m)^'+[regex]::Escape($Lock.sha256)+'\s+\*?'+[regex]::Escape($Lock.fileName)+'\r?$'
     if ($Checksums -notmatch $entry -or (Get-Item -LiteralPath $File).Length -ne $Lock.sizeBytes -or
         (Get-FileHash -LiteralPath $File -Algorithm SHA256).Hash.ToLowerInvariant() -ne $Lock.sha256) {
-        throw 'Canonical image size/checksum mismatch; no VM or network changes permitted'
+        throw "Canonical image size/checksum mismatch; delete $File and rerun; no automatic deletion or VM/network changes"
     }
 }
 Export-ModuleMember -Function Get-IPv4Range,Test-Overlap,Test-ExcludedRoute,New-TwinfraPlan,Format-TwinfraPlan,Assert-TwinfraImage

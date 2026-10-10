@@ -6,7 +6,7 @@ Import-Module (Join-Path $PSScriptRoot 'Twinfra.psm1') -Force
 $image=Get-Content (Join-Path $PSScriptRoot 'ubuntu-image.lock.json') -Raw | ConvertFrom-Json -AsHashtable
 $script:passed=0
 function Inventory {
-    return @{Admin=$true;HyperV=$true;LogicalProcessors=16;FreeMemoryGB=30;FreeDiskGB=150;
+    return @{Admin=$true;HyperV=$true;LogicalProcessors=16;FreeMemoryGB=24;FreeDiskGB=113;
         Switches=@();Nats=@();Addresses=@();Routes=@();Vms=@();ExistingPaths=@()}
 }
 function Owned($i) {
@@ -32,7 +32,7 @@ Check 'default route and the five exclusions' {
 }
 Check 'exact owned rerun makes zero changes' {
     $i=Inventory;Owned $i;$p=New-TwinfraPlan -Inventory $i -Image $image
-    $i.Vms=@(@{Name=$p.Settings.Name;Stamp=$p.Stamp;FilesVerified=$true;Generation=2;Cpu=8;MemoryGB=24;DynamicMemory=$false;Nested=$true;Switch='twinfra-nat';Disk=$p.Settings.Disk;Seed=$p.Settings.Seed;DiskGB=100;Ips=@('10.50.0.10');ClusterCidrs=@('10.110.0.0/16','10.111.0.0/16')})
+    $i.Vms=@(@{Name=$p.Settings.Name;Stamp=$p.Stamp;FilesVerified=$true;Generation=2;Cpu=8;MemoryGB=20;DynamicMemory=$false;Nested=$true;Switch='twinfra-nat';Disk=$p.Settings.Disk;Seed=$p.Settings.Seed;DiskGB=100;Ips=@('10.50.0.10');ClusterCidrs=@('10.110.0.0/16','10.111.0.0/16')})
     $i.FreeMemoryGB=1;$i.FreeDiskGB=1
     $rerun=New-TwinfraPlan -Inventory $i -Image $image
     Assert ($rerun.NoChanges -and $rerun.Actions.Count -eq 0) 'Rerun mutated plan'
@@ -60,9 +60,22 @@ Check 'specific route host prefix NAT and switch collisions refused' {
 }
 Check 'admin Hyper-V RAM disk and address guards' {
     foreach($key in @('Admin','HyperV')) {$i=Inventory;$i[$key]=$false;Refused $i}
-    $i=Inventory;$i.FreeMemoryGB=27;Refused $i
-    $i=Inventory;$i.FreeDiskGB=115;Refused $i
+    $i=Inventory;$i.FreeMemoryGB=23;Refused $i
+    $i=Inventory;$i.FreeDiskGB=109;Refused $i
     foreach($ip in @('10.50.0.0','10.50.0.1','10.50.0.255','10.51.0.10')) {Refused (Inventory) @{IpAddress=$ip}}
+}
+Check 'WO-29 defaults and resource boundary' {
+    $i=Inventory;$i.FreeDiskGB=110
+    $p=New-TwinfraPlan -Inventory $i -Image $image
+    Assert ($p.Settings.MemoryGB -eq 20) 'Memory default must be 20'
+    Assert ((Format-TwinfraPlan $p) -match 'Free RAM measured: 24 GiB') 'Measured free RAM missing'
+    $i.FreeDiskGB=109;Refused $i
+    $i=Inventory;$i.FreeMemoryGB=23;Refused $i
+}
+Check 'PowerShell 7.4 required in both entry and pure module' {
+    foreach($file in @('New-TwinfraDev.ps1','Twinfra.psm1')) {
+        Assert ((Get-Content (Join-Path $PSScriptRoot $file) -First 1) -eq '#Requires -Version 7.4') 'Missing PowerShell requirement'
+    }
 }
 Check 'checksum mismatch refuses before provisioning' {
     $file=[IO.Path]::GetTempFileName()
@@ -73,6 +86,8 @@ Check 'checksum mismatch refuses before provisioning' {
         $failed=$false
         try {Assert-TwinfraImage -File $file -Lock $lock -Checksums 'invalid'} catch {$failed=$true}
         Assert $failed 'Checksum failure accepted'
+        try {Assert-TwinfraImage -File $file -Lock $lock -Checksums 'invalid'} catch {Assert ($_.Exception.Message -match ('delete '+[regex]::Escape($file)+' and rerun')) 'Missing manual cache recovery message'}
+        Assert (Test-Path -LiteralPath $file) 'Bad cache automatically deleted'
     } finally {Remove-Item -LiteralPath $file}
 }
 Check 'entry script parses, plan branch precedes every mutation' {

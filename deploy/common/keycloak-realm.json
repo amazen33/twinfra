@@ -21,14 +21,14 @@
       "serviceAccountsEnabled": false,
       "fullScopeAllowed": false,
       "redirectUris": [
-        "http://console.dev.cairo-1.twinfra.example.com:18080/console/callback"
+        "https://console.dev.cairo-1.twinfra.example.com:18444/console/callback"
       ],
       "webOrigins": [
-        "http://console.dev.cairo-1.twinfra.example.com:18080"
+        "https://console.dev.cairo-1.twinfra.example.com:18444"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "http://console.dev.cairo-1.twinfra.example.com:18080/console/"
+        "post.logout.redirect.uris": "https://console.dev.cairo-1.twinfra.example.com:18444/console/"
       },
       "protocolMappers": [
         {

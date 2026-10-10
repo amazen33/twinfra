@@ -15,6 +15,7 @@ Nothing in this pack has been written to the Twinfra repository. Codex adds it t
 | [WO-20](WO-20-rename-to-twinfra.md) | Staged product rename under [ADR-0036](../adr/0036-product-name-twinfra.md); Stage A branding precedes the owner's Stage B repository rename; technical identifiers wait for Stage C |
 | [WO-21](WO-21-twinfra-dev-environment.md) | Hyper-V dev environment and WSL retirement amendments; upstream names under ADR-0047 |
 | [WO-25](WO-25-redis-to-valkey.md) | Redis to digest-pinned Valkey cache replacement, including owner-approved Amendment 1 |
+| [WO-29](WO-29-make-dev-environment-runnable.md) | Runnable dev profile: 20 GiB sizing, two image-staging inventories and temporary dev CA/HTTPS; includes Amendment 1 |
 
 ADR-0028 is reserved. The registry decision currently numbered ADR-0020 gets 0028 when WO-03
 removes the duplicate number.
