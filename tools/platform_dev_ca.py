@@ -19,6 +19,11 @@ from cryptography.x509.oid import ExtendedKeyUsageOID, NameOID
 
 ROOT = Path(__file__).resolve().parents[1]
 NS = 'twinfra-platform-services'
+PERMITTED_DNS_SUBTREES = ('twinfra.example.com', 'twinfra-platform-services.svc.cluster.local')
+
+
+def name_constraints():
+    return x509.NameConstraints([x509.DNSName(name) for name in PERMITTED_DNS_SUBTREES], None)
 
 
 def sans(region='cairo-1'):
@@ -49,6 +54,7 @@ def generate(region='cairo-1', now=None):
     ca = (x509.CertificateBuilder().subject_name(name).issuer_name(name).public_key(ca_key.public_key())
           .serial_number(x509.random_serial_number()).not_valid_before(now - timedelta(minutes=5)).not_valid_after(end)
           .add_extension(x509.BasicConstraints(ca=True, path_length=0), critical=True)
+          .add_extension(name_constraints(), critical=True)
           .add_extension(x509.KeyUsage(False, False, False, False, False, True, True, False, False), critical=True)
           .add_extension(x509.SubjectKeyIdentifier.from_public_key(ca_key.public_key()), critical=False)
           .sign(ca_key, hashes.SHA256()))
@@ -140,6 +146,15 @@ def validate(files, region):
     ca.verify_directly_issued_by(ca)
     if not ca.extensions.get_extension_for_class(x509.BasicConstraints).value.ca:
         raise ValueError('Not a CA')
+    try:
+        constraint = ca.extensions.get_extension_for_class(x509.NameConstraints)
+    except x509.ExtensionNotFound:
+        raise ValueError('Dev root CA lacks critical NameConstraints') from None
+    permitted = constraint.value.permitted_subtrees
+    expected = name_constraints().permitted_subtrees
+    if (not constraint.critical or permitted is None or len(permitted) != len(expected)
+            or set(permitted) != set(expected) or constraint.value.excluded_subtrees is not None):
+        raise ValueError('Dev root CA must have exactly the approved critical DNS NameConstraints and no exclusions')
     for name, hosts in sans(region).items():
         cert = x509.load_pem_x509_certificate(files[name + '.crt'])
         cert.verify_directly_issued_by(ca)

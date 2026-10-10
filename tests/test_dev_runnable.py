@@ -15,8 +15,9 @@ from unittest.mock import patch
 
 import yaml
 from cryptography import x509
-from cryptography.hazmat.primitives import serialization
-from cryptography.x509.oid import ExtendedKeyUsageOID
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.x509.oid import ExtendedKeyUsageOID, ExtensionOID
+from cryptography.x509.verification import PolicyBuilder, Store, VerificationError
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
@@ -195,6 +196,82 @@ class Certificates(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.files = ca.generate()
+
+    @staticmethod
+    def resign(cert, key, replacements):
+        """Change test extensions in memory while retaining a valid CA signature."""
+        builder = (x509.CertificateBuilder().subject_name(cert.subject).issuer_name(cert.issuer)
+                   .public_key(cert.public_key()).serial_number(cert.serial_number)
+                   .not_valid_before(cert.not_valid_before_utc).not_valid_after(cert.not_valid_after_utc))
+        for extension in cert.extensions:
+            value = replacements.get(extension.oid, (extension.value, extension.critical))
+            if value is not None:
+                builder = builder.add_extension(value[0], critical=value[1])
+        return builder.sign(key, hashes.SHA256())
+
+    def test_ca_has_exact_critical_dns_name_constraints(self):
+        for region in ('cairo-1', 'cairo-2'):
+            with self.subTest(region=region):
+                cert = x509.load_pem_x509_certificate(ca.generate(region)['ca.crt'])
+                extension = cert.extensions.get_extension_for_class(x509.NameConstraints)
+                self.assertTrue(extension.critical)
+                self.assertEqual(extension.value.permitted_subtrees, [
+                    x509.DNSName('twinfra.example.com'),
+                    x509.DNSName('twinfra-platform-services.svc.cluster.local')])
+                self.assertIsNone(extension.value.excluded_subtrees)
+
+    def test_permitted_names_pass_tls_chain_verification(self):
+        for region in ('cairo-1', 'cairo-2'):
+            files = self.files if region == 'cairo-1' else ca.generate(region)
+            root = x509.load_pem_x509_certificate(files['ca.crt'])
+            for name, hosts in ca.sans(region).items():
+                leaf = x509.load_pem_x509_certificate(files[name + '.crt'])
+                for host in hosts:
+                    with self.subTest(region=region, host=host):
+                        verifier = (PolicyBuilder().store(Store([root])).max_chain_depth(0)
+                                    .build_server_verifier(x509.DNSName(host)))
+                        self.assertEqual(verifier.verify(leaf, []), [leaf, root])
+
+    def test_signed_outside_name_fails_tls_chain_verification(self):
+        root = x509.load_pem_x509_certificate(self.files['ca.crt'])
+        key = serialization.load_pem_private_key(self.files['ca.key'], password=None)
+        leaf = x509.load_pem_x509_certificate(self.files['twinfra-gateway-tls.crt'])
+        outside = self.resign(leaf, key, {ExtensionOID.SUBJECT_ALTERNATIVE_NAME:
+                              (x509.SubjectAlternativeName([x509.DNSName('example.org')]), False)})
+        outside.verify_directly_issued_by(root)  # Correct signature alone must not confer trust.
+        verifier = (PolicyBuilder().store(Store([root])).max_chain_depth(0)
+                    .build_server_verifier(x509.DNSName('example.org')))
+        with self.assertRaisesRegex(VerificationError, 'name constraint'):
+            verifier.verify(outside, [])
+
+    def test_ca_without_name_constraints_rejected(self):
+        root = x509.load_pem_x509_certificate(self.files['ca.crt'])
+        key = serialization.load_pem_private_key(self.files['ca.key'], password=None)
+        unconstrained = self.resign(root, key, {ExtensionOID.NAME_CONSTRAINTS: None})
+        files = dict(self.files, **{'ca.crt': ca.certificate_bytes(unconstrained)})
+        with self.assertRaisesRegex(ValueError, 'lacks critical NameConstraints'):
+            ca.validate(files, 'cairo-1')
+
+    def test_nonexact_or_noncritical_name_constraints_rejected(self):
+        root = x509.load_pem_x509_certificate(self.files['ca.crt'])
+        key = serialization.load_pem_private_key(self.files['ca.key'], password=None)
+        names = [x509.DNSName('twinfra.example.com'), x509.DNSName('twinfra-platform-services.svc.cluster.local')]
+        variants = {
+            'noncritical': (x509.NameConstraints(names, None), False),
+            'extra DNS subtree': (x509.NameConstraints(names + [x509.DNSName('example.org')], None), True),
+            'broader DNS subtree': (x509.NameConstraints([x509.DNSName('example.com'), names[1]], None), True),
+            'missing DNS subtree': (x509.NameConstraints(names[:1], None), True),
+            'duplicate DNS subtree': (x509.NameConstraints([names[0], names[0]], None), True),
+            'other name type': (x509.NameConstraints([names[0], x509.RFC822Name('example.org')], None), True),
+            'excluded subtree': (x509.NameConstraints(names, [x509.DNSName('example.org')]), True),
+            'exclusions only': (x509.NameConstraints(None, [x509.DNSName('example.org')]), True),
+        }
+        for label, value in variants.items():
+            with self.subTest(constraint=label):
+                changed = self.resign(root, key, {ExtensionOID.NAME_CONSTRAINTS: value})
+                files = dict(self.files, **{'ca.crt': ca.certificate_bytes(changed)})
+                with self.assertRaisesRegex(ValueError, 'exactly the approved critical DNS NameConstraints'):
+                    ca.validate(files, 'cairo-1')
 
     def test_ca_p256_ten_years_and_ca_key_usage(self):
         cert = x509.load_pem_x509_certificate(self.files['ca.crt'])

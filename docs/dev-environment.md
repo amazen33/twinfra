@@ -152,6 +152,13 @@ networking, touches pCloud or modifies `iotee-nat`.
    serverAuth. Matching reruns preserve keys. Partial/expired output requires
    deliberate owner recovery. Never paste private keys or upload this directory.
 
+   The dev root has a **critical NameConstraints** extension permitting only
+   the DNS subtrees `twinfra.example.com` and
+   `twinfra-platform-services.svc.cluster.local`, with no excluded subtrees.
+   Validation rejects roots missing these exact constraints. An older,
+   unconstrained root requires deliberate replacement of the root and its leaves;
+   matching reruns do not overwrite it.
+
    | Secret | DNS SANs |
    | --- | --- |
    | `twinfra-keycloak-tls` | `auth.dev.cairo-1.twinfra.example.com`, `twinfra-keycloak.twinfra-platform-services.svc.cluster.local` |
@@ -283,6 +290,13 @@ networking, touches pCloud or modifies `iotee-nat`.
     Expected: forwards/tunnels listening only on loopback. No public ingress.
 
 14. **Owner certificate-store action — trust and eventual removal.**
+
+    The dev root is name-constrained. When the browser enforces these critical
+    DNS constraints, trusting it cannot authorize other websites such as
+    `example.org`: chain verification rejects an outside DNS name even with a
+    valid CA signature ([RFC 5280, section 4.2.1.10](https://www.rfc-editor.org/rfc/rfc5280.html#section-4.2.1.10)).
+    The offline tests verify both permitted subtrees and this rejection; actual
+    browser acceptance remains Pending in step 15.
 
     ```powershell
     certutil -user -addstore Root E:\Twinfra\secrets\dev-ca\ca.crt
