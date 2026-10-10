@@ -6,6 +6,11 @@ network exclusions/ownership and owner execution. Python 3 and Administrator
 PowerShell **7.4+** with Hyper-V tools are required. Both entry point and module
 declare `#Requires -Version 7.4`. All scripts are MIT.
 
+The Hyper-V preflight uses `Win32_OptionalFeature` CIM (`InstallState = 1`),
+requires `vmms` to be Running and checks that the Hyper-V module is available.
+It does not use DISM cmdlets or enable/start host components. Missing prerequisites
+and query errors retain the original **No changes made** refusal message.
+
 If `pwsh` is absent, the owner installs it (Codex does not):
 
 ```powershell
@@ -19,7 +24,9 @@ rerun`; they are never automatically removed. Dev bootstrap/application staging
 and the temporary dev CA replace the earlier registry/PKI prerequisite.
 
 Offline tests import `Twinfra.psm1` with explicit fixture inventory, parse the
-entry point without execution, and exercise all six Amendment 3 cases.
+entry point without execution, and exercise all six Amendment 3 cases. They also
+mock the CIM/service/module checks, reject DISM or unreviewed commands, and compile
+the ISO helper in memory without activating COM or creating an ISO/VM.
 
 ```powershell
 pwsh -NoProfile -File deploy/hyperv/test-plan.ps1
