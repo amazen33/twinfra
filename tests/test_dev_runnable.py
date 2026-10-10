@@ -257,6 +257,15 @@ class Certificates(unittest.TestCase):
 
 
 class HTTPSProfile(unittest.TestCase):
+    def test_documented_ram_budget_totals_twenty_with_headroom(self):
+        text = (ROOT / 'docs/dev-environment.md').read_text(encoding='utf-8')
+        table = text.split('| Component | Budget |', 1)[1].split('\n\n', 1)[0]
+        import re
+        amounts = [float(n) for n in re.findall(r'\| \*{0,2}([0-9.]+) GiB', table)]
+        self.assertEqual(len(amounts), 12)
+        self.assertEqual(sum(amounts), 20)
+        self.assertGreaterEqual(amounts[-1], 1)
+
     def test_realm_and_routes_use_https_and_secure_cookie(self):
         realm = json.loads((dev.COMMON / 'keycloak-realm.json').read_text())
         client = realm['clients'][0]

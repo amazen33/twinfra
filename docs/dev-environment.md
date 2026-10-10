@@ -42,11 +42,11 @@ Planning allowances total **20 GiB**, not measured utilization:
 | Twinfra console | 0.5 GiB |
 | MiniStack | 0.75 GiB |
 | HugePages: 128 × 2 MiB + 1 × 1 GiB | 1.25 GiB |
-| Remaining VM headroom | **3.75 GiB** |
+| Remaining VM headroom | **4.25 GiB** |
 
 Compared with the 24 GiB plan, allowances shrink for the control plane (3→2.5),
 Cilium (2→1.5), Argo (2→1.5), database (3→2.5), Keycloak (3→2.25) and MiniStack
-(1→0.75); headroom shrinks from 5.25 to 3.75 GiB. Existing workload requests,
+(1→0.75); headroom shrinks from 5.25 to 4.25 GiB. Existing workload requests,
 limits and replicas remain approved; measure actual use during acceptance.
 No LocalStack, Grafana, Knative, GPU/vLLM or HPC modules are installed.
 OpenBao stays sealed/uninitialized until WO-08.
