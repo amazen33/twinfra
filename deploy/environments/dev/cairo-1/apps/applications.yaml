@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: twinfra-platform
+  namespace: twinfra-platform-services
+  labels:
+    twinfra.io/environment: dev
+    twinfra.io/region: cairo-1
+    twinfra.io/component: platform
+    app.kubernetes.io/part-of: twinfra
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  project: twinfra-dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: twinfra-platform-services
+  source:
+    repoURL: https://github.com/amazen33/twinfra.git
+    targetRevision: main
+    path: deploy/environments/dev/cairo-1/platform
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: false
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - ServerSideApply=true
+    - CreateNamespace=false
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: twinfra-services
+  namespace: twinfra-platform-services
+  labels:
+    twinfra.io/environment: dev
+    twinfra.io/region: cairo-1
+    twinfra.io/component: services
+    app.kubernetes.io/part-of: twinfra
+  annotations:
+    argocd.argoproj.io/sync-wave: '10'
+spec:
+  project: twinfra-dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: twinfra-platform-services
+  source:
+    repoURL: https://github.com/amazen33/twinfra.git
+    targetRevision: main
+    path: deploy/environments/dev/cairo-1/services
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: false
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - ServerSideApply=true
+    - CreateNamespace=false

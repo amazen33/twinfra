@@ -1,0 +1,53 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: twinfra-dev
+  namespace: twinfra-platform-services
+  labels:
+    twinfra.io/environment: dev
+    twinfra.io/region: cairo-1
+    twinfra.io/component: dev
+    app.kubernetes.io/part-of: twinfra
+spec:
+  sourceRepos:
+  - https://github.com/amazen33/twinfra.git
+  destinations:
+  - server: https://kubernetes.default.svc
+    namespace: twinfra-platform-services
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: twinfra-root
+  namespace: twinfra-platform-services
+  labels:
+    twinfra.io/environment: dev
+    twinfra.io/region: cairo-1
+    twinfra.io/component: root
+    app.kubernetes.io/part-of: twinfra
+  annotations:
+    argocd.argoproj.io/sync-wave: '0'
+spec:
+  project: twinfra-dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: twinfra-platform-services
+  source:
+    repoURL: https://github.com/amazen33/twinfra.git
+    targetRevision: main
+    path: deploy/environments/dev/cairo-1/apps
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: false
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - ServerSideApply=true
+    - CreateNamespace=false

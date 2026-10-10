@@ -1,0 +1,16 @@
+{
+  "cnpg.yaml": {
+    "url": "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/v1.30.1/cnpg-1.30.1.yaml",
+    "sourceSHA256": "37237f145d8138256ea25ae830f87759255665ff08f8d552fdd8224a5ec032fb",
+    "gzipSHA256": "e097810cc9f36a081c57fdd0cc7814cbdee6e8e8d9db115dc5622e9d6441c824"
+  },
+  "argocd-core.yaml": {
+    "url": "https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.3/manifests/core-install.yaml",
+    "sourceSHA256": "1a87025d8eb2eae621653fd312fb9ca51df1b4b3b6992a030e3a9ef38e45c448",
+    "gzipSHA256": "04bbf8bc31b6d0db09de10c6221af135851bb5cbc03004ee329a0d5ad832bfc4"
+  },
+  "argocd-api.yaml": {
+    "source": "deploy/kustomize/base/argocd/install.yaml",
+    "sha256": "6e74de7505a64d875b4f0a70836d3d8493dbf92f95da9bc21047d05a00e50a98"
+  }
+}

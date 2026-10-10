@@ -1,0 +1,1801 @@
+#cloud-config
+package_update: true
+package_upgrade: false
+packages:
+- ca-certificates
+- curl
+- python3
+write_files:
+- path: /etc/twinfra-host.env
+  owner: root:root
+  permissions: '0600'
+  content: '# Install as root-owned /etc/vcloud-host.env, mode 0600. Values here persist
+    across reboot.
+
+    # The script reads this file after shell environment variables. Do not store credentials
+    here.
+
+    # BEGIN GENERATED SSOT IDENTITY
+
+    SSOT_VERSION=2.2
+
+    CLUSTER_NAME=twinfra-dev-cairo-2
+
+    CLUSTER_DNS_NAME=twinfra-dev-cairo-2
+
+    BASE_DOMAIN=twinfra.example.com
+
+    GITOPS_REPOSITORY=amazen33/twinfra
+
+    IMAGE_REGISTRY=registry.twinfra.example.com
+
+    # END GENERATED SSOT IDENTITY
+
+    KUBERNETES_VERSION=v1.36.5
+
+    CILIUM_VERSION=1.20.2
+
+    CRICTL_VERSION=v1.36.0
+
+    HUGEPAGES_2M=128
+
+    HUGEPAGES_1G=1
+
+    MIN_NORMAL_RAM_MIB=4096
+
+    ENABLE_GPU=false
+
+    GPU_SMOKE_TEST=false
+
+    NVIDIA_DRIVER_PACKAGE=auto
+
+    ENABLE_KVM=false
+
+    INSTALL_HPC=false
+
+    BOOTSTRAP_K8S=true
+
+    RUN_SMOKE_TESTS=false
+
+    REGISTRY_MIRROR=https://registry.twinfra.example.com
+
+    MIRROR_REQUIRED=true
+
+    # REGISTRY_CA_FILE=/usr/local/share/ca-certificates/vcloud-registry.crt
+
+    POD_CIDR=10.120.0.0/16
+
+    SERVICE_CIDR=10.121.0.0/16
+
+    # Set a stable, assigned interface address if the host has multiple NICs.
+
+    # NODE_IP=192.168.50.10
+
+    # NODE_NAME=vcloud01
+
+
+    # Optional stable DNS authority used by kubeadm; dev overlay supplies this at
+    init.
+
+    CONTROL_PLANE_ENDPOINT=api.dev.cairo-2.twinfra.example.com:6443
+
+    PLATFORM_PROFILE=dev-cairo-2
+
+    NODE_IP=10.50.0.11
+
+    NODE_NAME=twinfra-node
+
+    '
+- path: /usr/local/sbin/00-setup-ubuntu-host.sh
+  owner: root:root
+  permissions: '0755'
+  content: "#!/usr/bin/env bash\n# Module -1: upstream Kubernetes / Cilium on a fresh\
+    \ Ubuntu VM or bare-metal host.\n# Usage: bash 00-setup-ubuntu-host.sh --plan\
+    \ | sudo bash ... --apply | sudo bash ... --validate\n# This script does not run\
+    \ when sourced: its render/validation helpers can be tested offline.\n# Configuration:\
+    \ shell environment, then root-owned /etc/vcloud-host.env if present.\n# Exit\
+    \ codes: 0 = requested gates passed; 1 = failed; 2 = bad configuration;\n#   \
+    \          20 = reboot required (bootstrap has deliberately been deferred).\n\
+    #             42 = SSoT hostPath prohibition blocks Kubernetes bootstrap.\n# Root\
+    \ is required for APT, kernel/mount/sysctl/driver configuration and kubeadm PKI.\n\
+    # Ordinary validation pods run as UID 10001 without capabilities or host mounts.\n\
+    # No automatic reboot, kubeadm reset, firewall disable, disk formatting, or VFIO\
+    \ rebinding.\n\nload_config() {\n    local config_file=\"${VCLOUD_CONFIG_FILE:-/etc/vcloud-host.env}\"\
+    \n    # An env file is executable shell configuration. Never source a writable\
+    \ user file as root.\n    if [[ -f \"$config_file\" ]]; then\n        [[ $(stat\
+    \ -c '%u' \"$config_file\") == 0 ]] || die \"Config must be root-owned: $config_file\"\
+    \n        [[ $(stat -c '%a' \"$config_file\") =~ ^(600|644)$ ]] || die \"Config\
+    \ must have mode 0600 or 0644: $config_file\"\n        # shellcheck disable=SC1090\n\
+    \        source \"$config_file\"\n    fi\n    : \"${KUBERNETES_VERSION:=v1.36.5}\"\
+    \ \"${CILIUM_VERSION:=1.20.2}\"\n    : \"${HELM_VERSION:=v3.22.0}\" \"${CILIUM_CLI_VERSION:=v0.20.1}\"\
+    \n    : \"${KUBECONFORM_VERSION:=v0.8.0}\" \"${TKN_VERSION:=v0.46.1}\"\n    :\
+    \ \"${ARGOCD_VERSION:=v3.5.3}\" \"${YQ_VERSION:=v4.54.1}\" \"${CRICTL_VERSION:=v1.36.0}\"\
+    \n    : \"${NVIDIA_TOOLKIT_VERSION:=1.20.1-1}\" \"${NVIDIA_DEVICE_PLUGIN_VERSION:=0.20.1}\"\
+    \n    : \"${ENABLE_GPU:=auto}\" \"${NVIDIA_DRIVER_PACKAGE:=auto}\" \"${ENABLE_KVM:=false}\"\
+    \n    # ADR-0044 owner clarification: opt in only to the proprietary CUDA smoke\
+    \ image.\n    : \"${GPU_SMOKE_TEST:=false}\"\n    : \"${INSTALL_HPC:=true}\" \"\
+    ${BOOTSTRAP_K8S:=true}\" \"${RUN_SMOKE_TESTS:=true}\"\n    : \"${HUGEPAGES_2M:=128}\"\
+    \ \"${HUGEPAGES_1G:=1}\" \"${MIN_NORMAL_RAM_MIB:=4096}\"\n    # BEGIN GENERATED\
+    \ SSOT DEFAULTS\n    : \"${SSOT_VERSION:=2.2}\"\n    : \"${CLUSTER_NAME:=vCloud-prod-01}\"\
+    \n    : \"${CLUSTER_DNS_NAME:=vcloud-prod-01}\"\n    : \"${BASE_DOMAIN:=vcloud.example.com}\"\
+    \n    : \"${GITOPS_REPOSITORY:=amazen33/twinfra}\"\n    : \"${IMAGE_REGISTRY:=registry.vcloud.example.com}\"\
+    \n    # END GENERATED SSOT DEFAULTS\n    : \"${REGISTRY_MIRROR:=https://$IMAGE_REGISTRY}\"\
+    \ \"${REGISTRY_CA_FILE:=}\"\n    : \"${MIRROR_REQUIRED:=true}\" \"${REGISTRY_PROBE_IMAGE:=$IMAGE_REGISTRY/docker.io/library/busybox:1.37.0}\"\
+    \n    : \"${POD_CIDR:=10.42.0.0/16}\" \"${SERVICE_CIDR:=10.43.0.0/16}\" \"${NODE_IP:=}\"\
+    \n    : \"${PLATFORM_PROFILE:=production}\" \"${CONTROL_PLANE_ENDPOINT:=}\"\n\
+    \    : \"${NODE_NAME:=}\" \"${PAUSE_IMAGE:=$IMAGE_REGISTRY/registry.k8s.io/pause:3.10.1}\"\
+    \n    : \"${HUGEPAGE_SMOKE_IMAGE:=$IMAGE_REGISTRY/docker.io/library/python:3.12.12-slim}\"\
+    \n    : \"${GPU_SMOKE_IMAGE:=$IMAGE_REGISTRY/docker.io/nvidia/cuda:12.4.1-base-ubuntu22.04}\"\
+    \n    STATE_DIR=/var/lib/vcloud-host\n    CRI_SOCKET=unix:///run/containerd/containerd.sock\n\
+    \    GPU_ENABLED=false\n    NEEDS_REBOOT=false\n    WORK_DIR=\n    PHASE=preflight\n\
+    \    MIRROR_STATUS=not-tested\n    REBOOT_ATTEMPTED=false\n}\n\nlog() { printf\
+    \ '[vCloud] %s\\n' \"$*\"; }\ndie() {\n    log \"ERROR: $*\" >&2\n    if [[ ${APPLY_ACTIVE:-false}\
+    \ == true ]] && command -v jq >/dev/null; then write_result failed || true; fi\n\
+    \    exit 1\n}\nbad_config() { log \"CONFIG: $*\" >&2; exit 2; }\nversion_at_least()\
+    \ { [[ \"$(printf '%s\\n%s\\n' \"$2\" \"$1\" | sort -V | head -n1)\" == \"$2\"\
+    \ ]]; }\n\nvalidate_config() {\n    local name value\n    validate_ssot_identity\n\
+    \    for name in BOOTSTRAP_K8S INSTALL_HPC ENABLE_KVM RUN_SMOKE_TESTS GPU_SMOKE_TEST\
+    \ MIRROR_REQUIRED; do\n        [[ ${!name} == true || ${!name} == false ]] ||\
+    \ bad_config \"$name must be true or false\"\n    done\n    [[ $ENABLE_GPU =~\
+    \ ^(auto|true|false)$ ]] || bad_config 'ENABLE_GPU must be auto, true or false'\n\
+    \    for name in HUGEPAGES_2M HUGEPAGES_1G MIN_NORMAL_RAM_MIB; do\n        [[\
+    \ ${!name} =~ ^(0|[1-9][0-9]{0,5})$ ]] || bad_config \"$name must be a nonnegative\
+    \ integer <= 999999\"\n    done\n    # Reject unsupported version combinations\
+    \ before any host mutation. Overrides require a\n    # documented compatibility\
+    \ review, rather than silently selecting an untested 'latest'.\n    [[ $KUBERNETES_VERSION\
+    \ =~ ^v1\\.(33|34|35|36)\\.[0-9]+$ ]] || bad_config 'Kubernetes must be v1.33..v1.36\
+    \ for this Cilium profile'\n    [[ $CILIUM_VERSION =~ ^1\\.20\\.[0-9]+$ ]] ||\
+    \ bad_config 'This profile supports Cilium 1.20.x'\n    for name in HELM_VERSION\
+    \ CILIUM_CLI_VERSION KUBECONFORM_VERSION TKN_VERSION ARGOCD_VERSION YQ_VERSION\
+    \ CRICTL_VERSION; do\n        [[ ${!name} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]] ||\
+    \ bad_config \"$name needs an exact vX.Y.Z release\"\n    done\n    value=${KUBERNETES_VERSION%.*}\n\
+    \    [[ ${CRICTL_VERSION%.*} == \"$value\" ]] || bad_config 'crictl must use the\
+    \ same Kubernetes minor version'\n    [[ $NVIDIA_TOOLKIT_VERSION =~ ^[0-9]+\\\
+    .[0-9]+\\.[0-9]+-[0-9]+$ ]] || bad_config 'Toolkit requires an exact Debian version'\n\
+    \    [[ $NVIDIA_DEVICE_PLUGIN_VERSION =~ ^[0-9]+\\.[0-9]+\\.[0-9]+$ ]] || bad_config\
+    \ 'Device plugin requires X.Y.Z'\n    # A registry authority only: no credentials,\
+    \ quotes, spaces, path-prefix rewriting or HTTP.\n    [[ $REGISTRY_MIRROR =~ ^https://[a-zA-Z0-9.-]+(:[0-9]+)?$\
+    \ ]] || bad_config 'Mirror must be an HTTPS authority without a path or credentials'\n\
+    \    [[ -z $REGISTRY_CA_FILE || $REGISTRY_CA_FILE =~ ^/[a-zA-Z0-9_./-]+$ ]] ||\
+    \ bad_config 'Registry CA requires an absolute simple path'\n    [[ -z $CONTROL_PLANE_ENDPOINT\
+    \ || $CONTROL_PLANE_ENDPOINT =~ ^[a-zA-Z0-9.-]+:6443$ ]] || bad_config 'CONTROL_PLANE_ENDPOINT\
+    \ must be a DNS authority on 6443'\n    [[ -z $NODE_NAME || $NODE_NAME =~ ^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$\
+    \ ]] || bad_config 'NODE_NAME must be a DNS label/name'\n    [[ $NVIDIA_DRIVER_PACKAGE\
+    \ == auto || $NVIDIA_DRIVER_PACKAGE =~ ^nvidia-driver-[0-9]+(-server)?(-open)?$\
+    \ ]] || bad_config 'Invalid NVIDIA driver package'\n    for name in PAUSE_IMAGE\
+    \ GPU_SMOKE_IMAGE REGISTRY_PROBE_IMAGE HUGEPAGE_SMOKE_IMAGE; do\n        [[ ${!name}\
+    \ =~ ^[a-zA-Z0-9][a-zA-Z0-9._/:@+-]+$ ]] || bad_config \"$name contains invalid\
+    \ characters\"\n        [[ ${!name} == \"$IMAGE_REGISTRY/\"* ]] || bad_config\
+    \ \"$name must use the SSoT registry\"\n        [[ ${!name} =~ @sha256:[a-f0-9]{64}$\
+    \ || ${!name} =~ :v?[0-9]+\\.[0-9]+\\.[0-9]+([._+-][a-zA-Z0-9._+-]+)?$ ]] || bad_config\
+    \ \"$name requires an exact semantic version or SHA256 digest\"\n    done\n  \
+    \  # Pure stdlib check also catches CIDR overlap; host routes are checked during\
+    \ preflight.\n    python3 - \"$POD_CIDR\" \"$SERVICE_CIDR\" \"$NODE_IP\" <<'PY'\n\
+    import ipaddress, sys\ntry:\n    pod, svc = [ipaddress.IPv4Network(x, strict=True)\
+    \ for x in sys.argv[1:3]]\n    assert not pod.overlaps(svc), 'Pod and service\
+    \ CIDRs overlap'\n    assert 16 <= pod.prefixlen <= 24, 'Pod CIDR must have a\
+    \ /16../24 prefix'\n    if sys.argv[3]:\n        node = ipaddress.IPv4Address(sys.argv[3])\n\
+    \        assert not node.is_loopback and not node.is_unspecified, 'Node IP must\
+    \ be routable'\n        assert node not in pod and node not in svc, 'Node IP overlaps\
+    \ cluster CIDRs'\nexcept (ValueError, AssertionError) as e:\n    print(e, file=sys.stderr)\n\
+    \    sys.exit(2)\nPY\n}\n\n# BEGIN GENERATED SSOT VALIDATION\nvalidate_ssot_identity()\
+    \ {\n    case $PLATFORM_PROFILE in\n    production) [[ $SSOT_VERSION == 2.2 &&\n\
+    \       $CLUSTER_NAME == vCloud-prod-01 &&\n       $CLUSTER_DNS_NAME == vcloud-prod-01\
+    \ &&\n       $BASE_DOMAIN == vcloud.example.com &&\n       $GITOPS_REPOSITORY\
+    \ == amazen33/twinfra &&\n       $IMAGE_REGISTRY == registry.vcloud.example.com\
+    \ &&\n       $REGISTRY_MIRROR == https://registry.vcloud.example.com &&\n    \
+    \   $MIRROR_REQUIRED == true ]] ;;\n    dev-cairo-1) [[ $SSOT_VERSION == 2.2 &&\
+    \ $CLUSTER_NAME == twinfra-dev-cairo-1 && $CLUSTER_DNS_NAME == twinfra-dev-cairo-1\
+    \ && $BASE_DOMAIN == twinfra.example.com && $GITOPS_REPOSITORY == amazen33/twinfra\
+    \ && $IMAGE_REGISTRY == registry.twinfra.example.com && $REGISTRY_MIRROR == https://registry.twinfra.example.com\
+    \ && $MIRROR_REQUIRED == true ]] ;;\n    dev-cairo-2) [[ $SSOT_VERSION == 2.2\
+    \ && $CLUSTER_NAME == twinfra-dev-cairo-2 && $CLUSTER_DNS_NAME == twinfra-dev-cairo-2\
+    \ && $BASE_DOMAIN == twinfra.example.com && $GITOPS_REPOSITORY == amazen33/twinfra\
+    \ && $IMAGE_REGISTRY == registry.twinfra.example.com && $REGISTRY_MIRROR == https://registry.twinfra.example.com\
+    \ && $MIRROR_REQUIRED == true ]] ;;\n    *) return 2 ;;\n    esac || bad_config\
+    \ 'Identity/registry drift from vcloud-ssot.yaml; change the contract and regenerate\
+    \ first'\n}\n# END GENERATED SSOT VALIDATION\n\n# BEGIN GENERATED POLICY GATE\n\
+    check_policy_gate() {\n    [[ $BOOTSTRAP_K8S == true ]] || return 0\n    # Approved\
+    \ by the user on 2026-10-05; no environment flag broadens the scope.\n    [[ $KUBERNETES_VERSION\
+    \ == v1.36.5 && $CILIUM_VERSION == 1.20.2 && $NVIDIA_DEVICE_PLUGIN_VERSION ==\
+    \ 0.20.1 ]] || {\n        log 'Node exception is pinned to the approved Kubernetes/Cilium/NVIDIA\
+    \ versions; unreviewed drift rejected.' >&2\n        return 42\n    }\n}\n# END\
+    \ GENERATED POLICY GATE\n\nplan() {\n    cat <<EOF\nUpstream Kubernetes $KUBERNETES_VERSION\
+    \ via kubeadm; Cilium $CILIUM_VERSION replaces kube-proxy.\nSSoT $SSOT_VERSION:\
+    \ $CLUSTER_NAME, $BASE_DOMAIN, GitOps $GITOPS_REPOSITORY.\nUbuntu 24.04 LTS, kernel\
+    \ >= 6.8, cgroup v2, bpffs, overlayfs, swap disabled.\nHugeTLB: $HUGEPAGES_2M\
+    \ x 2 MiB + $HUGEPAGES_1G x 1 GiB; ordinary RAM floor $MIN_NORMAL_RAM_MIB MiB.\n\
+    System containerd CRI: $CRI_SOCKET, systemd cgroups, TLS mirror $REGISTRY_MIRROR.\n\
+    GPU=$ENABLE_GPU, KVM=$ENABLE_KVM, HPC=$INSTALL_HPC, bootstrap=$BOOTSTRAP_K8S,\
+    \ smoke=$RUN_SMOKE_TESTS, gpu-smoke=$GPU_SMOKE_TEST.\nPods=$POD_CIDR services=$SERVICE_CIDR.\
+    \ A fresh single-node control plane also schedules workloads.\nCilium native routing\
+    \ requires underlay routes to every remote node PodCIDR; no overlay is installed.\n\
+    Node exception approved: only the pinned kubeadm/Cilium/NVIDIA scope passes manifest\
+    \ checks.\nApply may exit 20. Reboot Ubuntu and rerun with the same /etc/vcloud-host.env.\n\
+    This plan makes no changes. Consult docs/module-minus-1.md for sizing, passthrough\
+    \ and acceptance gates.\nEOF\n}\n\n# Replace only changed content, retain one\
+    \ original backup, and preserve stable mtimes.\n# Returns success in both cases;\
+    \ callers inspect FILE_CHANGED to decide on service restarts.\nwrite_file() {\n\
+    \    local destination=$1 mode=${2:-0644} candidate\n    candidate=$(mktemp \"\
+    $WORK_DIR/file.XXXXXX\")\n    cat > \"$candidate\"\n    FILE_CHANGED=false\n \
+    \   if [[ ! -f $destination ]] || ! cmp -s \"$candidate\" \"$destination\"; then\n\
+    \        mkdir -p \"$(dirname \"$destination\")\"\n        if [[ -f $destination\
+    \ && ! -e ${destination}.vcloud-original ]]; then\n            cp -a -- \"$destination\"\
+    \ \"${destination}.vcloud-original\"\n        fi\n        install -m \"$mode\"\
+    \ \"$candidate\" \"$destination\"\n        FILE_CHANGED=true\n    fi\n    chmod\
+    \ \"$mode\" \"$destination\"\n    rm -f -- \"$candidate\"\n}\n\nfetch() { curl\
+    \ --fail --silent --show-error --location --proto '=https' --tlsv1.2 --retry 4\
+    \ --connect-timeout 15 --max-time 600 \"$1\" -o \"$2\"; }\n\n# Exact release assets\
+    \ are verified against GitHub's published SHA-256 digest over TLS.\n# Missing\
+    \ digests are a failure, never an excuse to execute unverified downloads.\ngh_asset()\
+    \ {\n    local repo=$1 tag=$2 asset=$3 output=$4 digest url metadata\n    metadata=\"\
+    $WORK_DIR/release.json\"\n    fetch \"https://api.github.com/repos/$repo/releases/tags/$tag\"\
+    \ \"$metadata\"\n    url=$(jq -er --arg name \"$asset\" '.assets[] | select(.name\
+    \ == $name) | .browser_download_url' \"$metadata\")\n    digest=$(jq -er --arg\
+    \ name \"$asset\" '.assets[] | select(.name == $name) | .digest' \"$metadata\"\
+    )\n    [[ $digest =~ ^sha256:[a-f0-9]{64}$ ]] || die \"No SHA-256 published for\
+    \ $repo $tag $asset\"\n    fetch \"$url\" \"$output\"\n    printf '%s  %s\\n'\
+    \ \"${digest#sha256:}\" \"$output\" | sha256sum -c -\n}\n\ninstall_cli() {\n \
+    \   local binary=$1 version=$2 repo=$3 asset=$4 member=${5:-} stamp archive unpack\n\
+    \    stamp=\"$STATE_DIR/cli-$binary\"\n    # A stamp includes the installed hash,\
+    \ so a replaced binary is detected on rerun.\n    if [[ -x /usr/local/bin/$binary\
+    \ && -f $stamp ]] &&\n        [[ $(head -n1 \"$stamp\") == \"$version/$ARCH\"\
+    \ ]] &&\n        [[ $(tail -n1 \"$stamp\") == \"$(sha256sum \"/usr/local/bin/$binary\"\
+    \ | cut -d' ' -f1)\" ]]; then\n        return\n    fi\n    archive=\"$WORK_DIR/$asset\"\
+    \n    gh_asset \"$repo\" \"$version\" \"$asset\" \"$archive\"\n    if [[ -n $member\
+    \ ]]; then\n        unpack=\"$WORK_DIR/unpack-$binary\"\n        mkdir -p \"$unpack\"\
+    \n        tar -xzf \"$archive\" -C \"$unpack\" \"$member\"\n        install -m\
+    \ 0755 \"$unpack/$member\" \"/usr/local/bin/$binary\"\n    else\n        install\
+    \ -m 0755 \"$archive\" \"/usr/local/bin/$binary\"\n    fi\n    printf '%s/%s\\\
+    n%s\\n' \"$version\" \"$ARCH\" \"$(sha256sum \"/usr/local/bin/$binary\" | cut\
+    \ -d' ' -f1)\" > \"$stamp\"\n}\n\ninstall_missing() {\n    local package\n   \
+    \ local -a missing=()\n    for package in \"$@\"; do\n        if [[ $(dpkg-query\
+    \ -W -f='${Status}' \"$package\" 2>/dev/null || true) != 'install ok installed'\
+    \ ]]; then\n            missing+=(\"$package\")\n        fi\n    done\n    if\
+    \ ((${#missing[@]})); then apt-get install -y --no-install-recommends \"${missing[@]}\"\
+    ; fi\n}\n\npreflight() {\n    [[ $EUID == 0 ]] || die 'Run apply/validate as root'\n\
+    \    [[ $(uname -s) == Linux && -r /etc/os-release ]] || die 'A real Ubuntu host\
+    \ is required'\n    # shellcheck disable=SC1091\n    source /etc/os-release\n\
+    \    [[ $ID == ubuntu && $VERSION_ID == 24.04 ]] || die 'SSoT v2.2 requires Ubuntu\
+    \ 24.04 LTS'\n    [[ -d /run/systemd/system ]] || die 'systemd must be PID 1;\
+    \ containers and WSL are not supported targets'\n    case $(dpkg --print-architecture)\
+    \ in amd64) ARCH=amd64; TKN_ARCH=x86_64;; arm64) ARCH=arm64; TKN_ARCH=aarch64;;\
+    \ *) die 'Only amd64 and arm64 are supported';; esac\n    NODE_NAME=${NODE_NAME:-$(hostname\
+    \ -s | tr '[:upper:]' '[:lower:]')}\n    NODE_IP=${NODE_IP:-$(ip -4 route get\
+    \ 1.1.1.1 | awk '{for (i=1;i<=NF;i++) if ($i==\"src\") { print $(i+1); exit }}')}\n\
+    \    [[ -n $NODE_IP ]] || die 'No default IPv4 route; set NODE_IP explicitly'\n\
+    \    validate_config\n    # Do not adopt an existing cluster or overwrite an unrelated\
+    \ runtime configuration.\n    if [[ -e /etc/kubernetes/admin.conf && ! -e $STATE_DIR/cluster-owned\
+    \ ]]; then die 'Existing Kubernetes cluster is unmanaged'; fi\n    if [[ -e /etc/containerd/config.toml\
+    \ && ! -e $STATE_DIR/containerd-owned ]] &&\n        systemctl is-active --quiet\
+    \ containerd; then die 'An existing active containerd is unmanaged; use a fresh\
+    \ host'; fi\n    if [[ -f $STATE_DIR/cluster-version && $(cat \"$STATE_DIR/cluster-version\"\
+    ) != \"$KUBERNETES_VERSION\" ]]; then\n        die 'Cluster version differs. Use\
+    \ the kubeadm upgrade procedure rather than this bootstrap'\n    fi\n    if systemctl\
+    \ is-active --quiet k3s || systemctl is-active --quiet rke2-server; then die 'A\
+    \ different Kubernetes distribution is active'; fi\n    # Reject overlap with\
+    \ existing NIC routes before creating the cluster. Ignore cluster routes\n   \
+    \ # only after this bootstrap has initialized its own node.\n    if [[ ! -e $STATE_DIR/cluster-owned\
+    \ ]]; then\n        ip -j -4 route show | python3 -c '\nimport ipaddress, json,\
+    \ sys\nnets = [ipaddress.ip_network(x) for x in sys.argv[1:]]\nfor route in json.load(sys.stdin):\n\
+    \    dst = route.get(\"dst\", \"default\")\n    if dst != \"default\" and any(ipaddress.ip_network(dst).overlaps(n)\
+    \ for n in nets):\n        sys.exit(\"Existing host route overlaps the pod/service\
+    \ network: \" + dst)\n' \"$POD_CIDR\" \"$SERVICE_CIDR\"\n    fi\n    local mem_mib\
+    \ reservation_mib\n    (( $(nproc) >= 2 )) || die 'At least two CPU cores are\
+    \ required'\n    (( $(df -Pm /var/lib | awk 'NR==2 {print $4}') >= 20480 )) ||\
+    \ die 'At least 20 GiB of free /var/lib storage is required'\n    mem_mib=$(awk\
+    \ '/^MemTotal:/ {print int($2/1024)}' /proc/meminfo)\n    reservation_mib=$((HUGEPAGES_2M\
+    \ * 2 + HUGEPAGES_1G * 1024))\n    ((mem_mib - reservation_mib >= MIN_NORMAL_RAM_MIB))\
+    \ || die \"HugePages leave less than $MIN_NORMAL_RAM_MIB MiB ordinary RAM\"\n\
+    \    if ((HUGEPAGES_1G > 0)) && [[ $ARCH == amd64 ]]; then\n        grep -qw pdpe1gb\
+    \ /proc/cpuinfo || die 'CPU/VM hides 1 GiB pages; expose host CPU features or\
+    \ set HUGEPAGES_1G=0'\n    fi\n    if [[ $ENABLE_GPU != false ]]; then\n     \
+    \   local device vendor class\n        for device in /sys/bus/pci/devices/*; do\n\
+    \            [[ -r $device/vendor && -r $device/class ]] || continue\n       \
+    \     vendor=$(cat \"$device/vendor\"); class=$(cat \"$device/class\")\n     \
+    \       if [[ $vendor == 0x10de && ( $class == 0x03* || $class == 0x12* ) ]];\
+    \ then GPU_ENABLED=true; break; fi\n        done\n        [[ $ENABLE_GPU != true\
+    \ || $GPU_ENABLED == true ]] || die 'No passed-through NVIDIA GPU detected'\n\
+    \    fi\n    [[ -z $REGISTRY_CA_FILE || -r $REGISTRY_CA_FILE ]] || die 'Registry\
+    \ CA file is missing'\n    log \"Ubuntu $VERSION_ID/$ARCH node=$NODE_NAME IP=$NODE_IP\
+    \ GPU=$GPU_ENABLED\"\n}\n\nmark_reboot() {\n    NEEDS_REBOOT=true\n    printf\
+    \ '%s\\n' \"$*\" >> \"$STATE_DIR/reboot-required\"\n    cat /proc/sys/kernel/random/boot_id\
+    \ > \"$STATE_DIR/reboot-boot-id\"\n    log \"REBOOT REQUIRED: $*\"\n}\n\nrender_grub()\
+    \ {\n    local huge_args=\"default_hugepagesz=2M hugepagesz=2M hugepages=$HUGEPAGES_2M\"\
+    \n    if ((HUGEPAGES_1G > 0)); then huge_args+=\" hugepagesz=1G hugepages=$HUGEPAGES_1G\"\
+    ; fi\n    cat <<EOF\n# Managed by vCloud Module -1. Preserve unrelated boot arguments,\
+    \ replace our own once.\nvcloud_strip_boot_args() {\n    printf '%s' \"\\$1\"\
+    \ | sed -E 's/(^|[[:space:]])(systemd.unified_cgroup_hierarchy|cgroup_no_v1|default_hugepagesz|hugepagesz|hugepages)=[^[:space:]]+//g'\n\
+    }\nGRUB_CMDLINE_LINUX=\"\\$(vcloud_strip_boot_args \"\\${GRUB_CMDLINE_LINUX:-}\"\
+    ) systemd.unified_cgroup_hierarchy=1 cgroup_no_v1=all $huge_args\"\nGRUB_CMDLINE_LINUX_DEFAULT=\"\
+    \\$(vcloud_strip_boot_args \"\\${GRUB_CMDLINE_LINUX_DEFAULT:-}\")\"\nunset -f\
+    \ vcloud_strip_boot_args\nEOF\n}\n\nprepare_kernel() {\n    PHASE=kernel\n   \
+    \ # SSoT requires Ubuntu 24.04's supported kernel track.\n    if ! version_at_least\
+    \ \"$(uname -r | cut -d- -f1)\" 6.8; then\n        [[ $REBOOT_ATTEMPTED == false\
+    \ ]] || die 'The requested kernel is still not active after reboot; inspect the\
+    \ provider/GRUB boot selection'\n        apt-get install -y linux-generic linux-headers-generic\n\
+    \        mark_reboot 'Boot the installed Ubuntu kernel >= 6.8'\n    fi\n    #\
+    \ GRUB is explicit: fail clearly on images booted by systemd-boot/UKI/provider-specific\n\
+    \    # bootloaders; do not pretend that editing an unused file configures their\
+    \ kernel.\n    command -v update-grub >/dev/null && [[ -f /etc/default/grub ]]\
+    \ || die 'GRUB boot configuration required; adapt kernel arguments for this image\
+    \ bootloader'\n    write_file /etc/default/grub.d/99-vcloud-host.cfg < <(render_grub)\n\
+    \    if [[ $FILE_CHANGED == true ]]; then update-grub; mark_reboot 'Activate cgroup\
+    \ v2 and persistent HugeTLB boot reservations'; fi\n    [[ $(stat -fc '%T' /sys/fs/cgroup)\
+    \ == cgroup2fs ]] || mark_reboot 'cgroup v2 is not active'\n    # Kernel/module\
+    \ checks run only on the requested kernel, after a possible reboot.\n    if version_at_least\
+    \ \"$(uname -r | cut -d- -f1)\" 6.8; then\n        if ! modinfo overlay >/dev/null\
+    \ 2>&1 || ! modinfo br_netfilter >/dev/null 2>&1; then\n            install_missing\
+    \ \"linux-modules-extra-$(uname -r)\"\n        fi\n        validate_kernel\n \
+    \       printf 'overlay\\nbr_netfilter\\n' | write_file /etc/modules-load.d/99-vcloud.conf\n\
+    \        modprobe overlay; modprobe br_netfilter\n        mkdir -p /sys/fs/bpf\n\
+    \        # Mount via a dedicated systemd unit, avoiding duplicate /etc/fstab entries.\n\
+    \        write_file /etc/systemd/system/sys-fs-bpf.mount <<'EOF'\n[Unit]\nDescription=vCloud\
+    \ BPF filesystem\nBefore=containerd.service kubelet.service\n[Mount]\nWhat=bpffs\n\
+    Where=/sys/fs/bpf\nType=bpf\nOptions=rw,nosuid,nodev,noexec,mode=700\n[Install]\n\
+    WantedBy=multi-user.target\nEOF\n        systemctl daemon-reload\n        if !\
+    \ mountpoint -q /sys/fs/bpf; then systemctl start sys-fs-bpf.mount; fi\n     \
+    \   systemctl enable sys-fs-bpf.mount\n        [[ $(findmnt -n -o FSTYPE --target\
+    \ /sys/fs/bpf) == bpf ]] || die 'Unexpected filesystem at /sys/fs/bpf'\n    fi\n\
+    }\n\nvalidate_kernel() {\n    local config option\n    config=\"/boot/config-$(uname\
+    \ -r)\"\n    version_at_least \"$(uname -r | cut -d- -f1)\" 6.8 || die 'Running\
+    \ kernel is older than 6.8'\n    [[ -r $config ]] || die \"Cannot verify running\
+    \ kernel configuration: $config\"\n    for option in BPF BPF_SYSCALL BPF_JIT BPF_EVENTS\
+    \ CGROUPS CGROUP_BPF CGROUP_HUGETLB DEBUG_INFO_BTF \\\n        PERF_EVENTS SCHEDSTATS\
+    \ CRYPTO_SHA1 NET_CLS_BPF NET_CLS_ACT NET_SCH_INGRESS FIB_RULES \\\n        OVERLAY_FS\
+    \ BRIDGE_NETFILTER HUGETLBFS HUGETLB_PAGE; do\n        grep -Eq \"^CONFIG_${option}=(y|m)$\"\
+    \ \"$config\" || die \"Kernel lacks CONFIG_$option\"\n    done\n    [[ -r /sys/kernel/btf/vmlinux\
+    \ ]] || die 'Kernel BTF is unavailable'\n}\n\nrender_sysctl() {\n    cat <<'EOF'\n\
+    # Managed by vCloud. HugeTLB pools use per-size sysfs/boot reservations, not nr_hugepages.\n\
+    net.core.somaxconn = 65535\nnet.core.netdev_max_backlog = 16384\nnet.ipv4.tcp_max_syn_backlog\
+    \ = 8192\nnet.ipv4.ip_forward = 1\nnet.ipv4.conf.all.rp_filter = 0\nnet.ipv4.conf.default.rp_filter\
+    \ = 0\nnet.bridge.bridge-nf-call-iptables = 1\nnet.bridge.bridge-nf-call-ip6tables\
+    \ = 1\nvm.max_map_count = 262144\nvm.swappiness = 0\nfs.file-max = 2097152\nfs.inotify.max_user_instances\
+    \ = 8192\nfs.inotify.max_user_watches = 1048576\nEOF\n}\n\nprepare_memory_network()\
+    \ {\n    PHASE=memory-network\n    # Capture swap units before swapoff so systemd\
+    \ cannot later reactivate them.\n    local unit size count path actual\n    while\
+    \ read -r unit _; do\n        [[ $unit == *.swap ]] && systemctl mask \"$unit\"\
+    \n    done < <(systemctl list-units --all --type=swap --no-legend --plain)\n \
+    \   swapoff -a\n    awk '$0 !~ /^[[:space:]]*#/ && $3 == \"swap\" {$0=\"# vCloud\
+    \ disabled swap: \" $0} {print}' /etc/fstab > \"$WORK_DIR/fstab\"\n    write_file\
+    \ /etc/fstab < \"$WORK_DIR/fstab\"\n    # bridge sysctls do not exist until br_netfilter\
+    \ is loaded on the new kernel.\n    render_sysctl | write_file /etc/sysctl.d/99-vcloud.conf\n\
+    \    if [[ -e /proc/sys/net/bridge/bridge-nf-call-iptables ]]; then sysctl -p\
+    \ /etc/sysctl.d/99-vcloud.conf; fi\n    for size in 2048 1048576; do\n       \
+    \ if [[ $size == 2048 ]]; then count=$HUGEPAGES_2M; else count=$HUGEPAGES_1G;\
+    \ fi\n        path=\"/sys/kernel/mm/hugepages/hugepages-${size}kB/nr_hugepages\"\
+    \n        if [[ ! -e $path ]]; then\n            if ((count > 0)); then\n    \
+    \            [[ $REBOOT_ATTEMPTED == false ]] || die \"Kernel still lacks the\
+    \ ${size}kB pool after reboot; expose CPU features in the hypervisor\"\n     \
+    \           mark_reboot \"Kernel does not expose the ${size}kB HugeTLB pool\"\n\
+    \            fi\n            continue\n        fi\n        actual=$(cat \"$path\"\
+    )\n        # Never shrink pools in use on a rerun. Changing sizes belongs to maintenance.\n\
+    \        if ((actual < count)); then printf '%s\\n' \"$count\" > \"$path\" ||\
+    \ true; fi\n        actual=$(cat \"$path\")\n        if ((actual < count)); then\n\
+    \            [[ $REBOOT_ATTEMPTED == false ]] || die \"${size}kB HugePages remain\
+    \ insufficient after reboot; inspect boot arguments/RAM/NUMA\"\n            mark_reboot\
+    \ \"${size}kB HugePages allocated $actual of $count; reserve at boot\"\n     \
+    \   fi\n    done\n    # Kernel boot allocation persists both sizes. Mount each\
+    \ pool for host-side HPC consumers.\n    # Kubernetes HugePages volumes are mounted\
+    \ by kubelet independently of these directories.\n    for size in 2M 1G; do\n\
+    \        if [[ $size == 2M ]]; then count=$HUGEPAGES_2M; else count=$HUGEPAGES_1G;\
+    \ fi\n        ((count > 0)) || continue\n        mkdir -p \"/dev/hugepages-$size\"\
+    \n        awk -v p=\"/dev/hugepages-$size\" '$2 != p' /etc/fstab > \"$WORK_DIR/fstab-huge\"\
+    \n        printf 'none /dev/hugepages-%s hugetlbfs pagesize=%s,mode=1770,nofail\
+    \ 0 0\\n' \"$size\" \"$size\" >> \"$WORK_DIR/fstab-huge\"\n        write_file\
+    \ /etc/fstab < \"$WORK_DIR/fstab-huge\"\n        if [[ $NEEDS_REBOOT == false\
+    \ ]] && ! mountpoint -q \"/dev/hugepages-$size\"; then mount \"/dev/hugepages-$size\"\
+    ; fi\n    done\n    systemctl daemon-reload\n}\n\ninstall_gpu() {\n    [[ $GPU_ENABLED\
+    \ == true ]] || { log 'GPU setup skipped: no requested/visible GPU'; return; }\n\
+    \    PHASE=gpu\n    local driver package candidate loaded_branch boot_id\n   \
+    \ boot_id=$(cat /proc/sys/kernel/random/boot_id)\n    install_missing ubuntu-drivers-common\
+    \ \"linux-headers-$(uname -r)\" mokutil\n    driver=$(nvidia-smi --query-gpu=driver_version\
+    \ --format=csv,noheader 2>/dev/null | head -n1 || true)\n    if [[ -z $driver\
+    \ ]] || ! version_at_least \"$driver\" 550; then\n        package=$NVIDIA_DRIVER_PACKAGE\n\
+    \        if [[ $package == auto ]]; then\n            package=$(ubuntu-drivers\
+    \ devices | awk '/recommended/ && /nvidia-driver-/ {print $3; exit}')\n      \
+    \  fi\n        [[ $package =~ ^nvidia-driver-([0-9]+)(-server)?(-open)?$ ]] ||\
+    \ die 'No recommended NVIDIA package; set NVIDIA_DRIVER_PACKAGE for your GPU'\n\
+    \        candidate=${BASH_REMATCH[1]}\n        ((candidate >= 550)) || die 'NVIDIA\
+    \ driver branch must be >= 550'\n        install_missing \"$package\"\n      \
+    \  modprobe nvidia || true\n        driver=$(nvidia-smi --query-gpu=driver_version\
+    \ --format=csv,noheader 2>/dev/null | head -n1 || true)\n        if [[ -z $driver\
+    \ ]] || ! version_at_least \"$driver\" 550; then\n            if [[ -f $STATE_DIR/gpu-pending-boot\
+    \ && $(cat \"$STATE_DIR/gpu-pending-boot\") != \"$boot_id\" ]]; then\n       \
+    \         die 'GPU still unavailable after reboot; inspect Secure Boot/MOK, DKMS\
+    \ and passthrough; no reboot loop'\n            fi\n            printf '%s\\n'\
+    \ \"$boot_id\" > \"$STATE_DIR/gpu-pending-boot\"\n            mark_reboot 'Load\
+    \ NVIDIA driver; Secure Boot may require signed modules or MOK enrollment'\n \
+    \       fi\n    fi\n    # Signed repository, exact toolkit package family version,\
+    \ no deprecated apt-key.\n    fetch https://nvidia.github.io/libnvidia-container/gpgkey\
+    \ \"$WORK_DIR/nvidia.key\"\n    gpg --batch --yes --dearmor -o \"$WORK_DIR/nvidia.gpg\"\
+    \ \"$WORK_DIR/nvidia.key\"\n    write_file /usr/share/keyrings/nvidia-container-toolkit.gpg\
+    \ < \"$WORK_DIR/nvidia.gpg\"\n    # shellcheck disable=SC2016 # $(ARCH) is an\
+    \ APT substitution, not a shell command.\n    printf 'deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit.gpg]\
+    \ https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /\\n' \\\n \
+    \       | write_file /etc/apt/sources.list.d/nvidia-container-toolkit.list\n \
+    \   apt-get update\n    apt-get install -y --no-install-recommends \\\n      \
+    \  \"nvidia-container-toolkit=$NVIDIA_TOOLKIT_VERSION\" \"nvidia-container-toolkit-base=$NVIDIA_TOOLKIT_VERSION\"\
+    \ \\\n        \"libnvidia-container-tools=$NVIDIA_TOOLKIT_VERSION\" \"libnvidia-container1=$NVIDIA_TOOLKIT_VERSION\"\
+    \n    if command -v nvidia-smi >/dev/null && nvidia-smi >/dev/null 2>&1; then\n\
+    \        loaded_branch=$(nvidia-smi --query-gpu=driver_version --format=csv,noheader\
+    \ | head -n1)\n        if ! version_at_least \"$loaded_branch\" 550 && [[ $NEEDS_REBOOT\
+    \ == false ]]; then die 'Loaded driver is older than 550'; fi\n    fi\n}\n\nrender_containerd()\
+    \ {\n    local major=${1%%.*} plugin cni_bin_setting image_extra\n    if [[ $major\
+    \ == 1 ]]; then\n        plugin=io.containerd.grpc.v1.cri\n        cat <<EOF\n\
+    version = 2\n[plugins.\"$plugin\"]\n  sandbox_image = \"$PAUSE_IMAGE\"\n[plugins.\"\
+    $plugin\".registry]\n  config_path = \"/etc/containerd/certs.d\"\n[plugins.\"\
+    $plugin\".containerd]\n  snapshotter = \"overlayfs\"\n  default_runtime_name =\
+    \ \"runc\"\n[plugins.\"$plugin\".cni]\n  bin_dir = \"/opt/cni/bin\"\n  conf_dir\
+    \ = \"/etc/cni/net.d\"\nEOF\n    elif [[ $major == 2 ]]; then\n        plugin=io.containerd.cri.v1.runtime\n\
+    \        # 2.0 has bin_dir; 2.1+ adds bin_dirs and the transfer-service/local-pull\
+    \ switch.\n        if [[ $1 == 2.0 || $1 == 2.0.* ]]; then\n            cni_bin_setting='\
+    \  bin_dir = \"/opt/cni/bin\"'\n            image_extra=\n        else\n     \
+    \       cni_bin_setting='  bin_dirs = [\"/opt/cni/bin\"]'\n            image_extra='\
+    \  use_local_image_pull = true'\n        fi\n        cat <<EOF\nversion = 3\n\
+    [plugins.\"io.containerd.cri.v1.images\"]\n  snapshotter = \"overlayfs\"\n$image_extra\n\
+    [plugins.\"io.containerd.cri.v1.images\".pinned_images]\n  sandbox = \"$PAUSE_IMAGE\"\
+    \n[plugins.\"io.containerd.cri.v1.images\".registry]\n  config_path = \"/etc/containerd/certs.d\"\
+    \n[plugins.\"$plugin\".containerd]\n  default_runtime_name = \"runc\"\n[plugins.\"\
+    $plugin\".cni]\n$cni_bin_setting\n  conf_dir = \"/etc/cni/net.d\"\nEOF\n    else\
+    \ die 'Only containerd 1.7+ and 2.x are supported'; fi\n    cat <<EOF\n[plugins.\"\
+    $plugin\".containerd.runtimes.runc]\n  runtime_type = \"io.containerd.runc.v2\"\
+    \n[plugins.\"$plugin\".containerd.runtimes.runc.options]\n  SystemdCgroup = true\n\
+    EOF\n}\n\nrender_mirror() {\n    # Upstream names map into mirror /v2/<upstream>/<repository>.\
+    \ override_path\n    # describes this explicit API root; it does not rewrite a\
+    \ bare hostname.\n    # Root and host share the same private endpoint, including\
+    \ CA and capabilities.\n    local upstream=${1:-} endpoint=$REGISTRY_MIRROR\n\
+    \    case \"$upstream\" in ''|quay.io|docker.io|registry.k8s.io|ghcr.io|public.ecr.aws|nvcr.io)\
+    \ ;; *) die 'Unsupported upstream mirror';; esac\n    [[ -z $upstream ]] || endpoint=\"\
+    $REGISTRY_MIRROR/v2/$upstream\"\n    if [[ $MIRROR_REQUIRED == true ]]; then printf\
+    \ 'server = \"%s\"\\n' \"$endpoint\"; fi\n    printf 'capabilities = [\"pull\"\
+    , \"resolve\"]\\n'\n    [[ -z $upstream ]] || printf 'override_path = true\\n'\n\
+    \    if [[ -n $REGISTRY_CA_FILE ]]; then printf 'ca = \"%s\"\\n' \"$REGISTRY_CA_FILE\"\
+    ; fi\n    printf '\\n[host.\"%s\"]\\n  capabilities = [\"pull\", \"resolve\"]\\\
+    n' \"$endpoint\"\n    [[ -z $upstream ]] || printf '  override_path = true\\n'\n\
+    \    if [[ -n $REGISTRY_CA_FILE ]]; then printf '  ca = \"%s\"\\n' \"$REGISTRY_CA_FILE\"\
+    ; fi\n}\n\nconfigure_containerd() {\n    PHASE=containerd\n    local version changed=false\n\
+    \    version=$(containerd --version | awk '{gsub(/^v/,\"\",$3); print $3}')\n\
+    \    version_at_least \"$version\" 1.7 || die 'containerd >= 1.7 is required (enable\
+    \ Ubuntu updates/security repositories)'\n    mkdir -p /opt/cni/bin /etc/cni/net.d\
+    \ /etc/containerd/certs.d/_default\n    render_containerd \"$version\" > \"$WORK_DIR/containerd.toml\"\
+    \n    if [[ $GPU_ENABLED == true ]]; then\n        # Explicit empty drop-in path\
+    \ writes the staged config rather than modifying live imports.\n        nvidia-ctk\
+    \ runtime configure --runtime=containerd --config=\"$WORK_DIR/containerd.toml\"\
+    \ --drop-in-config=\"\"\n        python3 - \"$WORK_DIR/containerd.toml\" <<'PY'\n\
+    import sys, toml\npath = sys.argv[1]\ndata = toml.load(path)\nfor plugin in data.get('plugins',\
+    \ {}).values():\n    for runtime in plugin.get('containerd', {}).get('runtimes',\
+    \ {}).values():\n        runtime.setdefault('options', {})['SystemdCgroup'] =\
+    \ True\nwith open(path, 'w') as f:\n    toml.dump(data, f)\nPY\n    fi\n    containerd\
+    \ --config \"$WORK_DIR/containerd.toml\" config dump > \"$WORK_DIR/containerd-parsed.toml\"\
+    \n    write_file /etc/containerd/config.toml < \"$WORK_DIR/containerd.toml\"\n\
+    \    [[ $FILE_CHANGED == true ]] && changed=true\n    touch \"$STATE_DIR/containerd-owned\"\
+    \n    render_mirror | write_file /etc/containerd/certs.d/_default/hosts.toml\n\
+    \    local upstream\n    for upstream in \"$IMAGE_REGISTRY\" quay.io docker.io\
+    \ registry.k8s.io ghcr.io public.ecr.aws nvcr.io; do\n        mkdir -p \"/etc/containerd/certs.d/$upstream\"\
+    \n        if [[ $upstream == \"$IMAGE_REGISTRY\" ]]; then\n            render_mirror\
+    \ | write_file \"/etc/containerd/certs.d/$upstream/hosts.toml\"\n        else\n\
+    \            render_mirror \"$upstream\" | write_file \"/etc/containerd/certs.d/$upstream/hosts.toml\"\
+    \n        fi\n    done\n    write_file /etc/crictl.yaml <<EOF\nruntime-endpoint:\
+    \ $CRI_SOCKET\nimage-endpoint: $CRI_SOCKET\ntimeout: 30\ndebug: false\nEOF\n \
+    \   write_file /etc/systemd/system/containerd.service.d/99-vcloud.conf <<'EOF'\n\
+    [Unit]\nRequires=sys-fs-bpf.mount\nAfter=sys-fs-bpf.mount\n[Service]\nLimitNOFILE=1048576\n\
+    TasksMax=infinity\nEOF\n    [[ $FILE_CHANGED == true ]] && changed=true\n    systemctl\
+    \ daemon-reload\n    systemctl enable containerd\n    if [[ $changed == true ]];\
+    \ then systemctl restart containerd; else systemctl start containerd; fi\n   \
+    \ timeout 60 bash -c 'until crictl info >/dev/null 2>&1; do sleep 2; done'\n \
+    \   crictl info | jq -e '.status.conditions[] | select(.type == \"RuntimeReady\"\
+    ) | .status == true' >/dev/null\n    # A 401 response proves TLS reachability\
+    \ but not permission to pull the probe image.\n    local -a ca_args=()\n    [[\
+    \ -z $REGISTRY_CA_FILE ]] || ca_args=(--cacert \"$REGISTRY_CA_FILE\")\n    if\
+    \ curl --silent --show-error --connect-timeout 10 --max-time 15 \"${ca_args[@]}\"\
+    \ \"$REGISTRY_MIRROR/v2/\" -o /dev/null; then\n        MIRROR_STATUS=reachable-cri-pull-pending\n\
+    \        log 'Registry endpoint responded; validating the CRI image pull'\n  \
+    \  elif [[ $MIRROR_REQUIRED == true ]]; then\n        die 'Required registry mirror\
+    \ unreachable; configure DNS/TLS before bootstrapping'\n    else\n        MIRROR_STATUS=unreachable-using-fallback\n\
+    \        log 'Mirror unreachable; configured upstream fallback will be used (mirror\
+    \ gate remains unverified)'\n    fi\n    crictl pull \"$REGISTRY_PROBE_IMAGE\"\
+    \n    [[ $MIRROR_REQUIRED == false ]] || MIRROR_STATUS=verified-cri-pull-mirror-only\n\
+    }\n\ninstall_tooling() {\n    PHASE=tooling\n    install_cli cilium \"$CILIUM_CLI_VERSION\"\
+    \ cilium/cilium-cli \"cilium-linux-$ARCH.tar.gz\" cilium\n    install_cli kubeconform\
+    \ \"$KUBECONFORM_VERSION\" yannh/kubeconform \"kubeconform-linux-$ARCH.tar.gz\"\
+    \ kubeconform\n    install_cli tkn \"$TKN_VERSION\" tektoncd/cli \"tkn_${TKN_VERSION#v}_Linux_$TKN_ARCH.tar.gz\"\
+    \ tkn\n    install_cli argocd \"$ARGOCD_VERSION\" argoproj/argo-cd \"argocd-linux-$ARCH\"\
+    \n    install_cli yq \"$YQ_VERSION\" mikefarah/yq \"yq_linux_$ARCH\"\n    install_cli\
+    \ crictl \"$CRICTL_VERSION\" kubernetes-sigs/cri-tools \"crictl-$CRICTL_VERSION-linux-$ARCH.tar.gz\"\
+    \ crictl\n    # Helm publishes archives at get.helm.sh, with a detached SHA-256\
+    \ file.\n    local asset stamp digest\n    stamp=\"$STATE_DIR/cli-helm\"\n   \
+    \ asset=\"helm-$HELM_VERSION-linux-$ARCH.tar.gz\"\n    if [[ ! -x /usr/local/bin/helm\
+    \ || ! -f $stamp ]] ||\n        [[ $(head -n1 \"$stamp\") != \"$HELM_VERSION/$ARCH\"\
+    \ ]] ||\n        [[ $(tail -n1 \"$stamp\") != \"$(sha256sum /usr/local/bin/helm\
+    \ | cut -d' ' -f1)\" ]]; then\n        fetch \"https://get.helm.sh/$asset\" \"\
+    $WORK_DIR/$asset\"\n        fetch \"https://get.helm.sh/$asset.sha256sum\" \"\
+    $WORK_DIR/helm.sha256\"\n        digest=$(awk 'NR==1 {print $1}' \"$WORK_DIR/helm.sha256\"\
+    )\n        [[ $digest =~ ^[a-f0-9]{64}$ ]] || die 'Invalid Helm checksum'\n  \
+    \      printf '%s  %s\\n' \"$digest\" \"$WORK_DIR/$asset\" | sha256sum -c -\n\
+    \        tar -xzf \"$WORK_DIR/$asset\" -C \"$WORK_DIR\" \"linux-$ARCH/helm\"\n\
+    \        install -m 0755 \"$WORK_DIR/linux-$ARCH/helm\" /usr/local/bin/helm\n\
+    \        printf '%s/%s\\n%s\\n' \"$HELM_VERSION\" \"$ARCH\" \"$(sha256sum /usr/local/bin/helm\
+    \ | cut -d' ' -f1)\" > \"$stamp\"\n    fi\n}\n\ninstall_kubernetes_packages()\
+    \ {\n    PHASE=kubernetes-packages\n    local minor=${KUBERNETES_VERSION%.*} package_version\
+    \ package current\n    fetch \"https://pkgs.k8s.io/core:/stable:/$minor/deb/Release.key\"\
+    \ \"$WORK_DIR/kubernetes.key\"\n    gpg --batch --yes --dearmor -o \"$WORK_DIR/kubernetes.gpg\"\
+    \ \"$WORK_DIR/kubernetes.key\"\n    write_file /etc/apt/keyrings/kubernetes.gpg\
+    \ < \"$WORK_DIR/kubernetes.gpg\"\n    printf 'deb [signed-by=/etc/apt/keyrings/kubernetes.gpg]\
+    \ https://pkgs.k8s.io/core:/stable:/%s/deb/ /\\n' \"$minor\" \\\n        | write_file\
+    \ /etc/apt/sources.list.d/kubernetes.list\n    apt-get update\n    package_version=$(apt-cache\
+    \ madison kubeadm | awk -v v=\"${KUBERNETES_VERSION#v}-\" 'index($3,v)==1 {print\
+    \ $3; exit}')\n    [[ -n $package_version ]] || die \"Kubernetes package not available:\
+    \ $KUBERNETES_VERSION\"\n    for package in kubeadm kubelet kubectl; do\n    \
+    \    current=$(dpkg-query -W -f='${Version}' \"$package\" 2>/dev/null || true)\n\
+    \        if [[ $current != \"$package_version\" ]]; then\n            [[ ! -f\
+    \ /etc/kubernetes/admin.conf ]] || die 'Refusing in-place Kubernetes package upgrade/downgrade'\n\
+    \            apt-get install -y --no-install-recommends \"$package=$package_version\"\
+    \n        fi\n    done\n    apt-mark hold kubeadm kubelet kubectl\n    # Kubelet\
+    \ configuration is generated by kubeadm; it cannot start fully until init.\n \
+    \   systemctl enable kubelet\n}\n\ninstall_hpc_kvm() {\n    if [[ $INSTALL_HPC\
+    \ == true ]]; then\n        PHASE=hpc\n        install_missing openmpi-bin libopenmpi-dev\
+    \ libucx0 libucx-dev ucx-utils \\\n            hwloc libhwloc-dev libpmix-dev\
+    \ rdma-core ibverbs-utils slurm-client libslurm-dev\n        if ! dpkg-query -W\
+    \ -f='${Status}' apptainer 2>/dev/null | grep -q 'install ok installed'; then\n\
+    \            add-apt-repository -y ppa:apptainer/ppa\n            apt-get update\n\
+    \            install_missing apptainer\n        fi\n        # User namespaces\
+    \ are necessary for non-setuid Apptainer. Retain Ubuntu AppArmor\n        # restrictions;\
+    \ package-supplied profiles and site policy must allow the user.\n        [[ !\
+    \ -r /proc/sys/user/max_user_namespaces || $(cat /proc/sys/user/max_user_namespaces)\
+    \ -gt 0 ]] || die 'Unprivileged user namespaces are disabled'\n    fi\n    if\
+    \ [[ $ENABLE_KVM == true ]]; then\n        PHASE=kvm\n        [[ $ARCH == amd64\
+    \ ]] || die 'This optional nested-KVM profile currently supports amd64'\n    \
+    \    install_missing qemu-system-x86 qemu-utils cpu-checker\n        if grep -qw\
+    \ vmx /proc/cpuinfo; then modprobe kvm_intel;\n        elif grep -qw svm /proc/cpuinfo;\
+    \ then modprobe kvm_amd;\n        else die 'Expose hardware virtualization / nested\
+    \ KVM in the parent hypervisor'; fi\n        [[ -c /dev/kvm ]] || die 'KVM device\
+    \ is unavailable'\n        kvm-ok\n    fi\n}\n\nrender_kubeadm() {\n    local\
+    \ resolv_conf=/etc/resolv.conf endpoint=${CONTROL_PLANE_ENDPOINT:-\"$NODE_IP:6443\"\
+    }\n    [[ ! -e /run/systemd/resolve/resolv.conf ]] || resolv_conf=/run/systemd/resolve/resolv.conf\n\
+    \    cat <<EOF\napiVersion: kubeadm.k8s.io/v1beta4\nkind: InitConfiguration\n\
+    localAPIEndpoint:\n  advertiseAddress: \"$NODE_IP\"\n  bindPort: 6443\nnodeRegistration:\n\
+    \  name: \"$NODE_NAME\"\n  criSocket: \"$CRI_SOCKET\"\n  taints: []\n  kubeletExtraArgs:\n\
+    \    - name: node-ip\n      value: \"$NODE_IP\"\npatches:\n  directory: \"$STATE_DIR/kubeadm-patches\"\
+    \nskipPhases:\n  - addon/kube-proxy\n---\napiVersion: kubeadm.k8s.io/v1beta4\n\
+    kind: ClusterConfiguration\nkubernetesVersion: \"$KUBERNETES_VERSION\"\nclusterName:\
+    \ \"$CLUSTER_NAME\"\nimageRepository: \"$IMAGE_REGISTRY/registry.k8s.io\"\ncontrolPlaneEndpoint:\
+    \ \"$endpoint\"\nnetworking:\n  podSubnet: \"$POD_CIDR\"\n  serviceSubnet: \"\
+    $SERVICE_CIDR\"\n  dnsDomain: cluster.local\napiServer:\n  certSANs:\n    - \"\
+    $NODE_IP\"\n    - \"$NODE_NAME\"\n---\napiVersion: kubelet.config.k8s.io/v1beta1\n\
+    kind: KubeletConfiguration\ncgroupDriver: systemd\nfailSwapOn: true\nresolvConf:\
+    \ \"$resolv_conf\"\nmaxPods: 110\nEOF\n}\n\nrender_cilium_values() {\n    cat\
+    \ <<EOF\nkubeProxyReplacement: true\nk8sServiceHost: \"$NODE_IP\"\nk8sServicePort:\
+    \ 6443\ncontainerRuntimeEndpoint: /run/containerd/containerd.sock\ncni:\n  binPath:\
+    \ /opt/cni/bin\n  confPath: /etc/cni/net.d\n  exclusive: true\nbpf:\n  masquerade:\
+    \ true\n  autoMount:\n    enabled: false\ncgroup:\n  autoMount:\n    enabled:\
+    \ false\n  hostRoot: /sys/fs/cgroup\nipam:\n  mode: kubernetes\nipv4:\n  enabled:\
+    \ true\nipv6:\n  enabled: false\nroutingMode: native\nipv4NativeRoutingCIDR: \"\
+    $POD_CIDR\"\n# Route distribution is site-specific. Enable direct routes only\
+    \ on a verified common L2.\nautoDirectNodeRoutes: false\ncluster:\n  name: \"\
+    $CLUSTER_DNS_NAME\"\nimage:\n  repository: \"$IMAGE_REGISTRY/quay.io/cilium/cilium\"\
+    \nenvoy:\n  image:\n    repository: \"$IMAGE_REGISTRY/quay.io/cilium/cilium-envoy\"\
+    \noperator:\n  replicas: 1\n  image:\n    repository: \"$IMAGE_REGISTRY/quay.io/cilium/operator\"\
+    \n  securityContext:\n    runAsNonRoot: true\n    runAsUser: 65532\n    runAsGroup:\
+    \ 65532\n    allowPrivilegeEscalation: false\n    capabilities: {drop: [ALL]}\n\
+    # Full kube-proxy replacement is strict about required kernel features. Policy\
+    \ mode\n# 'default' enforces selected policies. render_foundation denies both\
+    \ directions in\n# all three core namespaces; essential node components remain\
+    \ in kube-system.\npolicyEnforcementMode: default\nEOF\n    if [[ $PLATFORM_PROFILE\
+    \ == dev-* ]]; then\n        cat <<EOF\ncommonLabels:\n  twinfra.io/environment:\
+    \ dev\n  twinfra.io/region: \"${PLATFORM_PROFILE#dev-}\"\n  twinfra.io/component:\
+    \ cilium\nEOF\n    fi\n}\n\nbootstrap_kubernetes() {\n    [[ $BOOTSTRAP_K8S ==\
+    \ true ]] || return\n    check_policy_gate || return $?\n    write_manifest_validators\n\
+    \    write_file \"$STATE_DIR/kubeadm-patches/etcd+strategic.yaml\" < <(render_etcd_patch)\n\
+    \    PHASE=kubeadm-init\n    write_file \"$STATE_DIR/kubeadm.yaml\" 0600 < <(render_kubeadm)\n\
+    \    kubeadm config validate --config \"$STATE_DIR/kubeadm.yaml\"\n    if [[ !\
+    \ -f /etc/kubernetes/admin.conf ]]; then\n        # Generate outside kubelet's\
+    \ watched directory, then check actual static Pods\n        # against the approved\
+    \ host mounts BEFORE starting the real control plane.\n        validate_kubeadm_preview\n\
+    \        # Write ownership before init so an interrupted run can be diagnosed.\
+    \ A partial\n        # init is NOT reset automatically: inspect and recover with\
+    \ kubeadm deliberately.\n        touch \"$STATE_DIR/cluster-owned\"\n        printf\
+    \ '%s\\n' \"$KUBERNETES_VERSION\" > \"$STATE_DIR/cluster-version\"\n        if\
+    \ [[ -e /etc/kubernetes/manifests/kube-apiserver.yaml ]]; then die 'Partial kubeadm\
+    \ init: inspect manifests; no automatic reset'; fi\n        kubeadm init --config\
+    \ \"$STATE_DIR/kubeadm.yaml\" --skip-phases=addon/kube-proxy\n    fi\n    validate_static_control_plane\
+    \ /etc/kubernetes/manifests\n    export KUBECONFIG=/etc/kubernetes/admin.conf\n\
+    \    chmod 0600 \"$KUBECONFIG\"\n    kubectl --request-timeout=30s get --raw=/readyz\
+    \ >/dev/null\n    PHASE=cilium\n    write_file \"$STATE_DIR/cilium-values.yaml\"\
+    \ < <(render_cilium_values)\n    helm upgrade --install cilium cilium --repo https://helm.cilium.io/\
+    \ \\\n        --version \"$CILIUM_VERSION\" --namespace kube-system --values \"\
+    $STATE_DIR/cilium-values.yaml\" \\\n        --post-renderer \"$STATE_DIR/validate-chart\"\
+    \ --wait --timeout 10m --history-max 3\n    cilium status --wait --wait-duration\
+    \ 10m\n    kubectl wait --for=condition=Ready \"node/$NODE_NAME\" --timeout=300s\n\
+    \    kubectl -n kube-system rollout status deployment/coredns --timeout=300s\n\
+    \    render_foundation > \"$STATE_DIR/foundation.yaml\"\n    validate_manifests\
+    \ workloads \"$STATE_DIR/foundation.yaml\"\n    kubectl apply -f \"$STATE_DIR/foundation.yaml\"\
+    \n    if [[ $GPU_ENABLED == true ]]; then\n        PHASE=gpu-kubernetes\n    \
+    \    render_gpu_runtime_class > \"$STATE_DIR/runtimeclass.yaml\"\n        validate_manifests\
+    \ workloads \"$STATE_DIR/runtimeclass.yaml\"\n        kubectl apply -f \"$STATE_DIR/runtimeclass.yaml\"\
+    \n        helm upgrade --install nvidia-device-plugin nvidia-device-plugin \\\n\
+    \            --repo https://nvidia.github.io/k8s-device-plugin --version \"$NVIDIA_DEVICE_PLUGIN_VERSION\"\
+    \ \\\n            --namespace kube-system --set runtimeClassName=nvidia \\\n \
+    \           --set gfd.enabled=false --set nfd.enabled=false \\\n            --set\
+    \ image.repository=\"$IMAGE_REGISTRY/nvcr.io/nvidia/k8s-device-plugin\" \\\n \
+    \           --set image.tag=\"v$NVIDIA_DEVICE_PLUGIN_VERSION\" \\\n          \
+    \  --post-renderer \"$STATE_DIR/filter-nvidia-chart\" --wait --timeout 5m --history-max\
+    \ 3\n        # shellcheck disable=SC2016 # $1 belongs to the nested shell.\n \
+    \       timeout 180 bash -c 'until kubectl get node \"$1\" -o json | jq -e '\\\
+    ''.status.allocatable[\"nvidia.com/gpu\"] | tonumber > 0'\\'' >/dev/null; do sleep\
+    \ 3; done' _ \"$NODE_NAME\"\n    fi\n}\n\nrender_chart_validator() {\n    cat\
+    \ <<EOF\n#!/usr/bin/env bash\nset -Eeuo pipefail\ncandidate=\\$(mktemp --suffix=.yaml)\n\
+    trap 'rm -f -- \"\\$candidate\"' EXIT\ncat > \"\\$candidate\"\n[[ -s \"\\$candidate\"\
+    \ ]] || { echo 'Empty Helm manifest output' >&2; exit 1; }\n# ADR-0047: label\
+    \ all upstream objects, including chart-created namespaces.\n# Kustomize never\
+    \ includes these labels in selectors.\nif [[ \"$PLATFORM_PROFILE\" == dev-* ]];\
+    \ then\n    labels_dir=\\$(mktemp -d)\n    cp \"\\$candidate\" \"\\$labels_dir/upstream.yaml\"\
+    \n    cat > \"\\$labels_dir/kustomization.yaml\" <<'VCLOUD_LABELS'\napiVersion:\
+    \ kustomize.config.k8s.io/v1beta1\nkind: Kustomization\nresources: [upstream.yaml]\n\
+    labels:\n- pairs:\n    twinfra.io/environment: dev\n    twinfra.io/region: \"\
+    ${PLATFORM_PROFILE#dev-}\"\n    twinfra.io/component: cilium\n  includeSelectors:\
+    \ false\n  includeTemplates: true\nVCLOUD_LABELS\n    kubectl kustomize \"\\$labels_dir\"\
+    \ > \"\\$candidate\"\n    rm -rf -- \"\\$labels_dir\"\nfi\n# Summary goes to stderr:\
+    \ Helm requires stdout to contain YAML only.\nkubeconform -strict -summary -kubernetes-version\
+    \ \"${KUBERNETES_VERSION#v}\" \"\\$candidate\" >&2\nyq eval-all -o=json -I=0 '[.]'\
+    \ \"\\$candidate\" |\n    python3 \"$STATE_DIR/check-manifest-contract.py\" --policy\
+    \ \"$STATE_DIR/node-exceptions.json\" >&2\ncat \"\\$candidate\"\nEOF\n}\n\nrender_nvidia_filter()\
+    \ {\n    cat <<EOF\n#!/usr/bin/env bash\nset -Eeuo pipefail\n# The upstream chart\
+    \ always emits the privileged MPS DaemonSet when the device\n# plugin is enabled.\
+    \ MPS sharing is outside this profile: remove that object.\nyq eval 'select(.kind\
+    \ != \"DaemonSet\" or .metadata.name != \"nvidia-device-plugin-mps-control-daemon\"\
+    )' - |\n    \"$STATE_DIR/validate-chart\"\nEOF\n}\n\nwrite_manifest_validators()\
+    \ {\n    render_exception_policy | write_file \"$STATE_DIR/node-exceptions.json\"\
+    \ 0600\n    render_policy_checker | write_file \"$STATE_DIR/check-manifest-contract.py\"\
+    \ 0700\n    render_chart_validator | write_file \"$STATE_DIR/validate-chart\"\
+    \ 0755\n    render_nvidia_filter | write_file \"$STATE_DIR/filter-nvidia-chart\"\
+    \ 0755\n}\n\n# BEGIN GENERATED EXCEPTION POLICY\nrender_exception_policy() {\n\
+    \    if [[ $PLATFORM_PROFILE == dev-* ]]; then\n        cat <<'VCLOUD_DEV_POLICY_JSON'\n\
+    {\n  \"status\": \"approved\",\n  \"approval\": {\n    \"by\": \"user\",\n   \
+    \ \"date\": \"2026-10-05\",\n    \"decision\": \"Approve the documented node exception\"\
+    ,\n    \"adr\": \"docs/adr-0001-node-host-mounts.md\",\n    \"inventorySHA256\"\
+    : \"bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81\"\n  },\n\
+    \  \"registry\": \"registry.twinfra.example.com\",\n  \"versions\": {\n    \"\
+    kubernetes\": \"v1.36.5\",\n    \"cilium\": \"1.20.2\",\n    \"nvidiaDevicePlugin\"\
+    : \"0.20.1\"\n  },\n  \"agents\": {\n    \"DaemonSet/kube-system/cilium\": {\n\
+    \      \"hostNetwork\": true,\n      \"hostPID\": false,\n      \"hostIPC\": false,\n\
+    \      \"hostPaths\": [\n        {\n          \"name\": \"bpf-maps\",\n      \
+    \    \"hostPath\": {\n            \"type\": \"DirectoryOrCreate\",\n         \
+    \   \"path\": \"/sys/fs/bpf\"\n          }\n        },\n        {\n          \"\
+    name\": \"cilium-cgroup\",\n          \"hostPath\": {\n            \"type\": \"\
+    DirectoryOrCreate\",\n            \"path\": \"/sys/fs/cgroup\"\n          }\n\
+    \        },\n        {\n          \"name\": \"cilium-netns\",\n          \"hostPath\"\
+    : {\n            \"type\": \"DirectoryOrCreate\",\n            \"path\": \"/var/run/netns\"\
+    \n          }\n        },\n        {\n          \"name\": \"cilium-run\",\n  \
+    \        \"hostPath\": {\n            \"type\": \"DirectoryOrCreate\",\n     \
+    \       \"path\": \"/var/run/cilium\"\n          }\n        },\n        {\n  \
+    \        \"name\": \"cni-path\",\n          \"hostPath\": {\n            \"type\"\
+    : \"DirectoryOrCreate\",\n            \"path\": \"/opt/cni/bin\"\n          }\n\
+    \        },\n        {\n          \"name\": \"envoy-sockets\",\n          \"hostPath\"\
+    : {\n            \"type\": \"DirectoryOrCreate\",\n            \"path\": \"/var/run/cilium/envoy/sockets\"\
+    \n          }\n        },\n        {\n          \"name\": \"etc-cni-netd\",\n\
+    \          \"hostPath\": {\n            \"type\": \"DirectoryOrCreate\",\n   \
+    \         \"path\": \"/etc/cni/net.d\"\n          }\n        },\n        {\n \
+    \         \"name\": \"host-proc-sys-kernel\",\n          \"hostPath\": {\n   \
+    \         \"type\": \"Directory\",\n            \"path\": \"/proc/sys/kernel\"\
+    \n          }\n        },\n        {\n          \"name\": \"host-proc-sys-net\"\
+    ,\n          \"hostPath\": {\n            \"type\": \"Directory\",\n         \
+    \   \"path\": \"/proc/sys/net\"\n          }\n        },\n        {\n        \
+    \  \"name\": \"hostproc\",\n          \"hostPath\": {\n            \"type\": \"\
+    Directory\",\n            \"path\": \"/proc\"\n          }\n        },\n     \
+    \   {\n          \"name\": \"lib-modules\",\n          \"hostPath\": {\n     \
+    \       \"type\": \"\",\n            \"path\": \"/lib/modules\"\n          }\n\
+    \        },\n        {\n          \"name\": \"xtables-lock\",\n          \"hostPath\"\
+    : {\n            \"type\": \"FileOrCreate\",\n            \"path\": \"/run/xtables.lock\"\
+    \n          }\n        }\n      ],\n      \"containers\": [\n        {\n     \
+    \     \"name\": \"cilium-agent\",\n          \"category\": \"containers\",\n \
+    \         \"image\": \"registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": true,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"appArmorProfile\": {\n              \"type\": \"Unconfined\"\n\
+    \            },\n            \"seccompProfile\": {\n              \"type\": \"\
+    Unconfined\"\n            },\n            \"seLinuxOptions\": {\n            \
+    \  \"level\": \"s0\",\n              \"type\": \"spc_t\"\n            },\n   \
+    \         \"capabilities\": {\n              \"add\": [\n                \"CHOWN\"\
+    ,\n                \"DAC_OVERRIDE\",\n                \"FOWNER\",\n          \
+    \      \"IPC_LOCK\",\n                \"KILL\",\n                \"NET_ADMIN\"\
+    ,\n                \"NET_RAW\",\n                \"SETGID\",\n               \
+    \ \"SETUID\",\n                \"SYSLOG\",\n                \"SYS_ADMIN\",\n \
+    \               \"SYS_MODULE\",\n                \"SYS_RESOURCE\"\n          \
+    \    ],\n              \"drop\": [\n                \"ALL\"\n              ]\n\
+    \            }\n          },\n          \"hostMounts\": [\n            {\n   \
+    \           \"readOnly\": false,\n              \"mountPropagation\": \"HostToContainer\"\
+    ,\n              \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n  \
+    \            \"name\": \"bpf-maps\",\n              \"mountPath\": \"/sys/fs/bpf\"\
+    \n            },\n            {\n              \"readOnly\": false,\n        \
+    \      \"mountPropagation\": null,\n              \"subPath\": \"\",\n       \
+    \       \"subPathExpr\": \"\",\n              \"name\": \"cilium-cgroup\",\n \
+    \             \"mountPath\": \"/sys/fs/cgroup\"\n            },\n            {\n\
+    \              \"readOnly\": false,\n              \"mountPropagation\": \"HostToContainer\"\
+    ,\n              \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n  \
+    \            \"name\": \"cilium-netns\",\n              \"mountPath\": \"/var/run/cilium/netns\"\
+    \n            },\n            {\n              \"readOnly\": false,\n        \
+    \      \"mountPropagation\": null,\n              \"subPath\": \"\",\n       \
+    \       \"subPathExpr\": \"\",\n              \"name\": \"cilium-run\",\n    \
+    \          \"mountPath\": \"/var/run/cilium\"\n            },\n            {\n\
+    \              \"readOnly\": false,\n              \"mountPropagation\": null,\n\
+    \              \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n    \
+    \          \"name\": \"envoy-sockets\",\n              \"mountPath\": \"/var/run/cilium/envoy/sockets\"\
+    \n            },\n            {\n              \"readOnly\": false,\n        \
+    \      \"mountPropagation\": null,\n              \"subPath\": \"\",\n       \
+    \       \"subPathExpr\": \"\",\n              \"name\": \"etc-cni-netd\",\n  \
+    \            \"mountPath\": \"/host/etc/cni/net.d\"\n            },\n        \
+    \    {\n              \"readOnly\": false,\n              \"mountPropagation\"\
+    : null,\n              \"subPath\": \"\",\n              \"subPathExpr\": \"\"\
+    ,\n              \"mountPath\": \"/host/proc/sys/kernel\",\n              \"name\"\
+    : \"host-proc-sys-kernel\"\n            },\n            {\n              \"readOnly\"\
+    : false,\n              \"mountPropagation\": null,\n              \"subPath\"\
+    : \"\",\n              \"subPathExpr\": \"\",\n              \"mountPath\": \"\
+    /host/proc/sys/net\",\n              \"name\": \"host-proc-sys-net\"\n       \
+    \     },\n            {\n              \"readOnly\": true,\n              \"mountPropagation\"\
+    : null,\n              \"subPath\": \"\",\n              \"subPathExpr\": \"\"\
+    ,\n              \"name\": \"lib-modules\",\n              \"mountPath\": \"/lib/modules\"\
+    \n            },\n            {\n              \"readOnly\": false,\n        \
+    \      \"mountPropagation\": null,\n              \"subPath\": \"\",\n       \
+    \       \"subPathExpr\": \"\",\n              \"name\": \"xtables-lock\",\n  \
+    \            \"mountPath\": \"/run/xtables.lock\"\n            }\n          ],\n\
+    \          \"command\": [\n            \"cilium-agent\"\n          ],\n      \
+    \    \"args\": [\n            \"--config-dir=/tmp/cilium/config-map\"\n      \
+    \    ]\n        },\n        {\n          \"name\": \"apply-sysctl-overwrites\"\
+    ,\n          \"category\": \"initContainers\",\n          \"image\": \"registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": true,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"appArmorProfile\": {\n              \"type\": \"Unconfined\"\n\
+    \            },\n            \"seccompProfile\": {\n              \"type\": \"\
+    Unconfined\"\n            },\n            \"seLinuxOptions\": {\n            \
+    \  \"level\": \"s0\",\n              \"type\": \"spc_t\"\n            },\n   \
+    \         \"capabilities\": {\n              \"add\": [\n                \"SYS_ADMIN\"\
+    ,\n                \"SYS_CHROOT\",\n                \"SYS_PTRACE\"\n         \
+    \     ],\n              \"drop\": [\n                \"ALL\"\n              ]\n\
+    \            }\n          },\n          \"hostMounts\": [\n            {\n   \
+    \           \"readOnly\": false,\n              \"mountPropagation\": null,\n\
+    \              \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n    \
+    \          \"name\": \"cni-path\",\n              \"mountPath\": \"/hostbin\"\n\
+    \            },\n            {\n              \"readOnly\": false,\n         \
+    \     \"mountPropagation\": null,\n              \"subPath\": \"\",\n        \
+    \      \"subPathExpr\": \"\",\n              \"name\": \"hostproc\",\n       \
+    \       \"mountPath\": \"/hostproc\"\n            }\n          ],\n          \"\
+    command\": [\n            \"bash\",\n            \"-ec\",\n            \"cp /usr/bin/cilium-sysctlfix\
+    \ /hostbin/cilium-sysctlfix;\\nnsenter --mount=/hostproc/1/ns/mnt \\\"${BIN_PATH}/cilium-sysctlfix\\\
+    \";\\nrm /hostbin/cilium-sysctlfix\\n\"\n          ],\n          \"args\": []\n\
+    \        },\n        {\n          \"name\": \"clean-cilium-state\",\n        \
+    \  \"category\": \"initContainers\",\n          \"image\": \"registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": true,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"appArmorProfile\": {\n              \"type\": \"Unconfined\"\n\
+    \            },\n            \"seccompProfile\": {\n              \"type\": \"\
+    Unconfined\"\n            },\n            \"seLinuxOptions\": {\n            \
+    \  \"level\": \"s0\",\n              \"type\": \"spc_t\"\n            },\n   \
+    \         \"capabilities\": {\n              \"add\": [\n                \"NET_ADMIN\"\
+    ,\n                \"SYS_ADMIN\",\n                \"SYS_MODULE\",\n         \
+    \       \"SYS_RESOURCE\"\n              ],\n              \"drop\": [\n      \
+    \          \"ALL\"\n              ]\n            }\n          },\n          \"\
+    hostMounts\": [\n            {\n              \"readOnly\": false,\n         \
+    \     \"mountPropagation\": null,\n              \"subPath\": \"\",\n        \
+    \      \"subPathExpr\": \"\",\n              \"name\": \"bpf-maps\",\n       \
+    \       \"mountPath\": \"/sys/fs/bpf\"\n            },\n            {\n      \
+    \        \"readOnly\": false,\n              \"mountPropagation\": \"HostToContainer\"\
+    ,\n              \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n  \
+    \            \"name\": \"cilium-cgroup\",\n              \"mountPath\": \"/sys/fs/cgroup\"\
+    \n            },\n            {\n              \"readOnly\": false,\n        \
+    \      \"mountPropagation\": null,\n              \"subPath\": \"\",\n       \
+    \       \"subPathExpr\": \"\",\n              \"name\": \"cilium-run\",\n    \
+    \          \"mountPath\": \"/var/run/cilium\"\n            }\n          ],\n \
+    \         \"command\": [\n            \"/init-container.sh\"\n          ],\n \
+    \         \"args\": []\n        },\n        {\n          \"name\": \"config\"\
+    ,\n          \"category\": \"initContainers\",\n          \"image\": \"registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": true,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"appArmorProfile\": {\n              \"type\": \"Unconfined\"\n\
+    \            },\n            \"seccompProfile\": {\n              \"type\": \"\
+    Unconfined\"\n            },\n            \"capabilities\": {\n              \"\
+    add\": [\n                \"NET_ADMIN\"\n              ],\n              \"drop\"\
+    : [\n                \"ALL\"\n              ]\n            }\n          },\n \
+    \         \"hostMounts\": [],\n          \"command\": [\n            \"cilium-dbg\"\
+    ,\n            \"build-config\",\n            \"--k8s-api-server-urls=\"\n   \
+    \       ],\n          \"args\": []\n        },\n        {\n          \"name\"\
+    : \"install-cni-binaries\",\n          \"category\": \"initContainers\",\n   \
+    \       \"image\": \"registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": true,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"appArmorProfile\": {\n              \"type\": \"Unconfined\"\n\
+    \            },\n            \"seccompProfile\": {\n              \"type\": \"\
+    Unconfined\"\n            },\n            \"seLinuxOptions\": {\n            \
+    \  \"level\": \"s0\",\n              \"type\": \"spc_t\"\n            },\n   \
+    \         \"capabilities\": {\n              \"add\": [],\n              \"drop\"\
+    : [\n                \"ALL\"\n              ]\n            }\n          },\n \
+    \         \"hostMounts\": [\n            {\n              \"readOnly\": false,\n\
+    \              \"mountPropagation\": null,\n              \"subPath\": \"\",\n\
+    \              \"subPathExpr\": \"\",\n              \"name\": \"cni-path\",\n\
+    \              \"mountPath\": \"/host/opt/cni/bin\"\n            }\n         \
+    \ ],\n          \"command\": [\n            \"/install-plugin.sh\"\n         \
+    \ ],\n          \"args\": []\n        }\n      ]\n    },\n    \"DaemonSet/kube-system/cilium-envoy\"\
+    : {\n      \"hostNetwork\": true,\n      \"hostPID\": false,\n      \"hostIPC\"\
+    : false,\n      \"hostPaths\": [\n        {\n          \"name\": \"envoy-artifacts\"\
+    ,\n          \"hostPath\": {\n            \"type\": \"DirectoryOrCreate\",\n \
+    \           \"path\": \"/var/run/cilium/envoy/artifacts\"\n          }\n     \
+    \   },\n        {\n          \"name\": \"envoy-sockets\",\n          \"hostPath\"\
+    : {\n            \"type\": \"DirectoryOrCreate\",\n            \"path\": \"/var/run/cilium/envoy/sockets\"\
+    \n          }\n        }\n      ],\n      \"containers\": [\n        {\n     \
+    \     \"name\": \"cilium-envoy\",\n          \"category\": \"containers\",\n \
+    \         \"image\": \"registry.twinfra.example.com/quay.io/cilium/cilium-envoy:v1.37.6-1789133542-cbec91f666af0bf742da986d43832932dbb26b82@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": true,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"appArmorProfile\": {\n              \"type\": \"Unconfined\"\n\
+    \            },\n            \"seLinuxOptions\": {\n              \"level\": \"\
+    s0\",\n              \"type\": \"spc_t\"\n            },\n            \"capabilities\"\
+    : {\n              \"add\": [\n                \"NET_ADMIN\",\n              \
+    \  \"SYS_ADMIN\"\n              ],\n              \"drop\": [\n              \
+    \  \"ALL\"\n              ]\n            }\n          },\n          \"hostMounts\"\
+    : [\n            {\n              \"readOnly\": true,\n              \"mountPropagation\"\
+    : null,\n              \"subPath\": \"\",\n              \"subPathExpr\": \"\"\
+    ,\n              \"name\": \"envoy-artifacts\",\n              \"mountPath\":\
+    \ \"/var/run/cilium/envoy/artifacts\"\n            },\n            {\n       \
+    \       \"readOnly\": false,\n              \"mountPropagation\": null,\n    \
+    \          \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n        \
+    \      \"name\": \"envoy-sockets\",\n              \"mountPath\": \"/var/run/cilium/envoy/sockets\"\
+    \n            }\n          ],\n          \"command\": [\n            \"/usr/bin/cilium-envoy-starter\"\
+    \n          ],\n          \"args\": [\n            \"--\",\n            \"-c /var/run/cilium/envoy/bootstrap-config.json\"\
+    ,\n            \"--base-id 0\",\n            \"--log-level info\"\n          ]\n\
+    \        }\n      ]\n    },\n    \"Deployment/kube-system/cilium-operator\": {\n\
+    \      \"hostNetwork\": true,\n      \"hostPID\": false,\n      \"hostIPC\": false,\n\
+    \      \"hostPaths\": [],\n      \"containers\": [\n        {\n          \"name\"\
+    : \"cilium-operator\",\n          \"category\": \"containers\",\n          \"\
+    image\": \"registry.twinfra.example.com/quay.io/cilium/operator-generic:v1.20.2@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": false,\n            \"runAsNonRoot\": true,\n\
+    \            \"runAsUser\": 65532,\n            \"runAsGroup\": 65532,\n     \
+    \       \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"seccompProfile\": {\n              \"type\": \"RuntimeDefault\"\
+    \n            },\n            \"capabilities\": {\n              \"add\": [],\n\
+    \              \"drop\": [\n                \"ALL\"\n              ]\n       \
+    \     }\n          },\n          \"hostMounts\": [],\n          \"command\": [\n\
+    \            \"cilium-operator-generic\"\n          ],\n          \"args\": [\n\
+    \            \"--config-dir=/tmp/cilium/config-map\",\n            \"--debug=$(CILIUM_DEBUG)\"\
+    \n          ]\n        }\n      ]\n    },\n    \"DaemonSet/kube-system/nvidia-device-plugin\"\
+    : {\n      \"hostNetwork\": false,\n      \"hostPID\": false,\n      \"hostIPC\"\
+    : false,\n      \"hostPaths\": [\n        {\n          \"name\": \"cdi-root\"\
+    ,\n          \"hostPath\": {\n            \"type\": \"DirectoryOrCreate\",\n \
+    \           \"path\": \"/var/run/cdi\"\n          }\n        },\n        {\n \
+    \         \"name\": \"kubelet-device-plugins-dir\",\n          \"hostPath\": {\n\
+    \            \"type\": \"Directory\",\n            \"path\": \"/var/lib/kubelet/device-plugins\"\
+    \n          }\n        },\n        {\n          \"name\": \"mps-root\",\n    \
+    \      \"hostPath\": {\n            \"type\": \"DirectoryOrCreate\",\n       \
+    \     \"path\": \"/run/nvidia/mps\"\n          }\n        },\n        {\n    \
+    \      \"name\": \"mps-shm\",\n          \"hostPath\": {\n            \"type\"\
+    : \"\",\n            \"path\": \"/run/nvidia/mps/shm\"\n          }\n        }\n\
+    \      ],\n      \"containers\": [\n        {\n          \"name\": \"nvidia-device-plugin-ctr\"\
+    ,\n          \"category\": \"containers\",\n          \"image\": \"registry.twinfra.example.com/nvcr.io/nvidia/k8s-device-plugin:v0.20.1\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": false,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"capabilities\": {\n              \"add\": [],\n             \
+    \ \"drop\": [\n                \"ALL\"\n              ]\n            }\n     \
+    \     },\n          \"hostMounts\": [\n            {\n              \"readOnly\"\
+    : false,\n              \"mountPropagation\": null,\n              \"subPath\"\
+    : \"\",\n              \"subPathExpr\": \"\",\n              \"name\": \"cdi-root\"\
+    ,\n              \"mountPath\": \"/var/run/cdi\"\n            },\n           \
+    \ {\n              \"readOnly\": false,\n              \"mountPropagation\": null,\n\
+    \              \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n    \
+    \          \"name\": \"kubelet-device-plugins-dir\",\n              \"mountPath\"\
+    : \"/var/lib/kubelet/device-plugins\"\n            },\n            {\n       \
+    \       \"readOnly\": false,\n              \"mountPropagation\": null,\n    \
+    \          \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n        \
+    \      \"name\": \"mps-root\",\n              \"mountPath\": \"/mps\"\n      \
+    \      },\n            {\n              \"readOnly\": false,\n              \"\
+    mountPropagation\": null,\n              \"subPath\": \"\",\n              \"\
+    subPathExpr\": \"\",\n              \"name\": \"mps-shm\",\n              \"mountPath\"\
+    : \"/dev/shm\"\n            }\n          ],\n          \"command\": [\n      \
+    \      \"nvidia-device-plugin\"\n          ],\n          \"args\": []\n      \
+    \  }\n      ]\n    }\n  },\n  \"controlPlane\": {\n    \"Pod/kube-system/kube-apiserver\"\
+    : {\n      \"image\": \"registry.twinfra.example.com/registry.k8s.io/kube-apiserver:v1.36.5\"\
+    ,\n      \"mounts\": {\n        \"/etc/kubernetes/pki\": {\n          \"readOnly\"\
+    : true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\": true\n\
+    \        },\n        \"/etc/ssl/certs\": {\n          \"readOnly\": true,\n  \
+    \        \"type\": \"DirectoryOrCreate\",\n          \"required\": true\n    \
+    \    },\n        \"/etc/ca-certificates\": {\n          \"readOnly\": true,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n \
+    \       },\n        \"/usr/share/ca-certificates\": {\n          \"readOnly\"\
+    : true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n\
+    \        },\n        \"/usr/local/share/ca-certificates\": {\n          \"readOnly\"\
+    : true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n\
+    \        },\n        \"/etc/pki/ca-trust\": {\n          \"readOnly\": true,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n \
+    \       },\n        \"/etc/pki/tls/certs\": {\n          \"readOnly\": true,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n \
+    \       }\n      }\n    },\n    \"Pod/kube-system/kube-controller-manager\": {\n\
+    \      \"image\": \"registry.twinfra.example.com/registry.k8s.io/kube-controller-manager:v1.36.5\"\
+    ,\n      \"mounts\": {\n        \"/etc/kubernetes/pki\": {\n          \"readOnly\"\
+    : true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\": true\n\
+    \        },\n        \"/etc/ssl/certs\": {\n          \"readOnly\": true,\n  \
+    \        \"type\": \"DirectoryOrCreate\",\n          \"required\": true\n    \
+    \    },\n        \"/etc/ca-certificates\": {\n          \"readOnly\": true,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n \
+    \       },\n        \"/usr/share/ca-certificates\": {\n          \"readOnly\"\
+    : true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n\
+    \        },\n        \"/usr/local/share/ca-certificates\": {\n          \"readOnly\"\
+    : true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n\
+    \        },\n        \"/etc/pki/ca-trust\": {\n          \"readOnly\": true,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n \
+    \       },\n        \"/etc/pki/tls/certs\": {\n          \"readOnly\": true,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n \
+    \       },\n        \"/etc/kubernetes/controller-manager.conf\": {\n         \
+    \ \"readOnly\": true,\n          \"type\": \"FileOrCreate\",\n          \"required\"\
+    : true\n        }\n      }\n    },\n    \"Pod/kube-system/kube-scheduler\": {\n\
+    \      \"image\": \"registry.twinfra.example.com/registry.k8s.io/kube-scheduler:v1.36.5\"\
+    ,\n      \"mounts\": {\n        \"/etc/kubernetes/scheduler.conf\": {\n      \
+    \    \"readOnly\": true,\n          \"type\": \"FileOrCreate\",\n          \"\
+    required\": true\n        }\n      }\n    },\n    \"Pod/kube-system/etcd\": {\n\
+    \      \"image\": \"registry.twinfra.example.com/registry.k8s.io/etcd:3.6.8-0\"\
+    ,\n      \"mounts\": {\n        \"/etc/kubernetes/pki/etcd\": {\n          \"\
+    readOnly\": true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\"\
+    : true\n        },\n        \"/var/lib/etcd\": {\n          \"readOnly\": false,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": true\n  \
+    \      }\n      }\n    }\n  },\n  \"sourcePolicySHA256\": \"d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253\"\
+    ,\n  \"profile\": \"WO-21 dev mirror relocation only; same images, mounts and\
+    \ security\"\n}\nVCLOUD_DEV_POLICY_JSON\n    else\n    cat <<'VCLOUD_POLICY_JSON'\n\
+    {\n  \"status\": \"approved\",\n  \"approval\": {\n    \"by\": \"user\",\n   \
+    \ \"date\": \"2026-10-05\",\n    \"decision\": \"Approve the documented node exception\"\
+    ,\n    \"adr\": \"docs/adr-0001-node-host-mounts.md\",\n    \"inventorySHA256\"\
+    : \"bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81\"\n  },\n\
+    \  \"registry\": \"registry.vcloud.example.com\",\n  \"versions\": {\n    \"kubernetes\"\
+    : \"v1.36.5\",\n    \"cilium\": \"1.20.2\",\n    \"nvidiaDevicePlugin\": \"0.20.1\"\
+    \n  },\n  \"agents\": {\n    \"DaemonSet/kube-system/cilium\": {\n      \"hostNetwork\"\
+    : true,\n      \"hostPID\": false,\n      \"hostIPC\": false,\n      \"hostPaths\"\
+    : [\n        {\n          \"name\": \"bpf-maps\",\n          \"hostPath\": {\n\
+    \            \"type\": \"DirectoryOrCreate\",\n            \"path\": \"/sys/fs/bpf\"\
+    \n          }\n        },\n        {\n          \"name\": \"cilium-cgroup\",\n\
+    \          \"hostPath\": {\n            \"type\": \"DirectoryOrCreate\",\n   \
+    \         \"path\": \"/sys/fs/cgroup\"\n          }\n        },\n        {\n \
+    \         \"name\": \"cilium-netns\",\n          \"hostPath\": {\n           \
+    \ \"type\": \"DirectoryOrCreate\",\n            \"path\": \"/var/run/netns\"\n\
+    \          }\n        },\n        {\n          \"name\": \"cilium-run\",\n   \
+    \       \"hostPath\": {\n            \"type\": \"DirectoryOrCreate\",\n      \
+    \      \"path\": \"/var/run/cilium\"\n          }\n        },\n        {\n   \
+    \       \"name\": \"cni-path\",\n          \"hostPath\": {\n            \"type\"\
+    : \"DirectoryOrCreate\",\n            \"path\": \"/opt/cni/bin\"\n          }\n\
+    \        },\n        {\n          \"name\": \"envoy-sockets\",\n          \"hostPath\"\
+    : {\n            \"type\": \"DirectoryOrCreate\",\n            \"path\": \"/var/run/cilium/envoy/sockets\"\
+    \n          }\n        },\n        {\n          \"name\": \"etc-cni-netd\",\n\
+    \          \"hostPath\": {\n            \"type\": \"DirectoryOrCreate\",\n   \
+    \         \"path\": \"/etc/cni/net.d\"\n          }\n        },\n        {\n \
+    \         \"name\": \"host-proc-sys-kernel\",\n          \"hostPath\": {\n   \
+    \         \"type\": \"Directory\",\n            \"path\": \"/proc/sys/kernel\"\
+    \n          }\n        },\n        {\n          \"name\": \"host-proc-sys-net\"\
+    ,\n          \"hostPath\": {\n            \"type\": \"Directory\",\n         \
+    \   \"path\": \"/proc/sys/net\"\n          }\n        },\n        {\n        \
+    \  \"name\": \"hostproc\",\n          \"hostPath\": {\n            \"type\": \"\
+    Directory\",\n            \"path\": \"/proc\"\n          }\n        },\n     \
+    \   {\n          \"name\": \"lib-modules\",\n          \"hostPath\": {\n     \
+    \       \"type\": \"\",\n            \"path\": \"/lib/modules\"\n          }\n\
+    \        },\n        {\n          \"name\": \"xtables-lock\",\n          \"hostPath\"\
+    : {\n            \"type\": \"FileOrCreate\",\n            \"path\": \"/run/xtables.lock\"\
+    \n          }\n        }\n      ],\n      \"containers\": [\n        {\n     \
+    \     \"name\": \"cilium-agent\",\n          \"category\": \"containers\",\n \
+    \         \"image\": \"registry.vcloud.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": true,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"appArmorProfile\": {\n              \"type\": \"Unconfined\"\n\
+    \            },\n            \"seccompProfile\": {\n              \"type\": \"\
+    Unconfined\"\n            },\n            \"seLinuxOptions\": {\n            \
+    \  \"level\": \"s0\",\n              \"type\": \"spc_t\"\n            },\n   \
+    \         \"capabilities\": {\n              \"add\": [\n                \"CHOWN\"\
+    ,\n                \"DAC_OVERRIDE\",\n                \"FOWNER\",\n          \
+    \      \"IPC_LOCK\",\n                \"KILL\",\n                \"NET_ADMIN\"\
+    ,\n                \"NET_RAW\",\n                \"SETGID\",\n               \
+    \ \"SETUID\",\n                \"SYSLOG\",\n                \"SYS_ADMIN\",\n \
+    \               \"SYS_MODULE\",\n                \"SYS_RESOURCE\"\n          \
+    \    ],\n              \"drop\": [\n                \"ALL\"\n              ]\n\
+    \            }\n          },\n          \"hostMounts\": [\n            {\n   \
+    \           \"readOnly\": false,\n              \"mountPropagation\": \"HostToContainer\"\
+    ,\n              \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n  \
+    \            \"name\": \"bpf-maps\",\n              \"mountPath\": \"/sys/fs/bpf\"\
+    \n            },\n            {\n              \"readOnly\": false,\n        \
+    \      \"mountPropagation\": null,\n              \"subPath\": \"\",\n       \
+    \       \"subPathExpr\": \"\",\n              \"name\": \"cilium-cgroup\",\n \
+    \             \"mountPath\": \"/sys/fs/cgroup\"\n            },\n            {\n\
+    \              \"readOnly\": false,\n              \"mountPropagation\": \"HostToContainer\"\
+    ,\n              \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n  \
+    \            \"name\": \"cilium-netns\",\n              \"mountPath\": \"/var/run/cilium/netns\"\
+    \n            },\n            {\n              \"readOnly\": false,\n        \
+    \      \"mountPropagation\": null,\n              \"subPath\": \"\",\n       \
+    \       \"subPathExpr\": \"\",\n              \"name\": \"cilium-run\",\n    \
+    \          \"mountPath\": \"/var/run/cilium\"\n            },\n            {\n\
+    \              \"readOnly\": false,\n              \"mountPropagation\": null,\n\
+    \              \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n    \
+    \          \"name\": \"envoy-sockets\",\n              \"mountPath\": \"/var/run/cilium/envoy/sockets\"\
+    \n            },\n            {\n              \"readOnly\": false,\n        \
+    \      \"mountPropagation\": null,\n              \"subPath\": \"\",\n       \
+    \       \"subPathExpr\": \"\",\n              \"name\": \"etc-cni-netd\",\n  \
+    \            \"mountPath\": \"/host/etc/cni/net.d\"\n            },\n        \
+    \    {\n              \"readOnly\": false,\n              \"mountPropagation\"\
+    : null,\n              \"subPath\": \"\",\n              \"subPathExpr\": \"\"\
+    ,\n              \"mountPath\": \"/host/proc/sys/kernel\",\n              \"name\"\
+    : \"host-proc-sys-kernel\"\n            },\n            {\n              \"readOnly\"\
+    : false,\n              \"mountPropagation\": null,\n              \"subPath\"\
+    : \"\",\n              \"subPathExpr\": \"\",\n              \"mountPath\": \"\
+    /host/proc/sys/net\",\n              \"name\": \"host-proc-sys-net\"\n       \
+    \     },\n            {\n              \"readOnly\": true,\n              \"mountPropagation\"\
+    : null,\n              \"subPath\": \"\",\n              \"subPathExpr\": \"\"\
+    ,\n              \"name\": \"lib-modules\",\n              \"mountPath\": \"/lib/modules\"\
+    \n            },\n            {\n              \"readOnly\": false,\n        \
+    \      \"mountPropagation\": null,\n              \"subPath\": \"\",\n       \
+    \       \"subPathExpr\": \"\",\n              \"name\": \"xtables-lock\",\n  \
+    \            \"mountPath\": \"/run/xtables.lock\"\n            }\n          ],\n\
+    \          \"command\": [\n            \"cilium-agent\"\n          ],\n      \
+    \    \"args\": [\n            \"--config-dir=/tmp/cilium/config-map\"\n      \
+    \    ]\n        },\n        {\n          \"name\": \"apply-sysctl-overwrites\"\
+    ,\n          \"category\": \"initContainers\",\n          \"image\": \"registry.vcloud.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": true,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"appArmorProfile\": {\n              \"type\": \"Unconfined\"\n\
+    \            },\n            \"seccompProfile\": {\n              \"type\": \"\
+    Unconfined\"\n            },\n            \"seLinuxOptions\": {\n            \
+    \  \"level\": \"s0\",\n              \"type\": \"spc_t\"\n            },\n   \
+    \         \"capabilities\": {\n              \"add\": [\n                \"SYS_ADMIN\"\
+    ,\n                \"SYS_CHROOT\",\n                \"SYS_PTRACE\"\n         \
+    \     ],\n              \"drop\": [\n                \"ALL\"\n              ]\n\
+    \            }\n          },\n          \"hostMounts\": [\n            {\n   \
+    \           \"readOnly\": false,\n              \"mountPropagation\": null,\n\
+    \              \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n    \
+    \          \"name\": \"cni-path\",\n              \"mountPath\": \"/hostbin\"\n\
+    \            },\n            {\n              \"readOnly\": false,\n         \
+    \     \"mountPropagation\": null,\n              \"subPath\": \"\",\n        \
+    \      \"subPathExpr\": \"\",\n              \"name\": \"hostproc\",\n       \
+    \       \"mountPath\": \"/hostproc\"\n            }\n          ],\n          \"\
+    command\": [\n            \"bash\",\n            \"-ec\",\n            \"cp /usr/bin/cilium-sysctlfix\
+    \ /hostbin/cilium-sysctlfix;\\nnsenter --mount=/hostproc/1/ns/mnt \\\"${BIN_PATH}/cilium-sysctlfix\\\
+    \";\\nrm /hostbin/cilium-sysctlfix\\n\"\n          ],\n          \"args\": []\n\
+    \        },\n        {\n          \"name\": \"clean-cilium-state\",\n        \
+    \  \"category\": \"initContainers\",\n          \"image\": \"registry.vcloud.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": true,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"appArmorProfile\": {\n              \"type\": \"Unconfined\"\n\
+    \            },\n            \"seccompProfile\": {\n              \"type\": \"\
+    Unconfined\"\n            },\n            \"seLinuxOptions\": {\n            \
+    \  \"level\": \"s0\",\n              \"type\": \"spc_t\"\n            },\n   \
+    \         \"capabilities\": {\n              \"add\": [\n                \"NET_ADMIN\"\
+    ,\n                \"SYS_ADMIN\",\n                \"SYS_MODULE\",\n         \
+    \       \"SYS_RESOURCE\"\n              ],\n              \"drop\": [\n      \
+    \          \"ALL\"\n              ]\n            }\n          },\n          \"\
+    hostMounts\": [\n            {\n              \"readOnly\": false,\n         \
+    \     \"mountPropagation\": null,\n              \"subPath\": \"\",\n        \
+    \      \"subPathExpr\": \"\",\n              \"name\": \"bpf-maps\",\n       \
+    \       \"mountPath\": \"/sys/fs/bpf\"\n            },\n            {\n      \
+    \        \"readOnly\": false,\n              \"mountPropagation\": \"HostToContainer\"\
+    ,\n              \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n  \
+    \            \"name\": \"cilium-cgroup\",\n              \"mountPath\": \"/sys/fs/cgroup\"\
+    \n            },\n            {\n              \"readOnly\": false,\n        \
+    \      \"mountPropagation\": null,\n              \"subPath\": \"\",\n       \
+    \       \"subPathExpr\": \"\",\n              \"name\": \"cilium-run\",\n    \
+    \          \"mountPath\": \"/var/run/cilium\"\n            }\n          ],\n \
+    \         \"command\": [\n            \"/init-container.sh\"\n          ],\n \
+    \         \"args\": []\n        },\n        {\n          \"name\": \"config\"\
+    ,\n          \"category\": \"initContainers\",\n          \"image\": \"registry.vcloud.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": true,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"appArmorProfile\": {\n              \"type\": \"Unconfined\"\n\
+    \            },\n            \"seccompProfile\": {\n              \"type\": \"\
+    Unconfined\"\n            },\n            \"capabilities\": {\n              \"\
+    add\": [\n                \"NET_ADMIN\"\n              ],\n              \"drop\"\
+    : [\n                \"ALL\"\n              ]\n            }\n          },\n \
+    \         \"hostMounts\": [],\n          \"command\": [\n            \"cilium-dbg\"\
+    ,\n            \"build-config\",\n            \"--k8s-api-server-urls=\"\n   \
+    \       ],\n          \"args\": []\n        },\n        {\n          \"name\"\
+    : \"install-cni-binaries\",\n          \"category\": \"initContainers\",\n   \
+    \       \"image\": \"registry.vcloud.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": true,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"appArmorProfile\": {\n              \"type\": \"Unconfined\"\n\
+    \            },\n            \"seccompProfile\": {\n              \"type\": \"\
+    Unconfined\"\n            },\n            \"seLinuxOptions\": {\n            \
+    \  \"level\": \"s0\",\n              \"type\": \"spc_t\"\n            },\n   \
+    \         \"capabilities\": {\n              \"add\": [],\n              \"drop\"\
+    : [\n                \"ALL\"\n              ]\n            }\n          },\n \
+    \         \"hostMounts\": [\n            {\n              \"readOnly\": false,\n\
+    \              \"mountPropagation\": null,\n              \"subPath\": \"\",\n\
+    \              \"subPathExpr\": \"\",\n              \"name\": \"cni-path\",\n\
+    \              \"mountPath\": \"/host/opt/cni/bin\"\n            }\n         \
+    \ ],\n          \"command\": [\n            \"/install-plugin.sh\"\n         \
+    \ ],\n          \"args\": []\n        }\n      ]\n    },\n    \"DaemonSet/kube-system/cilium-envoy\"\
+    : {\n      \"hostNetwork\": true,\n      \"hostPID\": false,\n      \"hostIPC\"\
+    : false,\n      \"hostPaths\": [\n        {\n          \"name\": \"envoy-artifacts\"\
+    ,\n          \"hostPath\": {\n            \"type\": \"DirectoryOrCreate\",\n \
+    \           \"path\": \"/var/run/cilium/envoy/artifacts\"\n          }\n     \
+    \   },\n        {\n          \"name\": \"envoy-sockets\",\n          \"hostPath\"\
+    : {\n            \"type\": \"DirectoryOrCreate\",\n            \"path\": \"/var/run/cilium/envoy/sockets\"\
+    \n          }\n        }\n      ],\n      \"containers\": [\n        {\n     \
+    \     \"name\": \"cilium-envoy\",\n          \"category\": \"containers\",\n \
+    \         \"image\": \"registry.vcloud.example.com/quay.io/cilium/cilium-envoy:v1.37.6-1789133542-cbec91f666af0bf742da986d43832932dbb26b82@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": true,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"appArmorProfile\": {\n              \"type\": \"Unconfined\"\n\
+    \            },\n            \"seLinuxOptions\": {\n              \"level\": \"\
+    s0\",\n              \"type\": \"spc_t\"\n            },\n            \"capabilities\"\
+    : {\n              \"add\": [\n                \"NET_ADMIN\",\n              \
+    \  \"SYS_ADMIN\"\n              ],\n              \"drop\": [\n              \
+    \  \"ALL\"\n              ]\n            }\n          },\n          \"hostMounts\"\
+    : [\n            {\n              \"readOnly\": true,\n              \"mountPropagation\"\
+    : null,\n              \"subPath\": \"\",\n              \"subPathExpr\": \"\"\
+    ,\n              \"name\": \"envoy-artifacts\",\n              \"mountPath\":\
+    \ \"/var/run/cilium/envoy/artifacts\"\n            },\n            {\n       \
+    \       \"readOnly\": false,\n              \"mountPropagation\": null,\n    \
+    \          \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n        \
+    \      \"name\": \"envoy-sockets\",\n              \"mountPath\": \"/var/run/cilium/envoy/sockets\"\
+    \n            }\n          ],\n          \"command\": [\n            \"/usr/bin/cilium-envoy-starter\"\
+    \n          ],\n          \"args\": [\n            \"--\",\n            \"-c /var/run/cilium/envoy/bootstrap-config.json\"\
+    ,\n            \"--base-id 0\",\n            \"--log-level info\"\n          ]\n\
+    \        }\n      ]\n    },\n    \"Deployment/kube-system/cilium-operator\": {\n\
+    \      \"hostNetwork\": true,\n      \"hostPID\": false,\n      \"hostIPC\": false,\n\
+    \      \"hostPaths\": [],\n      \"containers\": [\n        {\n          \"name\"\
+    : \"cilium-operator\",\n          \"category\": \"containers\",\n          \"\
+    image\": \"registry.vcloud.example.com/quay.io/cilium/operator-generic:v1.20.2@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": false,\n            \"runAsNonRoot\": true,\n\
+    \            \"runAsUser\": 65532,\n            \"runAsGroup\": 65532,\n     \
+    \       \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"seccompProfile\": {\n              \"type\": \"RuntimeDefault\"\
+    \n            },\n            \"capabilities\": {\n              \"add\": [],\n\
+    \              \"drop\": [\n                \"ALL\"\n              ]\n       \
+    \     }\n          },\n          \"hostMounts\": [],\n          \"command\": [\n\
+    \            \"cilium-operator-generic\"\n          ],\n          \"args\": [\n\
+    \            \"--config-dir=/tmp/cilium/config-map\",\n            \"--debug=$(CILIUM_DEBUG)\"\
+    \n          ]\n        }\n      ]\n    },\n    \"DaemonSet/kube-system/nvidia-device-plugin\"\
+    : {\n      \"hostNetwork\": false,\n      \"hostPID\": false,\n      \"hostIPC\"\
+    : false,\n      \"hostPaths\": [\n        {\n          \"name\": \"cdi-root\"\
+    ,\n          \"hostPath\": {\n            \"type\": \"DirectoryOrCreate\",\n \
+    \           \"path\": \"/var/run/cdi\"\n          }\n        },\n        {\n \
+    \         \"name\": \"kubelet-device-plugins-dir\",\n          \"hostPath\": {\n\
+    \            \"type\": \"Directory\",\n            \"path\": \"/var/lib/kubelet/device-plugins\"\
+    \n          }\n        },\n        {\n          \"name\": \"mps-root\",\n    \
+    \      \"hostPath\": {\n            \"type\": \"DirectoryOrCreate\",\n       \
+    \     \"path\": \"/run/nvidia/mps\"\n          }\n        },\n        {\n    \
+    \      \"name\": \"mps-shm\",\n          \"hostPath\": {\n            \"type\"\
+    : \"\",\n            \"path\": \"/run/nvidia/mps/shm\"\n          }\n        }\n\
+    \      ],\n      \"containers\": [\n        {\n          \"name\": \"nvidia-device-plugin-ctr\"\
+    ,\n          \"category\": \"containers\",\n          \"image\": \"registry.vcloud.example.com/nvcr.io/nvidia/k8s-device-plugin:v0.20.1\"\
+    ,\n          \"securityContext\": {\n            \"privileged\": false,\n    \
+    \        \"allowPrivilegeEscalation\": false,\n            \"runAsNonRoot\": false,\n\
+    \            \"runAsUser\": null,\n            \"runAsGroup\": null,\n       \
+    \     \"readOnlyRootFilesystem\": false,\n            \"procMount\": \"Default\"\
+    ,\n            \"capabilities\": {\n              \"add\": [],\n             \
+    \ \"drop\": [\n                \"ALL\"\n              ]\n            }\n     \
+    \     },\n          \"hostMounts\": [\n            {\n              \"readOnly\"\
+    : false,\n              \"mountPropagation\": null,\n              \"subPath\"\
+    : \"\",\n              \"subPathExpr\": \"\",\n              \"name\": \"cdi-root\"\
+    ,\n              \"mountPath\": \"/var/run/cdi\"\n            },\n           \
+    \ {\n              \"readOnly\": false,\n              \"mountPropagation\": null,\n\
+    \              \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n    \
+    \          \"name\": \"kubelet-device-plugins-dir\",\n              \"mountPath\"\
+    : \"/var/lib/kubelet/device-plugins\"\n            },\n            {\n       \
+    \       \"readOnly\": false,\n              \"mountPropagation\": null,\n    \
+    \          \"subPath\": \"\",\n              \"subPathExpr\": \"\",\n        \
+    \      \"name\": \"mps-root\",\n              \"mountPath\": \"/mps\"\n      \
+    \      },\n            {\n              \"readOnly\": false,\n              \"\
+    mountPropagation\": null,\n              \"subPath\": \"\",\n              \"\
+    subPathExpr\": \"\",\n              \"name\": \"mps-shm\",\n              \"mountPath\"\
+    : \"/dev/shm\"\n            }\n          ],\n          \"command\": [\n      \
+    \      \"nvidia-device-plugin\"\n          ],\n          \"args\": []\n      \
+    \  }\n      ]\n    }\n  },\n  \"controlPlane\": {\n    \"Pod/kube-system/kube-apiserver\"\
+    : {\n      \"image\": \"registry.vcloud.example.com/registry.k8s.io/kube-apiserver:v1.36.5\"\
+    ,\n      \"mounts\": {\n        \"/etc/kubernetes/pki\": {\n          \"readOnly\"\
+    : true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\": true\n\
+    \        },\n        \"/etc/ssl/certs\": {\n          \"readOnly\": true,\n  \
+    \        \"type\": \"DirectoryOrCreate\",\n          \"required\": true\n    \
+    \    },\n        \"/etc/ca-certificates\": {\n          \"readOnly\": true,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n \
+    \       },\n        \"/usr/share/ca-certificates\": {\n          \"readOnly\"\
+    : true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n\
+    \        },\n        \"/usr/local/share/ca-certificates\": {\n          \"readOnly\"\
+    : true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n\
+    \        },\n        \"/etc/pki/ca-trust\": {\n          \"readOnly\": true,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n \
+    \       },\n        \"/etc/pki/tls/certs\": {\n          \"readOnly\": true,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n \
+    \       }\n      }\n    },\n    \"Pod/kube-system/kube-controller-manager\": {\n\
+    \      \"image\": \"registry.vcloud.example.com/registry.k8s.io/kube-controller-manager:v1.36.5\"\
+    ,\n      \"mounts\": {\n        \"/etc/kubernetes/pki\": {\n          \"readOnly\"\
+    : true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\": true\n\
+    \        },\n        \"/etc/ssl/certs\": {\n          \"readOnly\": true,\n  \
+    \        \"type\": \"DirectoryOrCreate\",\n          \"required\": true\n    \
+    \    },\n        \"/etc/ca-certificates\": {\n          \"readOnly\": true,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n \
+    \       },\n        \"/usr/share/ca-certificates\": {\n          \"readOnly\"\
+    : true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n\
+    \        },\n        \"/usr/local/share/ca-certificates\": {\n          \"readOnly\"\
+    : true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n\
+    \        },\n        \"/etc/pki/ca-trust\": {\n          \"readOnly\": true,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n \
+    \       },\n        \"/etc/pki/tls/certs\": {\n          \"readOnly\": true,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": false\n \
+    \       },\n        \"/etc/kubernetes/controller-manager.conf\": {\n         \
+    \ \"readOnly\": true,\n          \"type\": \"FileOrCreate\",\n          \"required\"\
+    : true\n        }\n      }\n    },\n    \"Pod/kube-system/kube-scheduler\": {\n\
+    \      \"image\": \"registry.vcloud.example.com/registry.k8s.io/kube-scheduler:v1.36.5\"\
+    ,\n      \"mounts\": {\n        \"/etc/kubernetes/scheduler.conf\": {\n      \
+    \    \"readOnly\": true,\n          \"type\": \"FileOrCreate\",\n          \"\
+    required\": true\n        }\n      }\n    },\n    \"Pod/kube-system/etcd\": {\n\
+    \      \"image\": \"registry.vcloud.example.com/registry.k8s.io/etcd:3.6.8-0\"\
+    ,\n      \"mounts\": {\n        \"/etc/kubernetes/pki/etcd\": {\n          \"\
+    readOnly\": true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\"\
+    : true\n        },\n        \"/var/lib/etcd\": {\n          \"readOnly\": false,\n\
+    \          \"type\": \"DirectoryOrCreate\",\n          \"required\": true\n  \
+    \      }\n      }\n    }\n  }\n}\nVCLOUD_POLICY_JSON\n    fi\n}\n# END GENERATED\
+    \ EXCEPTION POLICY\n\n# BEGIN GENERATED POLICY CHECKER\nrender_policy_checker()\
+    \ {\n    cat <<'VCLOUD_POLICY_PYTHON'\n#!/usr/bin/env python3\n\"\"\"Dependency-free\
+    \ manifest policy engine; shared by offline checks and host bootstrap.\"\"\"\n\
+    import argparse\nimport json\nfrom pathlib import Path\nimport re\nimport sys\n\
+    \n\ndef flatten(objects):\n    for obj in objects:\n        if not obj:\n    \
+    \        continue\n        if obj.get('kind') == 'List':\n            yield from\
+    \ flatten(obj.get('items', []))\n        else:\n            yield obj\n\n\ndef\
+    \ podspec(obj):\n    if obj['kind'] == 'Pod':\n        return obj.get('spec',\
+    \ {})\n    if obj['kind'] == 'CronJob':\n        return obj.get('spec', {}).get('jobTemplate',\
+    \ {}).get('spec', {}).get('template', {}).get('spec')\n    return obj.get('spec',\
+    \ {}).get('template', {}).get('spec')\n\n\ndef security_context(context):\n  \
+    \  defaults = dict(privileged=False, allowPrivilegeEscalation=True, runAsNonRoot=False,\n\
+    \                    runAsUser=None, runAsGroup=None, readOnlyRootFilesystem=False,\
+    \ procMount='Default')\n    result = defaults | context\n    caps = result.get('capabilities',\
+    \ {})\n    result['capabilities'] = dict(add=sorted(caps.get('add', [])), drop=sorted(caps.get('drop',\
+    \ [])))\n    return result\n\n\ndef mounts(values):\n    return sorted([dict(readOnly=False,\
+    \ mountPropagation=None, subPath='', subPathExpr='') | v\n                   for\
+    \ v in values], key=lambda v: v['name'])\n\n\ndef hostpaths(values):\n    return\
+    \ sorted([dict(name=v['name'], hostPath=dict(type='') | v['hostPath'])\n     \
+    \              for v in values], key=lambda v: v['name'])\n\n\ndef pod_projection(obj):\n\
+    \    spec = podspec(obj)\n    volumes = {v['name']: v for v in spec.get('volumes',\
+    \ []) if 'hostPath' in v}\n    containers = []\n    for category in ('containers',\
+    \ 'initContainers', 'ephemeralContainers'):\n        for c in spec.get(category,\
+    \ []):\n            containers.append(dict(name=c['name'], category=category,\
+    \ image=c.get('image', ''),\n                command=c.get('command', []), args=c.get('args',\
+    \ []),\n                securityContext=security_context(spec.get('securityContext',\
+    \ {}) | c.get('securityContext', {})),\n                hostMounts=mounts([m for\
+    \ m in c.get('volumeMounts', []) if m['name'] in volumes])))\n    return dict(hostNetwork=spec.get('hostNetwork',\
+    \ False), hostPID=spec.get('hostPID', False),\n                hostIPC=spec.get('hostIPC',\
+    \ False), hostPaths=hostpaths(volumes.values()),\n                containers=sorted(containers,\
+    \ key=lambda c: (c['category'], c['name'])))\n\n\ndef control_plane_problems(obj,\
+    \ expected):\n    spec, issues = obj['spec'], []\n    projection = pod_projection(obj)\n\
+    \    name = obj['metadata']['name']\n    if not spec.get('hostNetwork') or spec.get('hostPID',\
+    \ False) or spec.get('hostIPC', False):\n        issues.append('unapproved host\
+    \ namespace configuration')\n    if spec.get('initContainers') or spec.get('ephemeralContainers')\
+    \ or len(spec.get('containers', [])) != 1:\n        issues.append('unapproved\
+    \ control-plane container layout')\n        return issues\n    container = projection['containers'][0]\n\
+    \    if container['name'] != name or container['image'] != expected['image']:\n\
+    \        issues.append('unapproved control-plane container name/image')\n    if\
+    \ not container['command'] or container['command'][0] != name or container['args']:\n\
+    \        issues.append('unapproved control-plane executable')\n    sc = container['securityContext']\n\
+    \    allowed_keys = {'privileged', 'allowPrivilegeEscalation', 'runAsNonRoot',\
+    \ 'runAsUser', 'runAsGroup',\n                    'readOnlyRootFilesystem', 'procMount',\
+    \ 'capabilities', 'seccompProfile'}\n    if (set(sc) - allowed_keys or sc['privileged']\
+    \ or sc['procMount'] != 'Default' or\n            sc['capabilities']['add'] or\
+    \ sc['runAsUser'] not in (None, 0) or\n            sc['runAsGroup'] not in (None,\
+    \ 0) or sc.get('seccompProfile') != {'type': 'RuntimeDefault'}):\n        issues.append('unapproved\
+    \ control-plane security settings')\n    allowed = expected['mounts']\n    volumes\
+    \ = {v['name']: v['hostPath'] for v in projection['hostPaths']}\n    seen = set()\n\
+    \    # No extra non-host volumes or mounts may hide a change in node interface\
+    \ usage.\n    if len(volumes) != len(spec.get('volumes', [])):\n        issues.append('unapproved\
+    \ control-plane volume type')\n    for mount in container['hostMounts']:\n   \
+    \     source = volumes[mount['name']]\n        path = source['path']\n       \
+    \ if path not in allowed:\n            issues.append('unapproved control-plane\
+    \ host path: ' + path)\n            continue\n        rule = allowed[path]\n \
+    \       if (source['type'] != rule['type'] or mount['mountPath'] != path or\n\
+    \                mount['readOnly'] != rule['readOnly'] or mount['mountPropagation']\
+    \ is not None or\n                mount['subPath'] or mount['subPathExpr']):\n\
+    \            issues.append('unapproved access mode or target for ' + path)\n \
+    \       if path in seen:\n            issues.append('duplicate control-plane host\
+    \ path: ' + path)\n        seen.add(path)\n    if len(container['hostMounts'])\
+    \ != len(spec['containers'][0].get('volumeMounts', [])):\n        issues.append('unapproved\
+    \ control-plane mount')\n    if len(container['hostMounts']) != len(volumes):\n\
+    \        issues.append('unmounted/duplicate control-plane host volume')\n    for\
+    \ path, rule in allowed.items():\n        if rule.get('required') and path not\
+    \ in seen:\n            issues.append('missing required control-plane host path:\
+    \ ' + path)\n    return issues\n\n\ndef audit_objects(objects, policy, mode='workloads'):\n\
+    \    registry = policy['registry']\n    active = policy.get('status') == 'approved'\n\
+    \    agents = policy.get('agents', {}) if active else {}\n    control = policy.get('controlPlane',\
+    \ {}) if active and mode == 'control-plane' else {}\n    problems, inventory,\
+    \ accepted, seen = [], [], [], set()\n    objects = list(flatten(objects))\n \
+    \   if not objects:\n        problems.append('empty manifest input')\n    for\
+    \ obj in objects:\n        key = f\"{obj.get('kind')}/{obj.get('metadata', {}).get('namespace',\
+    \ 'cluster')}/{obj.get('metadata', {}).get('name')}\"\n        if key in seen:\n\
+    \            problems.append(f'{key}: duplicate resource')\n        seen.add(key)\n\
+    \        if re.search(r'/(v[0-9]+(?:alpha|beta)[0-9]+)$', obj.get('apiVersion',\
+    \ '')):\n            problems.append(f'{key}: non-stable workload API')\n    \
+    \    if obj.get('kind') == 'PersistentVolume':\n            spec = obj.get('spec',\
+    \ {})\n            if 'hostPath' in spec:\n                problems.append(f'{key}:\
+    \ forbidden hostPath PV')\n            if 'local' in spec and (not spec.get('nodeAffinity')\
+    \ or obj.get('metadata', {}).get('annotations', {}).get('vcloud.io/vetted', obj.get('metadata',\
+    \ {}).get('annotations', {}).get('twinfra.io/vetted')) != 'true'):\n         \
+    \       problems.append(f'{key}: Local PV requires documented vetting and nodeAffinity')\n\
+    \            if 'local' in spec:\n                # An annotation alone is not\
+    \ approval to expose an arbitrary host path.\n                vetted = policy.get('localPVs',\
+    \ {}).get(obj['metadata']['name'])\n                scope = {k: spec.get(k) for\
+    \ k in ('local', 'nodeAffinity', 'accessModes', 'volumeMode', 'storageClassName')}\n\
+    \                if vetted != scope:\n                    problems.append(f'{key}:\
+    \ Local PV outside vetted storage allowlist')\n            if 'local' not in spec\
+    \ and 'csi' not in spec:\n                problems.append(f'{key}: persistent\
+    \ storage requires CSI or vetted Local PV')\n        spec = podspec(obj)\n   \
+    \     if spec is None:\n            continue\n        entry = dict(resource=key,\
+    \ **pod_projection(obj))\n        inventory.append(entry)\n        scoped = key\
+    \ in agents or key in control\n        if key in agents and mode == 'workloads':\n\
+    \            expected = agents[key]\n            actual = {k: v for k, v in entry.items()\
+    \ if k != 'resource'}\n            if actual != expected:\n                problems.append(f'{key}:\
+    \ drift from approved node-agent images/mounts/security/container layout')\n \
+    \           else:\n                accepted.append(key)\n        elif key in control:\n\
+    \            issues = control_plane_problems(obj, control[key])\n            problems.extend(f'{key}:\
+    \ {issue}' for issue in issues)\n            if not issues:\n                accepted.append(key)\n\
+    \        elif mode == 'control-plane':\n            problems.append(f'{key}: resource\
+    \ outside approved static control plane')\n        else:\n            if entry['hostPaths']:\n\
+    \                problems.append(f'{key}: forbidden hostPath volume(s)')\n   \
+    \         if entry['hostNetwork'] or entry['hostPID'] or entry['hostIPC']:\n \
+    \               problems.append(f'{key}: host namespaces outside approved node\
+    \ scope')\n        for c in entry['containers']:\n            image, sc = c['image'],\
+    \ c['securityContext']\n            if not image.startswith(registry + '/'):\n\
+    \                problems.append(f'{key}/{c[\"name\"]}: image outside SSoT registry')\n\
+    \            if not re.search(r'@sha256:[a-f0-9]{64}$|:v?\\d+\\.\\d+\\.\\d+(?:[._+-][A-Za-z0-9._+-]+)?$',\
+    \ image):\n                problems.append(f'{key}/{c[\"name\"]}: image is not\
+    \ pinned to a digest or semantic version')\n            if sc['privileged']:\n\
+    \                problems.append(f'{key}/{c[\"name\"]}: privileged containers\
+    \ prohibited')\n            if not scoped and (sc['runAsUser'] == 0 or not sc['runAsNonRoot']):\n\
+    \                problems.append(f'{key}/{c[\"name\"]}: root execution outside\
+    \ approved node scope')\n            if not scoped and sc['capabilities']['add']:\n\
+    \                problems.append(f'{key}/{c[\"name\"]}: added capabilities outside\
+    \ approved node scope')\n    if mode == 'control-plane' and set(control) != seen:\n\
+    \        problems.append('control-plane input must contain exactly the four approved\
+    \ static Pods')\n    return dict(status='blocked' if problems else 'passed', authorization=policy.get('approval',\
+    \ 'none'),\n                violations=problems, acceptedExceptions=accepted,\
+    \ resources=inventory)\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n\
+    \    parser.add_argument('--policy', type=Path, required=True)\n    parser.add_argument('--mode',\
+    \ choices=['workloads', 'control-plane'], default='workloads')\n    args = parser.parse_args()\n\
+    \    result = audit_objects(json.load(sys.stdin), json.loads(args.policy.read_text()),\
+    \ args.mode)\n    print(f'SSoT contract: {result[\"status\"]}; {len(result[\"\
+    violations\"])} findings', file=sys.stderr)\n    for finding in result['violations']:\n\
+    \        print(finding, file=sys.stderr)\n    return 1 if result['violations']\
+    \ else 0\n\n\nif __name__ == '__main__':\n    raise SystemExit(main())\nVCLOUD_POLICY_PYTHON\n\
+    }\n# END GENERATED POLICY CHECKER\n\nvalidate_manifests() {\n    local mode=$1\n\
+    \    shift\n    kubeconform -strict -summary -kubernetes-version \"${KUBERNETES_VERSION#v}\"\
+    \ \"$@\"\n    yq eval-all -o=json -I=0 '[.]' \"$@\" |\n        python3 \"$STATE_DIR/check-manifest-contract.py\"\
+    \ --policy \"$STATE_DIR/node-exceptions.json\" --mode \"$mode\"\n}\n\nrender_etcd_patch()\
+    \ {\n    # kubeadm's default etcd certificate mount is writable; the approved\
+    \ scope is read-only.\n    # This is a strategic merge PATCH fragment, not a standalone\
+    \ Kubernetes resource.\n    cat <<'EOF'\nspec:\n  containers:\n    - name: etcd\n\
+    \      volumeMounts:\n        - name: etcd-certs\n          readOnly: true\nEOF\n\
+    }\n\nvalidate_static_control_plane() {\n    local directory=$1\n    local -a manifests=()\n\
+    \    local component entry\n    # A fifth static Pod must not bypass the four-component\
+    \ exception by living next\n    # to the checked files. Kubelet ignores dot files;\
+    \ every other entry is restricted.\n    for entry in \"$directory\"/*; do\n  \
+    \      [[ -e $entry || -L $entry ]] || continue\n        case ${entry##*/} in\n\
+    \            kube-apiserver.yaml|kube-controller-manager.yaml|kube-scheduler.yaml|etcd.yaml)\n\
+    \                [[ -f $entry && ! -L $entry ]] || die \"Unexpected static Pod\
+    \ file type: $entry\";;\n            *) die \"Unapproved static Pod directory\
+    \ entry: $entry\";;\n        esac\n    done\n    for component in kube-apiserver\
+    \ kube-controller-manager kube-scheduler etcd; do\n        [[ -s $directory/$component.yaml\
+    \ ]] || die \"Missing static Pod manifest: $component\"\n        manifests+=(\"\
+    $directory/$component.yaml\")\n    done\n    validate_manifests control-plane\
+    \ \"${manifests[@]}\"\n}\n\nvalidate_kubeadm_preview() {\n    local preview\n\
+    \    preview=$(mktemp -d \"$WORK_DIR/kubeadm-preview.XXXXXX\")\n    # Upstream\
+    \ kubeadm honors this variable for dry-run output. Only manifest-generation\n\
+    \    # phases run here; they do not start kubelet or create a cluster.\n    KUBEADM_INIT_DRYRUN_DIR=\"\
+    $preview\" kubeadm init phase control-plane all --config \"$STATE_DIR/kubeadm.yaml\"\
+    \ --dry-run\n    KUBEADM_INIT_DRYRUN_DIR=\"$preview\" kubeadm init phase etcd\
+    \ local --config \"$STATE_DIR/kubeadm.yaml\" --dry-run\n    validate_static_control_plane\
+    \ \"$preview\"\n}\n\n# BEGIN GENERATED FOUNDATION\nrender_foundation() {\n   \
+    \ if [[ $PLATFORM_PROFILE == dev-* ]]; then\n        cat <<'EOF'\napiVersion:\
+    \ v1\nkind: Namespace\nmetadata:\n  name: twinfra-platform-services\n  labels:\n\
+    \    twinfra.io/managed: 'true'\n    pod-security.kubernetes.io/enforce: restricted\n\
+    \    pod-security.kubernetes.io/enforce-version: v1.30\n    pod-security.kubernetes.io/audit:\
+    \ restricted\n    pod-security.kubernetes.io/audit-version: v1.30\n    pod-security.kubernetes.io/warn:\
+    \ restricted\n    pod-security.kubernetes.io/warn-version: v1.30\n---\napiVersion:\
+    \ networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: twinfra-default-deny\n\
+    \  namespace: twinfra-platform-services\n  labels: {}\nspec:\n  podSelector: {}\n\
+    \  policyTypes:\n  - Ingress\n  - Egress\n  ingress: []\n  egress: []\n---\napiVersion:\
+    \ v1\nkind: Namespace\nmetadata:\n  name: twinfra-workload-apps\n  labels:\n \
+    \   twinfra.io/managed: 'true'\n    pod-security.kubernetes.io/enforce: restricted\n\
+    \    pod-security.kubernetes.io/enforce-version: v1.30\n    pod-security.kubernetes.io/audit:\
+    \ restricted\n    pod-security.kubernetes.io/audit-version: v1.30\n    pod-security.kubernetes.io/warn:\
+    \ restricted\n    pod-security.kubernetes.io/warn-version: v1.30\n---\napiVersion:\
+    \ networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: twinfra-default-deny\n\
+    \  namespace: twinfra-workload-apps\n  labels: {}\nspec:\n  podSelector: {}\n\
+    \  policyTypes:\n  - Ingress\n  - Egress\n  ingress: []\n  egress: []\n---\napiVersion:\
+    \ v1\nkind: Namespace\nmetadata:\n  name: twinfra-hpc-compute\n  labels:\n   \
+    \ twinfra.io/managed: 'true'\n    pod-security.kubernetes.io/enforce: restricted\n\
+    \    pod-security.kubernetes.io/enforce-version: v1.30\n    pod-security.kubernetes.io/audit:\
+    \ restricted\n    pod-security.kubernetes.io/audit-version: v1.30\n    pod-security.kubernetes.io/warn:\
+    \ restricted\n    pod-security.kubernetes.io/warn-version: v1.30\n---\napiVersion:\
+    \ networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: twinfra-default-deny\n\
+    \  namespace: twinfra-hpc-compute\n  labels: {}\nspec:\n  podSelector: {}\n  policyTypes:\n\
+    \  - Ingress\n  - Egress\n  ingress: []\n  egress: []\nEOF\n    else\n    cat\
+    \ <<'EOF'\n# Generated from vcloud-ssot.yaml by tools/render_ssot.py.\napiVersion:\
+    \ v1\nkind: Namespace\nmetadata:\n  name: platform-services\n  labels:\n    vcloud.io/managed:\
+    \ 'true'\n    pod-security.kubernetes.io/enforce: restricted\n    pod-security.kubernetes.io/enforce-version:\
+    \ v1.30\n    pod-security.kubernetes.io/audit: restricted\n    pod-security.kubernetes.io/audit-version:\
+    \ v1.30\n    pod-security.kubernetes.io/warn: restricted\n    pod-security.kubernetes.io/warn-version:\
+    \ v1.30\n  annotations:\n    vcloud.io/cluster: vCloud-prod-01\n    vcloud.io/base-domain:\
+    \ vcloud.example.com\n    vcloud.io/gitops-repository: amazen33/twinfra\n---\n\
+    apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: default-deny-all\n\
+    \  namespace: platform-services\nspec:\n  podSelector: {}\n  policyTypes:\n  -\
+    \ Ingress\n  - Egress\n  ingress: []\n  egress: []\n---\napiVersion: v1\nkind:\
+    \ Namespace\nmetadata:\n  name: workload-apps\n  labels:\n    vcloud.io/managed:\
+    \ 'true'\n    pod-security.kubernetes.io/enforce: restricted\n    pod-security.kubernetes.io/enforce-version:\
+    \ v1.30\n    pod-security.kubernetes.io/audit: restricted\n    pod-security.kubernetes.io/audit-version:\
+    \ v1.30\n    pod-security.kubernetes.io/warn: restricted\n    pod-security.kubernetes.io/warn-version:\
+    \ v1.30\n  annotations:\n    vcloud.io/cluster: vCloud-prod-01\n    vcloud.io/base-domain:\
+    \ vcloud.example.com\n    vcloud.io/gitops-repository: amazen33/twinfra\n---\n\
+    apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: default-deny-all\n\
+    \  namespace: workload-apps\nspec:\n  podSelector: {}\n  policyTypes:\n  - Ingress\n\
+    \  - Egress\n  ingress: []\n  egress: []\n---\napiVersion: v1\nkind: Namespace\n\
+    metadata:\n  name: hpc-compute\n  labels:\n    vcloud.io/managed: 'true'\n   \
+    \ pod-security.kubernetes.io/enforce: restricted\n    pod-security.kubernetes.io/enforce-version:\
+    \ v1.30\n    pod-security.kubernetes.io/audit: restricted\n    pod-security.kubernetes.io/audit-version:\
+    \ v1.30\n    pod-security.kubernetes.io/warn: restricted\n    pod-security.kubernetes.io/warn-version:\
+    \ v1.30\n  annotations:\n    vcloud.io/cluster: vCloud-prod-01\n    vcloud.io/base-domain:\
+    \ vcloud.example.com\n    vcloud.io/gitops-repository: amazen33/twinfra\n---\n\
+    apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: default-deny-all\n\
+    \  namespace: hpc-compute\nspec:\n  podSelector: {}\n  policyTypes:\n  - Ingress\n\
+    \  - Egress\n  ingress: []\n  egress: []\nEOF\n    fi\n}\n# END GENERATED FOUNDATION\n\
+    \nrender_gpu_runtime_class() {\n    cat <<'EOF'\napiVersion: node.k8s.io/v1\n\
+    kind: RuntimeClass\nmetadata:\n  name: nvidia\nhandler: nvidia\nEOF\n}\n\n# Render\
+    \ ephemeral, isolated acceptance objects. The denied job only runs after the\n\
+    # allowed job proves the server/DNS work, so an unreachable server cannot produce\
+    \ a\n# false positive for policy enforcement. The trap removes only this dedicated\
+    \ namespace.\nrender_smoke() {\n    cat <<EOF\napiVersion: v1\nkind: Namespace\n\
+    metadata:\n  name: vcloud-host-validation\n  labels:\n    vcloud.io/owner: host-bootstrap\n\
+    ---\napiVersion: v1\nkind: Pod\nmetadata:\n  name: server\n  namespace: vcloud-host-validation\n\
+    \  labels: {role: server}\nspec:\n  automountServiceAccountToken: false\n  securityContext:\n\
+    \    runAsNonRoot: true\n    runAsUser: 10001\n    runAsGroup: 10001\n    fsGroup:\
+    \ 10001\n    seccompProfile: {type: RuntimeDefault}\n  containers:\n    - name:\
+    \ http\n      image: \"$REGISTRY_PROBE_IMAGE\"\n      command: [sh, -c, 'mkdir\
+    \ -p /tmp/www; echo vcloud-ok > /tmp/www/index.html; httpd -f -p 8080 -h /tmp/www']\n\
+    \      securityContext:\n        allowPrivilegeEscalation: false\n        readOnlyRootFilesystem:\
+    \ true\n        capabilities: {drop: [ALL]}\n      volumeMounts: [{name: scratch,\
+    \ mountPath: /tmp}]\n      readinessProbe:\n        tcpSocket: {port: 8080}\n\
+    \      resources:\n        requests: {cpu: 10m, memory: 16Mi}\n        limits:\
+    \ {memory: 64Mi}\n  volumes: [{name: scratch, emptyDir: {sizeLimit: 16Mi}}]\n\
+    ---\napiVersion: v1\nkind: Service\nmetadata: {name: server, namespace: vcloud-host-validation}\n\
+    spec:\n  selector: {role: server}\n  ports: [{port: 80, targetPort: 8080}]\n---\n\
+    apiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata: {name: deny-all,\
+    \ namespace: vcloud-host-validation}\nspec:\n  podSelector: {}\n  policyTypes:\
+    \ [Ingress, Egress]\n---\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\n\
+    metadata: {name: client-egress, namespace: vcloud-host-validation}\nspec:\n  podSelector:\
+    \ {matchLabels: {role: client}}\n  policyTypes: [Egress]\n  egress:\n    - to:\n\
+    \        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: kube-system}}\n\
+    \          podSelector: {matchLabels: {k8s-app: kube-dns}}\n      ports: [{protocol:\
+    \ UDP, port: 53}, {protocol: TCP, port: 53}]\n    - to: [{podSelector: {matchLabels:\
+    \ {role: server}}}]\n      ports: [{protocol: TCP, port: 8080}]\n---\napiVersion:\
+    \ networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata: {name: server-ingress,\
+    \ namespace: vcloud-host-validation}\nspec:\n  podSelector: {matchLabels: {role:\
+    \ server}}\n  policyTypes: [Ingress]\n  ingress:\n    - from: [{podSelector: {matchLabels:\
+    \ {role: client, access: allowed}}}]\n      ports: [{protocol: TCP, port: 8080}]\n\
+    EOF\n}\n\nrender_probe_job() {\n    local access=$1 command\n    if [[ $access\
+    \ == allowed ]]; then\n        command='nslookup kubernetes.default.svc.cluster.local\
+    \ && wget -T 10 -O - http://server | grep -q vcloud-ok'\n    else\n        command='nslookup\
+    \ server && if wget -T 5 -O /dev/null http://server; then echo POLICY_NOT_ENFORCED;\
+    \ exit 1; fi'\n    fi\n    cat <<EOF\napiVersion: batch/v1\nkind: Job\nmetadata:\
+    \ {name: $access, namespace: vcloud-host-validation}\nspec:\n  backoffLimit: 0\n\
+    \  activeDeadlineSeconds: 120\n  template:\n    metadata:\n      labels: {role:\
+    \ client, access: $access}\n    spec:\n      restartPolicy: Never\n      automountServiceAccountToken:\
+    \ false\n      securityContext:\n        runAsNonRoot: true\n        runAsUser:\
+    \ 10001\n        runAsGroup: 10001\n        seccompProfile: {type: RuntimeDefault}\n\
+    \      containers:\n        - name: probe\n          image: \"$REGISTRY_PROBE_IMAGE\"\
+    \n          command: [sh, -ec, '$command']\n          securityContext:\n     \
+    \       allowPrivilegeEscalation: false\n            readOnlyRootFilesystem: true\n\
+    \            capabilities: {drop: [ALL]}\n          resources:\n            requests:\
+    \ {cpu: 10m, memory: 16Mi}\n            limits: {memory: 64Mi}\nEOF\n}\n\nrender_hugepage_job()\
+    \ {\n    # mmap, rather than dd/write(2), is required for hugetlbfs files. Allocate\
+    \ one page\n    # from each requested pool; touching byte zero commits that entire\
+    \ HugeTLB page.\n    local size count resource volume\n    cat <<EOF\napiVersion:\
+    \ batch/v1\nkind: Job\nmetadata: {name: hugepages, namespace: vcloud-host-validation}\n\
+    spec:\n  backoffLimit: 0\n  activeDeadlineSeconds: 180\n  template:\n    spec:\n\
+    \      restartPolicy: Never\n      automountServiceAccountToken: false\n     \
+    \ securityContext:\n        runAsNonRoot: true\n        runAsUser: 10001\n   \
+    \     runAsGroup: 10001\n        fsGroup: 10001\n        seccompProfile: {type:\
+    \ RuntimeDefault}\n      containers:\n        - name: probe\n          image:\
+    \ \"$HUGEPAGE_SMOKE_IMAGE\"\n          securityContext:\n            allowPrivilegeEscalation:\
+    \ false\n            readOnlyRootFilesystem: true\n            capabilities: {drop:\
+    \ [ALL]}\n          command:\n            - python3\n            - -c\n      \
+    \      - |\n              import mmap, os\n              for root, size in [(\"\
+    /huge-2M\", 2*1024**2), (\"/huge-1G\", 1024**3)]:\n                  if not os.path.isdir(root):\n\
+    \                      continue\n                  with open(root + \"/probe\"\
+    , \"w+b\") as f:\n                      f.truncate(size)\n                   \
+    \   with mmap.mmap(f.fileno(), size) as mapping:\n                          mapping[0]\
+    \ = 42\n                          assert mapping[0] == 42\n                  print(root,\
+    \ \"mmap allocation passed\", flush=True)\n          resources:\n            requests:\n\
+    \              cpu: 10m\n              memory: 64Mi\nEOF\n    for size in 2M 1G;\
+    \ do\n        if [[ $size == 2M ]]; then count=$HUGEPAGES_2M; resource=2Mi; else\
+    \ count=$HUGEPAGES_1G; resource=1Gi; fi\n        ((count > 0)) || continue\n \
+    \       printf '              hugepages-%s: %s\\n' \"$resource\" \"$resource\"\
+    \n    done\n    cat <<'EOF'\n            limits:\n              memory: 256Mi\n\
+    EOF\n    for size in 2M 1G; do\n        if [[ $size == 2M ]]; then count=$HUGEPAGES_2M;\
+    \ resource=2Mi; else count=$HUGEPAGES_1G; resource=1Gi; fi\n        ((count >\
+    \ 0)) || continue\n        printf '              hugepages-%s: %s\\n' \"$resource\"\
+    \ \"$resource\"\n    done\n    printf '          volumeMounts:\\n'\n    for size\
+    \ in 2M 1G; do\n        if [[ $size == 2M ]]; then count=$HUGEPAGES_2M; else count=$HUGEPAGES_1G;\
+    \ fi\n        ((count > 0)) || continue\n        volume=\"huge-${size,,}\"\n \
+    \       printf '            - {name: %s, mountPath: /huge-%s}\\n' \"$volume\"\
+    \ \"$size\"\n    done\n    printf '      volumes:\\n'\n    for size in 2M 1G;\
+    \ do\n        if [[ $size == 2M ]]; then count=$HUGEPAGES_2M; resource=2Mi; else\
+    \ count=$HUGEPAGES_1G; resource=1Gi; fi\n        ((count > 0)) || continue\n \
+    \       volume=\"huge-${size,,}\"\n        printf '        - name: %s\\n     \
+    \     emptyDir: {medium: HugePages-%s}\\n' \"$volume\" \"$resource\"\n    done\n\
+    }\n\nrender_gpu_job() {\n    [[ $GPU_SMOKE_TEST == true ]] || return 0\n    cat\
+    \ <<EOF\napiVersion: batch/v1\nkind: Job\nmetadata: {name: gpu, namespace: vcloud-host-validation}\n\
+    spec:\n  backoffLimit: 0\n  activeDeadlineSeconds: 180\n  template:\n    spec:\n\
+    \      restartPolicy: Never\n      runtimeClassName: nvidia\n      automountServiceAccountToken:\
+    \ false\n      securityContext:\n        runAsNonRoot: true\n        runAsUser:\
+    \ 10001\n        runAsGroup: 10001\n        seccompProfile: {type: RuntimeDefault}\n\
+    \      containers:\n        - name: probe\n          image: \"$GPU_SMOKE_IMAGE\"\
+    \n          command: [nvidia-smi]\n          securityContext:\n            allowPrivilegeEscalation:\
+    \ false\n            readOnlyRootFilesystem: true\n            capabilities: {drop:\
+    \ [ALL]}\n          resources:\n            limits: {nvidia.com/gpu: 1, memory:\
+    \ 256Mi}\nEOF\n}\n\ncleanup_smoke() {\n    if [[ ${SMOKE_OWNED:-false} == true\
+    \ ]]; then\n        kubectl delete namespace vcloud-host-validation --wait=true\
+    \ --timeout=120s || true\n        SMOKE_OWNED=false\n    fi\n}\n\nrun_smoke_tests()\
+    \ {\n    [[ $BOOTSTRAP_K8S == true && $RUN_SMOKE_TESTS == true ]] || return\n\
+    \    PHASE=cluster-smoke\n    if kubectl get namespace vcloud-host-validation\
+    \ >/dev/null 2>&1; then\n        [[ $(kubectl get namespace vcloud-host-validation\
+    \ -o jsonpath='{.metadata.labels.vcloud\\.io/owner}') == host-bootstrap ]] ||\
+    \ die 'Validation namespace is owned by another user'\n        kubectl delete\
+    \ namespace vcloud-host-validation --wait=true --timeout=120s\n    fi\n    SMOKE_OWNED=true\n\
+    \    render_smoke > \"$STATE_DIR/smoke-base.yaml\"\n    validate_manifests workloads\
+    \ \"$STATE_DIR/smoke-base.yaml\"\n    kubectl apply -f \"$STATE_DIR/smoke-base.yaml\"\
+    \n    kubectl -n vcloud-host-validation wait --for=condition=Ready pod/server\
+    \ --timeout=120s\n    local access\n    for access in allowed denied; do\n   \
+    \     render_probe_job \"$access\" > \"$STATE_DIR/smoke-$access.yaml\"\n     \
+    \   validate_manifests workloads \"$STATE_DIR/smoke-$access.yaml\"\n        kubectl\
+    \ apply -f \"$STATE_DIR/smoke-$access.yaml\"\n        kubectl -n vcloud-host-validation\
+    \ wait --for=condition=complete \"job/$access\" --timeout=150s\n        kubectl\
+    \ -n vcloud-host-validation logs \"job/$access\"\n    done\n    if ((HUGEPAGES_2M\
+    \ > 0 || HUGEPAGES_1G > 0)); then\n        render_hugepage_job > \"$STATE_DIR/smoke-hugepages.yaml\"\
+    \n        validate_manifests workloads \"$STATE_DIR/smoke-hugepages.yaml\"\n \
+    \       kubectl apply -f \"$STATE_DIR/smoke-hugepages.yaml\"\n        kubectl\
+    \ -n vcloud-host-validation wait --for=condition=complete job/hugepages --timeout=210s\n\
+    \        kubectl -n vcloud-host-validation logs job/hugepages\n    fi\n    if\
+    \ [[ $GPU_ENABLED == true && $GPU_SMOKE_TEST == true ]]; then\n        render_gpu_job\
+    \ > \"$STATE_DIR/smoke-gpu.yaml\"\n        validate_manifests workloads \"$STATE_DIR/smoke-gpu.yaml\"\
+    \n        kubectl apply -f \"$STATE_DIR/smoke-gpu.yaml\"\n        kubectl -n vcloud-host-validation\
+    \ wait --for=condition=complete job/gpu --timeout=210s\n        kubectl -n vcloud-host-validation\
+    \ logs job/gpu\n    fi\n    cleanup_smoke\n}\n\nvalidate_host() {\n    PHASE=validation\n\
+    \    validate_kernel\n    [[ $(stat -fc '%T' /sys/fs/cgroup) == cgroup2fs ]] ||\
+    \ die 'cgroup v2 is not active'\n    local controller\n    for controller in cpu\
+    \ cpuset memory pids hugetlb; do\n        grep -qw \"$controller\" /sys/fs/cgroup/cgroup.controllers\
+    \ || die \"Missing cgroup v2 controller: $controller\"\n    done\n    [[ $(findmnt\
+    \ -n -o FSTYPE --target /sys/fs/bpf) == bpf ]] || die 'bpffs is not mounted'\n\
+    \    grep -qw overlay /proc/filesystems || die 'overlayfs unavailable'\n    [[\
+    \ $(wc -l < /proc/swaps) -eq 1 ]] || die 'Swap is still active'\n    local key\
+    \ expected actual size count\n    while read -r key _ expected; do\n        [[\
+    \ $key == \\#* || -z $key ]] && continue\n        [[ $(sysctl -n \"$key\") ==\
+    \ \"$expected\" ]] || die \"Sysctl mismatch: $key\"\n    done < /etc/sysctl.d/99-vcloud.conf\n\
+    \    for size in 2048 1048576; do\n        if [[ $size == 2048 ]]; then count=$HUGEPAGES_2M;\
+    \ else count=$HUGEPAGES_1G; fi\n        ((count == 0)) && continue\n        actual=$(cat\
+    \ \"/sys/kernel/mm/hugepages/hugepages-${size}kB/nr_hugepages\")\n        ((actual\
+    \ >= count)) || die \"${size}kB pool insufficient\"\n        if [[ $size == 2048\
+    \ ]]; then\n            [[ $(findmnt -n -o FSTYPE --target /dev/hugepages-2M)\
+    \ == hugetlbfs ]] || die '2 MiB host HugeTLB mount missing'\n        else\n  \
+    \          [[ $(findmnt -n -o FSTYPE --target /dev/hugepages-1G) == hugetlbfs\
+    \ ]] || die '1 GiB host HugeTLB mount missing'\n        fi\n    done\n    systemctl\
+    \ is-active --quiet containerd || die 'containerd is not active'\n    crictl info\
+    \ | jq -e '.status.conditions[] | select(.type == \"RuntimeReady\") | .status\
+    \ == true' >/dev/null\n    python3 - /etc/containerd/config.toml <<'PY'\nimport\
+    \ sys, toml\ndata = toml.load(sys.argv[1])\nplugins = data['plugins']\nruntime\
+    \ = plugins.get('io.containerd.cri.v1.runtime', plugins.get('io.containerd.grpc.v1.cri'))\n\
+    assert runtime is not None, 'Missing CRI runtime plugin'\nfor name, settings in\
+    \ runtime['containerd']['runtimes'].items():\n    assert settings['options']['SystemdCgroup']\
+    \ is True, name + ' does not use systemd cgroups'\nassert 'cri' not in data.get('disabled_plugins',\
+    \ []), 'CRI is disabled'\nPY\n    kubectl version --client; kubeadm version -o\
+    \ short; helm version --short; cilium version --client\n    kubeconform -v; tkn\
+    \ version --client; argocd version --client; yq --version; jq --version\n    if\
+    \ [[ $INSTALL_HPC == true ]]; then\n        mpirun --version; ucx_info -v; apptainer\
+    \ --version; srun --version\n    fi\n    if [[ $GPU_ENABLED == true ]]; then\n\
+    \        nvidia-smi\n        nvidia-ctk --version\n        version_at_least \"\
+    $(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -n1)\" 550\
+    \ || die 'Driver < 550'\n    fi\n    if [[ $BOOTSTRAP_K8S == true ]]; then\n \
+    \       check_policy_gate || return $?\n        # Validation checks current policy/compiler\
+    \ bytes without modifying the host.\n        cmp -s \"$STATE_DIR/node-exceptions.json\"\
+    \ <(render_exception_policy) || die 'Installed node exception policy drift'\n\
+    \        cmp -s \"$STATE_DIR/check-manifest-contract.py\" <(render_policy_checker)\
+    \ || die 'Installed manifest checker drift'\n        validate_static_control_plane\
+    \ /etc/kubernetes/manifests\n        export KUBECONFIG=/etc/kubernetes/admin.conf\n\
+    \        kubectl --request-timeout=30s get --raw=/readyz >/dev/null\n        kubectl\
+    \ wait --for=condition=Ready \"node/$NODE_NAME\" --timeout=300s\n        [[ $(kubectl\
+    \ -n kube-system get daemonset -o json | jq '[.items[] | select(.metadata.name\
+    \ == \"kube-proxy\" or (.metadata.name | contains(\"flannel\")))] | length') ==\
+    \ 0 ]] || die 'Unexpected kube-proxy/Flannel daemonset'\n        cilium status\
+    \ --wait --wait-duration 5m\n        kubectl -n kube-system get daemonset/cilium\
+    \ daemonset/cilium-envoy deployment/cilium-operator -o json |\n            python3\
+    \ \"$STATE_DIR/check-manifest-contract.py\" --policy \"$STATE_DIR/node-exceptions.json\"\
+    \n        [[ $(kubectl -n kube-system get configmap cilium-config -o jsonpath='{.data.kube-proxy-replacement}')\
+    \ == true ]] || die 'Cilium kube-proxy replacement is not enabled'\n        #\
+    \ Verify kubelet registered both pool sizes as schedulable resources.\n      \
+    \  kubectl get node \"$NODE_NAME\" -o json | python3 -c '\nimport json, sys\n\
+    capacity = json.load(sys.stdin)[\"status\"][\"capacity\"]\ndef mib(s):\n    for\
+    \ suffix, scale in [(\"Gi\",1024), (\"Mi\",1), (\"Ki\",1/1024)]:\n        if s.endswith(suffix):\
+    \ return float(s[:-len(suffix)]) * scale\n    return int(s)/(1024*1024)\nfor name,\
+    \ required in [(\"hugepages-2Mi\",int(sys.argv[1])*2), (\"hugepages-1Gi\",int(sys.argv[2])*1024)]:\n\
+    \    assert mib(capacity.get(name,\"0\")) >= required, name + \" capacity is insufficient\"\
+    \n' \"$HUGEPAGES_2M\" \"$HUGEPAGES_1G\"\n        if [[ $GPU_ENABLED == true ]];\
+    \ then\n            kubectl -n kube-system get daemonset/nvidia-device-plugin\
+    \ -o json |\n                python3 \"$STATE_DIR/check-manifest-contract.py\"\
+    \ --policy \"$STATE_DIR/node-exceptions.json\"\n            kubectl get node \"\
+    $NODE_NAME\" -o json | jq -e '.status.allocatable[\"nvidia.com/gpu\"] | tonumber\
+    \ > 0' >/dev/null\n        fi\n    fi\n    log 'Requested host and readiness gates\
+    \ passed. Deployment/performance gates are listed in the runbook.'\n}\n\nwrite_result()\
+    \ {\n    jq -n --arg status \"$1\" --arg phase \"$PHASE\" --arg kernel \"$(uname\
+    \ -r)\" \\\n        --arg kubernetes \"$KUBERNETES_VERSION\" --arg cilium \"$CILIUM_VERSION\"\
+    \ \\\n        --arg mirror \"$MIRROR_STATUS\" --argjson mirror_required \"$MIRROR_REQUIRED\"\
+    \ \\\n        --argjson gpu \"$GPU_ENABLED\" --argjson bootstrap \"$BOOTSTRAP_K8S\"\
+    \ --argjson smoke \"$RUN_SMOKE_TESTS\" \\\n        '{status:$status,phase:$phase,kernel:$kernel,kubernetes:$kubernetes,cilium:$cilium,gpu_detected:$gpu,bootstrap_requested:$bootstrap,smoke_requested:$smoke,mirror_status:$mirror,mirror_required:$mirror_required}'\
+    \ \\\n        > \"$STATE_DIR/result.json\"\n}\n\ncleanup() {\n    cleanup_smoke\n\
+    \    # mktemp's private work directory is always inside our fixed state directory.\n\
+    \    if [[ -n $WORK_DIR && $WORK_DIR == \"$STATE_DIR\"/work.* && -d $WORK_DIR\
+    \ ]]; then rm -rf -- \"$WORK_DIR\"; fi\n}\n\non_error() {\n    local code=$1 line=$2\n\
+    \    trap - ERR\n    log \"Failed in phase $PHASE at line $line (exit $code).\
+    \ Inspect the journal; no automatic reset.\" >&2\n    if command -v jq >/dev/null\
+    \ && [[ -d $STATE_DIR ]]; then write_result failed || true; fi\n    exit \"$code\"\
+    \n}\n\nmain() {\n    set -Eeuo pipefail\n    export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n\
+    \    load_config\n    case ${1:---plan} in\n        --plan) validate_config; plan;\
+    \ return;;\n        --apply|--validate) ;;\n        *) bad_config 'Usage: --plan,\
+    \ --apply or --validate';;\n    esac\n    validate_config\n    # Reject version\
+    \ drift from the approved node exception before preflight or APT.\n    if [[ $1\
+    \ == --apply ]]; then check_policy_gate || return $?; fi\n    preflight\n    if\
+    \ [[ $1 == --validate ]]; then validate_host; return; fi\n    umask 022\n    mkdir\
+    \ -p \"$STATE_DIR\"\n    chmod 0700 \"$STATE_DIR\"\n    exec 9> \"$STATE_DIR/bootstrap.lock\"\
+    \n    flock -n 9 || die 'Another bootstrap is running'\n    WORK_DIR=$(mktemp\
+    \ -d \"$STATE_DIR/work.XXXXXX\")\n    APPLY_ACTIVE=true\n    trap 'on_error $?\
+    \ $LINENO' ERR\n    trap cleanup EXIT\n    # Preserve a same-boot pending request;\
+    \ never claim readiness by rerunning before reboot.\n    if [[ -f $STATE_DIR/reboot-boot-id\
+    \ ]] &&\n        [[ $(cat \"$STATE_DIR/reboot-boot-id\") == \"$(cat /proc/sys/kernel/random/boot_id)\"\
+    \ ]]; then\n        NEEDS_REBOOT=true\n    else\n        [[ ! -f $STATE_DIR/reboot-boot-id\
+    \ ]] || REBOOT_ATTEMPTED=true\n        rm -f \"$STATE_DIR/reboot-required\" \"\
+    $STATE_DIR/reboot-boot-id\"\n    fi\n    rm -f \"$STATE_DIR/complete\"\n    export\
+    \ DEBIAN_FRONTEND=noninteractive\n    apt-get -o DPkg::Lock::Timeout=300 update\n\
+    \    install_missing ca-certificates curl gnupg jq python3 python3-toml pciutils\
+    \ \\\n        software-properties-common apt-transport-https conntrack iptables\
+    \ socat ethtool iproute2 util-linux\n    add-apt-repository -y universe\n    apt-get\
+    \ update\n    install_missing containerd runc\n    # Ubuntu's package may start\
+    \ containerd with its packaged default config. Record\n    # ownership now so\
+    \ the post-reboot preflight recognizes that installation.\n    touch \"$STATE_DIR/containerd-owned\"\
+    \n    prepare_kernel\n    prepare_memory_network\n    install_gpu\n    install_tooling\n\
+    \    install_kubernetes_packages\n    install_hpc_kvm\n    if [[ $NEEDS_REBOOT\
+    \ == true ]]; then\n        write_result reboot-required\n        log 'Reboot\
+    \ Ubuntu, then rerun --apply. Kubernetes initialization was deferred.'\n     \
+    \   exit 20\n    fi\n    configure_containerd\n    bootstrap_kubernetes\n    validate_host\n\
+    \    run_smoke_tests\n    dpkg-query -W -f='${Package}\\t${Version}\\n' > \"$STATE_DIR/package-versions.tsv\"\
+    \n    write_result ready\n    touch \"$STATE_DIR/complete\"\n}\n\nif [[ ${BASH_SOURCE[0]}\
+    \ == \"$0\" ]]; then main \"$@\"; fi\n"
+- path: /etc/systemd/system/vcloud-host-bootstrap.service
+  owner: root:root
+  permissions: '0644'
+  content: '[Unit]
+
+    Description=vCloud Module -1 bootstrap and post-reboot resume
+
+    Wants=network-online.target
+
+    After=network-online.target cloud-final.service
+
+    ConditionPathExists=!/var/lib/vcloud-host/complete
+
+    [Service]
+
+    Type=oneshot
+
+    ExecStart=/usr/local/sbin/00-setup-ubuntu-host.sh --apply
+
+    SuccessExitStatus=20
+
+    TimeoutStartSec=3600
+
+    StandardOutput=journal+console
+
+    StandardError=journal+console
+
+    [Install]
+
+    WantedBy=multi-user.target
+
+    '
+- path: /etc/hosts
+  append: true
+  permissions: '0644'
+  content: '10.50.0.11 api.dev.cairo-2.twinfra.example.com
+
+    '
+- path: /etc/systemd/system/twinfra-node-zone.service
+  permissions: '0644'
+  content: '[Unit]
+
+    After=kubelet.service
+
+    StartLimitIntervalSec=0
+
+    [Service]
+
+    Type=oneshot
+
+    ExecStart=/usr/local/sbin/twinfra-node-profile.sh
+
+    Restart=on-failure
+
+    RestartSec=30
+
+    [Install]
+
+    WantedBy=multi-user.target
+
+    '
+- path: /usr/local/sbin/twinfra-node-profile.sh
+  permissions: '0755'
+  content: '#!/usr/bin/env bash
+
+    set -Eeuo pipefail
+
+    export KUBECONFIG=/etc/kubernetes/admin.conf
+
+    kubectl label node twinfra-node topology.kubernetes.io/zone=cairo-2a twinfra.io/environment=dev
+    twinfra.io/region=cairo-2 --overwrite
+
+    '
+runcmd:
+- - systemctl
+  - daemon-reload
+- - systemctl
+  - enable
+  - vcloud-host-bootstrap.service
+- - bash
+  - -c
+  - VCLOUD_CONFIG_FILE=/etc/twinfra-host.env /usr/local/sbin/00-setup-ubuntu-host.sh
+    --apply; rc=$?; if [ "$rc" -eq 20 ]; then exit 0; fi; exit "$rc"
+- - systemctl
+  - enable
+  - --now
+  - twinfra-node-zone.service
+power_state:
+  mode: reboot
+  delay: now
+  timeout: 120
+  message: Activating vCloud host kernel, cgroups and HugePages
+  condition:
+  - test
+  - -f
+  - /var/lib/vcloud-host/reboot-required
+final_message: vCloud provisioning invoked. Check /var/lib/vcloud-host/result.json
+  and journalctl -u vcloud-host-bootstrap.service; cloud-init success alone is not
+  cluster readiness.
+users:
+- name: twinfra-operator
+  sudo:
+  - ALL=(ALL) NOPASSWD:ALL
+  shell: /bin/bash
+  lock_passwd: true
+  ssh_authorized_keys:
+  - '@@SSH_PUBLIC_KEY@@'
+ssh_pwauth: false
+hostname: twinfra-dev-cairo-2
+manage_etc_hosts: true

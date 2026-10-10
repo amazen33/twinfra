@@ -38,7 +38,7 @@ def image():
 
 
 def workloads():
-    data = {'ui.py': (HERE / 'ui.py').read_text(encoding='utf-8'), 'profile.json': (HERE / 'profile.json').read_text(encoding='utf-8')}
+    data = {'ui.py': (ROOT / 'console/aws_views.py').read_text(encoding='utf-8'), 'profile.json': (HERE / 'profile.json').read_text(encoding='utf-8')}
     result = [config('vcloud-console-code', data)]
     health = {'exec': {'command': ['python', '-c', "import urllib.request,os; urllib.request.urlopen('http://127.0.0.1:'+os.environ['PORT']+'/healthz',timeout=2)"]}, 'timeoutSeconds': 3}
     for name, port, view in [('vcloud-console-shell', 3000, 'shell'), ('storage-ui', 9001, 'storage'), ('dynamodb-admin', 8081, 'dynamodb')]:

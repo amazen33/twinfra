@@ -15,7 +15,7 @@ COPY console/requirements.txt /app/requirements.txt
 RUN python -m pip install --require-hashes --only-binary=:all: --no-compile --no-cache-dir --target /app/vendor -r /app/requirements.txt
 COPY --from=frontend --chown=65532:65532 /home/node/dist/ /app/public/
 COPY --chown=65532:65532 console/server.py /app/server.py
-COPY --chown=65532:65532 lab/wsl/console/ui.py /app/aws_views.py
+COPY --chown=65532:65532 console/aws_views.py /app/aws_views.py
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app/vendor PORT=3000
 USER 65532:65532
 EXPOSE 3000

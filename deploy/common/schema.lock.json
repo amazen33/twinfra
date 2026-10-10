@@ -1,0 +1,18 @@
+{
+  "mutatingwebhookconfiguration.json": {
+    "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/mutatingwebhookconfiguration.json",
+    "sha256": "1ba2e70597ad0d467250beb82ef8075a6a60f67c79f9960e80909672ac399028"
+  },
+  "statefulset.json": {
+    "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/statefulset.json",
+    "sha256": "8dedec0a26f86a59ffeea907c48dd5373482a5479683f4f38915daf751560139"
+  },
+  "validatingwebhookconfiguration.json": {
+    "url": "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.36.5-standalone-strict/validatingwebhookconfiguration.json",
+    "sha256": "d4e6e151843df3fb5e9ea7f10d31b6eb67496ab9789571f91b3e59dec8ad51f0"
+  },
+  "customresourcedefinition.json": {
+    "source": "authenticated Kubernetes v1.36.5+k3s1 OpenAPI v3 apiextensions.k8s.io/v1",
+    "sha256": "a6abe3b7983070a7feffa47acdbf418800ab0988ed794e0d2c2113ac9a07f0c5"
+  }
+}

@@ -55,16 +55,46 @@ def outputs():
     script = replace_block(script, 'SSOT DEFAULTS', defaults)
     expected = identity | dict(REGISTRY_MIRROR='https://' + s['registry'], MIRROR_REQUIRED='true')
     conditions = ' &&\n       '.join(f'${k} == {shlex.quote(str(v))}' for k, v in expected.items())
-    script = replace_block(script, 'SSOT VALIDATION', 'validate_ssot_identity() {\n'
-        '    [[ ' + conditions + " ]] || bad_config 'Identity/registry drift from vcloud-ssot.yaml; change the contract and regenerate first'\n}")
-    script = replace_block(script, 'FOUNDATION', "render_foundation() {\n    cat <<'EOF'\n" + foundation + 'EOF\n}')
+    profiles = [f'production) [[ {conditions} ]] ;;']
+    dev = s.get('environments', {}).get('dev')
+    if dev:
+        expected_dev = expected | dict(CLUSTER_NAME=dev['context'], CLUSTER_DNS_NAME=dev['context'],
+            BASE_DOMAIN=dev['baseDomain'], IMAGE_REGISTRY=dev['registry'], REGISTRY_MIRROR='https://'+dev['registry'])
+        for row in s['addressPlan']:
+            if row['environment'] != 'dev': continue
+            expected_row = expected_dev | dict(CLUSTER_NAME='twinfra-dev-'+row['region'], CLUSTER_DNS_NAME='twinfra-dev-'+row['region'])
+            check = ' && '.join(f'${k} == {shlex.quote(str(v))}' for k,v in expected_row.items())
+            profiles.append(f'dev-{row["region"]}) [[ {check} ]] ;;')
+    script = replace_block(script, 'SSOT VALIDATION', 'validate_ssot_identity() {\n    case $PLATFORM_PROFILE in\n    '+
+        '\n    '.join(profiles)+"\n    *) return 2 ;;\n    esac || bad_config 'Identity/registry drift from vcloud-ssot.yaml; change the contract and regenerate first'\n}")
+    foundation_body = "render_foundation() {\n    if [[ $PLATFORM_PROFILE == dev-* ]]; then\n        cat <<'EOF'\n"
+    dev_resources = yaml.safe_load_all(foundation)
+    dev_objects = []
+    for obj in dev_resources:
+        if not obj: continue
+        ns_map=dict(zip(c['namespaces'],dev['namespaces'].values())) if dev else {}
+        if obj['kind']=='Namespace':obj['metadata']['name']=ns_map.get(obj['metadata']['name'],obj['metadata']['name'])
+        elif 'namespace' in obj['metadata']:obj['metadata']['namespace']=ns_map.get(obj['metadata']['namespace'],obj['metadata']['namespace'])
+        obj['metadata']['labels'] = {k.replace('vcloud.io/', 'twinfra.io/'):v for k,v in obj['metadata'].get('labels',{}).items()}
+        obj['metadata'].pop('annotations', None)
+        if obj['kind'] == 'NetworkPolicy': obj['metadata']['name'] = 'twinfra-default-deny'
+        dev_objects.append(obj)
+    foundation_body += yaml.safe_dump_all(dev_objects,sort_keys=False)+"EOF\n    else\n    cat <<'EOF'\n"+foundation+'EOF\n    fi\n}'
+    script = replace_block(script, 'FOUNDATION', foundation_body)
     decision = s['security']['nodeHostMountException']
     policy_text = (ROOT / decision['policyFile']).read_text()
     if hashlib.sha256(policy_text.encode()).hexdigest() != decision['policySHA256']:
         raise ValueError('Node exception policy differs from the approved SSoT hash')
     policy = json.loads(policy_text)
     checker = (ROOT / 'tools/manifest_contract.py').read_text()
-    script = replace_block(script, 'EXCEPTION POLICY', "render_exception_policy() {\n    cat <<'VCLOUD_POLICY_JSON'\n" + policy_text + 'VCLOUD_POLICY_JSON\n}')
+    profile_policy=json.loads(policy_text)
+    if dev:
+        dev_policy=json.loads(json.dumps(profile_policy).replace(s['registry'],dev['registry']))
+        dev_policy['sourcePolicySHA256']=decision['policySHA256']
+        dev_policy['profile']='WO-21 dev mirror relocation only; same images, mounts and security'
+        dev_text=json.dumps(dev_policy,indent=2)+'\n'
+    else:dev_text=policy_text
+    script = replace_block(script, 'EXCEPTION POLICY', "render_exception_policy() {\n    if [[ $PLATFORM_PROFILE == dev-* ]]; then\n        cat <<'VCLOUD_DEV_POLICY_JSON'\n" + dev_text + "VCLOUD_DEV_POLICY_JSON\n    else\n    cat <<'VCLOUD_POLICY_JSON'\n" + policy_text + 'VCLOUD_POLICY_JSON\n    fi\n}')
     script = replace_block(script, 'POLICY CHECKER', "render_policy_checker() {\n    cat <<'VCLOUD_POLICY_PYTHON'\n" + checker + 'VCLOUD_POLICY_PYTHON\n}')
     versions = policy['versions']
     if decision['status'] == 'approved' and policy['status'] == 'approved':

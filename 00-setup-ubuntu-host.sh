@@ -40,6 +40,7 @@ load_config() {
     : "${REGISTRY_MIRROR:=https://$IMAGE_REGISTRY}" "${REGISTRY_CA_FILE:=}"
     : "${MIRROR_REQUIRED:=true}" "${REGISTRY_PROBE_IMAGE:=$IMAGE_REGISTRY/docker.io/library/busybox:1.37.0}"
     : "${POD_CIDR:=10.42.0.0/16}" "${SERVICE_CIDR:=10.43.0.0/16}" "${NODE_IP:=}"
+    : "${PLATFORM_PROFILE:=production}" "${CONTROL_PLANE_ENDPOINT:=}"
     : "${NODE_NAME:=}" "${PAUSE_IMAGE:=$IMAGE_REGISTRY/registry.k8s.io/pause:3.10.1}"
     : "${HUGEPAGE_SMOKE_IMAGE:=$IMAGE_REGISTRY/docker.io/library/python:3.12.12-slim}"
     : "${GPU_SMOKE_IMAGE:=$IMAGE_REGISTRY/docker.io/nvidia/cuda:12.4.1-base-ubuntu22.04}"
@@ -86,6 +87,7 @@ validate_config() {
     # A registry authority only: no credentials, quotes, spaces, path-prefix rewriting or HTTP.
     [[ $REGISTRY_MIRROR =~ ^https://[a-zA-Z0-9.-]+(:[0-9]+)?$ ]] || bad_config 'Mirror must be an HTTPS authority without a path or credentials'
     [[ -z $REGISTRY_CA_FILE || $REGISTRY_CA_FILE =~ ^/[a-zA-Z0-9_./-]+$ ]] || bad_config 'Registry CA requires an absolute simple path'
+    [[ -z $CONTROL_PLANE_ENDPOINT || $CONTROL_PLANE_ENDPOINT =~ ^[a-zA-Z0-9.-]+:6443$ ]] || bad_config 'CONTROL_PLANE_ENDPOINT must be a DNS authority on 6443'
     [[ -z $NODE_NAME || $NODE_NAME =~ ^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$ ]] || bad_config 'NODE_NAME must be a DNS label/name'
     [[ $NVIDIA_DRIVER_PACKAGE == auto || $NVIDIA_DRIVER_PACKAGE =~ ^nvidia-driver-[0-9]+(-server)?(-open)?$ ]] || bad_config 'Invalid NVIDIA driver package'
     for name in PAUSE_IMAGE GPU_SMOKE_IMAGE REGISTRY_PROBE_IMAGE HUGEPAGE_SMOKE_IMAGE; do
@@ -112,14 +114,19 @@ PY
 
 # BEGIN GENERATED SSOT VALIDATION
 validate_ssot_identity() {
-    [[ $SSOT_VERSION == 2.2 &&
+    case $PLATFORM_PROFILE in
+    production) [[ $SSOT_VERSION == 2.2 &&
        $CLUSTER_NAME == vCloud-prod-01 &&
        $CLUSTER_DNS_NAME == vcloud-prod-01 &&
        $BASE_DOMAIN == vcloud.example.com &&
        $GITOPS_REPOSITORY == amazen33/twinfra &&
        $IMAGE_REGISTRY == registry.vcloud.example.com &&
        $REGISTRY_MIRROR == https://registry.vcloud.example.com &&
-       $MIRROR_REQUIRED == true ]] || bad_config 'Identity/registry drift from vcloud-ssot.yaml; change the contract and regenerate first'
+       $MIRROR_REQUIRED == true ]] ;;
+    dev-cairo-1) [[ $SSOT_VERSION == 2.2 && $CLUSTER_NAME == twinfra-dev-cairo-1 && $CLUSTER_DNS_NAME == twinfra-dev-cairo-1 && $BASE_DOMAIN == twinfra.example.com && $GITOPS_REPOSITORY == amazen33/twinfra && $IMAGE_REGISTRY == registry.twinfra.example.com && $REGISTRY_MIRROR == https://registry.twinfra.example.com && $MIRROR_REQUIRED == true ]] ;;
+    dev-cairo-2) [[ $SSOT_VERSION == 2.2 && $CLUSTER_NAME == twinfra-dev-cairo-2 && $CLUSTER_DNS_NAME == twinfra-dev-cairo-2 && $BASE_DOMAIN == twinfra.example.com && $GITOPS_REPOSITORY == amazen33/twinfra && $IMAGE_REGISTRY == registry.twinfra.example.com && $REGISTRY_MIRROR == https://registry.twinfra.example.com && $MIRROR_REQUIRED == true ]] ;;
+    *) return 2 ;;
+    esac || bad_config 'Identity/registry drift from vcloud-ssot.yaml; change the contract and regenerate first'
 }
 # END GENERATED SSOT VALIDATION
 
@@ -670,7 +677,7 @@ install_hpc_kvm() {
 }
 
 render_kubeadm() {
-    local resolv_conf=/etc/resolv.conf
+    local resolv_conf=/etc/resolv.conf endpoint=${CONTROL_PLANE_ENDPOINT:-"$NODE_IP:6443"}
     [[ ! -e /run/systemd/resolve/resolv.conf ]] || resolv_conf=/run/systemd/resolve/resolv.conf
     cat <<EOF
 apiVersion: kubeadm.k8s.io/v1beta4
@@ -695,7 +702,7 @@ kind: ClusterConfiguration
 kubernetesVersion: "$KUBERNETES_VERSION"
 clusterName: "$CLUSTER_NAME"
 imageRepository: "$IMAGE_REGISTRY/registry.k8s.io"
-controlPlaneEndpoint: "$NODE_IP:6443"
+controlPlaneEndpoint: "$endpoint"
 networking:
   podSubnet: "$POD_CIDR"
   serviceSubnet: "$SERVICE_CIDR"
@@ -764,6 +771,14 @@ operator:
 # all three core namespaces; essential node components remain in kube-system.
 policyEnforcementMode: default
 EOF
+    if [[ $PLATFORM_PROFILE == dev-* ]]; then
+        cat <<EOF
+commonLabels:
+  twinfra.io/environment: dev
+  twinfra.io/region: "${PLATFORM_PROFILE#dev-}"
+  twinfra.io/component: cilium
+EOF
+    fi
 }
 
 bootstrap_kubernetes() {
@@ -825,6 +840,26 @@ candidate=\$(mktemp --suffix=.yaml)
 trap 'rm -f -- "\$candidate"' EXIT
 cat > "\$candidate"
 [[ -s "\$candidate" ]] || { echo 'Empty Helm manifest output' >&2; exit 1; }
+# ADR-0047: label all upstream objects, including chart-created namespaces.
+# Kustomize never includes these labels in selectors.
+if [[ "$PLATFORM_PROFILE" == dev-* ]]; then
+    labels_dir=\$(mktemp -d)
+    cp "\$candidate" "\$labels_dir/upstream.yaml"
+    cat > "\$labels_dir/kustomization.yaml" <<'VCLOUD_LABELS'
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources: [upstream.yaml]
+labels:
+- pairs:
+    twinfra.io/environment: dev
+    twinfra.io/region: "${PLATFORM_PROFILE#dev-}"
+    twinfra.io/component: cilium
+  includeSelectors: false
+  includeTemplates: true
+VCLOUD_LABELS
+    kubectl kustomize "\$labels_dir" > "\$candidate"
+    rm -rf -- "\$labels_dir"
+fi
 # Summary goes to stderr: Helm requires stdout to contain YAML only.
 kubeconform -strict -summary -kubernetes-version "${KUBERNETES_VERSION#v}" "\$candidate" >&2
 yq eval-all -o=json -I=0 '[.]' "\$candidate" |
@@ -853,6 +888,783 @@ write_manifest_validators() {
 
 # BEGIN GENERATED EXCEPTION POLICY
 render_exception_policy() {
+    if [[ $PLATFORM_PROFILE == dev-* ]]; then
+        cat <<'VCLOUD_DEV_POLICY_JSON'
+{
+  "status": "approved",
+  "approval": {
+    "by": "user",
+    "date": "2026-10-05",
+    "decision": "Approve the documented node exception",
+    "adr": "docs/adr-0001-node-host-mounts.md",
+    "inventorySHA256": "bbb08cd371ab6321f9620d7db4280b3515a24db0825d171c116c34d6f0946f81"
+  },
+  "registry": "registry.twinfra.example.com",
+  "versions": {
+    "kubernetes": "v1.36.5",
+    "cilium": "1.20.2",
+    "nvidiaDevicePlugin": "0.20.1"
+  },
+  "agents": {
+    "DaemonSet/kube-system/cilium": {
+      "hostNetwork": true,
+      "hostPID": false,
+      "hostIPC": false,
+      "hostPaths": [
+        {
+          "name": "bpf-maps",
+          "hostPath": {
+            "type": "DirectoryOrCreate",
+            "path": "/sys/fs/bpf"
+          }
+        },
+        {
+          "name": "cilium-cgroup",
+          "hostPath": {
+            "type": "DirectoryOrCreate",
+            "path": "/sys/fs/cgroup"
+          }
+        },
+        {
+          "name": "cilium-netns",
+          "hostPath": {
+            "type": "DirectoryOrCreate",
+            "path": "/var/run/netns"
+          }
+        },
+        {
+          "name": "cilium-run",
+          "hostPath": {
+            "type": "DirectoryOrCreate",
+            "path": "/var/run/cilium"
+          }
+        },
+        {
+          "name": "cni-path",
+          "hostPath": {
+            "type": "DirectoryOrCreate",
+            "path": "/opt/cni/bin"
+          }
+        },
+        {
+          "name": "envoy-sockets",
+          "hostPath": {
+            "type": "DirectoryOrCreate",
+            "path": "/var/run/cilium/envoy/sockets"
+          }
+        },
+        {
+          "name": "etc-cni-netd",
+          "hostPath": {
+            "type": "DirectoryOrCreate",
+            "path": "/etc/cni/net.d"
+          }
+        },
+        {
+          "name": "host-proc-sys-kernel",
+          "hostPath": {
+            "type": "Directory",
+            "path": "/proc/sys/kernel"
+          }
+        },
+        {
+          "name": "host-proc-sys-net",
+          "hostPath": {
+            "type": "Directory",
+            "path": "/proc/sys/net"
+          }
+        },
+        {
+          "name": "hostproc",
+          "hostPath": {
+            "type": "Directory",
+            "path": "/proc"
+          }
+        },
+        {
+          "name": "lib-modules",
+          "hostPath": {
+            "type": "",
+            "path": "/lib/modules"
+          }
+        },
+        {
+          "name": "xtables-lock",
+          "hostPath": {
+            "type": "FileOrCreate",
+            "path": "/run/xtables.lock"
+          }
+        }
+      ],
+      "containers": [
+        {
+          "name": "cilium-agent",
+          "category": "containers",
+          "image": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+          "securityContext": {
+            "privileged": false,
+            "allowPrivilegeEscalation": true,
+            "runAsNonRoot": false,
+            "runAsUser": null,
+            "runAsGroup": null,
+            "readOnlyRootFilesystem": false,
+            "procMount": "Default",
+            "appArmorProfile": {
+              "type": "Unconfined"
+            },
+            "seccompProfile": {
+              "type": "Unconfined"
+            },
+            "seLinuxOptions": {
+              "level": "s0",
+              "type": "spc_t"
+            },
+            "capabilities": {
+              "add": [
+                "CHOWN",
+                "DAC_OVERRIDE",
+                "FOWNER",
+                "IPC_LOCK",
+                "KILL",
+                "NET_ADMIN",
+                "NET_RAW",
+                "SETGID",
+                "SETUID",
+                "SYSLOG",
+                "SYS_ADMIN",
+                "SYS_MODULE",
+                "SYS_RESOURCE"
+              ],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [
+            {
+              "readOnly": false,
+              "mountPropagation": "HostToContainer",
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "bpf-maps",
+              "mountPath": "/sys/fs/bpf"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "cilium-cgroup",
+              "mountPath": "/sys/fs/cgroup"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": "HostToContainer",
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "cilium-netns",
+              "mountPath": "/var/run/cilium/netns"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "cilium-run",
+              "mountPath": "/var/run/cilium"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "envoy-sockets",
+              "mountPath": "/var/run/cilium/envoy/sockets"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "etc-cni-netd",
+              "mountPath": "/host/etc/cni/net.d"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "mountPath": "/host/proc/sys/kernel",
+              "name": "host-proc-sys-kernel"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "mountPath": "/host/proc/sys/net",
+              "name": "host-proc-sys-net"
+            },
+            {
+              "readOnly": true,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "lib-modules",
+              "mountPath": "/lib/modules"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "xtables-lock",
+              "mountPath": "/run/xtables.lock"
+            }
+          ],
+          "command": [
+            "cilium-agent"
+          ],
+          "args": [
+            "--config-dir=/tmp/cilium/config-map"
+          ]
+        },
+        {
+          "name": "apply-sysctl-overwrites",
+          "category": "initContainers",
+          "image": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+          "securityContext": {
+            "privileged": false,
+            "allowPrivilegeEscalation": true,
+            "runAsNonRoot": false,
+            "runAsUser": null,
+            "runAsGroup": null,
+            "readOnlyRootFilesystem": false,
+            "procMount": "Default",
+            "appArmorProfile": {
+              "type": "Unconfined"
+            },
+            "seccompProfile": {
+              "type": "Unconfined"
+            },
+            "seLinuxOptions": {
+              "level": "s0",
+              "type": "spc_t"
+            },
+            "capabilities": {
+              "add": [
+                "SYS_ADMIN",
+                "SYS_CHROOT",
+                "SYS_PTRACE"
+              ],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "cni-path",
+              "mountPath": "/hostbin"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "hostproc",
+              "mountPath": "/hostproc"
+            }
+          ],
+          "command": [
+            "bash",
+            "-ec",
+            "cp /usr/bin/cilium-sysctlfix /hostbin/cilium-sysctlfix;\nnsenter --mount=/hostproc/1/ns/mnt \"${BIN_PATH}/cilium-sysctlfix\";\nrm /hostbin/cilium-sysctlfix\n"
+          ],
+          "args": []
+        },
+        {
+          "name": "clean-cilium-state",
+          "category": "initContainers",
+          "image": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+          "securityContext": {
+            "privileged": false,
+            "allowPrivilegeEscalation": true,
+            "runAsNonRoot": false,
+            "runAsUser": null,
+            "runAsGroup": null,
+            "readOnlyRootFilesystem": false,
+            "procMount": "Default",
+            "appArmorProfile": {
+              "type": "Unconfined"
+            },
+            "seccompProfile": {
+              "type": "Unconfined"
+            },
+            "seLinuxOptions": {
+              "level": "s0",
+              "type": "spc_t"
+            },
+            "capabilities": {
+              "add": [
+                "NET_ADMIN",
+                "SYS_ADMIN",
+                "SYS_MODULE",
+                "SYS_RESOURCE"
+              ],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "bpf-maps",
+              "mountPath": "/sys/fs/bpf"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": "HostToContainer",
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "cilium-cgroup",
+              "mountPath": "/sys/fs/cgroup"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "cilium-run",
+              "mountPath": "/var/run/cilium"
+            }
+          ],
+          "command": [
+            "/init-container.sh"
+          ],
+          "args": []
+        },
+        {
+          "name": "config",
+          "category": "initContainers",
+          "image": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+          "securityContext": {
+            "privileged": false,
+            "allowPrivilegeEscalation": true,
+            "runAsNonRoot": false,
+            "runAsUser": null,
+            "runAsGroup": null,
+            "readOnlyRootFilesystem": false,
+            "procMount": "Default",
+            "appArmorProfile": {
+              "type": "Unconfined"
+            },
+            "seccompProfile": {
+              "type": "Unconfined"
+            },
+            "capabilities": {
+              "add": [
+                "NET_ADMIN"
+              ],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [],
+          "command": [
+            "cilium-dbg",
+            "build-config",
+            "--k8s-api-server-urls="
+          ],
+          "args": []
+        },
+        {
+          "name": "install-cni-binaries",
+          "category": "initContainers",
+          "image": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+          "securityContext": {
+            "privileged": false,
+            "allowPrivilegeEscalation": true,
+            "runAsNonRoot": false,
+            "runAsUser": null,
+            "runAsGroup": null,
+            "readOnlyRootFilesystem": false,
+            "procMount": "Default",
+            "appArmorProfile": {
+              "type": "Unconfined"
+            },
+            "seccompProfile": {
+              "type": "Unconfined"
+            },
+            "seLinuxOptions": {
+              "level": "s0",
+              "type": "spc_t"
+            },
+            "capabilities": {
+              "add": [],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "cni-path",
+              "mountPath": "/host/opt/cni/bin"
+            }
+          ],
+          "command": [
+            "/install-plugin.sh"
+          ],
+          "args": []
+        }
+      ]
+    },
+    "DaemonSet/kube-system/cilium-envoy": {
+      "hostNetwork": true,
+      "hostPID": false,
+      "hostIPC": false,
+      "hostPaths": [
+        {
+          "name": "envoy-artifacts",
+          "hostPath": {
+            "type": "DirectoryOrCreate",
+            "path": "/var/run/cilium/envoy/artifacts"
+          }
+        },
+        {
+          "name": "envoy-sockets",
+          "hostPath": {
+            "type": "DirectoryOrCreate",
+            "path": "/var/run/cilium/envoy/sockets"
+          }
+        }
+      ],
+      "containers": [
+        {
+          "name": "cilium-envoy",
+          "category": "containers",
+          "image": "registry.twinfra.example.com/quay.io/cilium/cilium-envoy:v1.37.6-1789133542-cbec91f666af0bf742da986d43832932dbb26b82@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+          "securityContext": {
+            "privileged": false,
+            "allowPrivilegeEscalation": true,
+            "runAsNonRoot": false,
+            "runAsUser": null,
+            "runAsGroup": null,
+            "readOnlyRootFilesystem": false,
+            "procMount": "Default",
+            "appArmorProfile": {
+              "type": "Unconfined"
+            },
+            "seLinuxOptions": {
+              "level": "s0",
+              "type": "spc_t"
+            },
+            "capabilities": {
+              "add": [
+                "NET_ADMIN",
+                "SYS_ADMIN"
+              ],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [
+            {
+              "readOnly": true,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "envoy-artifacts",
+              "mountPath": "/var/run/cilium/envoy/artifacts"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "envoy-sockets",
+              "mountPath": "/var/run/cilium/envoy/sockets"
+            }
+          ],
+          "command": [
+            "/usr/bin/cilium-envoy-starter"
+          ],
+          "args": [
+            "--",
+            "-c /var/run/cilium/envoy/bootstrap-config.json",
+            "--base-id 0",
+            "--log-level info"
+          ]
+        }
+      ]
+    },
+    "Deployment/kube-system/cilium-operator": {
+      "hostNetwork": true,
+      "hostPID": false,
+      "hostIPC": false,
+      "hostPaths": [],
+      "containers": [
+        {
+          "name": "cilium-operator",
+          "category": "containers",
+          "image": "registry.twinfra.example.com/quay.io/cilium/operator-generic:v1.20.2@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+          "securityContext": {
+            "privileged": false,
+            "allowPrivilegeEscalation": false,
+            "runAsNonRoot": true,
+            "runAsUser": 65532,
+            "runAsGroup": 65532,
+            "readOnlyRootFilesystem": false,
+            "procMount": "Default",
+            "seccompProfile": {
+              "type": "RuntimeDefault"
+            },
+            "capabilities": {
+              "add": [],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [],
+          "command": [
+            "cilium-operator-generic"
+          ],
+          "args": [
+            "--config-dir=/tmp/cilium/config-map",
+            "--debug=$(CILIUM_DEBUG)"
+          ]
+        }
+      ]
+    },
+    "DaemonSet/kube-system/nvidia-device-plugin": {
+      "hostNetwork": false,
+      "hostPID": false,
+      "hostIPC": false,
+      "hostPaths": [
+        {
+          "name": "cdi-root",
+          "hostPath": {
+            "type": "DirectoryOrCreate",
+            "path": "/var/run/cdi"
+          }
+        },
+        {
+          "name": "kubelet-device-plugins-dir",
+          "hostPath": {
+            "type": "Directory",
+            "path": "/var/lib/kubelet/device-plugins"
+          }
+        },
+        {
+          "name": "mps-root",
+          "hostPath": {
+            "type": "DirectoryOrCreate",
+            "path": "/run/nvidia/mps"
+          }
+        },
+        {
+          "name": "mps-shm",
+          "hostPath": {
+            "type": "",
+            "path": "/run/nvidia/mps/shm"
+          }
+        }
+      ],
+      "containers": [
+        {
+          "name": "nvidia-device-plugin-ctr",
+          "category": "containers",
+          "image": "registry.twinfra.example.com/nvcr.io/nvidia/k8s-device-plugin:v0.20.1",
+          "securityContext": {
+            "privileged": false,
+            "allowPrivilegeEscalation": false,
+            "runAsNonRoot": false,
+            "runAsUser": null,
+            "runAsGroup": null,
+            "readOnlyRootFilesystem": false,
+            "procMount": "Default",
+            "capabilities": {
+              "add": [],
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "hostMounts": [
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "cdi-root",
+              "mountPath": "/var/run/cdi"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "kubelet-device-plugins-dir",
+              "mountPath": "/var/lib/kubelet/device-plugins"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "mps-root",
+              "mountPath": "/mps"
+            },
+            {
+              "readOnly": false,
+              "mountPropagation": null,
+              "subPath": "",
+              "subPathExpr": "",
+              "name": "mps-shm",
+              "mountPath": "/dev/shm"
+            }
+          ],
+          "command": [
+            "nvidia-device-plugin"
+          ],
+          "args": []
+        }
+      ]
+    }
+  },
+  "controlPlane": {
+    "Pod/kube-system/kube-apiserver": {
+      "image": "registry.twinfra.example.com/registry.k8s.io/kube-apiserver:v1.36.5",
+      "mounts": {
+        "/etc/kubernetes/pki": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": true
+        },
+        "/etc/ssl/certs": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": true
+        },
+        "/etc/ca-certificates": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": false
+        },
+        "/usr/share/ca-certificates": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": false
+        },
+        "/usr/local/share/ca-certificates": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": false
+        },
+        "/etc/pki/ca-trust": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": false
+        },
+        "/etc/pki/tls/certs": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": false
+        }
+      }
+    },
+    "Pod/kube-system/kube-controller-manager": {
+      "image": "registry.twinfra.example.com/registry.k8s.io/kube-controller-manager:v1.36.5",
+      "mounts": {
+        "/etc/kubernetes/pki": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": true
+        },
+        "/etc/ssl/certs": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": true
+        },
+        "/etc/ca-certificates": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": false
+        },
+        "/usr/share/ca-certificates": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": false
+        },
+        "/usr/local/share/ca-certificates": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": false
+        },
+        "/etc/pki/ca-trust": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": false
+        },
+        "/etc/pki/tls/certs": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": false
+        },
+        "/etc/kubernetes/controller-manager.conf": {
+          "readOnly": true,
+          "type": "FileOrCreate",
+          "required": true
+        }
+      }
+    },
+    "Pod/kube-system/kube-scheduler": {
+      "image": "registry.twinfra.example.com/registry.k8s.io/kube-scheduler:v1.36.5",
+      "mounts": {
+        "/etc/kubernetes/scheduler.conf": {
+          "readOnly": true,
+          "type": "FileOrCreate",
+          "required": true
+        }
+      }
+    },
+    "Pod/kube-system/etcd": {
+      "image": "registry.twinfra.example.com/registry.k8s.io/etcd:3.6.8-0",
+      "mounts": {
+        "/etc/kubernetes/pki/etcd": {
+          "readOnly": true,
+          "type": "DirectoryOrCreate",
+          "required": true
+        },
+        "/var/lib/etcd": {
+          "readOnly": false,
+          "type": "DirectoryOrCreate",
+          "required": true
+        }
+      }
+    }
+  },
+  "sourcePolicySHA256": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
+  "profile": "WO-21 dev mirror relocation only; same images, mounts and security"
+}
+VCLOUD_DEV_POLICY_JSON
+    else
     cat <<'VCLOUD_POLICY_JSON'
 {
   "status": "approved",
@@ -1626,6 +2438,7 @@ render_exception_policy() {
   }
 }
 VCLOUD_POLICY_JSON
+    fi
 }
 # END GENERATED EXCEPTION POLICY
 
@@ -1764,7 +2577,7 @@ def audit_objects(objects, policy, mode='workloads'):
             spec = obj.get('spec', {})
             if 'hostPath' in spec:
                 problems.append(f'{key}: forbidden hostPath PV')
-            if 'local' in spec and (not spec.get('nodeAffinity') or obj.get('metadata', {}).get('annotations', {}).get('vcloud.io/vetted') != 'true'):
+            if 'local' in spec and (not spec.get('nodeAffinity') or obj.get('metadata', {}).get('annotations', {}).get('vcloud.io/vetted', obj.get('metadata', {}).get('annotations', {}).get('twinfra.io/vetted')) != 'true'):
                 problems.append(f'{key}: Local PV requires documented vetting and nodeAffinity')
             if 'local' in spec:
                 # An annotation alone is not approval to expose an arbitrary host path.
@@ -1889,6 +2702,90 @@ validate_kubeadm_preview() {
 
 # BEGIN GENERATED FOUNDATION
 render_foundation() {
+    if [[ $PLATFORM_PROFILE == dev-* ]]; then
+        cat <<'EOF'
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: twinfra-platform-services
+  labels:
+    twinfra.io/managed: 'true'
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: v1.30
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: v1.30
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: v1.30
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: twinfra-default-deny
+  namespace: twinfra-platform-services
+  labels: {}
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress: []
+  egress: []
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: twinfra-workload-apps
+  labels:
+    twinfra.io/managed: 'true'
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: v1.30
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: v1.30
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: v1.30
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: twinfra-default-deny
+  namespace: twinfra-workload-apps
+  labels: {}
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress: []
+  egress: []
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: twinfra-hpc-compute
+  labels:
+    twinfra.io/managed: 'true'
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: v1.30
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: v1.30
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: v1.30
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: twinfra-default-deny
+  namespace: twinfra-hpc-compute
+  labels: {}
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress: []
+  egress: []
+EOF
+    else
     cat <<'EOF'
 # Generated from vcloud-ssot.yaml by tools/render_ssot.py.
 apiVersion: v1
@@ -1981,6 +2878,7 @@ spec:
   ingress: []
   egress: []
 EOF
+    fi
 }
 # END GENERATED FOUNDATION
 

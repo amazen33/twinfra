@@ -24,7 +24,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: console
-        image: registry.vcloud.example.com/vcloud/vcloud-console@sha256:672878a132dbc67fb45ab33109b7f0104e4b62a65454a8587028ddf82120d1f4
+        image: registry.vcloud.example.com/vcloud/vcloud-console@sha256:47f58759321fafa57e95312fa58c42bf7473045be47a27e86c290cf7662a8c50
         ports:
         - name: http
           containerPort: 3000

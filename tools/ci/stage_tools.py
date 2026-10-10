@@ -32,6 +32,25 @@ def extract_member(archive, member):
         return stream.extractfile(info).read()
 
 
+def extract_runtime(archive, destination):
+    """Stage a checksum-verified multi-file runtime; reject links and escapes."""
+    with tarfile.open(archive,'r:*') as stream:
+        seen=set();size=0
+        for info in stream.getmembers():
+            path=PurePosixPath(info.name)
+            if path.is_absolute() or '..' in path.parts or '\\' in info.name or ':' in info.name or info.issym() or info.islnk():
+                raise ValueError('Unsafe runtime archive member')
+            if info.isdir():continue
+            if not info.isfile() or path in seen:
+                raise ValueError('Runtime requires unique regular files')
+            seen.add(path);size+=info.size
+            if len(seen)>20000 or size>1024**3:raise ValueError('Runtime archive exceeds bounds')
+            target=destination/Path(*path.parts)
+            target.parent.mkdir(parents=True,exist_ok=True)
+            target.write_bytes(stream.extractfile(info).read())
+            target.chmod(0o755 if info.mode & 0o111 else 0o644)
+
+
 def stage(destination):
     destination.mkdir(parents=True, exist_ok=True)
     lock = json.loads((ROOT / 'toolchain.lock.json').read_text())
@@ -49,7 +68,13 @@ def stage(destination):
             cache.write_bytes(data)
         output = destination / relative
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_bytes(extract_member(cache, artifact['member']) if artifact.get('member') else data)
+        if artifact.get('runtimeArchive'):
+            extract_runtime(cache,output.parent)
+            output.chmod(0o755)
+            launcher=destination/'bin/pwsh';launcher.parent.mkdir(parents=True,exist_ok=True)
+            launcher.write_text('#!/usr/bin/env bash\nset -Eeuo pipefail\nexec '+shlex.quote(str(output))+' "$@"\n',encoding='utf-8')
+            launcher.chmod(0o755)
+        else:output.write_bytes(extract_member(cache, artifact['member']) if artifact.get('member') else data)
         if relative.parts[0] == 'bin':
             output.chmod(0o755)
         print('Verified ' + name, flush=True)

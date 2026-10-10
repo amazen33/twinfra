@@ -1,5 +1,5 @@
 #cloud-config
-# Generated; script SHA256=36c1cc3759f17faf1d9bc55b328bade594eab89692b3368bbb369f6fa487486e.
+# Generated; script SHA256=a16a32811f477fa1dc01e6453a4c30c2298c497c2781bae1865daae93723c8da.
 # Source template. Run `python3 tools/render_cloud_init.py` after changing the script.
 # Remote variant for small user-data limits: publish the script at the HTTPS URL below.
 package_update: true
@@ -44,6 +44,10 @@ write_files:
       # Set a stable, assigned interface address if the host has multiple NICs.
       # NODE_IP=192.168.50.10
       # NODE_NAME=vcloud01
+
+      # Optional stable DNS authority used by kubeadm; dev overlay supplies this at init.
+      CONTROL_PLANE_ENDPOINT=
+      PLATFORM_PROFILE=production
   - path: /usr/local/sbin/vcloud-fetch-host.sh
     owner: root:root
     permissions: '0755'
@@ -51,7 +55,7 @@ write_files:
       #!/usr/bin/env bash
       # Small-provider bootstrap: host the exact companion script at this URL first.
       set -Eeuo pipefail
-      expected='36c1cc3759f17faf1d9bc55b328bade594eab89692b3368bbb369f6fa487486e'
+      expected='a16a32811f477fa1dc01e6453a4c30c2298c497c2781bae1865daae93723c8da'
       url='https://artifacts.example.com/vcloud/00-setup-ubuntu-host.sh'
       target=/usr/local/sbin/00-setup-ubuntu-host.sh
       if [[ -f $target ]] && [[ $(sha256sum "$target" | cut -d' ' -f1) == "$expected" ]]; then exit 0; fi

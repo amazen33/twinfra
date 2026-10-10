@@ -18,6 +18,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'deploy/hyperv': ['deploy/hyperv/New-TwinfraDev.ps1','deploy/hyperv/Twinfra.psm1','deploy/hyperv/test-plan.ps1','deploy/hyperv/qcow2_to_vhd.py','deploy/hyperv/ubuntu-image.lock.json','deploy/upstream-names.json','tools/platform_dev.py','tools/platform_validate.py','tools/check_upstream_names.py','tests/test_dev_environment.py','deploy/environments/dev/cairo-1/root.yaml','deploy/environments/dev/cairo-1/platform/workloads.yaml','deploy/environments/dev/cairo-1/services/workloads.yaml'],
     'console': ['console/package.json', 'console/package-lock.json', 'console/server.py', 'console/Dockerfile',
         'console/image.lock.json', 'console/src/App.tsx', 'console/src/App.test.tsx', 'console/src/styles.css',
         'tools/vcloud_console.py', 'tools/configure_console_identity.py', 'tools/build_console_image.py',
@@ -246,6 +247,14 @@ def main():
                                      '-f','module-5b/values/kueue.yaml'])
                 run('hpc-alert-rules', [binaries['promtool'], 'check', 'rules', 'module-5b/observability/rules.yaml'])
                 run('hpc-alert-tests', [binaries['promtool'], 'test', 'rules', 'tests/module5b-alerts.test.yaml'])
+        if report['modules']['deploy/hyperv'] == 'present':
+            dev_build=report_dir/'dev-rendered'
+            run('dev-render-drift',[python,'tools/platform_dev.py','check'])
+            run('neutral-source-drift',[python,'tools/platform_sources.py','check'])
+            run('dev-conformance-tests',[python,'-m','unittest','discover','-s','tests','-p','test_dev_environment.py','-v'],unit=True)
+            run('hyperv-offline-plan',['pwsh','-NoProfile','-File','deploy/hyperv/test-plan.ps1'])
+            run('worker-join-shellcheck',[binaries['shellcheck'],'deploy/common/join-worker.sh'])
+            run('dev-schema-policy',[python,'tools/platform_validate.py','--helm',binaries['helm'],'--kustomize',binaries['kustomize'],'--kubeconform',binaries['kubeconform'],'--conftest',binaries['conftest'],'--bash',binaries['bash'],'--schemas',assets/'schemas','--build',dev_build])
         if report['modules']['lab/wsl'] == 'present':
             # Offline renders must never overwrite an active lab's live evidence
             # or address-specific Helm values in .build/wsl-lab.
@@ -315,6 +324,7 @@ def main():
                 render_inputs.extend(sorted((report_dir / 'airgap-rendered').glob('*.yaml')))
             if report['modules']['lab/wsl/gitops'] == 'present':
                 render_inputs.extend(sorted(platform_build.glob('*.yaml')))
+            if report['modules']['deploy/hyperv']=='present':render_inputs.extend([dev_build/'dev.yaml',dev_build/'cilium.yaml'])
             render_options = [part for file in render_inputs for part in ('--rendered', file)]
             run('candidate-rendered-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
                                               '--report', report_dir / 'licences.json', *render_options])

@@ -30,7 +30,8 @@ def identity(ecosystem, name, version):
 
 
 def normal_image(value):
-    value = value.removeprefix('registry.vcloud.example.com/')
+    for mirror in ('registry.vcloud.example.com/','registry.twinfra.example.com/'):
+        value = value.removeprefix(mirror)
     if '/' not in value.split('@')[0]:
         value = 'docker.io/library/' + value
     elif '.' not in value.split('/')[0] and ':' not in value.split('/')[0]:
@@ -124,6 +125,7 @@ def enumerate_inputs(root, rendered=()):
         'deploy/kustomize/base/argocd/install.yaml',
         'deploy/vendor/argocd-v3.5.3-install.yaml.gz',
         'lab/wsl/vendor/argocd-core.yaml.gz',
+        'deploy/common/vendor/argocd-core.yaml.gz',
     }
 
     def finding(kind, path, detail):
@@ -167,7 +169,7 @@ def enumerate_inputs(root, rendered=()):
             finding('inert-default', path, 'WO-25 upstream cache default replaced by digest-pinned Valkey')
             return
         value = normal_image(value)
-        if value.startswith(('docker.io/vcloud/', 'vcloud/')):
+        if value.startswith(('docker.io/vcloud/', 'vcloud/', 'docker.io/twinfra/', 'twinfra/')):
             return  # first-party outputs: dependencies/base images are enumerated separately
         value = aliases.get(value, value)
         name, version = image_parts(value)
@@ -226,7 +228,7 @@ def enumerate_inputs(root, rendered=()):
             data = json.loads(file.read_text(encoding='utf-8'))
             walk_images(data, path)
             for obj in objects(data):
-                url = obj.get('url')
+                url = obj.get('url') or (obj.get('imageUrl') if path=='deploy/hyperv/ubuntu-image.lock.json' else None)
                 if not isinstance(url, str) or not url.startswith('https://'):
                     continue
                 if url.startswith('https://files.pythonhosted.org/'):

@@ -26,14 +26,14 @@ import jwt
 
 from aws_views import read, signed_request, xml_values
 
-NS = 'platform-services'
-ISSUER = 'https://localhost:18443/realms/vcloud'
-CLIENT = 'vcloud-console'
+NS = os.environ.get('PLATFORM_NAMESPACE', 'platform-services')
+ISSUER = os.environ.get('OIDC_ISSUER', 'https://localhost:18443/realms/vcloud')
+CLIENT = os.environ.get('OIDC_CLIENT', 'vcloud-console')
 ROLES = {'console.viewer', 'console.admin'}
 STATIC = Path(os.environ.get('VCLOUD_STATIC', '/app/public'))
-SA = Path('/var/run/secrets/vcloud')
+SA = Path(os.environ.get('PLATFORM_SERVICE_ACCOUNT_PATH', '/var/run/secrets/vcloud'))
 MAX_BYTES = 1024 * 1024
-JWKS_URL = 'https://keycloak.platform-services.svc.cluster.local/realms/vcloud/protocol/openid-connect/certs'
+JWKS_URL = os.environ.get('OIDC_JWKS_URL', 'https://keycloak.platform-services.svc.cluster.local/realms/vcloud/protocol/openid-connect/certs')
 OIDC_CA = Path('/oidc-trust/tls.crt')
 ALGORITHMS = {'RS256': 'RSA', 'ES256': 'EC'}
 LEEWAY = 30  # Seconds, never more than the work order's 60-second limit.
@@ -135,7 +135,7 @@ def identity(header):
     if not ROLES.intersection(roles): raise Forbidden('Console role required')
     return {'username': str(claims.get('preferred_username') or claims['sub'])[:128],
             'roles': sorted(ROLES.intersection(roles)), 'issuer': ISSUER,
-            'client': CLIENT, 'adminUrl': 'https://localhost:18443/admin/'}
+            'client': CLIENT, 'adminUrl': os.environ.get('KEYCLOAK_ADMIN_URL','https://localhost:18443/admin/')}
 
 
 def kube(path):
@@ -155,8 +155,8 @@ def kube(path):
 def valid_query(query):
     if set(query) - {'backend', 'bucket', 'table'} or any(len(values) != 1 for values in query.values()):
         raise ValueError('Invalid query')
-    backend = query.get('backend', ['localstack'])[0]
-    if backend not in ('localstack', 'ministack'): raise ValueError('Unsupported backend')
+    backend = query.get('backend', [os.environ.get('PLATFORM_DEFAULT_BACKEND','localstack')])[0]
+    if backend not in os.environ.get('PLATFORM_BACKENDS','localstack,ministack').split(','): raise ValueError('Unsupported backend')
     for name in ('bucket', 'table'):
         value = query.get(name, [''])[0]
         if len(value) > 255 or '/' in value or '..' in value or any(ord(c) < 32 for c in value):
@@ -165,7 +165,7 @@ def valid_query(query):
 
 
 def api_response(view, query, user):
-    if view == 'identity': return user
+    if view == 'identity': return dict(user, environment=os.environ.get('PLATFORM_ENVIRONMENT','dev'), region=os.environ.get('PLATFORM_REGION',''), backends=os.environ.get('PLATFORM_BACKENDS','localstack,ministack').split(','))
     if view == 'overview':
         pods = kube('/api/v1/namespaces/' + NS + '/pods')['items']
         # Finished diagnostic jobs do not indicate unhealthy platform services.

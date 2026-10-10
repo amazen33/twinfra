@@ -102,3 +102,13 @@ actual EC2 VM provisioning or Spinifex offloading is implied by emulator accepta
 ## ISO/IEC 25010:2023 tag key
 
 Tags refer to product-quality characteristics: **Functional suitability** (required functions), **Performance efficiency** (performance and resource use), **Compatibility** (coexistence and interoperability), **Interaction capability** (user interaction), **Reliability** (consistent operation and recovery), **Security** (protection of systems and data), **Maintainability** (analysis, modification, and testing), **Flexibility** (adaptation, scalability, and installation), and **Safety** (freedom from unacceptable risk).
+
+## WO-21 · Dev environment (cairo-1)
+
+- [x] Static provisioning: shared Module -1 NoCloud seed, Hyper-V planner, checksum guard and offline collision/idempotence tests.
+- [x] Dev GitOps profile, neutral reusable helpers and ADR-0047 upstream-name register/check.
+- [ ] Owner provisioning and live Ready/deny-all/GitOps/PostgreSQL/PKCE-MFA acceptance.
+- [ ] Tester sign-off: [dev receipt](docs/acceptance/dev-environment-2026-10-10.md), Result: Pending.
+- [ ] WSL material deletion belongs to WO-28 after Accepted; no WSL retirement mutation in WO-21.
+
+[Owner runbook and production-profile deviations](docs/dev-environment.md).

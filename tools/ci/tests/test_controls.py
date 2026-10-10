@@ -20,6 +20,30 @@ def load(name):
     return module
 
 
+class RuntimeStaging(unittest.TestCase):
+    def test_runtime_rejects_links_and_parent_paths(self):
+        staging=load('stage_tools')
+        for name,symlink in [('../escape',False),('/escape',False),('link',True)]:
+            with tempfile.TemporaryDirectory() as tmp:
+                root=Path(tmp);archive=root/'runtime.tar.gz'
+                with tarfile.open(archive,'w:gz') as stream:
+                    info=tarfile.TarInfo(name)
+                    if symlink:info.type=tarfile.SYMTYPE;info.linkname='../escape';stream.addfile(info)
+                    else:info.size=4;stream.addfile(info,io.BytesIO(b'test'))
+                with self.assertRaises(ValueError):staging.extract_runtime(archive,root/'out')
+                self.assertFalse((root/'escape').exists())
+
+    def test_runtime_regular_files_preserve_contents(self):
+        staging=load('stage_tools')
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);archive=root/'runtime.tar.gz'
+            with tarfile.open(archive,'w:gz') as stream:
+                info=tarfile.TarInfo('pwsh');info.size=4;info.mode=0o755
+                stream.addfile(info,io.BytesIO(b'test'))
+            staging.extract_runtime(archive,root/'out')
+            self.assertEqual((root/'out/pwsh').read_bytes(),b'test')
+
+
 revisions, staging, checks = (load(name) for name in ('revisions', 'stage_tools', 'run_checks'))
 SHA = 'a' * 40
 

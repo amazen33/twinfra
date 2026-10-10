@@ -53,7 +53,7 @@
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "00-setup-ubuntu-host.sh",
-      "fingerprint": "36c1cc3759f17faf1d9bc55b328bade594eab89692b3368bbb369f6fa487486e"
+      "fingerprint": "a16a32811f477fa1dc01e6453a4c30c2298c497c2781bae1865daae93723c8da"
     },
     {
       "id": "image-digest:deploy/kustomize/base/argocd/install.yaml",
@@ -461,14 +461,14 @@
       "component": "oci-image|ghcr.io/api7/adc|sha256:f65f53dd966827ff485471d00b9ce8ca146f7aba187519817b7453e476a274b8"
     },
     {
-      "id": "image-sbom:oci-image|ghcr.io/cloudnative-pg/cloudnative-pg|1.30.1",
+      "id": "image-sbom:oci-image|ghcr.io/cloudnative-pg/cloudnative-pg|sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
       "kind": "image-sbom",
       "reason": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
-      "component": "oci-image|ghcr.io/cloudnative-pg/cloudnative-pg|1.30.1"
+      "component": "oci-image|ghcr.io/cloudnative-pg/cloudnative-pg|sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07"
     },
     {
       "id": "image-sbom:oci-image|ghcr.io/cloudnative-pg/pgvector|sha256:79fc129f885e2143bf6eb656a6b181ea449d1ef1a58c40fe5860986ed99bafcb",
@@ -661,6 +661,18 @@
       "component": "oci-image|registry.k8s.io/pause|3.10.1"
     },
     {
+      "id": "inert-default:deploy/common/vendor/argocd-core.yaml.gz",
+      "kind": "inert-default",
+      "path": "deploy/common/vendor/argocd-core.yaml.gz",
+      "fingerprint": "04bbf8bc31b6d0db09de10c6221af135851bb5cbc03004ee329a0d5ad832bfc4",
+      "reason": "WO-25 upstream cache default replaced by digest-pinned Valkey",
+      "requiredEvidence": "Prove the replacement in base, every overlay and WSL generator output; preserve reviewed upstream checksums.",
+      "owner": "Ahmed Mazen (@amazen33)",
+      "recordedOn": "2026-10-09",
+      "expires": "2027-01-07",
+      "detail": "WO-25 upstream cache default replaced by digest-pinned Valkey"
+    },
+    {
       "id": "inert-default:deploy/kustomize/base/argocd/install.yaml",
       "kind": "inert-default",
       "path": "deploy/kustomize/base/argocd/install.yaml",
@@ -747,6 +759,16 @@
       "expires": "2027-01-07",
       "path": "tests/requirements.txt",
       "fingerprint": "670a9264b1da9b9ac9cc1c37bef5e5022c8d0bfeb9668751c92da84cbe159ecc"
+    },
+    {
+      "id": "licence-source:manifest|cloud-images.ubuntu.com/noble/20260926/noble-server-cloudimg-amd64.img|6a81c37564db9b1ee84e141922625e1d7c5b389b99bb3c572e0243607d5bb4d2",
+      "kind": "licence-source",
+      "component": "manifest|cloud-images.ubuntu.com/noble/20260926/noble-server-cloudimg-amd64.img|6a81c37564db9b1ee84e141922625e1d7c5b389b99bb3c572e0243607d5bb4d2",
+      "reason": "Unmodified Canonical Ubuntu 24.04 distribution image under ADR-0044 decision 6. Checksum and provenance verified; release-level licence summary and SBOM are evidence pending; no SPDX terms guessed.",
+      "owner": "Ahmed Mazen (@amazen33)",
+      "requiredEvidence": "Review the pinned build distribution licence summary and image SBOM before commercial release",
+      "recordedOn": "2026-10-10",
+      "expires": "2027-01-08"
     },
     {
       "id": "licence-source:manifest|yannh/kubernetes-json-schema/v1.36.5-standalone-strict/apiservice.json|master",
@@ -1009,14 +1031,14 @@
       "component": "manifest|yannh/kubernetes-json-schema/v1.36.5-standalone-strict/validatingwebhookconfiguration.json|master"
     },
     {
-      "id": "licence-source:oci-image|ghcr.io/cloudnative-pg/cloudnative-pg|1.30.1",
+      "id": "licence-source:oci-image|ghcr.io/cloudnative-pg/cloudnative-pg|sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
       "kind": "licence-source",
       "reason": "Resolve exact-version licence source; do not infer from mutable branch or image project name.",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Resolve exact-version licence source; do not infer from mutable branch or image project name.",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
-      "component": "oci-image|ghcr.io/cloudnative-pg/cloudnative-pg|1.30.1"
+      "component": "oci-image|ghcr.io/cloudnative-pg/cloudnative-pg|sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07"
     },
     {
       "id": "licence-source:oci-image|ghcr.io/cloudnative-pg/pgvector|sha256:79fc129f885e2143bf6eb656a6b181ea449d1ef1a58c40fe5860986ed99bafcb",
@@ -1162,7 +1184,18 @@
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "tools/ci/toolchain.lock.json",
-      "fingerprint": "90b5fad50b72493bc3a264168e63c656f62003706f4311d261dc66ae2b84e60a"
+      "fingerprint": "71a2e5978af9a5d88d6756a801302239f456b5768b3e8a38092346df3e855199"
+    },
+    {
+      "id": "schema-source:deploy/common/schema.lock.json",
+      "kind": "schema-source",
+      "reason": "Neutral copy of the already pinned WSL Kubernetes schemas; evidence debt and original expiry are preserved.",
+      "owner": "Ahmed Mazen (@amazen33)",
+      "requiredEvidence": "Resolve schema licence source to the artifact commit",
+      "recordedOn": "2026-10-09",
+      "expires": "2027-01-07",
+      "path": "tools/ci/toolchain.lock.json",
+      "fingerprint": "a64d9b28a6cd85116bb2eb3d66237545e0562ab4041504598f89d8d367c2ac84"
     }
   ]
 }

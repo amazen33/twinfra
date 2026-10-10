@@ -1,0 +1,82 @@
+{
+  "images": {
+    "openbao": {
+      "source": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "canonical": "registry.twinfra.example.com/docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "digest": "sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf"
+    },
+    "keycloak": {
+      "source": "quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+      "canonical": "registry.twinfra.example.com/quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+      "digest": "sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc"
+    },
+    "apisix": {
+      "source": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "canonical": "registry.twinfra.example.com/docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "digest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141"
+    },
+    "ministack": {
+      "release": "docker.io/ministackorg/ministack:1.5.22",
+      "source": "docker.io/ministackorg/ministack@sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818",
+      "canonical": "registry.twinfra.example.com/docker.io/ministackorg/ministack@sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818",
+      "digest": "sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818"
+    },
+    "argocd": {
+      "source": "quay.io/argoproj/argocd:v3.5.3",
+      "digest": "sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "canonical": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "digestSource": "https://quay.io/v2/argoproj/argocd/manifests/v3.5.3"
+    },
+    "valkey": {
+      "source": "docker.io/valkey/valkey:8.1.10-alpine@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "canonical": "registry.twinfra.example.com/docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "tag": "8.1.10-alpine",
+      "digest": "sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "digestSource": "https://registry-1.docker.io/v2/valkey/valkey/manifests/8.1.10-alpine",
+      "publicationSource": "https://hub.docker.com/v2/repositories/valkey/valkey/tags/8.1.10-alpine",
+      "publishedAt": "2026-09-21T09:26:21.884226Z",
+      "releaseDate": "2026-09-01",
+      "verifiedOn": "2026-10-09",
+      "verification": {
+        "amd64Digest": "sha256:32627109abf6f741121096b45c732f758876803efd7b2e1018ebc0350d117119",
+        "configDigest": "sha256:09f1cebdbddf5d5c6e7521bd66e488a55bc11c47736572c101d9d0cf628121d0",
+        "entrypointLayerDigest": "sha256:9656719ba5a4d1c4230ffb6c648be4479a4f24678ba7066024c67448f905a28f",
+        "entrypointSHA256": "2a8a83f3265e56d6282b715b9101efa590e1c9c096283aa08df97087fce8c30a",
+        "entrypoint": [
+          "tini",
+          "--",
+          "docker-entrypoint.sh"
+        ],
+        "cmd": [
+          "valkey-server"
+        ],
+        "workingDir": "/data",
+        "buildUserId": 999,
+        "buildGroupId": 1000
+      }
+    },
+    "cnpg": {
+      "release": "ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1",
+      "source": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+      "canonical": "registry.twinfra.example.com/ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+      "digest": "sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07"
+    },
+    "python": {
+      "source": "docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e",
+      "canonical": "registry.twinfra.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e",
+      "digest": "sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e"
+    },
+    "postgres": {
+      "source": "docker.io/twinfra/twinfra-postgresql-pgvector@sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6",
+      "canonical": "registry.twinfra.example.com/docker.io/twinfra/twinfra-postgresql-pgvector@sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6",
+      "digest": "sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6",
+      "buildReceipt": "deploy/common/postgresql-image.lock.json"
+    },
+    "console": {
+      "source": "docker.io/twinfra/twinfra-console@sha256:47f58759321fafa57e95312fa58c42bf7473045be47a27e86c290cf7662a8c50",
+      "canonical": "registry.twinfra.example.com/docker.io/twinfra/twinfra-console@sha256:47f58759321fafa57e95312fa58c42bf7473045be47a27e86c290cf7662a8c50",
+      "digest": "sha256:47f58759321fafa57e95312fa58c42bf7473045be47a27e86c290cf7662a8c50",
+      "buildReceipt": "console/image.lock.json"
+    }
+  }
+}
