@@ -90,11 +90,16 @@ def routes():
         ('shell', ['/console', '/console/*'], 'vcloud-console', 3000, False, None),
         ('api', ['/console/api/*'], 'vcloud-console', 3000, True, None),
         ('storage-view', ['/console/proxy/storage', '/console/proxy/storage/*'], 'storage-ui', 9001, False, 'storage'),
-        ('dynamodb-view', ['/console/proxy/dynamodb', '/console/proxy/dynamodb/*'], 'dynamodb-admin', 8081, False, 'dynamodb')]:
+        ('dynamodb-view', ['/console/proxy/dynamodb', '/console/proxy/dynamodb/*'], 'dynamodb-admin', 8081, False, 'dynamodb'),
+        ('metrics', ['/console/metrics', '/console/metrics/*'], 'twinfra-perses', 8080, False, None)]:
         rule = {'name': name, 'priority': 150 if name != 'shell' else 100, 'match': {'hosts': p['hosts'], 'paths': paths},
             'backends': [{'serviceName': backend, 'servicePort': port, 'resolveGranularity': 'service'}], 'websocket': False,
             'plugins': plugins(api, prefix)}
         result.append(resource('ApisixRoute', 'vcloud-portal-' + name, {'ingressClassName': CLASS, 'http': [rule]}, NS, 'apisix.apache.org/v2'))
+        if name=='metrics':
+            rule['priority']=200
+            # Perses keeps its api_prefix; no URI rewrite or bearer forwarding.
+            rule['plugins'][2]['config']['headers']['remove'].append('X-Access-Token')
     return result
 
 

@@ -13,7 +13,7 @@ GitHub main push -> APISIX HTTPS -> HMAC + CEL -> Tekton PipelineRun
     -> registry.vcloud.example.com/vcloud/api:git-<source SHA>@sha256:<digest>
     -> validate exact candidate -> ordinary git push to gitops/prod
     -> Argo CD vcloud-delivery -> Knative vcloud-api in workload-apps
-Tekton/Argo metrics -> Prometheus -> Grafana dashboard + Prometheus alerts
+Tekton/Argo metrics -> Prometheus -> Perses dashboard + Prometheus alerts
 ```
 
 | Deliverable | File |
@@ -25,7 +25,7 @@ Tekton/Argo metrics -> Prometheus -> Grafana dashboard + Prometheus alerts
 | Narrow trigger RBAC; token-free runtime identities | [rbac.yaml](manifests/rbac.yaml) |
 | CI network, controller probes and monitoring allowances | [network.yaml](manifests/network.yaml) |
 | Argo CD Applications and separate AppProjects | [application.yaml](argocd/application.yaml) |
-| ServiceMonitors, alerts and Grafana dashboard | [observability.yaml](manifests/observability.yaml) |
+| ServiceMonitors, alerts and Perses dashboard | [observability.yaml](manifests/observability.yaml) |
 | New workload, identity and Cilium policy | [gitops/](gitops/) |
 | Trusted runtime/promotion code | [runner.py](runtime/runner.py), [final verifier](runtime/validate_workload.py) |
 | CI tooling image | [Dockerfile](images/ci-tooling.Dockerfile) |
@@ -198,9 +198,10 @@ and scrape the Tekton system namespace. Argo CD's existing `argocd-metrics` Serv
 must expose its `metrics` port. Native failure, out-of-sync/unhealthy and missing
 scrape alerts are in [observability.yaml](manifests/observability.yaml). Alertmanager
 routes and notification credentials stay with the existing observability owner.
-Grafana's dashboard sidecar must watch `grafana_dashboard: "1"` ConfigMaps in
-`platform-services`; otherwise import the ConfigMap's `vcloud-delivery.json` manually
-and choose the Prometheus datasource. Dashboards display metrics; Prometheus evaluates
+The ConfigMap contains Perses `twinfra-delivery.json`, provisioned as code by
+[the WO-07 generator](../deploy/observability/perses/README.md). The four PromQL
+queries are unchanged. The dashboard uses the project Prometheus datasource
+behind APISIX OIDC; browser edits are disabled. Dashboards display metrics; Prometheus evaluates
 the alerts and Alertmanager routes them. No external notification was sent here.
 
 ## Validation and live acceptance
@@ -224,7 +225,7 @@ an OCI build is not claimed. Application tests include a real local HTTP request
 Still accept actual controller/helper Pod security and mirrored images, CSI workspaces,
 GitHub HMAC and replay behavior, short-lived token rotation, builder mTLS/OCI push,
 registry CA verification, branch protection, Argo drift/rollback, scale-to-zero
-activation and observed Prometheus/Grafana/Alertmanager behavior. Signed images,
+activation and observed Prometheus/Perses/Alertmanager behavior. Signed images,
 SBOM/provenance and admission verification proposed in ADR 0008 are not implemented
 by this baseline; they remain required before a production artifact-trust claim.
 

@@ -852,6 +852,74 @@
       "followUp": "WO-26"
     },
     {
+      "id": "manifest|perses/perses-operator/config/crd/bases/perses.dev_perses.yaml|v0.5.0",
+      "ecosystem": "manifest",
+      "name": "perses/perses-operator/config/crd/bases/perses.dev_perses.yaml",
+      "version": "v0.5.0",
+      "locations": [
+        "deploy/observability/perses/artifacts.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/perses/perses-operator/v0.5.0/LICENSE",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:f4dc043ec16e2e904d353c15f68f2b870c16bc5161f0f04036bd8641e7e07ccc"
+      ]
+    },
+    {
+      "id": "manifest|perses/perses-operator/config/crd/bases/perses.dev_persesdashboards.yaml|v0.5.0",
+      "ecosystem": "manifest",
+      "name": "perses/perses-operator/config/crd/bases/perses.dev_persesdashboards.yaml",
+      "version": "v0.5.0",
+      "locations": [
+        "deploy/observability/perses/artifacts.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/perses/perses-operator/v0.5.0/LICENSE",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:dadd5d9385a9568843aa247e9da97943932b4fdca6d38f5824863f4c0f909cad"
+      ]
+    },
+    {
+      "id": "manifest|perses/perses-operator/config/crd/bases/perses.dev_persesdatasources.yaml|v0.5.0",
+      "ecosystem": "manifest",
+      "name": "perses/perses-operator/config/crd/bases/perses.dev_persesdatasources.yaml",
+      "version": "v0.5.0",
+      "locations": [
+        "deploy/observability/perses/artifacts.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/perses/perses-operator/v0.5.0/LICENSE",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:793ab4063e4c8fe95e2782abc67cc9426fc0373ca7c615de2ccf492b04d1484f"
+      ]
+    },
+    {
+      "id": "manifest|perses/perses-operator/config/crd/bases/perses.dev_persesglobaldatasources.yaml|v0.5.0",
+      "ecosystem": "manifest",
+      "name": "perses/perses-operator/config/crd/bases/perses.dev_persesglobaldatasources.yaml",
+      "version": "v0.5.0",
+      "locations": [
+        "deploy/observability/perses/artifacts.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/perses/perses-operator/v0.5.0/LICENSE",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:c0e2b54fa6f4ee7d129361cfe7affdab7352ffff9acee35a3eb11ecd3cd6ec0e"
+      ]
+    },
+    {
       "id": "manifest|prometheus-operator/prometheus-operator/bundle.yaml|v0.94.1",
       "ecosystem": "manifest",
       "name": "prometheus-operator/prometheus-operator/bundle.yaml",
@@ -7122,27 +7190,6 @@
       ]
     },
     {
-      "id": "oci-image|docker.io/grafana/grafana|sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
-      "ecosystem": "oci-image",
-      "name": "docker.io/grafana/grafana",
-      "version": "sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
-      "locations": [
-        "lab/wsl/endpoints/artifacts.lock.json",
-        "lab/wsl/endpoints/gitops/workloads.yaml"
-      ],
-      "spdx": "AGPL-3.0-only",
-      "class": "pending-removal",
-      "licenceSource": "https://raw.githubusercontent.com/grafana/grafana/v13.2.3/LICENSE",
-      "verifiedOn": "2026-10-09",
-      "recordedOn": "2026-10-09",
-      "integrities": [
-        "sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572"
-      ],
-      "adr": "0030",
-      "expires": "2026-12-08",
-      "followUp": "WO-07"
-    },
-    {
       "id": "oci-image|docker.io/library/busybox|sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e",
       "ecosystem": "oci-image",
       "name": "docker.io/library/busybox",
@@ -7720,6 +7767,55 @@
       "integrities": [
         "sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc"
       ]
+    },
+    {
+      "id": "oci-image|quay.io/persesdev/perses-operator|sha256:8f8d7b09caefc35777dc88b9e8823efb7232b1ce2869648575176e760d7b55bf",
+      "ecosystem": "oci-image",
+      "name": "quay.io/persesdev/perses-operator",
+      "version": "sha256:8f8d7b09caefc35777dc88b9e8823efb7232b1ce2869648575176e760d7b55bf",
+      "locations": [
+        "deploy/common/images.lock.json",
+        "deploy/environments/dev/cairo-1/services/workloads.yaml",
+        "deploy/observability/perses/artifacts.lock.json",
+        "lab/wsl/endpoints/artifacts.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/perses/perses-operator/v0.5.0/LICENSE",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:8f8d7b09caefc35777dc88b9e8823efb7232b1ce2869648575176e760d7b55bf"
+      ],
+      "imageSBOM": {
+        "path": "deploy/observability/perses/vendor/perses-operator-sbom.json.gz",
+        "sha256": "8d210f2bb756181c190fc9cc89ef774edb16fba56d7fe2297fdffc67cb880e7f"
+      }
+    },
+    {
+      "id": "oci-image|quay.io/persesdev/perses|sha256:a0e34ddaf9d7599d96036611af205b948c1179646844202d869f3bcf3d5d9e9c",
+      "ecosystem": "oci-image",
+      "name": "quay.io/persesdev/perses",
+      "version": "sha256:a0e34ddaf9d7599d96036611af205b948c1179646844202d869f3bcf3d5d9e9c",
+      "locations": [
+        "deploy/common/images.lock.json",
+        "deploy/environments/dev/cairo-1/services/workloads.yaml",
+        "deploy/observability/perses/artifacts.lock.json",
+        "lab/wsl/endpoints/artifacts.lock.json",
+        "lab/wsl/endpoints/gitops/workloads.yaml"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/perses/perses/v0.54.0/LICENSE",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
+      "integrities": [
+        "sha256:a0e34ddaf9d7599d96036611af205b948c1179646844202d869f3bcf3d5d9e9c"
+      ],
+      "imageSBOM": {
+        "path": "deploy/observability/perses/vendor/perses-sbom.json.gz",
+        "sha256": "818fd04bbebc4f65c343ad1b9c74d5e5cb578a86a5ef5928bfc36999548d838d"
+      }
     },
     {
       "id": "oci-image|quay.io/prometheus-operator/prometheus-config-reloader|sha256:06b52bd4dbe3ed6dd5905aadaf8b9987d9da4c31d37bb86deaadae68cee2d26b",

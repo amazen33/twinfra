@@ -68,8 +68,10 @@ def main():
             time.sleep(2)
         else:raise ValueError('Collector did not export the real demo trace')
         passed('OpenTelemetry','real demo span received and exported via debug; no durable trace backend claimed')
-        code,body=http('http://127.0.0.1:3000/api/health');assert code==200 and json.loads(body)['database']=='ok'
-        passed('Grafana','HTTP 200, application database ok')
+        # Dashboard/SSO acceptance is now owned by the VM-dev receipt. The WSL
+        # acceptance harness is retained until WO-28; it cannot claim that pass.
+        report['perses']={'status':'Pending','environment':'twinfra-dev-cairo-1',
+                          'receipt':'docs/acceptance/perses-2026-10-10.md'}
         # Verify Keycloak TLS using its public certificate; never skip verification.
         public=subprocess.check_output(K+['get','secret','vcloud-wsl-keycloak-tls','-n',NS,'-o','jsonpath={.data.tls\\.crt}'])
         import base64,ssl

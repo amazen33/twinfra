@@ -188,12 +188,10 @@ def resources():
     expressions=[('Pipeline runs','sum by (status) (increase(tekton_pipelines_controller_pipelinerun_duration_seconds_count{namespace="workload-apps",pipeline="vcloud-ci"}[1h]))'),
                  ('Pipeline duration p95','histogram_quantile(0.95, sum by (le) (rate(tekton_pipelines_controller_pipelinerun_duration_seconds_bucket{namespace="workload-apps",pipeline="vcloud-ci"}[15m])))'),
                  ('Argo CD sync and health','argocd_app_info{name="vcloud-delivery"}'),('Delivery alerts','ALERTS{alertname=~"VCloud.*",alertstate="firing"}')]
-    dashboard={'uid':'vcloud-delivery','title':'vCloud delivery','schemaVersion':41,'version':1,'refresh':'30s',
-        'templating':{'list':[{'name':'datasource','type':'datasource','query':'prometheus','current':{}}]},
-        'panels':[{'id':i,'title':title,'type':'timeseries','gridPos':{'x':(i-1)%2*12,'y':(i-1)//2*8,'w':12,'h':8},
-                   'datasource':{'type':'prometheus','uid':'${datasource}'},'targets':[{'refId':'A','expr':expr,'legendFormat':'{{status}} {{sync_status}} {{health_status}}'}]} for i,(title,expr) in enumerate(expressions,1)]}
-    grafana=obj('v1','ConfigMap','vcloud-delivery-dashboard',namespace='platform-services',data={'vcloud-delivery.json':json.dumps(dashboard,indent=2)})
-    grafana['metadata']['labels']['grafana_dashboard']='1'
+    from perses import dashboard as perses_dashboard
+    dashboard=perses_dashboard('twinfra-delivery','Twinfra delivery',expressions)
+    dashboard_config=obj('v1','ConfigMap','vcloud-delivery-dashboard',namespace='platform-services',data={'twinfra-delivery.json':json.dumps(dashboard,indent=2)})
+    dashboard_config['metadata']['labels']['perses.dev/resource']='true'
     appproject=obj('argoproj.io/v1alpha1','AppProject','vcloud-delivery',namespace='platform-services',spec={
       'sourceRepos':['https://github.com/amazen33/twinfra.git'],'destinations':[{'server':'https://kubernetes.default.svc','namespace':'workload-apps'}],
       'clusterResourceWhitelist':[],'namespaceResourceWhitelist':[{'group':'serving.knative.dev','kind':'Service'},{'group':'','kind':'ServiceAccount'},{'group':'cilium.io','kind':'CiliumNetworkPolicy'}]})
@@ -240,7 +238,7 @@ def resources():
       'module-3/examples/pipelinerun.yaml':[sample],'module-3/manifests/rbac.yaml':rbac,
       'module-3/manifests/triggers.yaml':trigger,'module-3/manifests/network.yaml':networks,
       'module-3/manifests/tekton-namespace.yaml':[namespace],
-      'module-3/manifests/observability.yaml':[*monitors,monitor_rule,grafana],
+      'module-3/manifests/observability.yaml':[*monitors,monitor_rule,dashboard_config],
       'module-3/argocd/application.yaml':[appproject,application,infra_project,infra_app],
       'module-3/gitops/workload.yaml':workload,'module-3/gitops/serviceaccount.yaml':[workload_sa],
       'module-3/gitops/network.yaml':[workload_net],

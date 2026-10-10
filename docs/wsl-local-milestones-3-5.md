@@ -178,10 +178,12 @@ The demo sends a real OTLP/HTTP span to the Collector on each request. Its batch
 pipeline exports to the debug exporter; logs must contain `demo-cpu-app` and
 `vcloud-demo-request`. The Collector accepts OTLP on 4317/4318 and offers a
 Prometheus exporter on 9464. No Jaeger/Tempo GUI or durable trace store is claimed.
-Grafana has an internal Prometheus datasource; its admin password is file-mounted
-from a private Secret, never placed in environment variables. Prometheus's two-hour
-retention and Grafana data are ephemeral local diagnostics, not durable production
-observability or backup.
+WO-07's retained generators use Perses with an internal Prometheus datasource
+behind APISIX OIDC at `/console/metrics`; no separate dashboard password or
+direct forward exists. Dashboards are read-only and provisioned from Git.
+Prometheus's two-hour retention is ephemeral diagnostics, not durable production
+observability or backup. This WSL runbook is retained until WO-28; live Perses
+acceptance is Pending for twinfra-dev-cairo-1 under ADR-0046.
 
 ## M5: executable gates and publication
 

@@ -83,6 +83,22 @@
       "canonical": "registry.twinfra.example.com/docker.io/twinfra/twinfra-console@sha256:385934466c5453902e4beda1d6ed7afb09eae6dd3419d0a7b0b219eece4cc4e2",
       "digest": "sha256:385934466c5453902e4beda1d6ed7afb09eae6dd3419d0a7b0b219eece4cc4e2",
       "buildReceipt": "console/image.lock.json"
+    },
+    "perses": {
+      "source": "quay.io/persesdev/perses@sha256:a0e34ddaf9d7599d96036611af205b948c1179646844202d869f3bcf3d5d9e9c",
+      "canonical": "registry.twinfra.example.com/quay.io/persesdev/perses@sha256:a0e34ddaf9d7599d96036611af205b948c1179646844202d869f3bcf3d5d9e9c",
+      "digest": "sha256:a0e34ddaf9d7599d96036611af205b948c1179646844202d869f3bcf3d5d9e9c",
+      "release": "quay.io/persesdev/perses:v0.54.0",
+      "publishedOn": "2026-07-29",
+      "licenceSource": "https://raw.githubusercontent.com/perses/perses/v0.54.0/LICENSE"
+    },
+    "perses-operator": {
+      "source": "quay.io/persesdev/perses-operator@sha256:8f8d7b09caefc35777dc88b9e8823efb7232b1ce2869648575176e760d7b55bf",
+      "canonical": "registry.twinfra.example.com/quay.io/persesdev/perses-operator@sha256:8f8d7b09caefc35777dc88b9e8823efb7232b1ce2869648575176e760d7b55bf",
+      "digest": "sha256:8f8d7b09caefc35777dc88b9e8823efb7232b1ce2869648575176e760d7b55bf",
+      "release": "quay.io/persesdev/perses-operator:v0.5.0",
+      "publishedOn": "2026-08-04",
+      "licenceSource": "https://raw.githubusercontent.com/perses/perses-operator/v0.5.0/LICENSE"
     }
   }
 }

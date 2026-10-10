@@ -174,12 +174,15 @@ def portal():
     return [sa,role,binding,d,service('twinfra-console',3000)]
 
 def gateway():
+    from perses import gateway_route
+    routes=json.loads((COMMON/'apisix-routes.json').read_text())
+    routes['routes'].append(gateway_route(routes['routes'][0],NS))
     # Standalone APISIX consumes a complete declarative snapshot; no admin API/controller/etcd needed.
     cm=config('twinfra-gateway',{'config.yaml':yaml.safe_dump({'apisix':{'node_listen':[],'enable_admin':False,'enable_ipv6':False,'ssl':{'enable':True,'listen':[{'port':9443}],
         'ssl_cert':'/tls/tls.crt','ssl_cert_key':'/tls/tls.key','ssl_trusted_certificate':'/oidc-trust/tls.crt'}},
         'nginx_config':{'worker_processes':1,'error_log':'/dev/stderr','http':{'access_log':'/dev/stdout','access_log_format':'$remote_addr $request_method $uri $status'}},
         'deployment':{'role':'data_plane','role_data_plane':{'config_provider':'yaml'}}}),
-        'apisix.template.json':(COMMON/'apisix-routes.json').read_text(),'configure.py':(COMMON/'gateway-config.py').read_text()})
+        'apisix.template.json':json.dumps(routes,indent=2)+'\n','configure.py':(COMMON/'gateway-config.py').read_text()})
     volumes=[{'name':'source','configMap':{'name':'twinfra-gateway'}},{'name':'conf','emptyDir':{'medium':'Memory','sizeLimit':'32Mi'}},
         {'name':'auth','secret':{'secretName':'twinfra-console-oidc','defaultMode':0o440}},
         {'name':'tls','secret':{'secretName':'twinfra-gateway-tls','defaultMode':0o440}},
@@ -273,11 +276,14 @@ def seed(row):
         'network-config':yaml.safe_dump(network,sort_keys=False)}
 
 def outputs():
+    from perses import crds as perses_crds, objects as perses_objects
+    extra_crds=perses_crds()
+    for value in extra_crds:value['metadata'].setdefault('labels',{}).update(labels('perses'))
     ssot=yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text());root,children=applications()
     namespace=obj('Namespace',NS,ns=None);namespace['metadata']['labels'].update({'pod-security.kubernetes.io/enforce':'restricted','pod-security.kubernetes.io/enforce-version':'v1.30','pod-security.kubernetes.io/audit':'restricted','pod-security.kubernetes.io/warn':'restricted'})
     result={TARGET/'root.yaml':yaml.safe_dump_all(root,sort_keys=False),TARGET/'apps/applications.yaml':yaml.safe_dump_all(children,sort_keys=False),
-        TARGET/'platform/workloads.yaml':yaml.safe_dump_all([namespace]+controllers()+database()+network(),sort_keys=False),
-        TARGET/'services/workloads.yaml':yaml.safe_dump_all(endpoints()+portal()+gateway(),sort_keys=False)}
+        TARGET/'platform/workloads.yaml':yaml.safe_dump_all([namespace]+controllers()+extra_crds+database()+network(),sort_keys=False),
+        TARGET/'services/workloads.yaml':yaml.safe_dump_all(endpoints()+portal()+gateway()+perses_objects(NS),sort_keys=False)}
     for folder,component in [('platform','platform'),('services','services')]:
         result[TARGET/folder/'kustomization.yaml']=yaml.safe_dump({'apiVersion':'kustomize.config.k8s.io/v1beta1','kind':'Kustomization','resources':['workloads.yaml'],'labels':[{'pairs':{k:v for k,v in labels(component).items() if k.startswith('twinfra.io/')},'includeSelectors':False,'includeTemplates':True}]},sort_keys=False)
     for row in ssot['addressPlan']:

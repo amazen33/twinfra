@@ -64,7 +64,7 @@ for file in observability.yaml application.yaml; do
   k apply --server-side --field-manager=vcloud-wsl-endpoints --dry-run=server -f "$BUILD/$file" >/dev/null
   k apply --server-side --field-manager=vcloud-wsl-endpoints -f "$BUILD/$file"
 done
-for name in keycloak apisix grafana otel-collector prometheus-operator; do
+for name in keycloak apisix twinfra-perses-operator twinfra-perses otel-collector prometheus-operator; do
   k -n platform-services rollout status deployment/"$name" --timeout=300s
 done
 k -n platform-services rollout status statefulset/prometheus-vcloud --timeout=300s

@@ -123,7 +123,7 @@ is still pending; Module 3 has its own current validation record below.
 
 The [Module 3 runbook](module-3/README.md) provides complete Tekton Tasks, Pipeline,
 PipelineRun and authenticated push triggers, Argo CD Applications, Prometheus scrape
-and alert hooks, and a Grafana dashboard. Protected-main builds promote source tags
+and alert hooks, and a Perses dashboard behind APISIX SSO. Protected-main builds promote source tags
 and immutable digests to `gitops/prod`; Argo reconciles the new `vcloud-api` workload.
 Restricted CI Pods use an external mTLS builder and per-run CSI workspaces.
 Run `make module3-validate module3-test module3-alerts`; see

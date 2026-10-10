@@ -1,0 +1,54 @@
+{
+  "versions": {
+    "perses": "0.54.0",
+    "operator": "0.5.0"
+  },
+  "images": {
+    "perses": {
+      "source": "quay.io/persesdev/perses@sha256:a0e34ddaf9d7599d96036611af205b948c1179646844202d869f3bcf3d5d9e9c",
+      "canonical": "registry.twinfra.example.com/quay.io/persesdev/perses@sha256:a0e34ddaf9d7599d96036611af205b948c1179646844202d869f3bcf3d5d9e9c",
+      "digest": "sha256:a0e34ddaf9d7599d96036611af205b948c1179646844202d869f3bcf3d5d9e9c",
+      "release": "quay.io/persesdev/perses:v0.54.0",
+      "publishedOn": "2026-07-29",
+      "licenceSource": "https://raw.githubusercontent.com/perses/perses/v0.54.0/LICENSE",
+      "imageSBOM": {
+        "path": "deploy/observability/perses/vendor/perses-sbom.json.gz",
+        "sha256": "818fd04bbebc4f65c343ad1b9c74d5e5cb578a86a5ef5928bfc36999548d838d"
+      }
+    },
+    "operator": {
+      "source": "quay.io/persesdev/perses-operator@sha256:8f8d7b09caefc35777dc88b9e8823efb7232b1ce2869648575176e760d7b55bf",
+      "canonical": "registry.twinfra.example.com/quay.io/persesdev/perses-operator@sha256:8f8d7b09caefc35777dc88b9e8823efb7232b1ce2869648575176e760d7b55bf",
+      "digest": "sha256:8f8d7b09caefc35777dc88b9e8823efb7232b1ce2869648575176e760d7b55bf",
+      "release": "quay.io/persesdev/perses-operator:v0.5.0",
+      "publishedOn": "2026-08-04",
+      "licenceSource": "https://raw.githubusercontent.com/perses/perses-operator/v0.5.0/LICENSE",
+      "imageSBOM": {
+        "path": "deploy/observability/perses/vendor/perses-operator-sbom.json.gz",
+        "sha256": "8d210f2bb756181c190fc9cc89ef774edb16fba56d7fe2297fdffc67cb880e7f"
+      }
+    }
+  },
+  "files": {
+    "perses.dev_perses.yaml": {
+      "url": "https://raw.githubusercontent.com/perses/perses-operator/v0.5.0/config/crd/bases/perses.dev_perses.yaml",
+      "sourceSHA256": "f4dc043ec16e2e904d353c15f68f2b870c16bc5161f0f04036bd8641e7e07ccc",
+      "gzipSHA256": "c6edf5a311328b26ad9b25cb333750c42e953beff8ba2efb0bacde0f0030dc34"
+    },
+    "perses.dev_persesdashboards.yaml": {
+      "url": "https://raw.githubusercontent.com/perses/perses-operator/v0.5.0/config/crd/bases/perses.dev_persesdashboards.yaml",
+      "sourceSHA256": "dadd5d9385a9568843aa247e9da97943932b4fdca6d38f5824863f4c0f909cad",
+      "gzipSHA256": "a6fbffd99690c9dd7f613038bc3b96002a02e5bafdb6925423f820bc652f0552"
+    },
+    "perses.dev_persesdatasources.yaml": {
+      "url": "https://raw.githubusercontent.com/perses/perses-operator/v0.5.0/config/crd/bases/perses.dev_persesdatasources.yaml",
+      "sourceSHA256": "793ab4063e4c8fe95e2782abc67cc9426fc0373ca7c615de2ccf492b04d1484f",
+      "gzipSHA256": "c96c30ab04196c66c6301a4b6d9d156d2d2dc8b3c55fa0885bd303461c7841b8"
+    },
+    "perses.dev_persesglobaldatasources.yaml": {
+      "url": "https://raw.githubusercontent.com/perses/perses-operator/v0.5.0/config/crd/bases/perses.dev_persesglobaldatasources.yaml",
+      "sourceSHA256": "c0e2b54fa6f4ee7d129361cfe7affdab7352ffff9acee35a3eb11ecd3cd6ec0e",
+      "gzipSHA256": "ea4bc1607df9fdd88a591b633236ac4f191db511e242f5b04c0bf9440f5b15d7"
+    }
+  }
+}

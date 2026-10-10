@@ -285,7 +285,10 @@ class PortalTests(unittest.TestCase):
             self.assertNotIn('client_secret',conf)
             rewrite=next(p['config'] for p in rule['plugins'] if p['name']=='proxy-rewrite')
             self.assertIn('Cookie',rewrite['headers']['remove']); self.assertIn('X-ID-Token',rewrite['headers']['remove'])
-            self.assertNotIn('X-Access-Token',rewrite['headers']['remove'])
+            if rule['name']=='metrics':
+                self.assertIn('X-Access-Token',rewrite['headers']['remove'])
+            else:
+                self.assertNotIn('X-Access-Token',rewrite['headers']['remove'])
             self.assertTrue(conf['set_access_token_header']); self.assertFalse(conf['set_id_token_header'])
             scrub=next(p['config']['functions'][0] for p in rule['plugins'] if p['name']=='serverless-pre-function')
             self.assertIn("'X-Access-Token'",scrub); self.assertIn("'X-ID-Token'",scrub)

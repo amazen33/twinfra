@@ -194,10 +194,14 @@ class Licences(unittest.TestCase):
     def test_pending_removal_expiry_and_completed_removal_cannot_return(self):
         self.entry.update(name='docker.io/grafana/grafana', spdx='AGPL-3.0-only',
                           **{'class': 'pending-removal'}, expires='2026-12-08')
+        # Exercise a synthetic prior authorization without restoring the removed
+        # component to the candidate policy or inventory.
+        self.policy['pendingRemoval']=['docker.io/grafana/grafana']
         self.check()
         with self.assertRaises(ValueError):
             gate.check_component(self.entry, self.component, self.policy, self.root, date(2026, 12, 8), {})
-        for name in ('new-agpl-image', 'public.ecr.aws/docker/library/redis'):
+        self.policy['pendingRemoval']=[]
+        for name in ('docker.io/grafana/grafana', 'new-agpl-image', 'public.ecr.aws/docker/library/redis'):
             self.entry['name'] = name
             with self.subTest(name=name), self.assertRaises(ValueError):
                 self.check()

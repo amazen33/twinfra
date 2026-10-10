@@ -45,7 +45,8 @@ def relocate(value,ns):
 
 @lru_cache(maxsize=1)
 def controllers():
-    result=[]
+    from perses import crds as perses_crds
+    result=perses_crds()
     for filename in ('serving-core.yaml','kourier.yaml','prometheus-operator.yaml'):
         ns=NS if filename=='prometheus-operator.yaml' else APP_NS
         for obj in vendor(filename):
@@ -298,22 +299,7 @@ def observability():
                            'readinessProbe':{'httpGet':{'path':'/','port':13133}},'livenessProbe':{'httpGet':{'path':'/','port':13133}}},
                           [{'name':'config','configMap':{'name':'vcloud-otel'}}])]
     otel_service=service('otel-collector',4318);otel_service['spec']['ports'].append({'name':'grpc','port':4317,'targetPort':4317});result.append(otel_service)
-    datasources={'apiVersion':1,'datasources':[{'name':'vCloud Prometheus','type':'prometheus','access':'proxy',
-        'url':'http://prometheus.platform-services.svc.cluster.local:9090','isDefault':True,'editable':False}]}
-    result += [config('vcloud-grafana',{'datasources.yaml':yaml.safe_dump(datasources,sort_keys=False)}),
-               deployment('grafana',{'name':'grafana','image':image('grafana'),
-                 'env':[{'name':'GF_SECURITY_ADMIN_USER__FILE','value':'/auth/admin-user'},
-                        {'name':'GF_SECURITY_ADMIN_PASSWORD__FILE','value':'/auth/admin-password'},
-                        {'name':'GF_AUTH_ANONYMOUS_ENABLED','value':'false'}, {'name':'GF_ANALYTICS_REPORTING_ENABLED','value':'false'},
-                        {'name':'GF_ANALYTICS_CHECK_FOR_UPDATES','value':'false'}, {'name':'GF_PLUGINS_PREINSTALL_DISABLED','value':'true'}],
-                 'volumeMounts':[{'name':'auth','mountPath':'/auth','readOnly':True},
-                                 {'name':'datasources','mountPath':'/etc/grafana/provisioning/datasources','readOnly':True},
-                                 {'name':'data','mountPath':'/var/lib/grafana'},{'name':'tmp','mountPath':'/tmp'}],
-                 'readinessProbe':{'httpGet':{'path':'/api/health','port':3000}}},
-                 [{'name':'auth','secret':{'secretName':'vcloud-wsl-grafana-admin','defaultMode':0o440}},
-                  {'name':'datasources','configMap':{'name':'vcloud-grafana'}},
-                  {'name':'data','emptyDir':{'medium':'Memory','sizeLimit':'128Mi'}},{'name':'tmp','emptyDir':{'medium':'Memory','sizeLimit':'32Mi'}}]),
-               service('grafana',3000)]
+    result += perses_groups()['workloads']
     return result
 
 
@@ -343,7 +329,6 @@ def network(router='10.42.0.188'):
                     [{'toEndpoints':[knative],'toPorts':ports(8080,8081)},
                      {'toEndpoints':[{'k8s:io.kubernetes.pod.namespace':NS,'k8s:vcloud.io/lab-role':'server'}],'toPorts':ports(8080)}]),
                cnp('vcloud-wsl-otel',endpoint('otel-collector'),health(13133)+[{'fromEndpoints':[demo],'toPorts':ports(4317,4318)}],[]),
-               cnp('vcloud-wsl-grafana',endpoint('grafana'),health(3000),[{'toEndpoints':[prom],'toPorts':ports(9090)}]),
                cnp('vcloud-wsl-prometheus',prom,health(9090),[api,
                     {'toEndpoints':[endpoint('apisix')],'toPorts':ports(9091)},
                     {'toEndpoints':[endpoint('cloudnative-pg')],'toPorts':ports(8080)},
@@ -364,6 +349,16 @@ def network(router='10.42.0.188'):
     return result
 
 
+def perses_groups():
+    from perses import objects
+    result={'controllers':[], 'workloads':[], 'network':[]}
+    for obj in objects(NS,gateway='apisix',prometheus='prometheus',legacy=True):
+        group=('network' if obj['kind'] in ('CiliumNetworkPolicy','NetworkPolicy') else
+               'workloads' if obj['kind'] in ('ConfigMap','Perses') or obj['metadata']['name']=='twinfra-perses' else 'controllers')
+        result[group].append(obj)
+    return result
+
+
 def groups(router='10.42.0.188'):
     control=controllers()
     extra_network=[]
@@ -372,8 +367,8 @@ def groups(router='10.42.0.188'):
         control=control+crds()+controller()
         extra_network=ingress_network(router)
     return {'crds.yaml':[o for o in control if o['kind']=='CustomResourceDefinition'],
-            'controllers.yaml':[o for o in control if o['kind']!='CustomResourceDefinition'],
-            'network.yaml':network(router)+extra_network,'identity.yaml':identity(),
+            'controllers.yaml':[o for o in control if o['kind']!='CustomResourceDefinition']+perses_groups()['controllers'],
+            'network.yaml':network(router)+extra_network+perses_groups()['network'],'identity.yaml':identity(),
             'observability.yaml':observability(),'application.yaml':application()}
 
 
@@ -410,10 +405,10 @@ def check(objects):
                 if c.get('image') and '@sha256:' not in c['image']:raise ValueError('Immutable image required')
                 if any('nvidia.com/' in key for key in c.get('resources',{}).get('limits',{})):raise ValueError('GPU forbidden')
         if obj['kind']=='CustomResourceDefinition':continue
-        # Knative's internal Certificate API has an alpha suffix but remains
-        # served and non-deprecated in the frozen bundle. Schema validation still
-        # uses its real version; only the generic suffix heuristic is adapted.
-        if (obj['apiVersion'],obj['kind']) in served and obj['apiVersion'].endswith('v1alpha1'):
+        # Knative Certificate and Perses alpha2 are served/non-deprecated in the
+        # frozen bundles. Schemas use their real versions; only the generic
+        # suffix heuristic is adapted after checking that served-version set.
+        if (obj['apiVersion'],obj['kind']) in served and obj['apiVersion'].endswith(('v1alpha1','v1alpha2')):
             obj['apiVersion']=obj['apiVersion'].rsplit('/',1)[0]+'/v1'
         audit([obj])
 

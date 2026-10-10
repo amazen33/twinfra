@@ -14,7 +14,7 @@ def definitions(revision='main'):
         role['rules']=[{'apiGroups':[group],'resources':resources,'verbs':['get','list','watch','create','update','patch','delete']} for group,resources in
           [('', ['configmaps','services','serviceaccounts']),('apps',['deployments']),
            ('postgresql.cnpg.io',['databases']),('monitoring.coreos.com',['prometheuses','servicemonitors']),
-           ('serving.knative.dev',['services']),('apisix.apache.org',['apisixroutes','gatewayproxies'])]]
+           ('serving.knative.dev',['services']),('apisix.apache.org',['apisixroutes','gatewayproxies']),('perses.dev',['perses'])]]
         # Prometheus discovery Roles are bootstrap-owned. No new permissions to
         # Secrets, CRDs, Nodes, PVs, ClusterRoles or RoleBindings are granted.
         binding=resource('RoleBinding','vcloud-wsl-endpoints-writer',namespace=ns,api='rbac.authorization.k8s.io/v1')
@@ -26,7 +26,7 @@ def definitions(revision='main'):
           'clusterResourceWhitelist':[], 'namespaceResourceWhitelist':[{'group':g,'kind':k} for g,k in
             [('', 'ConfigMap'),('','Service'),('','ServiceAccount'),('apps','Deployment'),('postgresql.cnpg.io','Database'),
              ('monitoring.coreos.com','Prometheus'),('monitoring.coreos.com','ServiceMonitor'),
-             ('serving.knative.dev','Service'),('apisix.apache.org','ApisixRoute'),('apisix.apache.org','GatewayProxy')]]},NS,'argoproj.io/v1alpha1')
+             ('serving.knative.dev','Service'),('apisix.apache.org','ApisixRoute'),('apisix.apache.org','GatewayProxy'),('perses.dev','Perses')]]},NS,'argoproj.io/v1alpha1')
     app=resource('Application','vcloud-wsl-endpoints',{'project':'vcloud-wsl-endpoints',
         'destination':{'server':'https://kubernetes.default.svc','namespace':NS},
         'source':{'repoURL':'https://github.com/amazen33/twinfra.git','targetRevision':revision,'path':'lab/wsl/endpoints/gitops'},
