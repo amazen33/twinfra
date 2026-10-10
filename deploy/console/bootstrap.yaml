@@ -70,9 +70,6 @@ spec:
     - matchLabels:
         k8s:io.kubernetes.pod.namespace: platform-services
         k8s:app.kubernetes.io/name: ministack
-    - matchLabels:
-        k8s:io.kubernetes.pod.namespace: platform-services
-        k8s:app.kubernetes.io/name: localstack-aws-console
     toPorts:
     - ports:
       - port: '4566'
@@ -103,26 +100,6 @@ spec:
   endpointSelector:
     matchLabels:
       k8s:app.kubernetes.io/name: ministack
-  ingress:
-  - fromEndpoints:
-    - matchLabels:
-        k8s:io.kubernetes.pod.namespace: platform-services
-        k8s:app.kubernetes.io/name: vcloud-console
-    toPorts:
-    - ports:
-      - port: '4566'
-        protocol: TCP
-  egress: []
----
-apiVersion: cilium.io/v2
-kind: CiliumNetworkPolicy
-metadata:
-  name: vcloud-portal-localstack
-  namespace: platform-services
-spec:
-  endpointSelector:
-    matchLabels:
-      k8s:app.kubernetes.io/name: localstack-aws-console
   ingress:
   - fromEndpoints:
     - matchLabels:

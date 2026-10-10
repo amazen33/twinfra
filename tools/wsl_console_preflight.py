@@ -44,7 +44,7 @@ def main():
         raise ValueError('restricted:v1.30 namespace required')
     secret = get(['get', 'secret', profile()['oidc']['secret'], '-o', 'json'])
     validate_secret(secret)
-    for name in ('vcloud-console-shell', 'storage-ui', 'dynamodb-admin', 'ministack', 'localstack'):
+    for name in ('vcloud-console-shell', 'storage-ui', 'dynamodb-admin', 'ministack'):
         get(['get', 'service', name, '-o', 'json'])
         slices = get(['get', 'endpointslices', '-l', 'kubernetes.io/service-name=' + name, '-o', 'json'])
         if not any(e.get('conditions', {}).get('ready') is True for s in slices['items'] for e in s.get('endpoints', [])):

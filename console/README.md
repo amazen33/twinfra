@@ -1,6 +1,13 @@
 # Twinfra control-plane portal
 
-The React/TypeScript + Tailwind portal runs as `platform-services/vcloud-console`.
+The current target is `twinfra-dev-cairo-1`, namespace `twinfra-platform-services`.
+Use the [dev runbook](../docs/dev-environment.md) and
+[service URLs](../docs/service-access.md) for HTTPS deployment, credentials and access.
+Live acceptance is Pending in the [WO-06 receipt](../docs/acceptance/localstack-removal-2026-10-10.md).
+
+The commands and identifiers below describe the retained WSL reference until WO-28;
+they are not deployment instructions for the dev environment.
+In that reference, the React/TypeScript + Tailwind portal runs as `platform-services/vcloud-console`.
 Open **<http://localhost:18080/console/>** on the Windows WSL host. Use `localhost`
 consistently: the OIDC callback is not registered for `127.0.0.1`.
 The existing APISIX loopback forward carries all portal views and API requests.
@@ -9,12 +16,12 @@ The existing APISIX loopback forward carries all portal views and API requests.
 | --- | --- |
 | `/console/overview` | Live namespace Pod/Deployment health |
 | `/console/storage` | S3 buckets and up to 100 object keys |
-| `/console/localstack` | LocalStack/MiniStack health and EC2 instance metadata |
+| `/console/cloud` | MiniStack health and EC2 instance metadata |
 | `/console/dynamodb` | Table names and metadata |
 | `/console/gitops` | Argo CD Application sync/health/revision |
 | `/console/iam` | Keycloak identity and portal roles |
 
-Storage, AWS and DynamoDB views select either emulator. These are original MIT,
+Storage, AWS and DynamoDB views use MiniStack only. These are original MIT,
 read-only views. No real EC2 machines, MinIO server, cloud billing console,
 Spinifex deployment or tenant database writes are added. Full Keycloak admin
 remains at <https://localhost:18443/admin/>; Argo CD Core's operator dashboard

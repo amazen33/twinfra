@@ -33,7 +33,7 @@ architecture review, implementation and tester acceptance. The owner applies the
 ## Node diagnostic prerequisites
 
 The [Twinfra control-plane portal](console/README.md) provides native health,
-storage, dual AWS emulator, DynamoDB, GitOps and identity views at
+storage, MiniStack AWS emulator, DynamoDB, GitOps and identity views at
 <http://localhost:18080/console/> in the owned WSL lab. Its dedicated
 `vcloud/vcloud-admin` account and private first-login procedure are separate
 from master administration. See the [acceptance record](docs/acceptance/vcloud-console-2026-10-08.md).

@@ -122,8 +122,8 @@ def main():
         print('PASS: spoofed identity headers -> HTTP 401',flush=True)
         session.login(name,password)
         print('PASS: actual confidential code/PKCE callback with mandatory TOTP enrollment',flush=True)
-        for path in ('identity','overview','gitops','storage?backend=localstack','storage?backend=ministack',
-                     'dynamodb?backend=localstack','dynamodb?backend=ministack','cloud?backend=localstack','cloud?backend=ministack'):
+        for path in ('identity','overview','gitops','storage?backend=ministack',
+                     'dynamodb?backend=ministack','cloud?backend=ministack'):
             code,_,body,_=session.request('/console/api/'+path)
             if code!=200: raise ValueError('Read-only API failed: '+path)
             json.loads(body)
@@ -132,7 +132,7 @@ def main():
         if code!=405: raise ValueError('Authenticated write operation was not denied')
         print('PASS: authenticated API write -> HTTP 405',flush=True)
         for path in ('storage','dynamodb'):
-            code,_,body,headers=session.request('/console/proxy/'+path+'/?backend=localstack')
+            code,_,body,headers=session.request('/console/proxy/'+path+'/?backend=ministack')
             if code!=200 or headers.get('X-Frame-Options')!='SAMEORIGIN' or "frame-ancestors 'self'" not in headers.get('Content-Security-Policy',''):
                 raise ValueError('Same-origin legacy view failed')
             if '/console/proxy/'+path+'/console.css' not in body: raise ValueError('Legacy asset path escaped prefix')

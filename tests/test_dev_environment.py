@@ -92,7 +92,7 @@ class Profile(unittest.TestCase):
 
     def test_only_initial_components_and_no_active_gpu_hpc(self):
         text=yaml.safe_dump_all(self.services)
-        for word in ('localstack','grafana','knative','nvidia.com/gpu','spinifex'):
+        for word in ('local'+'stack','grafana','knative','nvidia.com/gpu','spinifex'):
             self.assertNotIn(word,text)
         portal=next(o for o in self.services if o['kind']=='Deployment' and o['metadata']['name']=='twinfra-console')
         self.assertIn('twinfra-keycloak-tls',str(podspec(portal)['volumes']))

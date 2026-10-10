@@ -124,3 +124,10 @@ Tags refer to product-quality characteristics: **Functional suitability** (requi
 Staging uses upstream access during preparation; cold-cache offline QA remains
 open. No provisioning, software installation, WSL deletion or Cloudflare change
 is performed by this work order. See [WO-29](docs/work-orders/WO-29-make-dev-environment-runnable.md).
+
+## WO-06: MiniStack-only AWS emulation
+
+- [x] Remove the LocalStack module, console selector, routes and deployable references; preserve shared APISIX prerequisites.
+- [x] Pin MiniStack 1.5.17 by verified digest and update the MIT licence register; retain the image SBOM review's original deadline.
+- [x] Add a candidate CI removal guard while preserving historical baseline module dispatch.
+- [ ] Dev-environment cleanup and MiniStack port 4566 / S3 / EC2 / DynamoDB browser acceptance: [receipt](docs/acceptance/localstack-removal-2026-10-10.md), tester result Pending.

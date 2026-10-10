@@ -36,7 +36,7 @@ def main():
     for role in ('openbao','keycloak'):
         create('vcloud-wsl-'+role+'-db',{'username':role,'password':secrets.token_urlsafe(48)},'kubernetes.io/basic-auth')
     create('vcloud-wsl-grafana-admin',{'admin-user':'vcloud-admin','admin-password':secrets.token_urlsafe(48)})
-    if (ROOT/'lab/wsl/localstack/artifacts.lock.json').exists():
+    if (ROOT/'deploy/common/apisix-ingress.lock.json').exists():
         # Private keys and admin credentials exist only in memory and encrypted K3s Secrets.
         ca_key=ec.generate_private_key(ec.SECP256R1());key=ec.generate_private_key(ec.SECP256R1())
         now=datetime.now(timezone.utc)

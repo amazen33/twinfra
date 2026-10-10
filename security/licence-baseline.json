@@ -301,14 +301,14 @@
       "component": "oci-image|docker.io/library/python|sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e"
     },
     {
-      "id": "image-sbom:oci-image|docker.io/ministackorg/ministack|sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818",
+      "id": "image-sbom:oci-image|docker.io/ministackorg/ministack|sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
       "kind": "image-sbom",
-      "reason": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
+      "reason": "MiniStack replaced with the newest aged release under WO-06; review the exact image SBOM and bundled notices. Original evidence deadline retained.",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
-      "component": "oci-image|docker.io/ministackorg/ministack|sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818"
+      "component": "oci-image|docker.io/ministackorg/ministack|sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c"
     },
     {
       "id": "image-sbom:oci-image|docker.io/nvidia/cuda|12.4.1-base-ubuntu22.04",

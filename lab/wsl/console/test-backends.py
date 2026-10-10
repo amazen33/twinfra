@@ -9,14 +9,12 @@ sys.path.insert(0, '/app')
 import ui
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--seed', action='store_true', help='create named empty acceptance resources in both local emulators')
+parser.add_argument('--seed', action='store_true', help='create named empty acceptance resources in MiniStack')
 args = parser.parse_args()
 for backend, endpoint in ui.ENDPOINTS.items():
     with urllib.request.urlopen(endpoint + '/_' + backend + '/health', timeout=4) as response:
         health = json.load(response)
         assert response.status == 200
-    if backend == 'localstack':
-        assert all(health['services'][x] == 'running' for x in ('s3', 'ec2', 'iam', 'dynamodb'))
     print(backend + ': health HTTP 200')
     if args.seed:
         # These empty named fixtures cannot reach AWS (fixed service endpoints).
@@ -38,4 +36,4 @@ for backend, endpoint in ui.ENDPOINTS.items():
         raw = ui.read(ui.signed_request(backend, service, query={'Action': action, 'Version': version}))
         assert action + 'Response' in raw.decode()
         print(backend + ': ' + action + ' signed API HTTP 200')
-print('PASS: dual emulator health, signed S3/EC2/IAM/DynamoDB and read-only views')
+print('PASS: MiniStack health, signed S3/EC2/IAM/DynamoDB and read-only views')

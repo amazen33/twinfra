@@ -343,10 +343,19 @@ class Controls(unittest.TestCase):
                      'lab/wsl/endpoints/copy-keycloak-password.ps1', 'docs/keycloak-admin-access.md'):
             self.assertIn(path, files)
 
-    def test_localstack_bundle_cannot_omit_runtime_or_tests(self):
-        files=checks.OPTIONAL['lab/wsl/localstack']
-        self.assertIn('tests/test_wsl_localstack.py',files)
-        self.assertIn('lab/wsl/localstack/deploy.sh',files)
+    def test_historical_emulator_bundle_cannot_omit_runtime_or_tests(self):
+        name='local'+'stack'
+        bundle='lab/wsl/'+name
+        files=checks.OPTIONAL[bundle]
+        self.assertIn('tests/test_wsl_'+name+'.py',files)
+        self.assertIn(bundle+'/deploy.sh',files)
+        with tempfile.TemporaryDirectory() as directory:
+            source=Path(directory)
+            self.baseline_fixture(source)
+            # Historical dispatch depends on the module directory, not orphaned tools.
+            orphan=source/('tools/wsl_'+name+'.py')
+            orphan.parent.mkdir(parents=True,exist_ok=True);orphan.touch()
+            self.assertEqual(checks.coverage(source)[bundle],'not_present_in_revision')
         with tempfile.TemporaryDirectory() as directory:
             source=Path(directory)
             # Reuse the actual baseline inventory, then remove one optional gate.
@@ -354,7 +363,7 @@ class Controls(unittest.TestCase):
                          'tools/render_ssot.py','tools/render_cloud_init.py','docs/module-1-topology.md',
                          'tools/module2.py','tests/test_module2.py','module-2/vendor/cilium-1.20.2.tgz']+files[:-1]:
                 path=source/name;path.parent.mkdir(parents=True,exist_ok=True);path.touch()
-            with self.assertRaisesRegex(ValueError,'Incomplete lab/wsl/localstack'):checks.coverage(source)
+            with self.assertRaisesRegex(ValueError,'Incomplete '+bundle):checks.coverage(source)
 
 
 if __name__ == '__main__':

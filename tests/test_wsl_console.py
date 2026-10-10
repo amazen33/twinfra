@@ -31,7 +31,7 @@ class ConsoleTests(unittest.TestCase):
 
     def test_routes_are_gated_with_same_namespace_backends(self):
         routes = console.routes()
-        self.assertEqual(len(routes), 5)
+        self.assertEqual(len(routes), 4)
         services = {o['metadata']['name'] for o in console.workloads() if o['kind'] == 'Service'}
         for obj in routes:
             self.assertEqual(obj['metadata']['namespace'], 'platform-services')
@@ -134,7 +134,7 @@ class ConsoleTests(unittest.TestCase):
 
     def test_s3_and_dynamodb_html_escapes_backend_data(self):
         with patch.object(ui, 'read', return_value=b'<ListAllMyBucketsResult><Buckets><Bucket><Name>&lt;script&gt;alert(1)&lt;/script&gt;</Name></Bucket></Buckets></ListAllMyBucketsResult>'):
-            html = ui.browser('storage', 'localstack')
+            html = ui.browser('storage', 'ministack')
             self.assertNotIn('<script>', html); self.assertIn('&lt;script&gt;', html)
         with patch.object(ui, 'read', return_value=b'{"TableNames":["<script>"]}'):
             self.assertNotIn('<script>', ui.browser('dynamodb', 'ministack'))
@@ -146,7 +146,6 @@ class ConsoleTests(unittest.TestCase):
         self.assertNotIn('href="/spinifex/', body)
         self.assertNotIn('href="/vault/', body)
         self.assertIn('/ministack/_ministack/health', body)
-        self.assertIn('/localstack/_localstack/health', body)
 
     def test_http_handler_bounded_views_and_invalid_backend(self):
         server = ui.ThreadingHTTPServer(('127.0.0.1', 0), ui.Handler)

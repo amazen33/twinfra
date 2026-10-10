@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import yaml
 from wsl_platform import ROOT, NS, resource, cnp, ports
-from wsl_localstack import deploy, config, service, CLASS
+from platform_ingress import deploy, config, service, CLASS
 from wsl_endpoints import check, validate
 
 HERE = ROOT / 'deploy/console'
@@ -108,14 +108,13 @@ def bootstrap():
     binding.update(roleRef={'apiGroup': 'rbac.authorization.k8s.io', 'kind': 'Role', 'name': role['metadata']['name']},
         subjects=[{'kind': 'ServiceAccount', 'name': 'vcloud-console', 'namespace': NS}])
     peer = lambda n: {'matchLabels': {'k8s:io.kubernetes.pod.namespace': NS, 'k8s:app.kubernetes.io/name': n}}
-    emulators = [peer('ministack'), peer('localstack-aws-console')]
+    emulators = [peer('ministack')]
     result = [sa, role, binding,
         cnp('vcloud-portal', {'k8s:app.kubernetes.io/name': 'vcloud-console'},
             [{'fromEndpoints': [peer('apisix')], 'toPorts': ports(3000)}],
             [{'toEndpoints': emulators, 'toPorts': ports(4566)}, {'toEndpoints': [peer('keycloak')], 'toPorts': ports(8443)}, {'toEntities': ['kube-apiserver'],
                 'toPorts': [{'ports': [{'port': str(port), 'protocol': 'TCP'} for port in (443, 16443)]}]}]),
         cnp('vcloud-portal-emulators', {'k8s:app.kubernetes.io/name': 'ministack'}, [{'fromEndpoints': [peer('vcloud-console')], 'toPorts': ports(4566)}], []),
-        cnp('vcloud-portal-localstack', {'k8s:app.kubernetes.io/name': 'localstack-aws-console'}, [{'fromEndpoints': [peer('vcloud-console')], 'toPorts': ports(4566)}], []),
         cnp('vcloud-portal-gateway', {'k8s:app.kubernetes.io/name': 'apisix'}, [],
             [{'toEndpoints': [peer('vcloud-console')], 'toPorts': ports(3000)}, {'toEndpoints': [peer('keycloak')], 'toPorts': ports(8443)}]),
         cnp('vcloud-portal-keycloak', {'k8s:app.kubernetes.io/name': 'keycloak'},

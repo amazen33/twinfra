@@ -61,8 +61,7 @@
     "docker.io/nvidia/cuda"
   ],
   "pendingRemoval": [
-    "docker.io/grafana/grafana",
-    "docker.io/localstack/localstack"
+    "docker.io/grafana/grafana"
   ],
   "baselineKinds": [
     "apt-pins",

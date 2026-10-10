@@ -7058,7 +7058,7 @@
       "name": "docker.io/apache/apisix-ingress-controller",
       "version": "sha256:5c5efa4c7f2aa60e21d20fefc0388ad52faaefb71b840ee1e11ece303cd8ed86",
       "locations": [
-        "lab/wsl/localstack/artifacts.lock.json"
+        "deploy/common/apisix-ingress.lock.json"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",
@@ -7234,32 +7234,10 @@
       "adr": "0044"
     },
     {
-      "id": "oci-image|docker.io/localstack/localstack|sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a",
-      "ecosystem": "oci-image",
-      "name": "docker.io/localstack/localstack",
-      "version": "sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a",
-      "locations": [
-        "lab/wsl/endpoints/gitops/workloads.yaml",
-        "lab/wsl/localstack/artifacts.lock.json",
-        "lab/wsl/localstack/deployment.yaml"
-      ],
-      "spdx": "Apache-2.0",
-      "class": "pending-removal",
-      "licenceSource": "https://raw.githubusercontent.com/localstack/localstack/v4.14.0/LICENSE.txt",
-      "verifiedOn": "2026-10-09",
-      "recordedOn": "2026-10-09",
-      "integrities": [
-        "sha256:3ebc37595918b8accb852f8048fef2aff047d465167edd655528065b07bc364a"
-      ],
-      "adr": "0030",
-      "expires": "2026-12-08",
-      "followUp": "WO-06"
-    },
-    {
-      "id": "oci-image|docker.io/ministackorg/ministack|sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818",
+      "id": "oci-image|docker.io/ministackorg/ministack|sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
       "ecosystem": "oci-image",
       "name": "docker.io/ministackorg/ministack",
-      "version": "sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818",
+      "version": "sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
       "locations": [
         "deploy/common/images.lock.json",
         "deploy/environments/dev/cairo-1/services/workloads.yaml",
@@ -7269,11 +7247,11 @@
       ],
       "spdx": "MIT",
       "class": "allowed",
-      "licenceSource": "https://raw.githubusercontent.com/ministackorg/ministack/v1.5.22/LICENSE",
-      "verifiedOn": "2026-10-09",
-      "recordedOn": "2026-10-09",
+      "licenceSource": "https://raw.githubusercontent.com/ministackorg/ministack/v1.5.17/LICENSE",
+      "verifiedOn": "2026-10-10",
+      "recordedOn": "2026-10-10",
       "integrities": [
-        "sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818"
+        "sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c"
       ]
     },
     {
@@ -7539,7 +7517,7 @@
       "name": "ghcr.io/api7/adc",
       "version": "sha256:f65f53dd966827ff485471d00b9ce8ca146f7aba187519817b7453e476a274b8",
       "locations": [
-        "lab/wsl/localstack/artifacts.lock.json"
+        "deploy/common/apisix-ingress.lock.json"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",

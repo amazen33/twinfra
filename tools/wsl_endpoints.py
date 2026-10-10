@@ -176,8 +176,8 @@ def application():
                        'upstream':{'type':'roundrobin','nodes':{'kourier-internal.workload-apps.svc.cluster.local:80':1}}},
                       {'id':'legacy-smoke','uri':'/','plugins':{'prometheus':{}},
                        'upstream':{'type':'roundrobin','nodes':{'vcloud-lab-server.platform-services.svc.cluster.local:8080':1}}}]}
-    local_aws=(HERE.parent/'localstack/artifacts.lock.json').exists()
-    if local_aws:
+    ingress_available=(ROOT/'deploy/common/apisix-ingress.lock.json').exists()
+    if ingress_available:
         # The official controller supplies full in-memory route snapshots.
         # The public file-driven route list remains a rollback reference only.
         apisix['apisix']['enable_admin']=True
@@ -227,8 +227,8 @@ def application():
         volume='scratch-'+path.replace('_','-')
         spec['volumes'].append({'name':volume,'emptyDir':{'medium':'Memory','sizeLimit':'8Mi'}})
         spec['containers'][0]['volumeMounts'].append({'name':volume,'mountPath':'/usr/local/apisix/'+path})
-    if local_aws:
-        from wsl_localstack import workloads,routes as aws_routes,ADMIN_SECRET
+    if ingress_available:
+        from platform_ingress import routes as ingress_routes,ADMIN_SECRET
         c=spec['containers'][0]
         c['command']=['sh','-ec','apisix init; exec /usr/local/openresty/bin/openresty -p /usr/local/apisix -c conf/nginx.conf -g "daemon off;"']
         # OIDC outbound TLS trusts only the mounted public Keycloak certificate.
@@ -248,8 +248,8 @@ def application():
             'command':['python','/code/configure-apisix.py'],'securityContext':security(),
             'resources':{'requests':{'cpu':'25m','memory':'32Mi'},'limits':{'cpu':'100m','memory':'64Mi'}},'volumeMounts':mounts})
         admin=service('apisix-admin',9180,labels={'app.kubernetes.io/name':'apisix'})
-        result += [config('vcloud-apisix-setup',{'configure-apisix.py':(HERE.parent/'localstack/configure-apisix.py').read_text()}),
-                   admin,*workloads(),*aws_routes()]
+        result += [config('vcloud-apisix-setup',{'configure-apisix.py':(ROOT/'deploy/common/configure-apisix.py').read_text()}),
+                   admin,*ingress_routes()]
         gateway=next(o for o in result if o['kind']=='Deployment' and o['metadata']['name']=='apisix')
         gateway['spec']['template']['metadata'].setdefault('annotations',{})['vcloud.io/gateway-config-hash']=hashlib.sha256(yaml.safe_dump(apisix).encode()).hexdigest()
     return result+[demo]
@@ -367,10 +367,10 @@ def network(router='10.42.0.188'):
 def groups(router='10.42.0.188'):
     control=controllers()
     extra_network=[]
-    if (HERE.parent/'localstack/artifacts.lock.json').exists():
-        from wsl_localstack import crds,controller,network as aws_network
+    if (ROOT/'deploy/common/apisix-ingress.lock.json').exists():
+        from platform_ingress import crds,controller,network as ingress_network
         control=control+crds()+controller()
-        extra_network=aws_network(router)
+        extra_network=ingress_network(router)
     return {'crds.yaml':[o for o in control if o['kind']=='CustomResourceDefinition'],
             'controllers.yaml':[o for o in control if o['kind']!='CustomResourceDefinition'],
             'network.yaml':network(router)+extra_network,'identity.yaml':identity(),
@@ -382,8 +382,8 @@ def check(objects):
     adapted=copy.deepcopy(objects)
     served={(o['spec']['group']+'/'+v['name'],o['spec']['names']['kind']) for o in controllers()
             if o['kind']=='CustomResourceDefinition' for v in o['spec']['versions'] if v['served'] and not v.get('deprecated',False)}
-    if (HERE.parent/'localstack/artifacts.lock.json').exists():
-        from wsl_localstack import crds
+    if (ROOT/'deploy/common/apisix-ingress.lock.json').exists():
+        from platform_ingress import crds
         served |= {(o['spec']['group']+'/'+v['name'],o['spec']['names']['kind']) for o in crds()
                    for v in o['spec']['versions'] if v['served'] and not v.get('deprecated',False)}
     for obj in adapted:
@@ -422,9 +422,9 @@ def render(build,router='10.42.0.188'):
     build.mkdir(parents=True,exist_ok=True);schemas=build/'schemas';schemas.mkdir(exist_ok=True)
     lock=json.loads((HERE/'artifacts.lock.json').read_text())
     images={v['canonical'] for v in lock['images'].values()}|{PYTHON}
-    if (HERE.parent/'localstack/artifacts.lock.json').exists():
-        from wsl_localstack import lock as aws_lock
-        images|={v['canonical'] for v in aws_lock()['images'].values()}
+    if (ROOT/'deploy/common/apisix-ingress.lock.json').exists():
+        from platform_ingress import lock as ingress_lock
+        images|={v['canonical'] for v in ingress_lock()['images'].values()}
     (build/'images.txt').write_text('\n'.join(sorted(images))+'\n')
     for filename,objects in groups(router).items():
         objects=copy.deepcopy(objects)

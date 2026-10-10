@@ -9,7 +9,7 @@ import re
 import subprocess
 import yaml
 from wsl_platform import ROOT, NS, PYTHON, resource, cnp, ports
-from wsl_localstack import CLASS, NAME as LOCALSTACK, deploy, config, service
+from platform_ingress import CLASS, deploy, config, service
 from wsl_endpoints import check, validate
 
 HERE = ROOT / 'lab/wsl/console'
@@ -21,7 +21,7 @@ def profile():
         raise ValueError('Only the vCloud WSL console profile is supported')
     if value['origin'] != 'http://console.vcloud.local:18080':
         raise ValueError('Unexpected local origin')
-    if {b['name'] for b in value['backends']} != {'spinifex', 'ministack', 'localstack', 'storage', 'dynamodb', 'vault'}:
+    if {b['name'] for b in value['backends']} != {'spinifex', 'ministack', 'storage', 'dynamodb', 'vault'}:
         raise ValueError('Backend inventory differs')
     if any(b['enabled'] for b in value['backends'] if b['name'] in ('spinifex', 'vault')):
         raise ValueError('Spinifex/OpenBao integrations require separate site acceptance')
@@ -60,11 +60,6 @@ def workloads():
         'readinessProbe': {'exec': {'command': ['python', '-c', "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4566/_ministack/health',timeout=2)"]}, 'timeoutSeconds': 3},
         'startupProbe': {'exec': {'command': ['python', '-c', "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4566/_ministack/health',timeout=2)"]}, 'timeoutSeconds': 3, 'failureThreshold': 30, 'periodSeconds': 5}}
     result += [deploy('ministack', [mini], [{'name': 'tmp', 'emptyDir': {'medium': 'Memory', 'sizeLimit': '128Mi'}}]), service('ministack', 4566)]
-    # A real ClusterIP alias selects the existing LocalStack Pod. ExternalName
-    # has no endpoints in our pinned controller; don't duplicate the emulator.
-    alias = service('localstack', 4566)
-    alias['spec']['selector'] = {'app.kubernetes.io/name': LOCALSTACK}
-    result.append(alias)
     check(result)
     return result
 
@@ -123,14 +118,12 @@ def routes(references=False):
 
 def network():
     endpoint = lambda name: {'matchLabels': {'k8s:io.kubernetes.pod.namespace': NS, 'k8s:app.kubernetes.io/name': name}}
-    api = endpoint('apisix'); mini = endpoint('ministack'); local = endpoint(LOCALSTACK)
+    api = endpoint('apisix'); mini = endpoint('ministack')
     result = []
     for name, port in [('vcloud-console-shell', 3000), ('storage-ui', 9001), ('dynamodb-admin', 8081), ('ministack', 4566)]:
         sources = [api] if name != 'ministack' else [api, endpoint('storage-ui'), endpoint('dynamodb-admin')]
-        out = [] if name in ('vcloud-console-shell', 'ministack') else [{'toEndpoints': [mini, local], 'toPorts': ports(4566)}]
+        out = [] if name in ('vcloud-console-shell', 'ministack') else [{'toEndpoints': [mini], 'toPorts': ports(4566)}]
         result.append(cnp('vcloud-console-' + name, {'k8s:app.kubernetes.io/name': name}, [{'fromEndpoints': sources, 'toPorts': ports(port)}], out))
-    result.append(cnp('vcloud-console-localstack-ui', {'k8s:app.kubernetes.io/name': LOCALSTACK},
-        [{'fromEndpoints': [endpoint('storage-ui'), endpoint('dynamodb-admin')], 'toPorts': ports(4566)}], []))
     result.append(cnp('vcloud-console-gateway', {'k8s:app.kubernetes.io/name': 'apisix'}, [],
         [{'toEndpoints': [endpoint(name)], 'toPorts': ports(port)} for name, port in
          [('vcloud-console-shell', 3000), ('storage-ui', 9001), ('dynamodb-admin', 8081), ('ministack', 4566), ('keycloak', 8443)]]))
@@ -152,7 +145,8 @@ def definitions():
 
 
 def outputs():
-    return {'workloads.yaml': yaml.safe_dump_all(workloads(), sort_keys=False),
+    return {'ui.py': (ROOT / 'console/aws_views.py').read_text(encoding='utf-8'),
+        'workloads.yaml': yaml.safe_dump_all(workloads(), sort_keys=False),
         'network.yaml': yaml.safe_dump_all(network(), sort_keys=False),
         'apisix-routes.yaml': yaml.safe_dump_all(routes(), sort_keys=False),
         'reference/apisix-routes-disabled.yaml': '# Disabled reference: never apply before service/base-path/TLS acceptance.\n' + yaml.safe_dump_all(routes(True), sort_keys=False),
