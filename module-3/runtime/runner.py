@@ -8,7 +8,7 @@ import subprocess
 import sys
 import time
 
-REPO = 'https://github.com/amazen33/vCloud.git'
+REPO = 'https://github.com/amazen33/twinfra.git'
 BRANCH = 'gitops/prod'
 IMAGE = 'registry.vcloud.example.com/vcloud/api'
 MANIFEST = 'module-3/gitops/workload.yaml'

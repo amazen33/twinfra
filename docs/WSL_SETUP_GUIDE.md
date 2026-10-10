@@ -213,7 +213,7 @@ kubectl_local -n kube-system get configmap cilium-config -o json \
       .["enable-bpf-masquerade"] == "true" and .["bpf-lb-sock"] == "true"'
 kubectl_local -n kube-system exec daemonset/cilium -c cilium-agent -- cilium-dbg status --verbose
 kubectl_local -n platform-services exec deployment/argocd-repo-server -- \
-  timeout 25 git ls-remote https://github.com/amazen33/vCloud.git HEAD
+  timeout 25 git ls-remote https://github.com/amazen33/twinfra.git HEAD
 sudo bash lab/wsl/test-network.sh
 ```
 

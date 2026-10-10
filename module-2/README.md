@@ -1,6 +1,6 @@
 # Module 2: Twinfra infrastructure bootstrap and guardrails
 
-This module implements the **Twinfra** SSoT v2.2 in `amazen33/vCloud`, for the prepared
+This module implements the **Twinfra** SSoT v2.2 in `amazen33/twinfra`, for the prepared
 Ubuntu 24.04 Kubernetes host. The example is a single-VM acceptance profile. It is
 statically validated; Ubuntu, GPU, TLS, scheduling and service integration still need
 the live acceptance steps below. The approved kubeadm/Cilium/NVIDIA exception remains
@@ -84,8 +84,8 @@ the gzip vendor inputs are schema sources, not a replacement for complete contro
 installation bundles. Accept and record controller/runtime configuration before setting
 the readiness booleans. Empty image lists and false readiness flags block final apply.
 
-Publish the reviewed tree to `amazen33/vCloud` and mirror it to
-`https://git.vcloud.example.com/amazen33/vCloud.git`. Use a 40-character commit SHA or
+Publish the reviewed tree to `amazen33/twinfra` and mirror it to
+`https://git.vcloud.example.com/amazen33/twinfra.git`. Use a 40-character commit SHA or
 the documented protected release tag `vcloud-module-2-v0.2.0`. The example tag is an
 intended release, not a published repository revision. Prefer a commit SHA once
 published. GitOps reads this internal mirror over verified TLS; it does not need GitHub
@@ -249,7 +249,7 @@ Argo owns the four child groups after handoff. Repeated bootstrap uses the same 
 field manager. Missing prerequisites/errors stop subsequent steps; previous successful
 steps are not rolled back destructively.
 
-The root Application references the internal mirror of `amazen33/vCloud`, chart path
+The root Application references the internal mirror of `amazen33/twinfra`, chart path
 `module-2/chart`, and immutable revision. It creates storage/network/database/function
 children with waves -20/-10/0/10. AppProject scopes those resources to the three core
 namespaces, the specified Local PV/StorageClass and host policy kinds. Automatic pruning

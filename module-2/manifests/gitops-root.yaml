@@ -5,7 +5,7 @@ metadata:
   namespace: platform-services
 spec:
   sourceRepos:
-  - https://git.vcloud.example.com/amazen33/vCloud.git
+  - https://git.vcloud.example.com/amazen33/twinfra.git
   destinations:
   - server: https://kubernetes.default.svc
     namespace: platform-services
@@ -60,14 +60,14 @@ metadata:
   name: vcloud-root
   namespace: platform-services
   annotations:
-    vcloud.io/canonical-repository: https://github.com/amazen33/vCloud.git
+    vcloud.io/canonical-repository: https://github.com/amazen33/twinfra.git
 spec:
   project: vcloud
   destination:
     server: https://kubernetes.default.svc
     namespace: platform-services
   source:
-    repoURL: https://git.vcloud.example.com/amazen33/vCloud.git
+    repoURL: https://git.vcloud.example.com/amazen33/twinfra.git
     targetRevision: vcloud-module-2-v0.2.0
     path: module-2/chart
     helm:
@@ -122,9 +122,9 @@ spec:
         git:
           mirrorReady: false
           path: module-2/chart
-          repoURL: https://git.vcloud.example.com/amazen33/vCloud.git
+          repoURL: https://git.vcloud.example.com/amazen33/twinfra.git
           revision: vcloud-module-2-v0.2.0
-          upstream: https://github.com/amazen33/vCloud.git
+          upstream: https://github.com/amazen33/twinfra.git
         hpc:
           jobGroup: bootstrap-demo
           mpiPortMax: 10100

@@ -1,5 +1,5 @@
 #cloud-config
-# Generated; script SHA256=267472c626f0a93fb52364ee8461fa228661e314e2fb8e156ac377adddf82991.
+# Generated; script SHA256=36c1cc3759f17faf1d9bc55b328bade594eab89692b3368bbb369f6fa487486e.
 # Source template. Run `python3 tools/render_cloud_init.py` after changing the script.
 # The generated user-data.yaml embeds the complete script; it requires no script URL.
 package_update: true
@@ -20,7 +20,7 @@ write_files:
       CLUSTER_NAME=vCloud-prod-01
       CLUSTER_DNS_NAME=vcloud-prod-01
       BASE_DOMAIN=vcloud.example.com
-      GITOPS_REPOSITORY=amazen33/vCloud
+      GITOPS_REPOSITORY=amazen33/twinfra
       IMAGE_REGISTRY=registry.vcloud.example.com
       # END GENERATED SSOT IDENTITY
       KUBERNETES_VERSION=v1.36.5
@@ -84,7 +84,7 @@ write_files:
           : "${CLUSTER_NAME:=vCloud-prod-01}"
           : "${CLUSTER_DNS_NAME:=vcloud-prod-01}"
           : "${BASE_DOMAIN:=vcloud.example.com}"
-          : "${GITOPS_REPOSITORY:=amazen33/vCloud}"
+          : "${GITOPS_REPOSITORY:=amazen33/twinfra}"
           : "${IMAGE_REGISTRY:=registry.vcloud.example.com}"
           # END GENERATED SSOT DEFAULTS
           : "${REGISTRY_MIRROR:=https://$IMAGE_REGISTRY}" "${REGISTRY_CA_FILE:=}"
@@ -166,7 +166,7 @@ write_files:
              $CLUSTER_NAME == vCloud-prod-01 &&
              $CLUSTER_DNS_NAME == vcloud-prod-01 &&
              $BASE_DOMAIN == vcloud.example.com &&
-             $GITOPS_REPOSITORY == amazen33/vCloud &&
+             $GITOPS_REPOSITORY == amazen33/twinfra &&
              $IMAGE_REGISTRY == registry.vcloud.example.com &&
              $REGISTRY_MIRROR == https://registry.vcloud.example.com &&
              $MIRROR_REQUIRED == true ]] || bad_config 'Identity/registry drift from vcloud-ssot.yaml; change the contract and regenerate first'
@@ -1956,7 +1956,7 @@ write_files:
         annotations:
           vcloud.io/cluster: vCloud-prod-01
           vcloud.io/base-domain: vcloud.example.com
-          vcloud.io/gitops-repository: amazen33/vCloud
+          vcloud.io/gitops-repository: amazen33/twinfra
       ---
       apiVersion: networking.k8s.io/v1
       kind: NetworkPolicy
@@ -1986,7 +1986,7 @@ write_files:
         annotations:
           vcloud.io/cluster: vCloud-prod-01
           vcloud.io/base-domain: vcloud.example.com
-          vcloud.io/gitops-repository: amazen33/vCloud
+          vcloud.io/gitops-repository: amazen33/twinfra
       ---
       apiVersion: networking.k8s.io/v1
       kind: NetworkPolicy
@@ -2016,7 +2016,7 @@ write_files:
         annotations:
           vcloud.io/cluster: vCloud-prod-01
           vcloud.io/base-domain: vcloud.example.com
-          vcloud.io/gitops-repository: amazen33/vCloud
+          vcloud.io/gitops-repository: amazen33/twinfra
       ---
       apiVersion: networking.k8s.io/v1
       kind: NetworkPolicy

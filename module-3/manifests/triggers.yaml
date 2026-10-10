@@ -129,7 +129,7 @@ spec:
         kind: ClusterInterceptor
       params:
       - name: filter
-        value: body.repository.full_name == 'amazen33/vCloud' && body.ref == 'refs/heads/main'
+        value: body.repository.full_name == 'amazen33/twinfra' && body.ref == 'refs/heads/main'
           && body.deleted == false && body.forced == false && body.after.matches('^[0-9a-f]{40}$')
           && body.after != '0000000000000000000000000000000000000000'
     bindings:

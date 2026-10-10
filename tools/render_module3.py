@@ -117,7 +117,7 @@ def resources():
         obj('rbac.authorization.k8s.io/v1','ClusterRoleBinding','vcloud-trigger-interceptors',namespace=None,
             roleRef={'apiGroup':'rbac.authorization.k8s.io','kind':'ClusterRole','name':'vcloud-trigger-interceptors'},
             subjects=[{'kind':'ServiceAccount','name':'vcloud-trigger','namespace':'workload-apps'}])]
-    filters="body.repository.full_name == 'amazen33/vCloud' && body.ref == 'refs/heads/main' && body.deleted == false && body.forced == false && body.after.matches('^[0-9a-f]{40}$') && body.after != '0000000000000000000000000000000000000000'"
+    filters="body.repository.full_name == 'amazen33/twinfra' && body.ref == 'refs/heads/main' && body.deleted == false && body.forced == false && body.after.matches('^[0-9a-f]{40}$') && body.after != '0000000000000000000000000000000000000000'"
     trigger_run=obj('tekton.dev/v1','PipelineRun','vcloud-ci-$(tt.params.revision)',run_spec('$(tt.params.revision)'))
     trigger_run['metadata']['labels']['app.kubernetes.io/name']='vcloud-ci'
     trigger=[obj('triggers.tekton.dev/v1beta1','TriggerBinding','vcloud-main-push',
@@ -195,14 +195,14 @@ def resources():
     grafana=obj('v1','ConfigMap','vcloud-delivery-dashboard',namespace='platform-services',data={'vcloud-delivery.json':json.dumps(dashboard,indent=2)})
     grafana['metadata']['labels']['grafana_dashboard']='1'
     appproject=obj('argoproj.io/v1alpha1','AppProject','vcloud-delivery',namespace='platform-services',spec={
-      'sourceRepos':['https://github.com/amazen33/vCloud.git'],'destinations':[{'server':'https://kubernetes.default.svc','namespace':'workload-apps'}],
+      'sourceRepos':['https://github.com/amazen33/twinfra.git'],'destinations':[{'server':'https://kubernetes.default.svc','namespace':'workload-apps'}],
       'clusterResourceWhitelist':[],'namespaceResourceWhitelist':[{'group':'serving.knative.dev','kind':'Service'},{'group':'','kind':'ServiceAccount'},{'group':'cilium.io','kind':'CiliumNetworkPolicy'}]})
     application=obj('argoproj.io/v1alpha1','Application','vcloud-delivery',namespace='platform-services',spec={
-      'project':'vcloud-delivery','source':{'repoURL':'https://github.com/amazen33/vCloud.git','targetRevision':'gitops/prod','path':'module-3/gitops','directory':{'recurse':False}},
+      'project':'vcloud-delivery','source':{'repoURL':'https://github.com/amazen33/twinfra.git','targetRevision':'gitops/prod','path':'module-3/gitops','directory':{'recurse':False}},
       'destination':{'server':'https://kubernetes.default.svc','namespace':'workload-apps'},
       'syncPolicy':{'automated':{'enabled':True,'prune':False,'selfHeal':True,'allowEmpty':False},'syncOptions':['CreateNamespace=false'],'retry':{'limit':3,'backoff':{'duration':'10s','factor':2,'maxDuration':'3m'}}}})
     infra_project=obj('argoproj.io/v1alpha1','AppProject','vcloud-ci',namespace='platform-services',spec={
-      'sourceRepos':['https://github.com/amazen33/vCloud.git'],
+      'sourceRepos':['https://github.com/amazen33/twinfra.git'],
       'destinations':[{'server':'https://kubernetes.default.svc','namespace':n} for n in ['platform-services','workload-apps','tekton-pipelines']],
       'clusterResourceWhitelist':[{'group':'','kind':'Namespace'},{'group':'rbac.authorization.k8s.io','kind':'ClusterRole'},{'group':'rbac.authorization.k8s.io','kind':'ClusterRoleBinding'}],
       'namespaceResourceWhitelist':[{'group':g,'kind':k} for g,k in [('', 'ServiceAccount'),('', 'ConfigMap'),
@@ -211,7 +211,7 @@ def resources():
          ('cilium.io','CiliumNetworkPolicy'),('apisix.apache.org','ApisixRoute'),('apisix.apache.org','ApisixTls'),
          ('monitoring.coreos.com','ServiceMonitor'),('monitoring.coreos.com','PrometheusRule')]]})
     infra_app=obj('argoproj.io/v1alpha1','Application','vcloud-ci',namespace='platform-services',spec={
-      'project':'vcloud-ci','source':{'repoURL':'https://github.com/amazen33/vCloud.git','targetRevision':'main','path':'module-3/manifests','directory':{'recurse':False}},
+      'project':'vcloud-ci','source':{'repoURL':'https://github.com/amazen33/twinfra.git','targetRevision':'main','path':'module-3/manifests','directory':{'recurse':False}},
       'destination':{'server':'https://kubernetes.default.svc','namespace':'workload-apps'},
       'syncPolicy':{'automated':{'enabled':True,'prune':False,'selfHeal':True,'allowEmpty':False},'syncOptions':['CreateNamespace=false']}})
     workload=obj('serving.knative.dev/v1','Service','vcloud-api',{

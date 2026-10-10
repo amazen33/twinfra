@@ -21,7 +21,7 @@ def definitions(revision='main'):
         binding.update(roleRef={'apiGroup':'rbac.authorization.k8s.io','kind':'Role','name':role['metadata']['name']},
             subjects=[{'kind':'ServiceAccount','name':'argocd-application-controller','namespace':NS}])
         result += [role,binding]
-    project=resource('AppProject','vcloud-wsl-endpoints',{'sourceRepos':['https://github.com/amazen33/vCloud.git'],
+    project=resource('AppProject','vcloud-wsl-endpoints',{'sourceRepos':['https://github.com/amazen33/twinfra.git'],
           'destinations':[{'server':'https://kubernetes.default.svc','namespace':ns} for ns in (NS,APP_NS)],
           'clusterResourceWhitelist':[], 'namespaceResourceWhitelist':[{'group':g,'kind':k} for g,k in
             [('', 'ConfigMap'),('','Service'),('','ServiceAccount'),('apps','Deployment'),('postgresql.cnpg.io','Database'),
@@ -29,7 +29,7 @@ def definitions(revision='main'):
              ('serving.knative.dev','Service'),('apisix.apache.org','ApisixRoute'),('apisix.apache.org','GatewayProxy')]]},NS,'argoproj.io/v1alpha1')
     app=resource('Application','vcloud-wsl-endpoints',{'project':'vcloud-wsl-endpoints',
         'destination':{'server':'https://kubernetes.default.svc','namespace':NS},
-        'source':{'repoURL':'https://github.com/amazen33/vCloud.git','targetRevision':revision,'path':'lab/wsl/endpoints/gitops'},
+        'source':{'repoURL':'https://github.com/amazen33/twinfra.git','targetRevision':revision,'path':'lab/wsl/endpoints/gitops'},
         'syncPolicy':{'automated':{'enabled':True,'prune':False,'selfHeal':True,'allowEmpty':False},
                      'syncOptions':['CreateNamespace=false','ServerSideApply=true']}},NS,'argoproj.io/v1alpha1')
     return result+[project,app]

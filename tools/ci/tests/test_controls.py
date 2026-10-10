@@ -67,9 +67,32 @@ class Controls(unittest.TestCase):
     def test_reviewed_merged_pr_baselines_are_immutable(self):
         lock = json.loads((ROOT / 'pr-baselines.json').read_text())
         self.assertEqual([p['number'] for p in lock['baselines']], [1, 2, 3, 4, 5, 6])
+        self.assertEqual([p['commit'] for p in lock['baselines']], [
+            '1bc96d335bcb82482e33d4656102123e714c8fe9',
+            '49848feb7fd58870650c919928297509af3f243a',
+            'e13aa15f3fd4864bb8ee022bd561c29441be7b31',
+            '05471067cb64d89d4ef20fd87319c8cadf3bf7a4',
+            '405ac74bedd9ed19f98de699932edf716949a510',
+            '87ed35e883e547311e70fda22161a829687c7f81',
+        ])
         for baseline in lock['baselines']:
             self.assertRegex(baseline['commit'], r'^[a-f0-9]{40}$')
-            self.assertEqual(baseline['url'], f"https://github.com/amazen33/vCloud/pull/{baseline['number']}")
+            self.assertEqual(baseline['url'], f"https://github.com/amazen33/twinfra/pull/{baseline['number']}")
+
+    def test_renamed_repository_resolves_all_historical_prs(self):
+        lock = json.loads((ROOT / 'pr-baselines.json').read_text())
+        self.assertEqual(revisions.REPOSITORY, 'amazen33/twinfra')
+        self.assertEqual(lock['repository'], revisions.REPOSITORY)
+        for baseline in lock['baselines']:
+            with self.subTest(number=baseline['number']):
+                data = dict(number=baseline['number'], merged=True,
+                            merge_commit_sha=baseline['commit'], head=dict(sha=SHA),
+                            base=dict(repo=dict(full_name='amazen33/twinfra')))
+                selected = revisions.resolve(str(baseline['number']), '', 'amazen33/twinfra', lambda _: data)
+                self.assertEqual(selected['commit'], baseline['commit'])
+                self.assertEqual(len(revisions.matrix(selected, lock)['include']), 6)
+        with self.assertRaises(ValueError):
+            revisions.resolve('', SHA, 'amazen33/vCloud', None)
 
     def test_checksum_failure(self):
         self.assertEqual(staging.verified(b'good', hashlib.sha256(b'good').hexdigest()), b'good')

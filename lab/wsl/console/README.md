@@ -146,7 +146,7 @@ bash lab/wsl/console/verify.sh
 Argo CD already has bounded platform-services ConfigMap/Deployment/Service/
 ApisixRoute writes. `reference/argocd.yaml` grants the new project only these
 namespaced kinds; no Secrets, Nodes, CRDs, RBAC or platform-system writes are
-added. The project reconciles `lab/wsl/console/gitops` from `amazen33/vCloud` main;
+added. The project reconciles `lab/wsl/console/gitops` from `amazen33/twinfra` main;
 bootstrap owns the additive Cilium policies. Never activate against an unpublished
 revision. Verify the new Application Synced/Healthy and existing two Applications
 remain Synced/Healthy after activation. Preserve the current gateway admin TLS

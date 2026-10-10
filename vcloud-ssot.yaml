@@ -10,7 +10,7 @@ cluster:
   dnsName: vcloud-prod-01
   minimumKubernetesVersion: '1.30'
   baseDomain: vcloud.example.com
-  gitOpsRepository: amazen33/vCloud
+  gitOpsRepository: amazen33/twinfra
   namespaces: [platform-services, workload-apps, hpc-compute]
 network:
   cni: cilium

@@ -7,7 +7,7 @@ import re
 import urllib.request
 
 ROOT = Path(__file__).resolve().parent
-REPOSITORY = 'amazen33/vCloud'
+REPOSITORY = 'amazen33/twinfra'
 
 
 def commit(value):
@@ -18,7 +18,7 @@ def commit(value):
 
 def resolve(requested, candidate, repository, fetch):
     if repository != REPOSITORY:
-        raise ValueError('This workflow only tests amazen33/vCloud')
+        raise ValueError('This workflow only tests amazen33/twinfra')
     if requested:
         if not re.fullmatch(r'[1-9][0-9]{0,8}', requested):
             raise ValueError('pr_number must be a positive integer of at most nine digits')

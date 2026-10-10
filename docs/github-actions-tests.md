@@ -10,12 +10,12 @@ Every normal run tests the candidate revision and six immutable merged revisions
 
 | Prior PR | Verified merge commit | Scope |
 | --- | --- | --- |
-| [#1](https://github.com/amazen33/vCloud/pull/1) | `1bc96d335bcb82482e33d4656102123e714c8fe9` | Modules -1, 1 and 2 |
-| [#2](https://github.com/amazen33/vCloud/pull/2) | `49848feb7fd58870650c919928297509af3f243a` | Initial workflow |
-| [#3](https://github.com/amazen33/vCloud/pull/3) | `e13aa15f3fd4864bb8ee022bd561c29441be7b31` | Delivery, IAM, secrets and gated HPC |
-| [#4](https://github.com/amazen33/vCloud/pull/4) | `05471067cb64d89d4ef20fd87319c8cadf3bf7a4` | WSL corrections, recovery documentation and CI review |
-| [#5](https://github.com/amazen33/vCloud/pull/5) | `405ac74bedd9ed19f98de699932edf716949a510` | Roadmap document |
-| [#6](https://github.com/amazen33/vCloud/pull/6) | `87ed35e883e547311e70fda22161a829687c7f81` | Roadmap automation |
+| [#1](https://github.com/amazen33/twinfra/pull/1) | `1bc96d335bcb82482e33d4656102123e714c8fe9` | Modules -1, 1 and 2 |
+| [#2](https://github.com/amazen33/twinfra/pull/2) | `49848feb7fd58870650c919928297509af3f243a` | Initial workflow |
+| [#3](https://github.com/amazen33/twinfra/pull/3) | `e13aa15f3fd4864bb8ee022bd561c29441be7b31` | Delivery, IAM, secrets and gated HPC |
+| [#4](https://github.com/amazen33/twinfra/pull/4) | `05471067cb64d89d4ef20fd87319c8cadf3bf7a4` | WSL corrections, recovery documentation and CI review |
+| [#5](https://github.com/amazen33/twinfra/pull/5) | `405ac74bedd9ed19f98de699932edf716949a510` | Roadmap document |
+| [#6](https://github.com/amazen33/twinfra/pull/6) | `87ed35e883e547311e70fda22161a829687c7f81` | Roadmap automation |
 
 The reviewed [baseline inventory](../tools/ci/pr-baselines.json) controls those
 historical commits. Add future baseline PRs to that inventory through review.
@@ -24,8 +24,8 @@ Once this workflow is merged into `main`, select **Actions → vCloud tests →
 Run workflow**, and enter a PR number to retest another prior PR. Alternatively:
 
 ```bash
-gh workflow run pr-tests.yaml --repo amazen33/vCloud --ref main -f pr_number=1
-gh run list --repo amazen33/vCloud --workflow pr-tests.yaml
+gh workflow run pr-tests.yaml --repo amazen33/twinfra --ref main -f pr_number=1
+gh run list --repo amazen33/twinfra --workflow pr-tests.yaml
 ```
 
 Merged PRs are tested at their merge commit. Open or unmerged closed PRs are

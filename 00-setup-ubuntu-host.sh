@@ -34,7 +34,7 @@ load_config() {
     : "${CLUSTER_NAME:=vCloud-prod-01}"
     : "${CLUSTER_DNS_NAME:=vcloud-prod-01}"
     : "${BASE_DOMAIN:=vcloud.example.com}"
-    : "${GITOPS_REPOSITORY:=amazen33/vCloud}"
+    : "${GITOPS_REPOSITORY:=amazen33/twinfra}"
     : "${IMAGE_REGISTRY:=registry.vcloud.example.com}"
     # END GENERATED SSOT DEFAULTS
     : "${REGISTRY_MIRROR:=https://$IMAGE_REGISTRY}" "${REGISTRY_CA_FILE:=}"
@@ -116,7 +116,7 @@ validate_ssot_identity() {
        $CLUSTER_NAME == vCloud-prod-01 &&
        $CLUSTER_DNS_NAME == vcloud-prod-01 &&
        $BASE_DOMAIN == vcloud.example.com &&
-       $GITOPS_REPOSITORY == amazen33/vCloud &&
+       $GITOPS_REPOSITORY == amazen33/twinfra &&
        $IMAGE_REGISTRY == registry.vcloud.example.com &&
        $REGISTRY_MIRROR == https://registry.vcloud.example.com &&
        $MIRROR_REQUIRED == true ]] || bad_config 'Identity/registry drift from vcloud-ssot.yaml; change the contract and regenerate first'
@@ -1906,7 +1906,7 @@ metadata:
   annotations:
     vcloud.io/cluster: vCloud-prod-01
     vcloud.io/base-domain: vcloud.example.com
-    vcloud.io/gitops-repository: amazen33/vCloud
+    vcloud.io/gitops-repository: amazen33/twinfra
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -1936,7 +1936,7 @@ metadata:
   annotations:
     vcloud.io/cluster: vCloud-prod-01
     vcloud.io/base-domain: vcloud.example.com
-    vcloud.io/gitops-repository: amazen33/vCloud
+    vcloud.io/gitops-repository: amazen33/twinfra
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -1966,7 +1966,7 @@ metadata:
   annotations:
     vcloud.io/cluster: vCloud-prod-01
     vcloud.io/base-domain: vcloud.example.com
-    vcloud.io/gitops-repository: amazen33/vCloud
+    vcloud.io/gitops-repository: amazen33/twinfra
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

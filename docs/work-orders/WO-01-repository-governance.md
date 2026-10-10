@@ -29,7 +29,7 @@ Make the "vCloud PR gate" binding and give every change a named reviewer.
    - **Status check:** "vCloud PR gate" must pass, and branches must be up to date.
    - **Branch safety:** force pushes blocked and deletion restricted.
    - **Bypass:** none, except a documented owner emergency procedure.
-   - **Verification:** how to check with `gh api repos/amazen33/vCloud/rulesets`.
+   - **Verification:** how to check with `gh api repos/amazen33/twinfra/rulesets`.
 4. Add a line to `docs/github-actions-tests.md` that points to the runbook.
 
 ## Out of scope

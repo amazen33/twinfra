@@ -4,8 +4,9 @@ Twinfra (formerly vCloud) — *your AWS twin, on your own infrastructure.*
 
 [ADR-0036](docs/adr/0036-product-name-twinfra.md) and
 [WO-20](docs/work-orders/WO-20-rename-to-twinfra.md) define the staged rename.
-Stage A changes branding only. Repository references stay `amazen33/vCloud` until
-the owner renames the repository in Stage B. The `vcloud` realm, client IDs,
+Stage A introduced the branding. The owner renamed the repository to
+[`amazen33/twinfra`](https://github.com/amazen33/twinfra); Stage B updates its references.
+The `vcloud` realm, client IDs,
 labels, resource names, domains and SSoT identity stay unchanged until Stage C's
 separate work order and Ubuntu VM rebuild. Historical records retain their original names.
 
@@ -47,7 +48,7 @@ installation and verification commands on existing nodes.
 
 Ubuntu 24.04 host preparation and a single-node **upstream Kubernetes** bootstrap using
 kubeadm, system containerd and Cilium native routing. SSoT v2.2 fixes the identity to
-`vCloud-prod-01`, domain `vcloud.example.com`, repository `amazen33/vCloud` and registry
+`vCloud-prod-01`, domain `vcloud.example.com`, repository `amazen33/twinfra` and registry
 `registry.vcloud.example.com`. HugePages remain **128 × 2 MiB + 1 × 1 GiB**.
 
 **The documented node exception is approved.** Only the pinned kubeadm/Cilium/NVIDIA
@@ -111,7 +112,7 @@ Module 2 is available in the [infrastructure runbook](module-2/README.md),
 with [rendered reference YAML](module-2/manifests/README.md),
 [Helm chart](module-2/chart/Chart.yaml), [Cilium overrides](module-2/values/cilium.yaml),
 the [Makefile](Makefile), and [static validation evidence](docs/module-2-validation.json).
-It presents Twinfra with the existing `amazen33/vCloud` repository reference;
+It presents Twinfra with the existing `amazen33/twinfra` repository reference;
 physical and live acceptance remain explicit gates.
 
 The [pre-push validation record](docs/pre-push-validation.json) preserves the Module

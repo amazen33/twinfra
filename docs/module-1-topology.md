@@ -70,7 +70,7 @@ and Pod Security validation in the ADR index.
 ```mermaid
 flowchart TB
     CLIENT["Users and operators"]
-    GIT["Git: amazen33/vCloud"]
+    GIT["Git: amazen33/twinfra"]
     REG["Registry: registry.vcloud.example.com"]
     ART["Authorized object / model / result storage [dependency]"]
     BACKUP["Off-cluster encrypted backup storage [dependency]"]

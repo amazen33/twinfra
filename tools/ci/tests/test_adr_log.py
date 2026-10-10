@@ -90,6 +90,19 @@ class ADRLog(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn('duplicate/gapped ADR numbers', result.stderr)
 
+    def test_stage_b_index_uses_selected_revision_repository(self):
+        for canonical in (True, False):
+            with self.subTest(canonical=canonical), tempfile.TemporaryDirectory() as directory:
+                root = self.fixture(directory, canonical=canonical)
+                ssot = root / 'vcloud-ssot.yaml'
+                ssot.write_text(ssot.read_text() + 'cluster:\n  gitOpsRepository: amazen33/twinfra\n')
+                index = root / ('docs/adr/README.md' if canonical else 'docs/adrs/README.md')
+                # Old index references cannot satisfy a renamed current contract.
+                self.assertNotEqual(self.check(root).returncode, 0)
+                index.write_text(index.read_text().replace('amazen33/vCloud', 'amazen33/twinfra'))
+                result = self.check(root)
+                self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_approved_valkey_order_preserves_historical_work_order_requirements(self):
         with tempfile.TemporaryDirectory() as directory:
             root = self.fixture(directory)

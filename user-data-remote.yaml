@@ -1,5 +1,5 @@
 #cloud-config
-# Generated; script SHA256=267472c626f0a93fb52364ee8461fa228661e314e2fb8e156ac377adddf82991.
+# Generated; script SHA256=36c1cc3759f17faf1d9bc55b328bade594eab89692b3368bbb369f6fa487486e.
 # Source template. Run `python3 tools/render_cloud_init.py` after changing the script.
 # Remote variant for small user-data limits: publish the script at the HTTPS URL below.
 package_update: true
@@ -20,7 +20,7 @@ write_files:
       CLUSTER_NAME=vCloud-prod-01
       CLUSTER_DNS_NAME=vcloud-prod-01
       BASE_DOMAIN=vcloud.example.com
-      GITOPS_REPOSITORY=amazen33/vCloud
+      GITOPS_REPOSITORY=amazen33/twinfra
       IMAGE_REGISTRY=registry.vcloud.example.com
       # END GENERATED SSOT IDENTITY
       KUBERNETES_VERSION=v1.36.5
@@ -51,7 +51,7 @@ write_files:
       #!/usr/bin/env bash
       # Small-provider bootstrap: host the exact companion script at this URL first.
       set -Eeuo pipefail
-      expected='267472c626f0a93fb52364ee8461fa228661e314e2fb8e156ac377adddf82991'
+      expected='36c1cc3759f17faf1d9bc55b328bade594eab89692b3368bbb369f6fa487486e'
       url='https://artifacts.example.com/vcloud/00-setup-ubuntu-host.sh'
       target=/usr/local/sbin/00-setup-ubuntu-host.sh
       if [[ -f $target ]] && [[ $(sha256sum "$target" | cut -d' ' -f1) == "$expected" ]]; then exit 0; fi
