@@ -23,6 +23,87 @@ function Refused($i,$options=@{}) {
     try { New-TwinfraPlan -Inventory $i -Image $image @options | Out-Null } catch {$failed=$true}
     Assert $failed 'Unsafe plan was accepted'
 }
+function Assert-ReviewedCommands([string]$Text) {
+    $tokens=$null;$errors=$null
+    $ast=[Management.Automation.Language.Parser]::ParseInput($Text,[ref]$tokens,[ref]$errors)
+    Assert ($errors.Count -eq 0) 'Provisioner parse failed'
+    # Every permitted command was reviewed for PS7/Windows 11. Any DISM cmdlet,
+    # module-qualified spelling or new unreviewed command fails this inventory.
+    $reviewed=@('Add-Type','Add-VMDvdDrive','Assert-TwinfraImage','Convert-VHD',
+        'ConvertFrom-Json','ConvertTo-Json','ForEach-Object','Format-TwinfraPlan',
+        'Get-ChildItem','Get-CimInstance','Get-Command','Get-Content','Get-FileHash',
+        'Get-Item','Get-Module','Get-NetIPAddress','Get-NetNat','Get-NetRoute',
+        'Get-PSDrive','Get-Service','Get-VHD','Get-VM','Get-VMDvdDrive',
+        'Get-VMHardDiskDrive','Get-VMMemory','Get-VMNetworkAdapter','Get-VMProcessor',
+        'Get-VMSwitch','Import-Module','Invoke-WebRequest','Join-Path','New-Item',
+        'New-NetIPAddress','New-NetNat','New-Object','New-TwinfraPlan','New-VM',
+        'New-VMSwitch','Out-Null','Remove-Item','Resize-VHD','Set-StrictMode',
+        'Set-VM','Set-VMFirmware','Set-VMMemory','Set-VMProcessor','Split-Path',
+        'Test-Path','Where-Object','Write-Output')
+    foreach ($command in $ast.FindAll({param($node) $node -is [Management.Automation.Language.CommandAst]},$true)) {
+        $name=$command.GetCommandName()
+        if ($null -eq $name) {
+            Assert ($command.CommandElements[0].Extent.Text -eq '$python.Source') 'Unreviewed dynamic command'
+        } else {
+            Assert ($name -in $reviewed) "Unreviewed or DISM command: $name"
+            Assert (-not ($name -eq 'Import-Module' -and $command.Extent.Text -match '\bDism\b')) 'DISM import forbidden'
+        }
+    }
+}
+Check 'reviewed PS7 command inventory rejects all DISM cmdlets' {
+    $raw=Get-Content (Join-Path $PSScriptRoot 'New-TwinfraDev.ps1') -Raw
+    Assert-ReviewedCommands $raw
+    foreach ($command in @('Get-WindowsOptionalFeature -Online','Dism\Get-WindowsOptionalFeature -Online',
+                           'Repair-WindowsImage -Online','Add-WindowsCapability -Online','Import-Module Dism')) {
+        $failed=$false
+        try { Assert-ReviewedCommands ($raw+"`n"+$command) } catch {$failed=$true}
+        Assert $failed "Forbidden servicing command accepted: $command"
+    }
+}
+Check 'CIM Hyper-V preflight uses fixtures and preserves refusal messages' {
+    $tokens=$null;$errors=$null
+    $ast=[Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'New-TwinfraDev.ps1'),[ref]$tokens,[ref]$errors)
+    $query=@($ast.EndBlock.Statements | Where-Object {$_ -is [Management.Automation.Language.TryStatementAst] -and $_.Extent.Text -match 'Win32_OptionalFeature'})
+    $guard=@($ast.EndBlock.Statements | Where-Object {$_ -is [Management.Automation.Language.IfStatementAst] -and $_.Extent.Text -match '\$hyperVEnabled'})
+    Assert ($query.Count -eq 1 -and $guard.Count -eq 1) 'Missing unique read-only preflight block'
+    $preflight=[scriptblock]::Create($query[0].Extent.Text+"`n"+$guard[0].Extent.Text)
+    function Get-CimInstance($ClassName,$Filter) {
+        Assert ($ClassName -eq 'Win32_OptionalFeature' -and $Filter -eq "Name='Microsoft-Hyper-V-All'") 'Unexpected CIM query'
+        if ($fixture.Error -eq 'cim') {throw 'fixture provider failure'}
+        if ($null -ne $fixture.State) {[pscustomobject]@{InstallState=$fixture.State}}
+    }
+    function Get-Service($Name) {
+        Assert ($Name -eq 'vmms') 'Unexpected service query'
+        if ($fixture.Error -eq 'service') {throw 'fixture missing service'}
+        [pscustomobject]@{Status=$fixture.Service}
+    }
+    function Get-Module([switch]$ListAvailable,$Name) {
+        Assert ($ListAvailable -and $Name -eq 'Hyper-V') 'Unexpected module query'
+        if ($fixture.Error -eq 'module') {throw 'fixture module discovery failure'}
+        if ($fixture.Module) {[pscustomobject]@{Name='Hyper-V'}}
+    }
+    $cases=@(@{State=1;Service='Running';Module=$true;Error='';Healthy=$true})
+    foreach ($state in @(2,3,4,$null)) {$cases+=@{State=$state;Service='Running';Module=$true;Error='';Healthy=$false}}
+    foreach ($status in @('Stopped','StartPending')) {$cases+=@{State=1;Service=$status;Module=$true;Error='';Healthy=$false}}
+    $cases+=@{State=1;Service='Running';Module=$false;Error='';Healthy=$false}
+    foreach ($error in @('cim','service','module')) {$cases+=@{State=1;Service='Running';Module=$true;Error=$error;Healthy=$false}}
+    foreach ($fixture in $cases) {
+        $failed=$false
+        try { & $preflight } catch {
+            $failed=$true
+            Assert ($_.Exception.Message -eq 'Enable Hyper-V and its PowerShell management tools, then reboot. No changes made.') 'Changed refusal message'
+        }
+        Assert ($failed -eq (-not $fixture.Healthy)) 'Incorrect prerequisite decision'
+    }
+}
+Check 'embedded ISO helper compiles on PS7 without COM activation' {
+    $tokens=$null;$errors=$null
+    $ast=[Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot 'New-TwinfraDev.ps1'),[ref]$tokens,[ref]$errors)
+    $compile=@($ast.FindAll({param($node) $node -is [Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Add-Type'},$true))
+    Assert ($compile.Count -eq 1) 'Missing unique ISO helper'
+    Add-Type -TypeDefinition $compile[0].CommandElements[2].SafeGetValue()
+    Assert ($null -ne ('TwinfraIso' -as [type])) 'ISO helper did not compile'
+}
 Check 'default route and the five exclusions' {
     $i=Inventory
     $i.Routes=@('0.0.0.0/0','::/0','127.0.0.1/32','169.254.10.0/24','224.0.0.0/4','255.255.255.255/32' | ForEach-Object {@{Prefix=$_;InterfaceAlias='fixture';NextHop='0.0.0.0'}})

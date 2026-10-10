@@ -11,7 +11,15 @@ $ErrorActionPreference='Stop'
 Import-Module (Join-Path $PSScriptRoot 'Twinfra.psm1') -Force
 $admin=([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $admin) { throw 'Run an Administrator PowerShell session. No changes made.' }
-if (-not (Get-Module -ListAvailable Hyper-V) -or (Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V-All).State -ne 'Enabled') {
+try {
+    # Read-only CIM/service checks avoid the host's failing servicing API path.
+    $hyperVEnabled=(Get-CimInstance -ClassName Win32_OptionalFeature -Filter "Name='Microsoft-Hyper-V-All'").InstallState -eq 1
+    $vmmsRunning=(Get-Service -Name vmms).Status -eq 'Running'
+    $hyperVModuleAvailable=[bool](Get-Module -ListAvailable -Name Hyper-V)
+} catch {
+    throw 'Enable Hyper-V and its PowerShell management tools, then reboot. No changes made.'
+}
+if (-not $hyperVEnabled -or -not $vmmsRunning -or -not $hyperVModuleAvailable) {
     throw 'Enable Hyper-V and its PowerShell management tools, then reboot. No changes made.'
 }
 Import-Module Hyper-V
