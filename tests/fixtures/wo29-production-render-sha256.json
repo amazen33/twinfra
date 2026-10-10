@@ -10,5 +10,6 @@
     "render_smoke": "746ed9285170f4016ae9cafa6b917280ddad6dafba49ed8786a0a358dbd503af",
     "render_foundation": "ea8c731ec254328ea0edcf553b35d5de6b1858e7103bf01865355304f87d12e7",
     "render_exception_policy": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253"
-  }
+  },
+  "systemdResolvedKubeadmSHA256": "7ed43c6d2a78518f24dd91efd09828510c22ca6e388ab17a64937cd481fedefb"
 }

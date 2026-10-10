@@ -308,6 +308,13 @@ class SharedBootstrap(unittest.TestCase):
         for code, expected in fixture['sha256'].items():
             result = self.bash(code, IMAGE_STAGING='false', NODE_IP='192.168.50.10', NODE_NAME='vcloud01')
             self.assertEqual(result.returncode, 0, result.stderr)
+            if code == 'render_kubeadm':
+                # Existing production behavior selects the host's real resolver file.
+                # Keep both pre-change byte hashes rather than normalize away that branch.
+                resolver = '/run/systemd/resolve/resolv.conf' if Path('/run/systemd/resolve/resolv.conf').exists() else '/etc/resolv.conf'
+                self.assertIn('resolvConf: "' + resolver + '"', result.stdout)
+                if resolver != '/etc/resolv.conf':
+                    expected = fixture['systemdResolvedKubeadmSHA256']
             self.assertEqual(hashlib.sha256(result.stdout.replace('\r\n','\n').encode()).hexdigest(), expected, code)
 
     def test_staging_replaces_only_probe_and_false_keeps_it(self):
