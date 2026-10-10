@@ -1,5 +1,15 @@
 # Twinfra dev environment · cairo-1
 
+WO-07 adds [Perses dashboards](../deploy/observability/perses/README.md) at
+`https://console.dev.cairo-1.twinfra.example.com:18444/console/metrics/`, behind
+the existing APISIX/Keycloak session. Stage both new locked application images
+before reconciliation. The create-only secret generator now includes the
+Perses encryption key. Git supplies read-only dashboards; no direct Perses
+forward is provided. The dev datasource points to `twinfra-prometheus`; the
+minimal profile does not deploy that metrics service yet (WO-10).
+Data, viewer permissions and actual operator-generated Pod checks remain
+[Pending](acceptance/perses-2026-10-10.md). No live changes were made in WO-07.
+
 [WO-29 and Amendment 1](work-orders/WO-29-make-dev-environment-runnable.md)
 make the static WO-21 profile runnable without an existing registry or PKI.
 Provisioning and browser acceptance remain **Pending** in

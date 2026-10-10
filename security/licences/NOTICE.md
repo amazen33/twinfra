@@ -31,6 +31,9 @@ terms and obtain owner authorization before enabling the CUDA test; this project
 does not grant NVIDIA rights or include CUDA in a first-party image. The licence gate rejects using
 that reference as a Dockerfile base or enabling the default CUDA smoke-test switch.
 
-Grafana remains pending removal. Redis was replaced under WO-25 and LocalStack
-was removed under WO-06; neither remains a platform selection. Their frozen expiry dates and follow-up work orders appear in the
-register and every successful CI licence report.
+Grafana was replaced under WO-07 by unmodified, digest-pinned Perses 0.54.0 and
+Perses Operator 0.5.0 (Apache-2.0). Exact source licences and upstream image
+SPDX evidence are in the register. Their upstream images include `/LICENSE`;
+OS packages in the SPDX inventory retain their separate distribution terms.
+Redis was replaced under WO-25 and LocalStack removed under WO-06. None remains
+a platform selection; the pending-removal register is empty.

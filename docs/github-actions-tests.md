@@ -86,6 +86,13 @@ the local CI rule alone does not protect an otherwise unprotected `main` branch.
 
 ## Dependency and execution boundaries
 
+WO-07 adds an unconditional candidate dashboard-removal guard. Its optional
+Perses bundle verifies aged pins, CRDs and amd64/arm64 SPDX blob chains,
+deterministic dashboards, exact delivery PromQL, served alpha2 schemas,
+read-only/authenticated routes and network/RBAC boundaries. Dev/WSL schemas
+and PSS gates include the new resources. Old baselines retain their original
+dashboard implementation; an absent Perses bundle is recorded as absent.
+
 Jobs use disposable GitHub-hosted Ubuntu 24.04 runners with read-only repository
 permissions, checkout credentials disabled, and no deployment secrets. Actions
 use immutable commit pins. Python libraries and Node.js have explicit versions;

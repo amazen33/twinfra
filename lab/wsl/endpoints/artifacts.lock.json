@@ -3,11 +3,12 @@
     "knative": "1.23.0",
     "prometheusOperator": "0.94.1",
     "prometheus": "3.15.0",
-    "grafana": "13.2.3",
     "otelCollector": "0.162.0",
     "openbao": "2.7.1",
     "keycloak": "26.8.0",
-    "apisix": "3.19.0"
+    "apisix": "3.19.0",
+    "perses": "0.54.0",
+    "perses-operator": "0.5.0"
   },
   "files": {
     "serving-core.yaml": {
@@ -31,7 +32,6 @@
     "keycloak": "quay.io/keycloak/keycloak:26.8.0",
     "apisix": "docker.io/apache/apisix:3.19.0-debian",
     "prometheus": "quay.io/prometheus/prometheus:v3.15.0",
-    "grafana": "docker.io/grafana/grafana:13.2.3",
     "otel-collector": "docker.io/otel/opentelemetry-collector-contrib:0.162.0",
     "prometheus-config-reloader": "quay.io/prometheus-operator/prometheus-config-reloader:v0.94.1",
     "knative-queue-proxy": "gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:a3cc71ce80dbc6df8781f15eac2cf3531a4c9815271799afd8776bef9e6aeaf2",
@@ -41,7 +41,9 @@
     "knative-webhook": "gcr.io/knative-releases/knative.dev/serving/cmd/webhook@sha256:3846e9a416665c5b9ec2e4de246cfcb5c4ab0d01ba19348aa008caf30144b650",
     "knative-kourier-control": "gcr.io/knative-releases/knative.dev/net-kourier/cmd/kourier@sha256:eedfe3938f1efa93230863099f96400a0567909d383a585021f8727fa3a6cf0b",
     "knative-kourier-gateway": "docker.io/envoyproxy/envoy:v1.37.7",
-    "prometheus-operator": "quay.io/prometheus-operator/prometheus-operator:v0.94.1"
+    "prometheus-operator": "quay.io/prometheus-operator/prometheus-operator:v0.94.1",
+    "perses": "quay.io/persesdev/perses:v0.54.0",
+    "perses-operator": "quay.io/persesdev/perses-operator:v0.5.0"
   },
   "images": {
     "openbao": {
@@ -63,11 +65,6 @@
       "source": "quay.io/prometheus/prometheus@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e",
       "canonical": "registry.vcloud.example.com/quay.io/prometheus/prometheus@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e",
       "digest": "sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e"
-    },
-    "grafana": {
-      "source": "docker.io/grafana/grafana@sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
-      "canonical": "registry.vcloud.example.com/docker.io/grafana/grafana@sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
-      "digest": "sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572"
     },
     "otel-collector": {
       "source": "docker.io/otel/opentelemetry-collector-contrib@sha256:39923a8e431bd1f57be82411999d389fcfe40857492e4365456d97a4c1f74be6",
@@ -118,6 +115,16 @@
       "source": "quay.io/prometheus-operator/prometheus-operator@sha256:7c88d4e7bae63bd8d0f8da986054337c23b4472fa8d3c6817f5bc4b8407a2d6a",
       "canonical": "registry.vcloud.example.com/quay.io/prometheus-operator/prometheus-operator@sha256:7c88d4e7bae63bd8d0f8da986054337c23b4472fa8d3c6817f5bc4b8407a2d6a",
       "digest": "sha256:7c88d4e7bae63bd8d0f8da986054337c23b4472fa8d3c6817f5bc4b8407a2d6a"
+    },
+    "perses": {
+      "source": "quay.io/persesdev/perses@sha256:a0e34ddaf9d7599d96036611af205b948c1179646844202d869f3bcf3d5d9e9c",
+      "canonical": "registry.vcloud.example.com/quay.io/persesdev/perses@sha256:a0e34ddaf9d7599d96036611af205b948c1179646844202d869f3bcf3d5d9e9c",
+      "digest": "sha256:a0e34ddaf9d7599d96036611af205b948c1179646844202d869f3bcf3d5d9e9c"
+    },
+    "perses-operator": {
+      "source": "quay.io/persesdev/perses-operator@sha256:8f8d7b09caefc35777dc88b9e8823efb7232b1ce2869648575176e760d7b55bf",
+      "canonical": "registry.vcloud.example.com/quay.io/persesdev/perses-operator@sha256:8f8d7b09caefc35777dc88b9e8823efb7232b1ce2869648575176e760d7b55bf",
+      "digest": "sha256:8f8d7b09caefc35777dc88b9e8823efb7232b1ce2869648575176e760d7b55bf"
     }
   }
 }

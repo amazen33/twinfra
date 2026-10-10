@@ -45,7 +45,8 @@ infer a licence clearance merely from the existence of an SBOM.
 
 The initial dates use the owner approval on **2026-10-09**, conservatively:
 
-- Grafana (WO-07): **2026-12-08**. LocalStack was removed under WO-06.
+- Grafana and its pending-removal authorization were removed under WO-07.
+  LocalStack was removed under WO-06; no pending-removal components remain.
 - Open baseline evidence: **2027-01-07** (90 days).
 - psycopg, psycopg-binary and psycopg-pool (WO-27): **2027-02-06**, or before
   Module 5a is enabled. Certifi is now weak-copyleft under Amendment 3.

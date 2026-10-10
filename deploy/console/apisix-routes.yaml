@@ -576,3 +576,147 @@ spec:
             Referrer-Policy: no-referrer
     - name: prometheus
       enable: true
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: vcloud-portal-metrics
+  namespace: platform-services
+spec:
+  ingressClassName: vcloud-local
+  http:
+  - name: metrics
+    priority: 200
+    match:
+      hosts:
+      - localhost
+      paths:
+      - /console/metrics
+      - /console/metrics/*
+    backends:
+    - serviceName: twinfra-perses
+      servicePort: 8080
+      resolveGranularity: service
+    websocket: false
+    plugins:
+    - name: serverless-pre-function
+      enable: true
+      config:
+        phase: rewrite
+        _meta:
+          priority: 10000
+        functions:
+        - return function(conf, ctx) for _,name in ipairs({'X-ID-Token','X-Access-Token','X-Userinfo','X-Refresh-Token','X-Raw-ID-Token'})
+          do ngx.req.clear_header(name) end end
+        - "-- APISIX 3.19: plugin.filter resolves Secret references before rewrite.\n\
+          -- Inspect only session presence; OIDC still validates state, PKCE and tokens.\n\
+          return function(conf, ctx)\n    if ngx.var.uri ~= \"/console/callback\"\
+          \ then\n        return\n    end\n    if ngx.req.get_method() ~= \"GET\"\
+          \ then\n        return 405\n    end\n    local options\n    for i = 1, #(ctx.plugins\
+          \ or {}), 2 do\n        if ctx.plugins[i].name == \"openid-connect\" then\n\
+          \            options = ctx.plugins[i + 1].session\n            break\n \
+          \       end\n    end\n    if not options or not options.secret then\n  \
+          \      return 503\n    end\n    -- open() reads/verifies the cookie without\
+          \ refreshing or saving it.\n    local session = require(\"resty.session\"\
+          ).open(options)\n    local present = session and next(session:get_data())\
+          \ ~= nil\n    if session then\n        session:close()\n    end\n    if\
+          \ present then\n        return\n    end\n    -- No reflection of callback\
+          \ parameters and no automatic retry loop.\n    ngx.header[\"Content-Type\"\
+          ] = \"text/html; charset=utf-8\"\n    ngx.header[\"Cache-Control\"] = \"\
+          no-store\"\n    ngx.header[\"Referrer-Policy\"] = \"no-referrer\"\n    ngx.header[\"\
+          X-Frame-Options\"] = \"SAMEORIGIN\"\n    ngx.header[\"X-Content-Type-Options\"\
+          ] = \"nosniff\"\n    ngx.header[\"Content-Security-Policy\"] = \"default-src\
+          \ 'none'; frame-ancestors 'self'; base-uri 'none'\"\n    return 401, '<!doctype\
+          \ html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\"\
+          \ content=\"width=device-width,initial-scale=1\"><title>Sign in again |\
+          \ Twinfra</title><h1>Start sign-in again</h1><p>Your sign-in session is\
+          \ missing or expired. The returned authorization code was not accepted.</p><p><a\
+          \ href=\"/console/\">Start a fresh Twinfra sign-in</a></p></html>'\nend\n"
+    - name: openid-connect
+      enable: true
+      secretRef: vcloud-console-oidc
+      config:
+        client_id: vcloud-console
+        discovery: https://keycloak.platform-services.svc.cluster.local/realms/vcloud/.well-known/openid-configuration
+        bearer_only: false
+        unauth_action: auth
+        ssl_verify: true
+        use_pkce: true
+        scope: openid
+        timeout: 5
+        redirect_uri: http://localhost:18080/console/callback
+        logout_path: /console/logout
+        session:
+          cookie_name: vcloud_portal
+          cookie_path: /console
+          cookie_secure: false
+          cookie_http_only: true
+          cookie_same_site: Lax
+          idling_timeout: 900
+          absolute_timeout: 3600
+        set_id_token_header: false
+        set_access_token_header: true
+        set_refresh_token_header: false
+        set_userinfo_header: false
+        accept_none_alg: false
+        accept_unsupported_alg: false
+        token_signing_alg_values_expected: RS256
+        claim_validator:
+          issuer:
+            valid_issuers:
+            - https://localhost:18443/realms/vcloud
+          audience:
+            required: true
+            match_with_client_id: true
+        claim_schema:
+          type: object
+          required:
+          - id_token
+          properties:
+            id_token:
+              type: object
+              required:
+              - resource_access
+              properties:
+                resource_access:
+                  type: object
+                  required:
+                  - vcloud-console
+                  properties:
+                    vcloud-console:
+                      type: object
+                      required:
+                      - roles
+                      properties:
+                        roles:
+                          type: array
+                          contains:
+                            enum:
+                            - console.viewer
+                            - console.admin
+    - name: proxy-rewrite
+      enable: true
+      config:
+        headers:
+          set:
+            X-Forwarded-Host: localhost:18080
+            X-Forwarded-Proto: http
+          remove:
+          - Authorization
+          - Cookie
+          - X-ID-Token
+          - X-Userinfo
+          - X-Refresh-Token
+          - X-Raw-ID-Token
+          - X-Access-Token
+    - name: response-rewrite
+      enable: true
+      config:
+        headers:
+          set:
+            X-Frame-Options: SAMEORIGIN
+            X-Content-Type-Options: nosniff
+            Cache-Control: no-store
+            Referrer-Policy: no-referrer
+    - name: prometheus
+      enable: true

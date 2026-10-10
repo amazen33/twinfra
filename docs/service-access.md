@@ -17,6 +17,7 @@ in the unchanged [acceptance receipts](acceptance/README.md).
 | <https://console.dev.cairo-1.twinfra.example.com:18444/console/dynamodb> | MiniStack table names and metadata | Pending |
 | <https://console.dev.cairo-1.twinfra.example.com:18444/console/gitops> | Argo Application sync/health | Pending |
 | <https://console.dev.cairo-1.twinfra.example.com:18444/console/iam> | Keycloak identity and console roles | Pending |
+| <https://console.dev.cairo-1.twinfra.example.com:18444/console/metrics/> | Perses delivery and health dashboards | Pending; dev Prometheus under WO-10 |
 | <https://auth.dev.cairo-1.twinfra.example.com:18443/admin/> | Native Keycloak administration; separate realm permissions | Pending |
 | <https://gitops.dev.cairo-1.twinfra.example.com:18081/> | Native Argo CD server | Pending |
 
@@ -60,11 +61,15 @@ live state and browser acceptance Pending.
 
 ## Services with no working browser endpoint
 
-GPU/vLLM, Spinifex offloading, Grafana, Knative and durable trace storage are
+GPU/vLLM, Spinifex offloading, Knative and durable trace storage are
 excluded from the rebuilt dev profile. No billing console, real EC2 instances
 or additional AWS services were added by WO-06. MiniStack remains an ephemeral
 development emulator. The previous emulator's module, runtime routes and
 pending-removal licence authorization have been removed from the repository.
+
+WO-07 replaces Grafana with [Perses](../deploy/observability/perses/README.md)
+behind APISIX OIDC. There is no direct Perses browser forward. Dashboard data
+and viewer acceptance remain [Pending](acceptance/perses-2026-10-10.md).
 
 ## OpenBao operator endpoint
 

@@ -92,42 +92,71 @@ metadata:
   name: vcloud-delivery-dashboard
   labels:
     app.kubernetes.io/part-of: vcloud
-    grafana_dashboard: '1'
+    perses.dev/resource: 'true'
   namespace: platform-services
 data:
-  vcloud-delivery.json: "{\n  \"uid\": \"vcloud-delivery\",\n  \"title\": \"vCloud\
-    \ delivery\",\n  \"schemaVersion\": 41,\n  \"version\": 1,\n  \"refresh\": \"\
-    30s\",\n  \"templating\": {\n    \"list\": [\n      {\n        \"name\": \"datasource\"\
-    ,\n        \"type\": \"datasource\",\n        \"query\": \"prometheus\",\n   \
-    \     \"current\": {}\n      }\n    ]\n  },\n  \"panels\": [\n    {\n      \"\
-    id\": 1,\n      \"title\": \"Pipeline runs\",\n      \"type\": \"timeseries\"\
-    ,\n      \"gridPos\": {\n        \"x\": 0,\n        \"y\": 0,\n        \"w\":\
-    \ 12,\n        \"h\": 8\n      },\n      \"datasource\": {\n        \"type\":\
-    \ \"prometheus\",\n        \"uid\": \"${datasource}\"\n      },\n      \"targets\"\
-    : [\n        {\n          \"refId\": \"A\",\n          \"expr\": \"sum by (status)\
+  twinfra-delivery.json: "{\n  \"kind\": \"Dashboard\",\n  \"metadata\": {\n    \"\
+    name\": \"twinfra-delivery\",\n    \"project\": \"twinfra\"\n  },\n  \"spec\"\
+    : {\n    \"display\": {\n      \"name\": \"Twinfra delivery\"\n    },\n    \"\
+    duration\": \"1h\",\n    \"refreshInterval\": \"30s\",\n    \"panels\": {\n  \
+    \    \"panel1\": {\n        \"kind\": \"Panel\",\n        \"spec\": {\n      \
+    \    \"display\": {\n            \"name\": \"Pipeline runs\"\n          },\n \
+    \         \"plugin\": {\n            \"kind\": \"TimeSeriesChart\",\n        \
+    \    \"spec\": {}\n          },\n          \"queries\": [\n            {\n   \
+    \           \"kind\": \"TimeSeriesQuery\",\n              \"spec\": {\n      \
+    \          \"plugin\": {\n                  \"kind\": \"PrometheusTimeSeriesQuery\"\
+    ,\n                  \"spec\": {\n                    \"query\": \"sum by (status)\
     \ (increase(tekton_pipelines_controller_pipelinerun_duration_seconds_count{namespace=\\\
-    \"workload-apps\\\",pipeline=\\\"vcloud-ci\\\"}[1h]))\",\n          \"legendFormat\"\
-    : \"{{status}} {{sync_status}} {{health_status}}\"\n        }\n      ]\n    },\n\
-    \    {\n      \"id\": 2,\n      \"title\": \"Pipeline duration p95\",\n      \"\
-    type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 12,\n        \"\
-    y\": 0,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\"\
-    : {\n        \"type\": \"prometheus\",\n        \"uid\": \"${datasource}\"\n \
-    \     },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n     \
-    \     \"expr\": \"histogram_quantile(0.95, sum by (le) (rate(tekton_pipelines_controller_pipelinerun_duration_seconds_bucket{namespace=\\\
-    \"workload-apps\\\",pipeline=\\\"vcloud-ci\\\"}[15m])))\",\n          \"legendFormat\"\
-    : \"{{status}} {{sync_status}} {{health_status}}\"\n        }\n      ]\n    },\n\
-    \    {\n      \"id\": 3,\n      \"title\": \"Argo CD sync and health\",\n    \
-    \  \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 0,\n      \
-    \  \"y\": 8,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\"\
-    : {\n        \"type\": \"prometheus\",\n        \"uid\": \"${datasource}\"\n \
-    \     },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n     \
-    \     \"expr\": \"argocd_app_info{name=\\\"vcloud-delivery\\\"}\",\n         \
-    \ \"legendFormat\": \"{{status}} {{sync_status}} {{health_status}}\"\n       \
-    \ }\n      ]\n    },\n    {\n      \"id\": 4,\n      \"title\": \"Delivery alerts\"\
-    ,\n      \"type\": \"timeseries\",\n      \"gridPos\": {\n        \"x\": 12,\n\
-    \        \"y\": 8,\n        \"w\": 12,\n        \"h\": 8\n      },\n      \"datasource\"\
-    : {\n        \"type\": \"prometheus\",\n        \"uid\": \"${datasource}\"\n \
-    \     },\n      \"targets\": [\n        {\n          \"refId\": \"A\",\n     \
-    \     \"expr\": \"ALERTS{alertname=~\\\"VCloud.*\\\",alertstate=\\\"firing\\\"\
-    }\",\n          \"legendFormat\": \"{{status}} {{sync_status}} {{health_status}}\"\
-    \n        }\n      ]\n    }\n  ]\n}"
+    \"workload-apps\\\",pipeline=\\\"vcloud-ci\\\"}[1h]))\",\n                   \
+    \ \"datasource\": {\n                      \"kind\": \"Datasource\",\n       \
+    \               \"name\": \"prometheus\"\n                    }\n            \
+    \      }\n                }\n              }\n            }\n          ]\n   \
+    \     }\n      },\n      \"panel2\": {\n        \"kind\": \"Panel\",\n       \
+    \ \"spec\": {\n          \"display\": {\n            \"name\": \"Pipeline duration\
+    \ p95\"\n          },\n          \"plugin\": {\n            \"kind\": \"TimeSeriesChart\"\
+    ,\n            \"spec\": {}\n          },\n          \"queries\": [\n        \
+    \    {\n              \"kind\": \"TimeSeriesQuery\",\n              \"spec\":\
+    \ {\n                \"plugin\": {\n                  \"kind\": \"PrometheusTimeSeriesQuery\"\
+    ,\n                  \"spec\": {\n                    \"query\": \"histogram_quantile(0.95,\
+    \ sum by (le) (rate(tekton_pipelines_controller_pipelinerun_duration_seconds_bucket{namespace=\\\
+    \"workload-apps\\\",pipeline=\\\"vcloud-ci\\\"}[15m])))\",\n                 \
+    \   \"datasource\": {\n                      \"kind\": \"Datasource\",\n     \
+    \                 \"name\": \"prometheus\"\n                    }\n          \
+    \        }\n                }\n              }\n            }\n          ]\n \
+    \       }\n      },\n      \"panel3\": {\n        \"kind\": \"Panel\",\n     \
+    \   \"spec\": {\n          \"display\": {\n            \"name\": \"Argo CD sync\
+    \ and health\"\n          },\n          \"plugin\": {\n            \"kind\": \"\
+    TimeSeriesChart\",\n            \"spec\": {}\n          },\n          \"queries\"\
+    : [\n            {\n              \"kind\": \"TimeSeriesQuery\",\n           \
+    \   \"spec\": {\n                \"plugin\": {\n                  \"kind\": \"\
+    PrometheusTimeSeriesQuery\",\n                  \"spec\": {\n                \
+    \    \"query\": \"argocd_app_info{name=\\\"vcloud-delivery\\\"}\",\n         \
+    \           \"datasource\": {\n                      \"kind\": \"Datasource\"\
+    ,\n                      \"name\": \"prometheus\"\n                    }\n   \
+    \               }\n                }\n              }\n            }\n       \
+    \   ]\n        }\n      },\n      \"panel4\": {\n        \"kind\": \"Panel\",\n\
+    \        \"spec\": {\n          \"display\": {\n            \"name\": \"Delivery\
+    \ alerts\"\n          },\n          \"plugin\": {\n            \"kind\": \"TimeSeriesChart\"\
+    ,\n            \"spec\": {}\n          },\n          \"queries\": [\n        \
+    \    {\n              \"kind\": \"TimeSeriesQuery\",\n              \"spec\":\
+    \ {\n                \"plugin\": {\n                  \"kind\": \"PrometheusTimeSeriesQuery\"\
+    ,\n                  \"spec\": {\n                    \"query\": \"ALERTS{alertname=~\\\
+    \"VCloud.*\\\",alertstate=\\\"firing\\\"}\",\n                    \"datasource\"\
+    : {\n                      \"kind\": \"Datasource\",\n                      \"\
+    name\": \"prometheus\"\n                    }\n                  }\n         \
+    \       }\n              }\n            }\n          ]\n        }\n      }\n \
+    \   },\n    \"layouts\": [\n      {\n        \"kind\": \"Grid\",\n        \"spec\"\
+    : {\n          \"items\": [\n            {\n              \"x\": 0,\n        \
+    \      \"y\": 0,\n              \"width\": 12,\n              \"height\": 8,\n\
+    \              \"content\": {\n                \"$ref\": \"#/spec/panels/panel1\"\
+    \n              }\n            },\n            {\n              \"x\": 12,\n \
+    \             \"y\": 0,\n              \"width\": 12,\n              \"height\"\
+    : 8,\n              \"content\": {\n                \"$ref\": \"#/spec/panels/panel2\"\
+    \n              }\n            },\n            {\n              \"x\": 0,\n  \
+    \            \"y\": 8,\n              \"width\": 12,\n              \"height\"\
+    : 8,\n              \"content\": {\n                \"$ref\": \"#/spec/panels/panel3\"\
+    \n              }\n            },\n            {\n              \"x\": 12,\n \
+    \             \"y\": 8,\n              \"width\": 12,\n              \"height\"\
+    : 8,\n              \"content\": {\n                \"$ref\": \"#/spec/panels/panel4\"\
+    \n              }\n            }\n          ]\n        }\n      }\n    ]\n  }\n\
+    }"

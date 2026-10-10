@@ -17,7 +17,8 @@ def required():
             'twinfra-keycloak-db':{'username':'keycloak','password':secrets.token_urlsafe(48)},
             'twinfra-openbao-db':{'username':'openbao','password':secrets.token_urlsafe(48)},
             'twinfra-keycloak-admin':{'username':'twinfra-admin','password':secrets.token_urlsafe(48)},
-            'twinfra-console-oidc':{'client_secret':secrets.token_urlsafe(48),'session_secret':secrets.token_urlsafe(48)}}
+            'twinfra-console-oidc':{'client_secret':secrets.token_urlsafe(48),'session_secret':secrets.token_urlsafe(48)},
+            'twinfra-perses-key':{'encryption-key':secrets.token_hex(16)}}
 
 
 def main():

@@ -18,6 +18,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'deploy/observability/perses': ['tools/perses.py','tools/check_dashboard_removal.py','tests/test_perses.py',
+        'deploy/observability/perses/artifacts.lock.json','deploy/observability/perses/dashboards.json'],
     'dev-runnable': ['tools/platform_dev_ca.py','tools/platform_image_staging.py','tools/platform_bootstrap_inventory.py','deploy/common/stage-images.py','deploy/common/bootstrap-images.lock.json','deploy/common/vendor/kubeadm-constants-v1.36.5.go','tests/test_dev_runnable.py','docs/work-orders/WO-29-make-dev-environment-runnable.md'],
     'deploy/hyperv': ['deploy/hyperv/New-TwinfraDev.ps1','deploy/hyperv/Twinfra.psm1','deploy/hyperv/test-plan.ps1','deploy/hyperv/qcow2_to_vhd.py','deploy/hyperv/ubuntu-image.lock.json','deploy/upstream-names.json','tools/platform_dev.py','tools/platform_validate.py','tools/check_upstream_names.py','tests/test_dev_environment.py','deploy/environments/dev/cairo-1/root.yaml','deploy/environments/dev/cairo-1/platform/workloads.yaml','deploy/environments/dev/cairo-1/services/workloads.yaml'],
     'console': ['console/package.json', 'console/package-lock.json', 'console/server.py', 'console/Dockerfile',
@@ -171,6 +173,11 @@ def main():
         # never against the dependencies of the six pre-policy historical revisions.
         run('candidate-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
                                   '--report', report_dir / 'licences.json'])
+        if (ROOT.parents[1] / 'tools/check_dashboard_removal.py').is_file():
+            run('candidate-dashboard-removal', [python, ROOT.parents[1] / 'tools/check_dashboard_removal.py'])
+        if report['modules']['deploy/observability/perses']=='present':
+            run('perses-render',[python,'tools/perses.py','--check'])
+            run('perses-tests',[python,'-m','unittest','discover','-s','tests','-p','test_perses.py','-v'],unit=True)
         if (ROOT.parents[1] / 'tools/check_emulator_removal.py').is_file():
             run('candidate-emulator-removal', [python, ROOT.parents[1] / 'tools/check_emulator_removal.py',
                 '--root', ROOT.parents[1]])

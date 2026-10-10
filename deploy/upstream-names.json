@@ -428,6 +428,51 @@
       "sources": [],
       "names": [],
       "note": "Only pinned image used. Deployment/Service/configuration are Twinfra-owned; no upstream name exemption."
+    },
+    {
+      "project": "perses-operator",
+      "release": "twinfra-perses-operator",
+      "namespace": "twinfra-platform-services",
+      "sources": [
+        {
+          "path": "deploy/observability/perses/vendor/perses.dev_perses.yaml.gz",
+          "sha256": "c6edf5a311328b26ad9b25cb333750c42e953beff8ba2efb0bacde0f0030dc34",
+          "format": "gzip"
+        },
+        {
+          "path": "deploy/observability/perses/vendor/perses.dev_persesdashboards.yaml.gz",
+          "sha256": "a6fbffd99690c9dd7f613038bc3b96002a02e5bafdb6925423f820bc652f0552",
+          "format": "gzip"
+        },
+        {
+          "path": "deploy/observability/perses/vendor/perses.dev_persesdatasources.yaml.gz",
+          "sha256": "c96c30ab04196c66c6301a4b6d9d156d2d2dc8b3c55fa0885bd303461c7841b8",
+          "format": "gzip"
+        },
+        {
+          "path": "deploy/observability/perses/vendor/perses.dev_persesglobaldatasources.yaml.gz",
+          "sha256": "ea4bc1607df9fdd88a591b633236ac4f191db511e242f5b04c0bf9440f5b15d7",
+          "format": "gzip"
+        }
+      ],
+      "names": [
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "perses.perses.dev"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "persesdashboards.perses.dev"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "persesdatasources.perses.dev"
+        },
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "persesglobaldatasources.perses.dev"
+        }
+      ]
     }
   ]
 }

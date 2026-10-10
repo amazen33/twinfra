@@ -2,9 +2,15 @@
 
 This profile extends the owned `vcloud-wsl-local` WSL cluster only. It runs
 OpenBao 2.7.1, Keycloak 26.8.0, APISIX 3.19.0, Knative/Kourier 1.23.0,
-Prometheus Operator 0.94.1, Prometheus 3.15.0, Grafana 13.2.3 and OpenTelemetry
+Prometheus Operator 0.94.1, Prometheus 3.15.0, Perses 0.54.0 / Operator 0.5.0 and OpenTelemetry
 Collector 0.162.0. Release manifests and image digests are frozen in
 [artifacts.lock.json](artifacts.lock.json). No production SSoT identity changes.
+
+This retained WSL implementation is not the live target; see ADR-0046 and
+[the dev runbook](../../../docs/dev-environment.md). WO-07 replaces the old
+dashboard generator with [Perses](../../../deploy/observability/perses/README.md)
+through authenticated `/console/metrics`, with no direct dashboard forward.
+Live dashboard acceptance is Pending for twinfra-dev-cairo-1.
 
 The [milestone runbook](../../../docs/wsl-local-milestones-3-5.md) describes
 provisioning order, actual endpoints, security gates, validation and recovery.

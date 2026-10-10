@@ -30,6 +30,6 @@ if systemctl is-active --quiet vcloud-wsl-http-access.service; then
 fi
 forward vcloud-wsl-apisix-access.service svc/apisix 18080:9080
 forward vcloud-wsl-prometheus-access.service svc/prometheus 9090:9090
-forward vcloud-wsl-grafana-access.service svc/grafana 3000:3000
+# Perses is available only through the authenticated /console/metrics gateway.
 forward vcloud-wsl-keycloak-access.service svc/keycloak 18443:443
 printf 'Local listeners started; verify HTTP/API responses with lab/wsl/test-e2e.sh.\n'
