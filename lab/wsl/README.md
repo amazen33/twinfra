@@ -5,8 +5,10 @@ The [endpoint profile](endpoints/README.md) adds CPU-only applications and
 observability; OpenBao initialization remains gated on operator public keys.
 The [service access runbook](../../docs/service-access.md) lists tested URLs,
 Windows verification and the services that are not deployed.
-The [LocalStack profile](localstack/README.md) adds a restricted Community AWS
-API emulator and APISIX route-controller prerequisites; it supplies no AWS GUI.
+The [console profile](console/README.md) uses MiniStack as its only AWS API
+emulator. Shared APISIX prerequisites remain in `tools/platform_ingress.py`.
+This retained WSL reference is retired; live acceptance targets
+[twinfra-dev-cairo-1](../../docs/dev-environment.md).
 
 See the [WSL setup and troubleshooting guide](../../docs/WSL_SETUP_GUIDE.md) for
 Windows adapter detection/firewall scope and Argo CD namespace ordering.

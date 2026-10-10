@@ -353,16 +353,15 @@ protocol or additional selector remain a refusal.
 sudo python3 tools/wsl_loopback_routing.py          # review the planned changes
 sudo python3 tools/wsl_loopback_routing.py --apply  # idempotent + TCP request/reply check
 sudo bash lab/wsl/endpoints/access.sh start
-sudo bash lab/wsl/localstack/access.sh
 sudo bash lab/wsl/test-e2e.sh
 sudo bash lab/wsl/test-network.sh
 ```
 
-Verify Windows independently with the Host-routed APISIX demo and LocalStack
+Verify Windows independently with the Host-routed APISIX demo and MiniStack
 health URL in [service access](service-access.md). After a Cilium restart,
 existing forwards can retain failed streaming connections: restart only the
 known `vcloud-wsl-{apisix,prometheus,grafana,keycloak}-access.service`,
-`vcloud-wsl-openbao-init.service` and `vcloud-wsl-localstack-access.service`
+`vcloud-wsl-openbao-init.service`
 units after inspecting their `ExecStart`, then repeat acceptance. An active
 unit alone does not establish endpoint health.
 

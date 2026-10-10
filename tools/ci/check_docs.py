@@ -6,6 +6,7 @@ import subprocess
 from urllib.parse import unquote
 
 import sys
+from historical_links import verified_deleted_link
 root = Path(sys.argv[1]).resolve()
 report_path = Path(sys.argv[2]).resolve()
 mermaid_path = Path(sys.argv[3]).resolve()
@@ -90,6 +91,7 @@ if canonical:
                              '--exclude-standard', '--', '*.md'], capture_output=True, text=True, check=True)
     files = sorted({root / name for name in result.stdout.splitlines()} | set(all_adrs))
 local_links = 0
+historical_links = 0
 source_urls = set()
 for file in files:
     content = file.read_text(encoding='utf-8')
@@ -103,6 +105,9 @@ for file in files:
         elif not target.startswith('#'):
             target_path = unquote(target.split('#', 1)[0]).strip('<>')
             destination = file.parent / target_path
+            if not destination.exists() and verified_deleted_link(root, file, destination):
+                historical_links += 1
+                continue
             assert destination.exists(), (file, target_path)
             if canonical and '#' in target and destination.suffix == '.md':
                 anchor = unquote(target.split('#', 1)[1])
@@ -157,6 +162,7 @@ report = {
     'status': 'passed', 'adrCount': len(all_adrs), 'componentADRCount': len(adrs),
     'adrLayout': 'canonical' if canonical else 'historical', 'markdownFilesChecked': len(files),
     'localLinksChecked': local_links, 'uniquePrimarySourceURLs': len(source_urls),
+    'historicalSourceLinksVerified': historical_links,
     'checks': {'adrCoverageAndStructure': 'passed', 'indexCoverage': 'passed',
                'localLinks': 'passed', 'codeFenceBalance': 'passed',
                'ssotIdentity': 'passed', 'approvedNodePolicyIntegrity': 'passed'},

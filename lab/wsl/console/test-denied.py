@@ -23,12 +23,12 @@ def main():
         raise ValueError('Owned WSL lab required')
     if run(['-n', 'hpc-compute', 'get', 'pod', NAME, '--ignore-not-found', '-o', 'name']).stdout.strip():
         raise ValueError('Refusing to replace a pre-existing test Pod')
-    for service in ('ministack', 'localstack', 'storage-ui', 'dynamodb-admin', 'vcloud-console-shell'):
+    for service in ('ministack', 'storage-ui', 'dynamodb-admin', 'vcloud-console-shell'):
         slices = json.loads(run(['-n', 'platform-services', 'get', 'endpointslices', '-l', 'kubernetes.io/service-name=' + service, '-o', 'json']).stdout)
         if not any(e.get('conditions', {}).get('ready') is True for s in slices['items'] for e in s.get('endpoints', [])):
             raise ValueError('Target not Ready: ' + service)
     code = """import socket,urllib.request
-targets=[('ministack',4566),('localstack',4566),('storage-ui',9001),('dynamodb-admin',8081),('vcloud-console-shell',3000)]
+targets=[('ministack',4566),('storage-ui',9001),('dynamodb-admin',8081),('vcloud-console-shell',3000)]
 opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
 for name,port in targets:
     host=name+'.platform-services.svc.cluster.local'

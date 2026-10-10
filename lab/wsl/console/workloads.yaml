@@ -11,12 +11,11 @@ data:
     \ urllib.parse import parse_qs, quote, urlencode, urlsplit\nimport urllib.request\n\
     import xml.etree.ElementTree as ET\nfrom datetime import datetime, timezone\n\n\
     ENDPOINTS = {\n    'ministack': os.environ.get('MINISTACK_ENDPOINT','http://ministack.platform-services.svc.cluster.local:4566'),\n\
-    \    'localstack': 'http://localstack.platform-services.svc.cluster.local:4566',\n\
     }\nMAX_RESPONSE = 1024 * 1024\n\n\ndef signed_request(backend, service, method='GET',\
     \ path='/', query=None, payload=b'', target=None, now=None):\n    \"\"\"SigV4\
     \ is computed AFTER selecting the direct, fixed in-cluster endpoint.\n\n    These\
     \ literal test/test emulator credentials are public fixtures, never real\n   \
-    \ AWS credentials. Container egress policy admits only these two Pod endpoints.\n\
+    \ AWS credentials. Container egress policy admits only the MiniStack Pod endpoint.\n\
     \    \"\"\"\n    endpoint = ENDPOINTS[backend]  # no user-provided URL / SSRF\n\
     \    host = urlsplit(endpoint).netloc\n    path = '/' + quote(path.lstrip('/'),\
     \ safe='/~')\n    pairs = sorted((str(k), str(v)) for k, v in (query or {}).items())\n\
@@ -75,25 +74,26 @@ data:
     \ + escape(title) + '</h1>' + body + '</main></body></html>').encode()\n\n\ndef\
     \ navigation(profile):\n    cards = []\n    for item in profile['backends']:\n\
     \        name = item['name']\n        href = '/' + name + '/'\n        if name\
-    \ in ('localstack', 'ministack'):\n            href += '_' + name + '/health'\n\
-    \        action = '<a href=\"' + href + '\">Open ' + escape(name) + '</a>' if\
-    \ item['enabled'] else '<span>Disabled reference</span>'\n        cards.append('<article><h2>'\
+    \ == 'ministack':\n            href += '_' + name + '/health'\n        action\
+    \ = '<a href=\"' + href + '\">Open ' + escape(name) + '</a>' if item['enabled']\
+    \ else '<span>Disabled reference</span>'\n        cards.append('<article><h2>'\
     \ + escape(name) + '</h2><p>' + escape(item['description']) + '</p><p>' + escape(item['license'])\
     \ + '</p>' + action + '</article>')\n    return page('Platform services', '<p>Read-only\
-    \ local lab navigation. Backend availability is checked when opened.</p>' + ''.join(cards))\n\
-    \n\nclass Handler(BaseHTTPRequestHandler):\n    def log_message(self, *args):\n\
-    \        pass  # never log cookies, OIDC codes, credentials or user query values\n\
-    \n    def respond(self, status, body, content='text/html; charset=utf-8'):\n \
-    \       self.send_response(status)\n        self.send_header('Content-Type', content)\n\
-    \        self.send_header('Content-Length', str(len(body)))\n        self.send_header('Cache-Control',\
-    \ 'no-store')\n        self.send_header('X-Frame-Options', 'SAMEORIGIN')\n   \
-    \     self.send_header('Content-Security-Policy', \"default-src 'none'; style-src\
-    \ 'self'; frame-ancestors 'self'; base-uri 'none'; form-action 'self'\")\n   \
-    \     self.send_header('X-Content-Type-Options', 'nosniff')\n        self.end_headers()\n\
-    \        self.wfile.write(body)\n\n    def do_GET(self):\n        url = urlsplit(self.path)\n\
-    \        if url.path == '/healthz':\n            self.respond(200, b'{\"status\"\
-    :\"running\"}', 'application/json')\n            return\n        if url.path ==\
-    \ '/console.css':\n            self.respond(200, b'body{font:16px system-ui;background:#101d2d;color:#edf5ff;margin:0}header,main{padding:24px;max-width:1100px;margin:auto}a{color:#91d3ff}article{display:inline-block;vertical-align:top;width:280px;border:1px\
+    \ development navigation. Backend availability is checked when opened.</p>' +\
+    \ ''.join(cards))\n\n\nclass Handler(BaseHTTPRequestHandler):\n    def log_message(self,\
+    \ *args):\n        pass  # never log cookies, OIDC codes, credentials or user\
+    \ query values\n\n    def respond(self, status, body, content='text/html; charset=utf-8'):\n\
+    \        self.send_response(status)\n        self.send_header('Content-Type',\
+    \ content)\n        self.send_header('Content-Length', str(len(body)))\n     \
+    \   self.send_header('Cache-Control', 'no-store')\n        self.send_header('X-Frame-Options',\
+    \ 'SAMEORIGIN')\n        self.send_header('Content-Security-Policy', \"default-src\
+    \ 'none'; style-src 'self'; frame-ancestors 'self'; base-uri 'none'; form-action\
+    \ 'self'\")\n        self.send_header('X-Content-Type-Options', 'nosniff')\n \
+    \       self.end_headers()\n        self.wfile.write(body)\n\n    def do_GET(self):\n\
+    \        url = urlsplit(self.path)\n        if url.path == '/healthz':\n     \
+    \       self.respond(200, b'{\"status\":\"running\"}', 'application/json')\n \
+    \           return\n        if url.path == '/console.css':\n            self.respond(200,\
+    \ b'body{font:16px system-ui;background:#101d2d;color:#edf5ff;margin:0}header,main{padding:24px;max-width:1100px;margin:auto}a{color:#91d3ff}article{display:inline-block;vertical-align:top;width:280px;border:1px\
     \ solid #526780;border-radius:12px;padding:20px;margin:10px}pre{white-space:pre-wrap;overflow-wrap:anywhere}span{color:#c8b88d}',\
     \ 'text/css')\n            return\n        if url.path != '/':\n            self.respond(404,\
     \ page('Not found', '<p>This path is not available.</p>'))\n            return\n\
@@ -107,40 +107,40 @@ data:
     \ = query.get('bucket' if view == 'storage' else 'table', [''])[0]\n         \
     \   if len(selection) > 255 or '/' in selection or '..' in selection:\n      \
     \          raise ValueError('Invalid selection')\n            base = mount or\
-    \ '/' + view\n            choose = '<p><a href=\"' + base + '/?backend=ministack\"\
-    >MiniStack</a> \xB7 <a href=\"' + base + '/?backend=localstack\">LocalStack</a></p>'\n\
-    \            self.respond(200, page(view.title(), choose + browser(view, backend,\
-    \ selection, mount), mount))\n        except (ValueError, KeyError):\n       \
-    \     self.respond(400, page('Invalid request', '<p>Choose a configured emulator\
-    \ and resource.</p>'))\n        except Exception:\n            self.respond(503,\
-    \ page('Backend unavailable', '<p>The selected emulator did not return a valid\
-    \ bounded response.</p>'))\n\n\nif __name__ == '__main__':\n    ThreadingHTTPServer(('0.0.0.0',\
-    \ int(os.environ.get('PORT', '3000'))), Handler).serve_forever()\n"
+    \ '/' + view\n            choose = '<p>MiniStack \xB7 Read-only</p>'\n       \
+    \     self.respond(200, page(view.title(), choose + browser(view, backend, selection,\
+    \ mount), mount))\n        except (ValueError, KeyError):\n            self.respond(400,\
+    \ page('Invalid request', '<p>Choose a configured emulator and resource.</p>'))\n\
+    \        except Exception:\n            self.respond(503, page('Backend unavailable',\
+    \ '<p>The selected emulator did not return a valid bounded response.</p>'))\n\n\
+    \nif __name__ == '__main__':\n    ThreadingHTTPServer(('0.0.0.0', int(os.environ.get('PORT',\
+    \ '3000'))), Handler).serve_forever()\n"
   profile.json: "{\n  \"name\": \"vcloud-wsl-local\",\n  \"host\": \"console.vcloud.local\"\
     ,\n  \"origin\": \"http://console.vcloud.local:18080\",\n  \"oidc\": {\n    \"\
     client_id\": \"vcloud-console\",\n    \"secret\": \"vcloud-console-oidc\",\n \
     \   \"issuer\": \"https://auth.vcloud.example.com/realms/vcloud\"\n  },\n  \"\
-    backends\": [\n    {\"name\": \"spinifex\", \"namespace\": \"platform-system\"\
-    , \"service\": \"spinifex-console\", \"port\": 3000, \"enabled\": false, \"websocket\"\
-    : true, \"license\": \"AGPL-3.0\", \"description\": \"Reference only: console\
-    \ not deployed; HPC offloading disabled.\"},\n    {\"name\": \"ministack\", \"\
-    namespace\": \"platform-services\", \"service\": \"ministack\", \"port\": 4566,\
-    \ \"enabled\": true, \"websocket\": false, \"license\": \"MIT\", \"description\"\
+    backends\": [\n    {\n      \"name\": \"spinifex\",\n      \"namespace\": \"platform-system\"\
+    ,\n      \"service\": \"spinifex-console\",\n      \"port\": 3000,\n      \"enabled\"\
+    : false,\n      \"websocket\": true,\n      \"license\": \"AGPL-3.0\",\n     \
+    \ \"description\": \"Reference only: console not deployed; HPC offloading disabled.\"\
+    \n    },\n    {\n      \"name\": \"ministack\",\n      \"namespace\": \"platform-services\"\
+    ,\n      \"service\": \"ministack\",\n      \"port\": 4566,\n      \"enabled\"\
+    : true,\n      \"websocket\": false,\n      \"license\": \"MIT\",\n      \"description\"\
     : \"AWS API emulator; this endpoint returns API responses, not a web console.\"\
-    },\n    {\"name\": \"localstack\", \"namespace\": \"platform-services\", \"service\"\
-    : \"localstack\", \"port\": 4566, \"enabled\": true, \"websocket\": false, \"\
-    license\": \"Apache-2.0\", \"description\": \"Pinned Community 4.14.0 API emulator;\
-    \ ephemeral lab data.\"},\n    {\"name\": \"storage\", \"namespace\": \"platform-services\"\
-    , \"service\": \"storage-ui\", \"port\": 9001, \"enabled\": true, \"websocket\"\
-    : false, \"license\": \"MIT\", \"description\": \"Twinfra read-only S3 browser;\
-    \ select either emulator.\"},\n    {\"name\": \"dynamodb\", \"namespace\": \"\
-    platform-services\", \"service\": \"dynamodb-admin\", \"port\": 8081, \"enabled\"\
-    : true, \"websocket\": true, \"license\": \"MIT\", \"description\": \"Twinfra\
-    \ read-only DynamoDB table viewer; no mutation controls.\"},\n    {\"name\": \"\
-    vault\", \"namespace\": \"platform-system\", \"service\": \"openbao-ui\", \"port\"\
-    : 8200, \"enabled\": false, \"websocket\": true, \"license\": \"MPL-2.0\", \"\
+    \n    },\n    {\n      \"name\": \"storage\",\n      \"namespace\": \"platform-services\"\
+    ,\n      \"service\": \"storage-ui\",\n      \"port\": 9001,\n      \"enabled\"\
+    : true,\n      \"websocket\": false,\n      \"license\": \"MIT\",\n      \"description\"\
+    : \"Twinfra read-only S3 browser backed by MiniStack.\"\n    },\n    {\n     \
+    \ \"name\": \"dynamodb\",\n      \"namespace\": \"platform-services\",\n     \
+    \ \"service\": \"dynamodb-admin\",\n      \"port\": 8081,\n      \"enabled\":\
+    \ true,\n      \"websocket\": true,\n      \"license\": \"MIT\",\n      \"description\"\
+    : \"Twinfra read-only DynamoDB table viewer; no mutation controls.\"\n    },\n\
+    \    {\n      \"name\": \"vault\",\n      \"namespace\": \"platform-system\",\n\
+    \      \"service\": \"openbao-ui\",\n      \"port\": 8200,\n      \"enabled\"\
+    : false,\n      \"websocket\": true,\n      \"license\": \"MPL-2.0\",\n      \"\
     description\": \"Reference only: local OpenBao is sealed in platform-services;\
-    \ native /ui and /v1 paths need a separate verified integration.\"}\n  ]\n}\n"
+    \ native /ui and /v1 paths need a separate verified integration.\"\n    }\n  ]\n\
+    }\n"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -156,7 +156,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: d8e4b4e3186c384ee34b4402c9232568f68cafc1faa99b05171bdb42824567e5
+        vcloud.io/config-hash: dea73c568cac8f222fd887b99e08afad18f1c5304146db5395c7df0030f31de7
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -250,7 +250,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: d8e4b4e3186c384ee34b4402c9232568f68cafc1faa99b05171bdb42824567e5
+        vcloud.io/config-hash: dea73c568cac8f222fd887b99e08afad18f1c5304146db5395c7df0030f31de7
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -344,7 +344,7 @@ spec:
     metadata:
       labels: *id001
       annotations:
-        vcloud.io/config-hash: d8e4b4e3186c384ee34b4402c9232568f68cafc1faa99b05171bdb42824567e5
+        vcloud.io/config-hash: dea73c568cac8f222fd887b99e08afad18f1c5304146db5395c7df0030f31de7
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -448,7 +448,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: ministack
-        image: registry.vcloud.example.com/docker.io/ministackorg/ministack@sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818
+        image: registry.vcloud.example.com/docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c
         ports:
         - name: http
           containerPort: 4566
@@ -517,19 +517,6 @@ metadata:
 spec:
   selector:
     app.kubernetes.io/name: ministack
-  ports:
-  - name: http
-    port: 4566
-    targetPort: 4566
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: localstack
-  namespace: platform-services
-spec:
-  selector:
-    app.kubernetes.io/name: localstack-aws-console
   ports:
   - name: http
     port: 4566

@@ -14,8 +14,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 
 ENDPOINTS = {
-    'ministack': 'http://ministack.platform-services.svc.cluster.local:4566',
-    'localstack': 'http://localstack.platform-services.svc.cluster.local:4566',
+    'ministack': os.environ.get('MINISTACK_ENDPOINT','http://ministack.platform-services.svc.cluster.local:4566'),
 }
 MAX_RESPONSE = 1024 * 1024
 
@@ -24,7 +23,7 @@ def signed_request(backend, service, method='GET', path='/', query=None, payload
     """SigV4 is computed AFTER selecting the direct, fixed in-cluster endpoint.
 
     These literal test/test emulator credentials are public fixtures, never real
-    AWS credentials. Container egress policy admits only these two Pod endpoints.
+    AWS credentials. Container egress policy admits only the MiniStack Pod endpoint.
     """
     endpoint = ENDPOINTS[backend]  # no user-provided URL / SSRF
     host = urlsplit(endpoint).netloc
@@ -108,11 +107,11 @@ def navigation(profile):
     for item in profile['backends']:
         name = item['name']
         href = '/' + name + '/'
-        if name in ('localstack', 'ministack'):
+        if name == 'ministack':
             href += '_' + name + '/health'
         action = '<a href="' + href + '">Open ' + escape(name) + '</a>' if item['enabled'] else '<span>Disabled reference</span>'
         cards.append('<article><h2>' + escape(name) + '</h2><p>' + escape(item['description']) + '</p><p>' + escape(item['license']) + '</p>' + action + '</article>')
-    return page('Platform services', '<p>Read-only local lab navigation. Backend availability is checked when opened.</p>' + ''.join(cards))
+    return page('Platform services', '<p>Read-only development navigation. Backend availability is checked when opened.</p>' + ''.join(cards))
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -156,7 +155,7 @@ class Handler(BaseHTTPRequestHandler):
             if len(selection) > 255 or '/' in selection or '..' in selection:
                 raise ValueError('Invalid selection')
             base = mount or '/' + view
-            choose = '<p><a href="' + base + '/?backend=ministack">MiniStack</a> · <a href="' + base + '/?backend=localstack">LocalStack</a></p>'
+            choose = '<p>MiniStack · Read-only</p>'
             self.respond(200, page(view.title(), choose + browser(view, backend, selection, mount), mount))
         except (ValueError, KeyError):
             self.respond(400, page('Invalid request', '<p>Choose a configured emulator and resource.</p>'))

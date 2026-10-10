@@ -4,11 +4,11 @@ export type Application = { name: string; sync: string; health: string; revision
 export type Cloud = { backend: string; services: Record<string, string>; instances: { id: string; type: string; state: string }[]; ephemeral: boolean }
 export type Storage = { backend: string; bucket: string; buckets: string[]; objects: string[] }
 export type Dynamo = { backend: string; tables: string[]; metadata: unknown }
-export type Tab = 'overview' | 'storage' | 'localstack' | 'dynamodb' | 'gitops' | 'iam'
+export type Tab = 'overview' | 'storage' | 'cloud' | 'dynamodb' | 'gitops' | 'iam'
 export const tabs: { id: Tab; label: string; description: string; icon: string }[] = [
   { id: 'overview', label: 'Overview', description: 'Cluster health', icon: '◈' },
   { id: 'storage', label: 'Storage', description: 'S3 buckets & objects', icon: '▦' },
-  { id: 'localstack', label: 'AWS emulation', description: 'AWS-compatible services', icon: '☁' },
+  { id: 'cloud', label: 'AWS emulation', description: 'AWS-compatible services', icon: '☁' },
   { id: 'dynamodb', label: 'DynamoDB', description: 'Tables & metadata', icon: '▤' },
   { id: 'gitops', label: 'GitOps', description: 'Argo CD reconciliation', icon: '⥁' },
   { id: 'iam', label: 'Identity', description: 'Keycloak & access', icon: '◇' }

@@ -222,7 +222,7 @@ class PortalTests(unittest.TestCase):
         self.assertEqual(result['roles'], ['console.admin'])
 
     def test_query_cannot_supply_endpoints_credentials_or_duplicate_backend(self):
-        for query in ({'url': ['https://attacker.invalid']}, {'backend': ['other']}, {'backend': ['ministack','localstack']}, {'bucket': ['../secrets']}, {'table': ['a/b']}):
+        for query in ({'url': ['https://attacker.invalid']}, {'backend': ['other']}, {'backend': ['ministack','other']}, {'bucket': ['../secrets']}, {'table': ['a/b']}):
             with self.assertRaises(ValueError): server.valid_query(query)
 
     def test_storage_reads_only_bucket_names_and_bounded_object_keys(self):

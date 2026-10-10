@@ -155,8 +155,8 @@ def kube(path):
 def valid_query(query):
     if set(query) - {'backend', 'bucket', 'table'} or any(len(values) != 1 for values in query.values()):
         raise ValueError('Invalid query')
-    backend = query.get('backend', [os.environ.get('PLATFORM_DEFAULT_BACKEND','localstack')])[0]
-    if backend not in os.environ.get('PLATFORM_BACKENDS','localstack,ministack').split(','): raise ValueError('Unsupported backend')
+    backend = query.get('backend', ['ministack'])[0]
+    if backend != 'ministack': raise ValueError('Unsupported backend')
     for name in ('bucket', 'table'):
         value = query.get(name, [''])[0]
         if len(value) > 255 or '/' in value or '..' in value or any(ord(c) < 32 for c in value):
@@ -165,7 +165,7 @@ def valid_query(query):
 
 
 def api_response(view, query, user):
-    if view == 'identity': return dict(user, environment=os.environ.get('PLATFORM_ENVIRONMENT','dev'), region=os.environ.get('PLATFORM_REGION',''), backends=os.environ.get('PLATFORM_BACKENDS','localstack,ministack').split(','))
+    if view == 'identity': return dict(user, environment=os.environ.get('PLATFORM_ENVIRONMENT','dev'), region=os.environ.get('PLATFORM_REGION',''), backends=['ministack'])
     if view == 'overview':
         pods = kube('/api/v1/namespaces/' + NS + '/pods')['items']
         # Finished diagnostic jobs do not indicate unhealthy platform services.
@@ -245,7 +245,7 @@ class Handler(BaseHTTPRequestHandler):
                 file = STATIC / url.path.removeprefix('/console/')
                 if not file.resolve().is_relative_to(STATIC.resolve()) or not file.is_file(): raise KeyError('Unknown asset')
                 self.respond(200, file.read_bytes(), mimetypes.guess_type(file.name)[0] or 'application/octet-stream'); return
-            if url.path in ('/console', '/console/') or url.path in ['/console/' + x for x in ('overview', 'storage', 'localstack', 'dynamodb', 'gitops', 'iam')]:
+            if url.path in ('/console', '/console/') or url.path in ['/console/' + x for x in ('overview', 'storage', 'cloud', 'dynamodb', 'gitops', 'iam')]:
                 self.respond(200, (STATIC / 'index.html').read_bytes(), 'text/html; charset=utf-8'); return
             raise KeyError('Unknown path')
         except Unauthorized: self.respond(401, b'{"error":"Session required"}')

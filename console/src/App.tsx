@@ -14,7 +14,6 @@ export function App() {
   const [tab, setTab] = useState<Tab>(currentTab)
   const [open, setOpen] = useState(false)
   const [identity, setIdentity] = useState<Identity | null>(null)
-  const [backend, setBackend] = useState('ministack')
   const [selection, setSelection] = useState('')
   const [data, setData] = useState<unknown>(null)
   const [error, setError] = useState('')
@@ -33,14 +32,14 @@ export function App() {
   useEffect(() => {
     const controller = new AbortController()
     setLoading(true); setError(''); setData(null)
-    const query = new URLSearchParams({ backend })
+    const query = new URLSearchParams({ backend: 'ministack' })
     if (selection) query.set(tab === 'storage' ? 'bucket' : 'table', selection)
-    const path = tab === 'iam' ? 'identity' : tab === 'localstack' ? 'cloud?' + query :
+    const path = tab === 'iam' ? 'identity' : tab === 'cloud' ? 'cloud?' + query :
       ['storage', 'dynamodb'].includes(tab) ? tab + '?' + query : tab
     api(path, controller.signal).then(setData).catch(e => { if (!controller.signal.aborted) setError(e.message) })
       .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     return () => controller.abort()
-  }, [tab, backend, selection, refresh])
+  }, [tab, selection, refresh])
   function navigate(next: Tab) {
     if (next !== tab) { setData(null); setLoading(true); setTab(next); setSelection(''); window.history.pushState(null, '', '/console/' + next) }
     setOpen(false)
@@ -74,7 +73,7 @@ export function App() {
           <button className="button secondary" onClick={() => setRefresh(x => x + 1)} disabled={loading}><span aria-hidden="true">⟳</span> Refresh</button>
         </div>
         <nav className="tabs" aria-label="Workspace tabs">{tabs.map(t => <button key={t.id} className={tab === t.id ? 'selected' : ''} aria-current={tab === t.id ? 'page' : undefined} onClick={() => navigate(t.id)}>{t.label}</button>)}</nav>
-        {['storage', 'localstack', 'dynamodb'].includes(tab) && <div className="toolbar"><label htmlFor="backend">Emulator</label><select id="backend" value={backend} onChange={e => { setBackend(e.target.value); setSelection('') }}>{identity?.backends?.includes('localstack') && <option value="localstack">LocalStack Community</option>}<option value="ministack">MiniStack</option></select><span className="read-only">Read-only</span></div>}
+        {['storage', 'cloud', 'dynamodb'].includes(tab) && <div className="toolbar"><span>MiniStack</span><span className="read-only">Read-only</span></div>}
         {loading && <div className="loading" role="status"><span className="loader" />Loading {selected.label.toLowerCase()}…</div>}
         {error && <div className="error" role="alert"><h2>Unable to load this view</h2><p>{error}</p><a href={'/console/' + tab}>Reload this page</a></div>}
         {!loading && !error && data !== null && <>
@@ -87,7 +86,7 @@ export function App() {
           {tab === 'gitops' && <Card title="Argo CD applications"><div className="table-scroll"><table><thead><tr><th>Application</th><th>Sync</th><th>Health</th><th>Revision</th></tr></thead><tbody>{(data as Application[]).map(a => <tr key={a.name}><td><strong>{a.name}</strong>{a.message && <small>{a.message}</small>}</td><td><Badge value={a.sync} /></td><td><Badge value={a.health} /></td><td><code title={a.revision}>{a.revision.slice(0, 12) || 'Pending'}</code></td></tr>)}</tbody></table></div>{!(data as Application[]).length && <Empty>No Applications are configured in this namespace.</Empty>}</Card>}
           {tab === 'storage' && storage && <Card title={selection ? `Objects in ${selection}` : 'S3 buckets'}>{selection && <button className="text-button" onClick={() => setSelection('')}>← All buckets</button>}{selection ? <ul className="resource-list">{storage.objects.map(key => <li key={key}><code>{key}</code></li>)}</ul> : <ul className="resource-list">{storage.buckets.map(bucket => <li key={bucket}><button onClick={() => setSelection(bucket)}><span aria-hidden="true">▦</span>{bucket}<span aria-hidden="true">→</span></button></li>)}</ul>}{!(selection ? storage.objects : storage.buckets).length && <Empty>{selection ? 'No objects in this bucket.' : 'No buckets found in this emulator.'}</Empty>}<p className="note">Preview is limited to 100 keys. Object contents and write operations are excluded.</p></Card>}
           {tab === 'dynamodb' && dynamo && <Card title={selection ? `Table: ${selection}` : 'DynamoDB tables'}>{selection ? <><button className="text-button" onClick={() => setSelection('')}>← All tables</button><pre>{JSON.stringify(dynamo.metadata, null, 2)}</pre></> : <ul className="resource-list">{dynamo.tables.map(table => <li key={table}><button onClick={() => setSelection(table)}>{table}<span aria-hidden="true">→</span></button></li>)}</ul>}{!selection && !dynamo.tables.length && <Empty>No tables found in this emulator.</Empty>}<p className="note">Table metadata only. Tenant rows are never scanned.</p></Card>}
-          {tab === 'localstack' && cloud && <><Card title="AWS service health"><div className="service-grid">{Object.entries(cloud.services).map(([name, state]) => <div key={name}><strong>{name.toUpperCase()}</strong><Badge value={state} /></div>)}</div></Card><Card title="EC2 instances"><div className="table-scroll"><table><thead><tr><th>Instance</th><th>Type</th><th>State</th></tr></thead><tbody>{cloud.instances.map(i => <tr key={i.id}><td><code>{i.id}</code></td><td>{i.type}</td><td><Badge value={i.state} /></td></tr>)}</tbody></table></div>{!cloud.instances.length && <Empty>No emulated EC2 instances.</Empty>}<p className="note">API emulation uses ephemeral development state. These instances do not launch real virtual machines.</p></Card></>}
+          {tab === 'cloud' && cloud && <><Card title="AWS service health"><div className="service-grid">{Object.entries(cloud.services).map(([name, state]) => <div key={name}><strong>{name.toUpperCase()}</strong><Badge value={state} /></div>)}</div></Card><Card title="EC2 instances"><div className="table-scroll"><table><thead><tr><th>Instance</th><th>Type</th><th>State</th></tr></thead><tbody>{cloud.instances.map(i => <tr key={i.id}><td><code>{i.id}</code></td><td>{i.type}</td><td><Badge value={i.state} /></td></tr>)}</tbody></table></div>{!cloud.instances.length && <Empty>No emulated EC2 instances.</Empty>}<p className="note">API emulation uses ephemeral development state. These instances do not launch real virtual machines.</p></Card></>}
           {tab === 'iam' && user && <><Card title="Your Keycloak session"><dl><dt>Signed in as</dt><dd>{user.username}</dd><dt>Console roles</dt><dd>{user.roles.map(role => <Badge key={role} value={role} />)}</dd><dt>Realm issuer</dt><dd><code>{user.issuer}</code></dd><dt>OIDC client</dt><dd><code>{user.client}</code></dd></dl></Card><Card title="Identity administration"><p>Portal roles grant access to these read-only views. They do not grant Kubernetes administration or Keycloak realm-management permissions.</p>{user.roles.includes('console.admin') ? <a className="button" href={user.adminUrl} target="_blank" rel="noopener noreferrer">Open Keycloak administration ↗</a> : <p className="note">A console administrator can open the dedicated Keycloak administration endpoint.</p>}</Card></>}
         </>}
         <footer>Twinfra <span>Local validation environment</span><span>Single origin · authenticated session</span></footer>

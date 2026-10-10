@@ -16,10 +16,16 @@
       "digest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141"
     },
     "ministack": {
-      "release": "docker.io/ministackorg/ministack:1.5.22",
-      "source": "docker.io/ministackorg/ministack@sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818",
-      "canonical": "registry.twinfra.example.com/docker.io/ministackorg/ministack@sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818",
-      "digest": "sha256:0e51461e29524b884306810ce05c8a2e47f90f0c4dddc5a5f52166d2b56c7818"
+      "release": "docker.io/ministackorg/ministack:1.5.17",
+      "source": "docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+      "canonical": "registry.twinfra.example.com/docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+      "digest": "sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+      "digestSource": "https://registry-1.docker.io/v2/ministackorg/ministack/manifests/1.5.17",
+      "publicationSource": "https://hub.docker.com/v2/repositories/ministackorg/ministack/tags/1.5.17",
+      "publishedAt": "2026-09-25T17:23:08.811415Z",
+      "releasePublishedAt": "2026-09-25T17:08:49Z",
+      "releaseSource": "https://github.com/ministackorg/ministack/releases/tag/v1.5.17",
+      "verifiedOn": "2026-10-10"
     },
     "argocd": {
       "source": "quay.io/argoproj/argocd:v3.5.3",
@@ -73,9 +79,9 @@
       "buildReceipt": "deploy/common/postgresql-image.lock.json"
     },
     "console": {
-      "source": "docker.io/twinfra/twinfra-console@sha256:47f58759321fafa57e95312fa58c42bf7473045be47a27e86c290cf7662a8c50",
-      "canonical": "registry.twinfra.example.com/docker.io/twinfra/twinfra-console@sha256:47f58759321fafa57e95312fa58c42bf7473045be47a27e86c290cf7662a8c50",
-      "digest": "sha256:47f58759321fafa57e95312fa58c42bf7473045be47a27e86c290cf7662a8c50",
+      "source": "docker.io/twinfra/twinfra-console@sha256:385934466c5453902e4beda1d6ed7afb09eae6dd3419d0a7b0b219eece4cc4e2",
+      "canonical": "registry.twinfra.example.com/docker.io/twinfra/twinfra-console@sha256:385934466c5453902e4beda1d6ed7afb09eae6dd3419d0a7b0b219eece4cc4e2",
+      "digest": "sha256:385934466c5453902e4beda1d6ed7afb09eae6dd3419d0a7b0b219eece4cc4e2",
       "buildReceipt": "console/image.lock.json"
     }
   }

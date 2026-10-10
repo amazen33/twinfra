@@ -1,3 +1,6 @@
+> Retained WSL reference until WO-28. Current live acceptance targets the
+> [dev environment](../../../docs/dev-environment.md), not this retired profile.
+
 # Unified Twinfra local console
 
 Opt-in, CPU-only WSL profile for `http://console.vcloud.local:18080` on the
@@ -24,26 +27,23 @@ the frozen CRD prohibits cross-namespace Service backends. The IngressClass
 | Public path | Service DNS and port | Local behavior |
 |---|---|---|
 | `/`, `/console.css`, `/oidc/callback` | `vcloud-console-shell.platform-services.svc.cluster.local:3000` | MIT Twinfra navigation; OIDC callback handled by APISIX |
-| `/ministack`, `/ministack/*` | `ministack.platform-services.svc.cluster.local:4566` | MiniStack 1.5.22 APIs and `/_ministack/health` |
-| `/localstack`, `/localstack/*` | `localstack.platform-services.svc.cluster.local:4566` | Community 4.14.0 APIs and `/_localstack/health` |
+| `/ministack`, `/ministack/*` | `ministack.platform-services.svc.cluster.local:4566` | MiniStack 1.5.17 APIs and `/_ministack/health` |
 | `/storage`, `/storage/*` | `storage-ui.platform-services.svc.cluster.local:9001` | MIT Twinfra read-only bucket/object-key browser |
 | `/dynamodb`, `/dynamodb/*` | `dynamodb-admin.platform-services.svc.cluster.local:8081` | MIT Twinfra read-only table list/metadata viewer |
 | `/spinifex`, `/spinifex/*` | `spinifex-console.platform-system.svc.cluster.local:3000` | Disabled reference; no console deployed, offloading stays false |
 | `/vault`, `/vault/*` | `openbao-ui.platform-system.svc.cluster.local:8200` | Disabled reference; this Service is not the existing local OpenBao |
 
-`localstack` is a real ClusterIP Service selecting the existing
-`localstack-aws-console` Pod, not a second emulator. MiniStack has its own
-Deployment and distinct ephemeral state. No Docker socket, privileged Pod,
+MiniStack has its own Deployment and ephemeral state. No Docker socket, privileged Pod,
 hostPath, GPU allocation, real AWS credentials or external infrastructure launches
 are added. Resource requests are 125m CPU / 224Mi for the four new Pods;
 limits are 1.75 CPU / 896Mi in total, within the 20GB/6-vCPU lab budget.
 
-The two AWS gateways return JSON/XML APIs; they are not AWS web consoles.
-The original Twinfra storage/DynamoDB views select `?backend=ministack` or
-`?backend=localstack`, list at most 100 resources and display table metadata only.
+The MiniStack gateway returns JSON/XML APIs. The original Twinfra
+storage/DynamoDB views use only `?backend=ministack`, list at most 100 resources
+and display table metadata only.
 They cannot upload/delete objects, mutate tables, scan rows or launch instances.
 Emulator credentials `test/test` are public test fixtures held in-process;
-the SDK-equivalent SigV4 signer uses only the two fixed internal endpoints.
+the SDK-equivalent SigV4 signer uses only the fixed MiniStack internal endpoint.
 Responses are limited to 1MiB and four seconds; redirects to other endpoints are
 refused, and displayed data is HTML escaped. Backend errors return HTTP 503.
 
@@ -77,8 +77,7 @@ share the Authorization header. Use browser OIDC session cookies for the prefixe
 API routes; OIDC emits `X-Access-Token` and `X-ID-Token` without replacing AWS
 Authorization. Our read-only views sign the direct internal path, avoiding that
 conflict. For general CLI/SDK validation use the original direct emulator
-endpoints (LocalStack host loopback 4566, MiniStack an explicit operator
-port-forward). Do not claim prefixed API routes are a universal SigV4 endpoint.
+endpoint (MiniStack via an explicit operator port-forward). Do not claim prefixed API routes are a universal SigV4 endpoint.
 
 ## OIDC activation gate
 
@@ -122,7 +121,7 @@ shared ADC gateway. `apply.sh` calls `wsl_console_preflight.py` before creating
 the Application, validating Secret encoding/shape, PodSecurity labels and ready
 Service endpoints. Public console activation remains gated until all inputs
 are supplied. Network policies allow only APISIX ingress to the new backends
-and UI egress to the two emulators, preserving the existing deny-all baseline.
+and UI egress to the MiniStack emulator, preserving the existing deny-all baseline.
 
 ## Execute on the owned WSL lab
 
@@ -186,17 +185,16 @@ with explicit native-path routing/TLS upstream trust or a supported upstream
 base-path setting before enabling `/vault/`; never forward credentials to an
 unverified HTTP alias. The disabled YAML records the requested address only.
 
-MiniStack [MIT source](https://github.com/ministackorg/ministack/tree/v1.5.22)
-and LocalStack [Community 4.14.0 Apache-2.0 source](https://github.com/localstack/localstack/blob/v4.14.0/LICENSE.txt)
-are API emulators. LocalStack's separately hosted Web Console is not included.
+MiniStack [MIT source](https://github.com/ministackorg/ministack/tree/v1.5.17)
+is the only AWS emulator. No separately hosted cloud console is included.
 MinIO Console is [AGPL-3.0](https://github.com/minio/console/blob/master/LICENSE);
 it was not selected for the requested permissive UI scope. Other backend/core
 licenses do not become MIT merely by appearing behind this navigation shell.
 
 Rollback: stop automated reconciliation for the **new** console Application,
-remove only the five `vcloud-console-*` active ApisixRoutes, then remove that
+remove only the four `vcloud-console-*` active ApisixRoutes, then remove that
 Application/project and the new Deployments/Services/ConfigMap/policies if no
-longer needed. Never delete the existing LocalStack Pod, shared APISIX gateway,
+longer needed. Preserve the shared APISIX gateway,
 Keycloak realm, CNPG data or OpenBao secrets. Inspect named objects before removal;
 avoid `kubectl delete -f` across the whole generated workload file because it
-includes the LocalStack alias and controller-managed declarations.
+includes shared controller-managed declarations.

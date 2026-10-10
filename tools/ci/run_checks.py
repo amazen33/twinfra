@@ -98,7 +98,9 @@ def coverage(source):
         raise ValueError('Required baseline files missing: ' + ', '.join(missing))
     result = {'module--1': 'present', 'module-1': 'present', 'module-2': 'present'}
     for name, files in OPTIONAL.items():
-        present = (source / name).exists() or any((source / file).exists() for file in files)
+        # This retained mapping validates complete original bundles in older revisions.
+        present = (source / name).exists() if name == 'lab/wsl/localstack' else (
+            (source / name).exists() or any((source / file).exists() for file in files))
         if present and not all((source / file).is_file() for file in files):
             raise ValueError('Incomplete ' + name + ' implementation; refusing to omit its tests')
         result[name] = 'present' if present else 'not_present_in_revision'
@@ -164,10 +166,19 @@ def main():
         report['workingTreeChanges'] = run('selected-tree', ['git', 'status', '--porcelain']).splitlines()
         report['modules'] = coverage(source)
         python = sys.executable
+        control_sha = subprocess.check_output(['git', '-C', str(ROOT.parents[1]), 'rev-parse', 'HEAD'], text=True).strip()
         # Governance is evaluated against the CI control checkout (the candidate),
         # never against the dependencies of the six pre-policy historical revisions.
         run('candidate-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
                                   '--report', report_dir / 'licences.json'])
+        if (ROOT.parents[1] / 'tools/check_emulator_removal.py').is_file():
+            run('candidate-emulator-removal', [python, ROOT.parents[1] / 'tools/check_emulator_removal.py',
+                '--root', ROOT.parents[1]])
+            # Backend fixtures use the candidate's console verification libraries;
+            # pre-console historical revisions do not install those dependencies.
+            if sha == control_sha:
+                run('candidate-emulator-removal-tests', [python, '-m', 'unittest', 'discover',
+                    '-s', ROOT.parents[1] / 'tests', '-p', 'test_emulator_removal.py', '-v'], unit=True)
         run('ssot-drift', [python, 'tools/render_ssot.py', '--check'])
         run('cloud-init-drift', [python, 'tools/render_cloud_init.py', '--check'])
         prepare_workspace(source)
@@ -318,7 +329,6 @@ def main():
                 '--kubeconform',binaries['kubeconform'],'--schemas',assets/'schemas'])
             run('portal-pss',[binaries['conftest'],'test','--namespace','vcloud_wsl','--policy','tests/ci/policy/wsl-endpoints.rego',
                 'deploy/console/deployment.yaml','deploy/console/gitops/workloads.yaml'])
-        control_sha = subprocess.check_output(['git', '-C', str(ROOT.parents[1]), 'rev-parse', 'HEAD'], text=True).strip()
         if sha == control_sha:
             # Inspect actual locked-chart renders as well as checked-in generator output.
             # Do not classify historical render contents using the new policy.

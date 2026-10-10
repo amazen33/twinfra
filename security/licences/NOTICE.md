@@ -9,6 +9,10 @@ version's BSD-3-Clause notices are preserved in [valkey/COPYING](valkey/COPYING)
 The complete image SBOM/embedded-notice review remains an open dated baseline;
 the service/secret name `argocd-redis` does not refer to a Redis image.
 
+MiniStack 1.5.17 is pinned to the verified registry digest under WO-06. Its
+version-specific MIT text is preserved in [ministack/LICENSE](ministack/LICENSE).
+The image SBOM/embedded-notice review keeps the original **2027-01-07** deadline.
+
 OpenBao server 2.7.1, Helm chart 0.30.2 and CSI provider 2.0.3 are unmodified,
 separate MPL-2.0 units under ADR-0044. Preserve upstream LICENSE and NOTICE files
 when mirroring/distributing them. Their distributed notice evidence and the
@@ -27,6 +31,6 @@ terms and obtain owner authorization before enabling the CUDA test; this project
 does not grant NVIDIA rights or include CUDA in a first-party image. The licence gate rejects using
 that reference as a Dockerfile base or enabling the default CUDA smoke-test switch.
 
-Redis, Grafana and LocalStack are pending removal, not approved new platform
-selections. Their frozen expiry dates and follow-up work orders appear in the
+Grafana remains pending removal. Redis was replaced under WO-25 and LocalStack
+was removed under WO-06; neither remains a platform selection. Their frozen expiry dates and follow-up work orders appear in the
 register and every successful CI licence report.

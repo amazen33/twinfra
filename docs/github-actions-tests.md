@@ -62,6 +62,7 @@ inputs, expired entries and invalid class conditions fail the required gate.
 | Rebuilt dev environments, when present | Pure Hyper-V planner fixtures (including six Amendment 3 cases), generic image conversion guards, naming/source mutation tests, deterministic dev/seed generation, strict kubeconform, restricted Pod policy and unchanged node-agent mount/security projection; no provisioner entry-point execution |
 | WO-29 runnable dev profile, when present | 7.4 requirement/resource-bound fixtures; fake SSH/ctr staging, cache/mismatch/readonly checks; two-region rendered bootstrap-image inventory equality; in-memory dev CA SAN/key-usage and Git-boundary tests; HTTPS-only gateway/realm and saved production-render byte identity |
 | CI controls | Historical revision selection, invalid input/commit rejection, checksum and archive safety, partial module rejection, no skipped or empty suites, immutable action/tool pins |
+| WO-06 emulator removal | Unconditional candidate code/lock/manifest search; only exact historical CI mapping/dispatch lines may name the removed emulator; aged MiniStack pin, fixed backend and mocked S3/EC2/DynamoDB reads; deleted runbook links in two unchanged historical records verified against frozen Git source |
 
 The [runner](../tools/ci/run_checks.py) always requires the original modules.
 It also lints the packaged Cilium/APISIX charts and, when present, Kueue.

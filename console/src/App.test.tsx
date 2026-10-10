@@ -21,10 +21,10 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 describe('console navigation and read-only state', () => {
   it('reads its environment badge and enabled emulators from configuration', async () => {
     vi.mocked(fetch).mockImplementation(async (url) => new Response(JSON.stringify(String(url).includes('/identity') ? { ...user, environment: 'dev', region: 'cairo-1', backends: ['ministack'] } : { services: {}, instances: [] }), { status: 200, headers: { 'Content-Type': 'application/json' } }))
-    window.history.replaceState(null, '', '/console/localstack')
+    window.history.replaceState(null, '', '/console/cloud')
     render(<App />)
     expect(await screen.findByText('Dev · cairo-1')).toBeTruthy()
-    expect(screen.queryByRole('option', { name: /LocalStack/ })).toBeNull()
+    expect(screen.queryByRole('combobox')).toBeNull()
     expect(screen.queryByText('vcloud-wsl-local')).toBeNull()
   })
   it('shows live health and navigates to GitOps without leaving the shell', async () => {
@@ -35,11 +35,10 @@ describe('console navigation and read-only state', () => {
     expect(window.location.pathname).toBe('/console/gitops')
     expect(screen.getByRole('navigation', { name: 'Platform navigation' })).toBeTruthy()
   })
-  it('switches emulators and browses object keys with a bounded query', async () => {
+  it('uses only MiniStack and browses object keys with a bounded query', async () => {
     window.history.replaceState(null, '', '/console/storage')
     render(<App />)
     await screen.findByText('safe-bucket')
-    await userEvent.selectOptions(screen.getByLabelText('Emulator'), 'ministack')
     await waitFor(() => expect(fetch).toHaveBeenCalledWith('/console/api/storage?backend=ministack', expect.anything()))
     await userEvent.click(await screen.findByRole('button', { name: /safe-bucket/ }))
     expect(await screen.findByText('file.txt')).toBeTruthy()
@@ -53,7 +52,7 @@ describe('console navigation and read-only state', () => {
     expect(screen.queryByText('Your control plane is ready.')).toBeNull()
   })
   it('renders an empty EC2 state rather than a blank API page', async () => {
-    window.history.replaceState(null, '', '/console/localstack')
+    window.history.replaceState(null, '', '/console/cloud')
     render(<App />)
     expect(await screen.findByText('No emulated EC2 instances.')).toBeTruthy()
     expect(screen.getByText('EC2')).toBeTruthy()

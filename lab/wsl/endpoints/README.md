@@ -46,7 +46,7 @@ The pinned upstream internal Knative Certificate API is served and not
 deprecated despite its alpha suffix. Strict validation uses its actual local
 CRD schema. Prometheus service discovery uses EndpointSlice.
 
-The [LocalStack extension](../localstack/README.md) changes only the WSL gateway
+The shared [APISIX prerequisites](../../../tools/platform_ingress.py) configure the retained WSL gateway
 to authenticated TLS API-driven standalone mode so real `ApisixRoute` resources
 reconcile. It preserves the CPU demo and smoke routes, supplies the pinned
 2.2.0 controller/0.27.1 ADC prerequisites, and keeps admin port 9180 private.

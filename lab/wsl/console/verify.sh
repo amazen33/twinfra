@@ -4,7 +4,7 @@ set -euo pipefail
 for tool in curl jq; do command -v "$tool" >/dev/null || { echo "Missing dependency: $tool" >&2; exit 1; }; done
 tmp=$(mktemp -d)
 trap 'rm -f -- "$tmp/headers" "$tmp/body"; rmdir -- "$tmp"' EXIT
-for path in / /storage/ /dynamodb/ /ministack/_ministack/health /localstack/_localstack/health; do
+for path in / /storage/ /dynamodb/ /ministack/_ministack/health; do
   code=$(curl --silent --show-error --max-time 10 --resolve console.vcloud.local:18080:127.0.0.1 \
     -D "$tmp/headers" -o "$tmp/body" -w '%{http_code}' "http://console.vcloud.local:18080$path")
   [[ $code == 302 || $code == 401 ]] || { echo "FAIL: unauthenticated $path returned $code" >&2; exit 1; }
@@ -15,4 +15,4 @@ for path in / /storage/ /dynamodb/ /ministack/_ministack/health /localstack/_loc
   fi
   echo "PASS: unauthorized $path -> HTTP $code"
 done
-echo 'Anonymous gate passed. Browser login, both backend views, refresh/logout and WebSocket acceptance remain required.'
+echo 'Anonymous gate passed. Browser login, MiniStack views, refresh/logout and WebSocket acceptance remain required.'

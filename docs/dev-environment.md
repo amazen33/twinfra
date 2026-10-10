@@ -49,6 +49,15 @@ Cilium (2→1.5), Argo (2→1.5), database (3→2.5), Keycloak (3→2.25) and Mi
 (1→0.75); headroom shrinks from 5.25 to 4.25 GiB. Existing workload requests,
 limits and replicas remain approved; measure actual use during acceptance.
 No LocalStack, Grafana, Knative, GPU/vLLM or HPC modules are installed.
+
+WO-06 removes the retired emulator module from the repository. MiniStack
+**1.5.17** is the only emulator, pinned by digest in
+`deploy/common/images.lock.json`; it is the newest release at least 14 days old
+as verified on 2026-10-10. The console AWS view is `/console/cloud`; S3 and
+DynamoDB views always use MiniStack. See [service access](service-access.md) for
+the optional owner-approved port 4566 tunnel. Browser S3/EC2/DynamoDB acceptance
+and live before/after state remain
+[Pending](acceptance/localstack-removal-2026-10-10.md).
 OpenBao stays sealed/uninitialized until WO-08.
 
 ## Two image inventories
