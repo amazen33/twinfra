@@ -55,7 +55,7 @@ def outputs():
     script = replace_block(script, 'SSOT DEFAULTS', defaults)
     expected = identity | dict(REGISTRY_MIRROR='https://' + s['registry'], MIRROR_REQUIRED='true')
     conditions = ' &&\n       '.join(f'${k} == {shlex.quote(str(v))}' for k, v in expected.items())
-    profiles = [f'production) [[ {conditions} ]] ;;']
+    profiles = [f'production) [[ {conditions} && $IMAGE_STAGING == false ]] ;;']
     dev = s.get('environments', {}).get('dev')
     if dev:
         expected_dev = expected | dict(CLUSTER_NAME=dev['context'], CLUSTER_DNS_NAME=dev['context'],
@@ -64,7 +64,7 @@ def outputs():
             if row['environment'] != 'dev': continue
             expected_row = expected_dev | dict(CLUSTER_NAME='twinfra-dev-'+row['region'], CLUSTER_DNS_NAME='twinfra-dev-'+row['region'])
             check = ' && '.join(f'${k} == {shlex.quote(str(v))}' for k,v in expected_row.items())
-            profiles.append(f'dev-{row["region"]}) [[ {check} ]] ;;')
+            profiles.append(f'dev-{row["region"]}) [[ {check} && ( $IMAGE_STAGING == false || $IMAGE_STAGING == true ) ]] ;;')
     script = replace_block(script, 'SSOT VALIDATION', 'validate_ssot_identity() {\n    case $PLATFORM_PROFILE in\n    '+
         '\n    '.join(profiles)+"\n    *) return 2 ;;\n    esac || bad_config 'Identity/registry drift from vcloud-ssot.yaml; change the contract and regenerate first'\n}")
     foundation_body = "render_foundation() {\n    if [[ $PLATFORM_PROFILE == dev-* ]]; then\n        cat <<'EOF'\n"

@@ -47,13 +47,13 @@
     {
       "id": "image-digest:00-setup-ubuntu-host.sh",
       "kind": "image-digest",
-      "reason": "Existing image references need immutable digest evidence",
+      "reason": "Existing image references need immutable digest evidence; WO-29 adds only guarded dev staging, production rendering verified byte-identical",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Existing image references need immutable digest evidence",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "00-setup-ubuntu-host.sh",
-      "fingerprint": "a16a32811f477fa1dc01e6453a4c30c2298c497c2781bae1865daae93723c8da"
+      "fingerprint": "aebbf5d00e47b7c37ef0e11cec151650cb4dc0ee9aaf0c37ca3dca68f9cbf0e8"
     },
     {
       "id": "image-digest:deploy/kustomize/base/argocd/install.yaml",
@@ -261,14 +261,14 @@
       "component": "oci-image|docker.io/envoyproxy/envoy|sha256:3e5f1b892f15d46a2674ffc81b9f86f4d0df7794e3ef49e92ee7062871b87be1"
     },
     {
-      "id": "image-sbom:oci-image|docker.io/library/busybox|1.37.0",
+      "id": "image-sbom:oci-image|docker.io/library/busybox|sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e",
       "kind": "image-sbom",
       "reason": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
-      "component": "oci-image|docker.io/library/busybox|1.37.0"
+      "component": "oci-image|docker.io/library/busybox|sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e"
     },
     {
       "id": "image-sbom:oci-image|docker.io/library/node|sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f",
@@ -591,44 +591,44 @@
       "component": "oci-image|quay.io/prometheus/prometheus|sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e"
     },
     {
-      "id": "image-sbom:oci-image|registry.k8s.io/etcd|3.6.8-0",
+      "id": "image-sbom:oci-image|registry.k8s.io/etcd|sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
       "kind": "image-sbom",
       "reason": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
-      "component": "oci-image|registry.k8s.io/etcd|3.6.8-0"
+      "component": "oci-image|registry.k8s.io/etcd|sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5"
     },
     {
-      "id": "image-sbom:oci-image|registry.k8s.io/kube-apiserver|v1.36.5",
+      "id": "image-sbom:oci-image|registry.k8s.io/kube-apiserver|sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
       "kind": "image-sbom",
       "reason": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
-      "component": "oci-image|registry.k8s.io/kube-apiserver|v1.36.5"
+      "component": "oci-image|registry.k8s.io/kube-apiserver|sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48"
     },
     {
-      "id": "image-sbom:oci-image|registry.k8s.io/kube-controller-manager|v1.36.5",
+      "id": "image-sbom:oci-image|registry.k8s.io/kube-controller-manager|sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
       "kind": "image-sbom",
       "reason": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
-      "component": "oci-image|registry.k8s.io/kube-controller-manager|v1.36.5"
+      "component": "oci-image|registry.k8s.io/kube-controller-manager|sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d"
     },
     {
-      "id": "image-sbom:oci-image|registry.k8s.io/kube-scheduler|v1.36.5",
+      "id": "image-sbom:oci-image|registry.k8s.io/kube-scheduler|sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
       "kind": "image-sbom",
       "reason": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
-      "component": "oci-image|registry.k8s.io/kube-scheduler|v1.36.5"
+      "component": "oci-image|registry.k8s.io/kube-scheduler|sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f"
     },
     {
       "id": "image-sbom:oci-image|registry.k8s.io/kueue/kueue|v0.20.0",
@@ -651,14 +651,14 @@
       "component": "oci-image|registry.k8s.io/metrics-server/metrics-server|v0.9.0"
     },
     {
-      "id": "image-sbom:oci-image|registry.k8s.io/pause|3.10.1",
+      "id": "image-sbom:oci-image|registry.k8s.io/pause|sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c",
       "kind": "image-sbom",
       "reason": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
-      "component": "oci-image|registry.k8s.io/pause|3.10.1"
+      "component": "oci-image|registry.k8s.io/pause|sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c"
     },
     {
       "id": "inert-default:deploy/common/vendor/argocd-core.yaml.gz",
@@ -1061,14 +1061,14 @@
       "component": "oci-image|ghcr.io/cloudnative-pg/postgresql|sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3"
     },
     {
-      "id": "licence-source:oci-image|registry.k8s.io/etcd|3.6.8-0",
+      "id": "licence-source:oci-image|registry.k8s.io/etcd|sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
       "kind": "licence-source",
       "reason": "Resolve exact-version licence source; do not infer from mutable branch or image project name.",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Resolve exact-version licence source; do not infer from mutable branch or image project name.",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
-      "component": "oci-image|registry.k8s.io/etcd|3.6.8-0"
+      "component": "oci-image|registry.k8s.io/etcd|sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5"
     },
     {
       "id": "licence-source:oci-image|registry.k8s.io/kueue/kueue|v0.20.0",
@@ -1196,6 +1196,30 @@
       "expires": "2027-01-07",
       "path": "tools/ci/toolchain.lock.json",
       "fingerprint": "a64d9b28a6cd85116bb2eb3d66237545e0562ab4041504598f89d8d367c2ac84"
+    },
+    {
+      "id": "image-sbom:oci-image|registry.k8s.io/coredns/coredns|sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "kind": "image-sbom",
+      "component": "oci-image|registry.k8s.io/coredns/coredns|sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "path": "deploy/common/bootstrap-images.lock.json",
+      "fingerprint": null,
+      "reason": "WO-29 pinned bootstrap image; project licence verified; reviewed image-level SBOM remains pending under ADR-0044",
+      "owner": "Ahmed Mazen (@amazen33)",
+      "requiredEvidence": "Reviewed SBOM, distribution package licences and image notices for this exact digest",
+      "recordedOn": "2026-10-10",
+      "expires": "2027-01-07"
+    },
+    {
+      "id": "image-sbom:oci-image|registry.k8s.io/pause|sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
+      "kind": "image-sbom",
+      "component": "oci-image|registry.k8s.io/pause|sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
+      "path": "deploy/common/bootstrap-images.lock.json",
+      "fingerprint": null,
+      "reason": "WO-29 pinned bootstrap image; project licence verified; reviewed image-level SBOM remains pending under ADR-0044",
+      "owner": "Ahmed Mazen (@amazen33)",
+      "requiredEvidence": "Reviewed SBOM, distribution package licences and image notices for this exact digest",
+      "recordedOn": "2026-10-10",
+      "expires": "2027-01-07"
     }
   ]
 }

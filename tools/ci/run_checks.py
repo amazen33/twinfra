@@ -18,6 +18,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'dev-runnable': ['tools/platform_dev_ca.py','tools/platform_image_staging.py','tools/platform_bootstrap_inventory.py','deploy/common/stage-images.py','deploy/common/bootstrap-images.lock.json','deploy/common/vendor/kubeadm-constants-v1.36.5.go','tests/test_dev_runnable.py','docs/work-orders/WO-29-make-dev-environment-runnable.md'],
     'deploy/hyperv': ['deploy/hyperv/New-TwinfraDev.ps1','deploy/hyperv/Twinfra.psm1','deploy/hyperv/test-plan.ps1','deploy/hyperv/qcow2_to_vhd.py','deploy/hyperv/ubuntu-image.lock.json','deploy/upstream-names.json','tools/platform_dev.py','tools/platform_validate.py','tools/check_upstream_names.py','tests/test_dev_environment.py','deploy/environments/dev/cairo-1/root.yaml','deploy/environments/dev/cairo-1/platform/workloads.yaml','deploy/environments/dev/cairo-1/services/workloads.yaml'],
     'console': ['console/package.json', 'console/package-lock.json', 'console/server.py', 'console/Dockerfile',
         'console/image.lock.json', 'console/src/App.tsx', 'console/src/App.test.tsx', 'console/src/styles.css',
@@ -255,6 +256,9 @@ def main():
             run('hyperv-offline-plan',['pwsh','-NoProfile','-File','deploy/hyperv/test-plan.ps1'])
             run('worker-join-shellcheck',[binaries['shellcheck'],'deploy/common/join-worker.sh'])
             run('dev-schema-policy',[python,'tools/platform_validate.py','--helm',binaries['helm'],'--kustomize',binaries['kustomize'],'--kubeconform',binaries['kubeconform'],'--conftest',binaries['conftest'],'--bash',binaries['bash'],'--schemas',assets/'schemas','--build',dev_build])
+        if report['modules']['dev-runnable'] == 'present':
+            run('dev-runnable-tests',[python,'-m','unittest','discover','-s','tests','-p','test_dev_runnable.py','-v'],unit=True)
+            run('dev-bootstrap-image-inventory',[python,'tools/platform_bootstrap_inventory.py','--bash',binaries['bash'],'--helm',binaries['helm']])
         if report['modules']['lab/wsl'] == 'present':
             # Offline renders must never overwrite an active lab's live evidence
             # or address-specific Helm values in .build/wsl-lab.

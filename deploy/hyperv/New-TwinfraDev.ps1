@@ -1,7 +1,8 @@
+#Requires -Version 7.4
 # SPDX-License-Identifier: MIT
 # Owner-only entry point. Codex/CI import Twinfra.psm1 against fixtures, never this file.
 [CmdletBinding()]
-param([switch]$Plan,[string]$Region='cairo-1',[int]$Cpu=8,[int]$MemoryGB=24,[int]$DiskGB=100,
+param([switch]$Plan,[string]$Region='cairo-1',[int]$Cpu=8,[int]$MemoryGB=20,[int]$DiskGB=100,
       [string]$IpAddress='10.50.0.10',[string]$PodCidr='10.110.0.0/16',
       [string]$ServiceCidr='10.111.0.0/16',[string]$Root='E:\Twinfra',
       [string]$SshPublicKeyFile,[string]$SeedDirectory)
@@ -85,6 +86,8 @@ $source=Join-Path $dir 'canonical-base.vhd'
 & $python.Source (Join-Path $PSScriptRoot 'qcow2_to_vhd.py') $download $source
 if ($LASTEXITCODE) { throw 'Verified QCOW2 conversion failed; no network or VM changes made' }
 Convert-VHD -Path $source -DestinationPath $p.Settings.Disk -VHDType Dynamic
+# Only this verified script-created intermediate is removed after successful conversion.
+Remove-Item -LiteralPath $source
 Resize-VHD -Path $p.Settings.Disk -SizeBytes ($DiskGB*1GB)
 # Windows IMAPI2 produces CIDATA without an external ISO tool/package.
 $stage=Join-Path $dir 'seed'; New-Item -ItemType Directory -Path $stage | Out-Null

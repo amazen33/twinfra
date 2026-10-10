@@ -79,6 +79,8 @@ if canonical:
     if dev_order.is_file():
         expected_orders.append('WO-21')
         assert {32,38,45,46,47}.issubset(numbers), 'incomplete WO-21 ADR bundle'
+    if (root/'docs/work-orders/WO-29-make-dev-environment-runnable.md').is_file():
+        expected_orders.append('WO-29')
     assert [file.name[:5] for file in orders] == sorted(expected_orders), orders
     assert (root / 'docs/work-orders/README.md').is_file()
     assert not (root / 'docs/work-orders/CODEX-PROMPTS.md').exists()

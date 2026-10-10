@@ -31761,8 +31761,6 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       serviceAccountName: argocd-redis
-      imagePullSecrets:
-      - name: twinfra-registry-cred
       automountServiceAccountToken: false
       volumes:
       - name: auth
@@ -32215,8 +32213,6 @@ spec:
         fsGroup: 999
         seccompProfile:
           type: RuntimeDefault
-      imagePullSecrets:
-      - name: twinfra-registry-cred
   replicas: 1
 ---
 apiVersion: apps/v1
@@ -32676,8 +32672,6 @@ spec:
         fsGroup: 999
         seccompProfile:
           type: RuntimeDefault
-      imagePullSecrets:
-      - name: twinfra-registry-cred
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -61361,8 +61355,6 @@ spec:
           defaultMode: 420
           optional: true
           secretName: cnpg-webhook-cert
-      imagePullSecrets:
-      - name: twinfra-registry-cred
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
@@ -62252,8 +62244,6 @@ spec:
         fsGroup: 999
         seccompProfile:
           type: RuntimeDefault
-      imagePullSecrets:
-      - name: twinfra-registry-cred
   replicas: 1
 ---
 apiVersion: storage.k8s.io/v1
@@ -62320,8 +62310,6 @@ spec:
   imagePullPolicy: IfNotPresent
   postgresUID: 26
   postgresGID: 26
-  imagePullSecrets:
-  - name: twinfra-registry-cred
   inheritedMetadata:
     labels:
       twinfra.io/environment: dev
@@ -62833,7 +62821,7 @@ spec:
     - health
     toPorts:
     - ports:
-      - port: '9080'
+      - port: '9443'
         protocol: TCP
   egress:
   - toEndpoints:

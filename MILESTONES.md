@@ -112,3 +112,15 @@ Tags refer to product-quality characteristics: **Functional suitability** (requi
 - [ ] WSL material deletion belongs to WO-28 after Accepted; no WSL retirement mutation in WO-21.
 
 [Owner runbook and production-profile deviations](docs/dev-environment.md).
+
+## WO-29 · Runnable dev profile
+
+- [x] Static 20 GiB sizing, PowerShell 7.4 requirement and 110 GiB disk guard, with offline plan fixtures.
+- [x] Dev-only bootstrap/application digest staging and temporary dev CA; gateway HTTPS 9443 through loopback tunnel 18444.
+- [x] Generated manifests, inventory equality checks, staging/CA/HTTPS tests and production-render preservation guard.
+- [ ] Owner real plan, VM boot/staging, trusted HTTPS login and live platform acceptance.
+- [ ] Tester sign-off: [dev receipt](docs/acceptance/dev-environment-2026-10-10.md), Result: Pending.
+
+Staging uses upstream access during preparation; cold-cache offline QA remains
+open. No provisioning, software installation, WSL deletion or Cloudflare change
+is performed by this work order. See [WO-29](docs/work-orders/WO-29-make-dev-environment-runnable.md).

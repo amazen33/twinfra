@@ -45,7 +45,6 @@ def deployment(name,container,volumes=(),init=(),uid=65532):
         c.setdefault('resources',{'requests':{'cpu':'50m','memory':'128Mi'},'limits':{'cpu':'1','memory':'512Mi'}})
     return obj('Deployment',name,{'replicas':1,'strategy':{'type':'Recreate'},'selector':{'matchLabels':{'app.kubernetes.io/name':name}},
         'template':{'metadata':{'labels':l},'spec':{'automountServiceAccountToken':False,
-        'imagePullSecrets':[{'name':'twinfra-registry-cred'}],
         'securityContext':{'runAsNonRoot':True,'runAsUser':uid,'runAsGroup':uid,'fsGroup':uid,'seccompProfile':{'type':'RuntimeDefault'}},
         'containers':[container],'initContainers':list(init),'volumes':list(volumes),
         'topologySpreadConstraints':[{'maxSkew':1,'topologyKey':'topology.kubernetes.io/zone','whenUnsatisfiable':'ScheduleAnyway','labelSelector':{'matchLabels':{'app.kubernetes.io/name':name}}}]}}},'apps/v1')
@@ -80,7 +79,7 @@ def controllers():
             uid=10001 if 'cnpg' in m['name'] else 999
             o['spec']['replicas']=1
             spec['securityContext']={'runAsNonRoot':True,'runAsUser':uid,'runAsGroup':uid,'fsGroup':uid,'seccompProfile':{'type':'RuntimeDefault'}}
-            spec['imagePullSecrets']=[{'name':'twinfra-registry-cred'}]
+            spec.pop('imagePullSecrets',None)
             # ADR-0047 environment labels are added by Kustomize, selectors stay upstream.
             for c in spec.get('containers',[])+spec.get('initContainers',[]):
                 c['image']=image('cnpg' if 'cnpg' in m['name'] else 'argocd')
@@ -107,7 +106,7 @@ def controllers():
 def database():
     lock=json.loads((COMMON/'images.lock.json').read_text())['images']['postgres']
     pg=obj('Cluster','twinfra-postgres',{'instances':1,'imageName':lock['canonical'],'imagePullPolicy':'IfNotPresent','postgresUID':26,'postgresGID':26,
-        'imagePullSecrets':[{'name':'twinfra-registry-cred'}],'inheritedMetadata':{'labels':labels('postgres')},
+        'inheritedMetadata':{'labels':labels('postgres')},
         'enableSuperuserAccess':False,'seccompProfile':{'type':'RuntimeDefault'},
         'managed':{'roles':[{'name':n,'ensure':'present','login':True,'superuser':False,'createdb':False,'createrole':False,'passwordSecret':{'name':'twinfra-'+n+'-db'}} for n in ('keycloak','openbao')]},
         'bootstrap':{'initdb':{'database':'twinfra','owner':'twinfra_app','postInitApplicationSQL':['CREATE EXTENSION IF NOT EXISTS vector;']}},
@@ -176,23 +175,25 @@ def portal():
 
 def gateway():
     # Standalone APISIX consumes a complete declarative snapshot; no admin API/controller/etcd needed.
-    cm=config('twinfra-gateway',{'config.yaml':yaml.safe_dump({'apisix':{'node_listen':9080,'enable_admin':False,'enable_ipv6':False,'ssl':{'ssl_trusted_certificate':'/oidc-trust/tls.crt'}},
+    cm=config('twinfra-gateway',{'config.yaml':yaml.safe_dump({'apisix':{'node_listen':[],'enable_admin':False,'enable_ipv6':False,'ssl':{'enable':True,'listen':[{'port':9443}],
+        'ssl_cert':'/tls/tls.crt','ssl_cert_key':'/tls/tls.key','ssl_trusted_certificate':'/oidc-trust/tls.crt'}},
         'nginx_config':{'worker_processes':1,'error_log':'/dev/stderr','http':{'access_log':'/dev/stdout','access_log_format':'$remote_addr $request_method $uri $status'}},
         'deployment':{'role':'data_plane','role_data_plane':{'config_provider':'yaml'}}}),
         'apisix.template.json':(COMMON/'apisix-routes.json').read_text(),'configure.py':(COMMON/'gateway-config.py').read_text()})
     volumes=[{'name':'source','configMap':{'name':'twinfra-gateway'}},{'name':'conf','emptyDir':{'medium':'Memory','sizeLimit':'32Mi'}},
         {'name':'auth','secret':{'secretName':'twinfra-console-oidc','defaultMode':0o440}},
+        {'name':'tls','secret':{'secretName':'twinfra-gateway-tls','defaultMode':0o440}},
         {'name':'oidc-trust','secret':{'secretName':'twinfra-keycloak-tls','items':[{'key':'ca.crt','path':'tls.crt'}],'defaultMode':0o440}},
         {'name':'tmp','emptyDir':{'medium':'Memory','sizeLimit':'32Mi'}},{'name':'logs','emptyDir':{'medium':'Memory','sizeLimit':'16Mi'}}]
     init=[{'name':'prepare','image':image('apisix'),'command':['sh','-ec','cp -R /usr/local/apisix/conf/. /conf/'],'volumeMounts':[{'name':'conf','mountPath':'/conf'}]},
-        {'name':'config','image':image('python'),'command':['python','/source/configure.py'],'volumeMounts':[{'name':'source','mountPath':'/source','readOnly':True},{'name':'auth','mountPath':'/auth','readOnly':True},{'name':'conf','mountPath':'/conf'}]}]
+        {'name':'config','image':image('python'),'command':['python','/source/configure.py'],'volumeMounts':[{'name':'source','mountPath':'/source','readOnly':True},{'name':'auth','mountPath':'/auth','readOnly':True},{'name':'tls','mountPath':'/tls','readOnly':True},{'name':'conf','mountPath':'/conf'}]}]
     c={'name':'gateway','image':image('apisix'),'command':['sh','-ec','apisix init; exec /usr/local/openresty/bin/openresty -p /usr/local/apisix -c conf/nginx.conf -g "daemon off;"'],
-        'volumeMounts':[{'name':'conf','mountPath':'/usr/local/apisix/conf'},{'name':'oidc-trust','mountPath':'/oidc-trust','readOnly':True},{'name':'tmp','mountPath':'/tmp'},{'name':'logs','mountPath':'/usr/local/apisix/logs'}],
-        'readinessProbe':{'tcpSocket':{'port':9080}}}
+        'volumeMounts':[{'name':'conf','mountPath':'/usr/local/apisix/conf'},{'name':'tls','mountPath':'/tls','readOnly':True},{'name':'oidc-trust','mountPath':'/oidc-trust','readOnly':True},{'name':'tmp','mountPath':'/tmp'},{'name':'logs','mountPath':'/usr/local/apisix/logs'}],
+        'readinessProbe':{'tcpSocket':{'port':9443}}}
     # Scratch paths required by OpenResty stay isolated from the immutable root.
     for path in ('client_body_temp','proxy_temp','fastcgi_temp','uwsgi_temp','scgi_temp'):
         name=path.replace('_','-');volumes.append({'name':name,'emptyDir':{'medium':'Memory','sizeLimit':'8Mi'}});c['volumeMounts'].append({'name':name,'mountPath':'/usr/local/apisix/'+path})
-    return [cm,deployment('twinfra-gateway',c,volumes,init),service('twinfra-gateway',9080)]
+    return [cm,deployment('twinfra-gateway',c,volumes,init),service('twinfra-gateway',9443)]
 
 def network():
     def ports(*p):return [{'ports':[{'port':str(n),'protocol':'TCP'} for n in p]}]
@@ -215,7 +216,7 @@ def network():
     edges += [(cnpg,'twinfra-postgres',8000),(cnpg,'twinfra-postgres',5432)]
     for name in sorted({v for a,b,_ in edges for v in (a,b)}):
         ingress=[{'fromEndpoints':[select(a)],'toPorts':ports(p)} for a,b,p in edges if b==name]
-        probe_ports={'argocd-repo-server':8084,'argocd-application-controller':8082,'argocd-server':8080,'twinfra-console':3000,'twinfra-keycloak':9000,'twinfra-openbao':8200,'twinfra-ministack':4566,'twinfra-gateway':9080,'twinfra-postgres':8000,cnpg:9443}
+        probe_ports={'argocd-repo-server':8084,'argocd-application-controller':8082,'argocd-server':8080,'twinfra-console':3000,'twinfra-keycloak':9000,'twinfra-openbao':8200,'twinfra-ministack':4566,'twinfra-gateway':9443,'twinfra-postgres':8000,cnpg:9443}
         if name in probe_ports:ingress.append({'fromEntities':['host','remote-node','health'],'toPorts':ports(probe_ports[name])})
         if name=='twinfra-keycloak':ingress.append({'fromEntities':['host','remote-node'],'toPorts':ports(8443)})
         if name==cnpg:ingress.append({'fromEntities':['kube-apiserver'],'toPorts':ports(9443)})
@@ -241,12 +242,17 @@ def seed(row):
     values={'PLATFORM_PROFILE':'dev-'+row['region'],'CLUSTER_NAME':'twinfra-dev-'+row['region'],'CLUSTER_DNS_NAME':'twinfra-dev-'+row['region'],
         'BASE_DOMAIN':'twinfra.example.com','IMAGE_REGISTRY':'registry.twinfra.example.com','REGISTRY_MIRROR':'https://registry.twinfra.example.com',
         'POD_CIDR':row['podCidr'],'SERVICE_CIDR':row['serviceCidr'],'NODE_IP':row['ipAddress'],'NODE_NAME':'twinfra-node',
-        'CONTROL_PLANE_ENDPOINT':'api.dev.'+row['region']+'.twinfra.example.com:6443','BOOTSTRAP_K8S':'true','INSTALL_HPC':'false','ENABLE_GPU':'false','GPU_SMOKE_TEST':'false','RUN_SMOKE_TESTS':'false'}
+        'CONTROL_PLANE_ENDPOINT':'api.dev.'+row['region']+'.twinfra.example.com:6443','BOOTSTRAP_K8S':'true','INSTALL_HPC':'false','ENABLE_GPU':'false','GPU_SMOKE_TEST':'false','RUN_SMOKE_TESTS':'false','IMAGE_STAGING':'true'}
     raw=env['content']
     for key,value in values.items():
         pattern=r'(?m)^'+key+r'=.*$';line=key+'='+value
         raw=re.sub(pattern,line,raw) if re.search(pattern,raw) else raw+line+'\n'
     env['content']=raw;env['path']='/etc/twinfra-host.env'
+    data['write_files'] += [{'path':'/etc/twinfra/bootstrap-images.lock.json','permissions':'0644','content':(COMMON/'bootstrap-images.lock.json').read_text()},
+        {'path':'/usr/local/lib/twinfra/stage-images.py','permissions':'0644','content':(COMMON/'stage-images.py').read_text()}]
+    for file in data['write_files']:
+        if file['path']=='/etc/systemd/system/vcloud-host-bootstrap.service':
+            file['content']=file['content'].replace('[Service]\n','[Service]\nEnvironment=VCLOUD_CONFIG_FILE=/etc/twinfra-host.env\n')
     for command in data.get('runcmd',[]):
         if isinstance(command,list):
             for i,arg in enumerate(command):
@@ -280,11 +286,20 @@ def outputs():
     return result
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check']);args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','stage-images'])
+    parser.add_argument('--context');parser.add_argument('--ssh');parser.add_argument('--check',action='store_true');parser.add_argument('--archive-dir',type=Path)
+    args=parser.parse_args()
+    if args.action=='stage-images':
+        from platform_image_staging import stage_applications
+        if not args.context or not args.ssh:parser.error('stage-images requires --context and --ssh')
+        report=stage_applications(args.context,args.ssh,args.check,args.archive_dir)
+        for problem in report['problems']:print(problem['name']+': '+problem['reason']+' ('+problem['image']+')')
+        print('PASS: all application images verified' if not report['problems'] else 'FAIL: application image cache incomplete')
+        return int(bool(report['problems']))
     refresh_console_image(check=args.action=='check')
     for path,raw in outputs().items():
         if args.action=='check':
             if not path.exists() or path.read_text()!=raw:raise ValueError('Dev render drift: '+str(path))
         else:path.parent.mkdir(parents=True,exist_ok=True);path.write_text(raw,encoding='utf-8',newline='\n')
     print('PASS: dev profile '+args.action+'; no live actions')
-if __name__=='__main__':main()
+if __name__=='__main__':raise SystemExit(main())

@@ -1,0 +1,134 @@
+{
+  "versions": {
+    "kubernetes": "v1.36.5",
+    "cilium": "1.20.2"
+  },
+  "kubeadmSource": {
+    "url": "https://raw.githubusercontent.com/kubernetes/kubernetes/v1.36.5/cmd/kubeadm/app/constants/constants.go",
+    "sha256": "4d761e887f86abcc784725e5b6c09bb0affbd36441fcde7bb95a03caa7c1aa1c",
+    "path": "deploy/common/vendor/kubeadm-constants-v1.36.5.go"
+  },
+  "images": {
+    "apiserver": {
+      "release": "registry.k8s.io/kube-apiserver:v1.36.5",
+      "source": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+      "canonical": "registry.twinfra.example.com/registry.k8s.io/kube-apiserver:v1.36.5",
+      "digest": "sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+      "platform": "linux/amd64",
+      "amd64Digest": "sha256:78487f7b4b1a588d9630f758f6677895eabe00d93c4cbbea3d6b06e5f476a371",
+      "configDigest": "sha256:d350c55cb17bb41eb03c6596f063463a94a68c7dccd909b5d920f40576905a1d",
+      "digestSource": "https://registry.k8s.io/v2/kube-apiserver/manifests/v1.36.5",
+      "verifiedOn": "2026-10-10"
+    },
+    "controller": {
+      "release": "registry.k8s.io/kube-controller-manager:v1.36.5",
+      "source": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+      "canonical": "registry.twinfra.example.com/registry.k8s.io/kube-controller-manager:v1.36.5",
+      "digest": "sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+      "platform": "linux/amd64",
+      "amd64Digest": "sha256:a7b63e85c7914ff6d49d97004a09b8a469efa6fe41f58d2c1faa2606ed8cb742",
+      "configDigest": "sha256:cf2bbfca0a634248428aefadb5f532c8cfadbf67ff728eb1d206bfdf966c9f28",
+      "digestSource": "https://registry.k8s.io/v2/kube-controller-manager/manifests/v1.36.5",
+      "verifiedOn": "2026-10-10"
+    },
+    "scheduler": {
+      "release": "registry.k8s.io/kube-scheduler:v1.36.5",
+      "source": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+      "canonical": "registry.twinfra.example.com/registry.k8s.io/kube-scheduler:v1.36.5",
+      "digest": "sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+      "platform": "linux/amd64",
+      "amd64Digest": "sha256:249bcbdb401e4882c125e5b6958aab09954ea59d06289af380e60dd58115405e",
+      "configDigest": "sha256:137b99d7bbba00a26374e3d8018ea318ff0d9de86d46bf16f2632364676826b3",
+      "digestSource": "https://registry.k8s.io/v2/kube-scheduler/manifests/v1.36.5",
+      "verifiedOn": "2026-10-10"
+    },
+    "etcd": {
+      "release": "registry.k8s.io/etcd:3.6.8-0",
+      "source": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+      "canonical": "registry.twinfra.example.com/registry.k8s.io/etcd:3.6.8-0",
+      "digest": "sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+      "platform": "linux/amd64",
+      "amd64Digest": "sha256:aa2b41e3f99c9a337b82f687875a63c5119e6d39bc43fc76b6c40a96f55cf391",
+      "configDigest": "sha256:ee85eb1f0edd27fd11e3bed20f21a4001ad63107eb2f8d489429648a799c0e86",
+      "digestSource": "https://registry.k8s.io/v2/etcd/manifests/3.6.8-0",
+      "verifiedOn": "2026-10-10"
+    },
+    "coredns": {
+      "release": "registry.k8s.io/coredns/coredns:v1.14.2",
+      "source": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "canonical": "registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.2",
+      "digest": "sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "platform": "linux/amd64",
+      "amd64Digest": "sha256:fd5079792b93909db3adefa91e41c3995455013394f0197c7346786ae19079fc",
+      "configDigest": "sha256:38667dd9be96c17227adde456e33ad701bdbdc5c6db0272a1d33a929bd8e62d6",
+      "digestSource": "https://registry.k8s.io/v2/coredns/coredns/manifests/v1.14.2",
+      "verifiedOn": "2026-10-10"
+    },
+    "pause": {
+      "release": "registry.k8s.io/pause:3.10.1",
+      "source": "registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c",
+      "canonical": "registry.twinfra.example.com/registry.k8s.io/pause:3.10.1",
+      "digest": "sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c",
+      "platform": "linux/amd64",
+      "amd64Digest": "sha256:e5b941ef8f71de54dc3a13398226c269ba217d06650a21bd3afcf9d890cf1f41",
+      "configDigest": "sha256:cd073f4c5f6a8e9dc6f3125ba00cf60819cae95c1ec84a1f146ee4a9cf9e803f",
+      "digestSource": "https://registry.k8s.io/v2/pause/manifests/3.10.1",
+      "verifiedOn": "2026-10-10"
+    },
+    "kubeadm-pause": {
+      "release": "registry.k8s.io/pause:3.10.2",
+      "source": "registry.k8s.io/pause@sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
+      "canonical": "registry.twinfra.example.com/registry.k8s.io/pause:3.10.2",
+      "digest": "sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
+      "platform": "linux/amd64",
+      "amd64Digest": "sha256:412c4a7219cb8a299a37337f3d87810c5340095322e15594a1637785adad0f17",
+      "configDigest": "sha256:4a83b15d3ecfe0d916b2d0a7991bc2854a629b8097017c2ee1ff65b30ae4c07c",
+      "digestSource": "https://registry.k8s.io/v2/pause/manifests/3.10.2",
+      "verifiedOn": "2026-10-10"
+    },
+    "probe": {
+      "release": "docker.io/library/busybox:1.37.0",
+      "source": "docker.io/library/busybox@sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e",
+      "canonical": "registry.twinfra.example.com/docker.io/library/busybox:1.37.0",
+      "digest": "sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e",
+      "platform": "linux/amd64",
+      "amd64Digest": "sha256:66a6306db78bf2dbf3487f293aa8d6990d8e506fdffab9cc43fe422becf886e4",
+      "configDigest": "sha256:30ecbe1509090b38ef3260f3609d64d8261230464eaa4d235901db496e9647fb",
+      "digestSource": "https://registry-1.docker.io/v2/library/busybox/manifests/1.37.0",
+      "verifiedOn": "2026-10-10"
+    },
+    "cilium": {
+      "release": "quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "source": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "canonical": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "digest": "sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "platform": "linux/amd64",
+      "amd64Digest": "sha256:9d308e3f7f05972b0b0604c40d2b0f08fa2f6a55084fef1e1aaadb469e430639",
+      "configDigest": "sha256:e8a7b89d30c0711e31b5ee947e0493786824413ecda8349416155b39663570b3",
+      "digestSource": "https://quay.io/v2/cilium/cilium/manifests/sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "verifiedOn": "2026-10-10"
+    },
+    "envoy": {
+      "release": "quay.io/cilium/cilium-envoy:v1.37.6-1789133542-cbec91f666af0bf742da986d43832932dbb26b82@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "source": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "canonical": "registry.twinfra.example.com/quay.io/cilium/cilium-envoy:v1.37.6-1789133542-cbec91f666af0bf742da986d43832932dbb26b82@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "digest": "sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "platform": "linux/amd64",
+      "amd64Digest": "sha256:33b00117d392f24ee5161f66242d12f58ceb62bf80a2bdd66eaf505d77933cb0",
+      "configDigest": "sha256:18f3aea3c0c65d132852f7b7613aa314c6d766d8002493bb536bf46ded0359e4",
+      "digestSource": "https://quay.io/v2/cilium/cilium-envoy/manifests/sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "verifiedOn": "2026-10-10"
+    },
+    "operator": {
+      "release": "quay.io/cilium/operator-generic:v1.20.2@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "source": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "canonical": "registry.twinfra.example.com/quay.io/cilium/operator-generic:v1.20.2@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "digest": "sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "platform": "linux/amd64",
+      "amd64Digest": "sha256:5bb0f9d871dd7b80461f8e3056896daa51e7d9b70ffe51c3e2126b4c35c02b5e",
+      "configDigest": "sha256:26de0949099773e9f066583baa07804c9d00c99e4c7730c569fe39e452815dd9",
+      "digestSource": "https://quay.io/v2/cilium/operator-generic/manifests/sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "verifiedOn": "2026-10-10"
+    }
+  }
+}

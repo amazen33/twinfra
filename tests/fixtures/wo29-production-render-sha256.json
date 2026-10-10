@@ -1,0 +1,15 @@
+{
+  "sourceCommit": "cd6ffdf77f583ae9555708d163d87c8020ceebe6",
+  "sha256": {
+    "render_kubeadm": "7b609c1b0b7571e85e800009b297abf9716d757508ee51ee55574f6c937e8a08",
+    "render_cilium_values": "23a3a4a870678d7a164b5c70660cd436d0b462317e98a0aa2aaea3b1a23274e5",
+    "render_containerd 1.7.28": "33197f1c84b2c91ee14be92678a594488754bda50ad75aada3cea78f0abacc7f",
+    "render_containerd 2.1.0": "d71cd6afeea01b87f7fe79d7618abf5880b6dce45dbb264b8d834cdd0271dfc6",
+    "render_mirror": "19e9aba877f09ded19780d9c73da29dae104aa9084e083023d77aa91df03765c",
+    "render_mirror quay.io": "b629076241ed6fe593f44853aec3ca667a49bf9e39d09c44987b09b87a5b84de",
+    "render_smoke": "746ed9285170f4016ae9cafa6b917280ddad6dafba49ed8786a0a358dbd503af",
+    "render_foundation": "ea8c731ec254328ea0edcf553b35d5de6b1858e7103bf01865355304f87d12e7",
+    "render_exception_policy": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253"
+  },
+  "systemdResolvedKubeadmSHA256": "7ed43c6d2a78518f24dd91efd09828510c22ca6e388ab17a64937cd481fedefb"
+}
