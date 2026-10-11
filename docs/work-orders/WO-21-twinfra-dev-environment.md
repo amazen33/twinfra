@@ -160,3 +160,10 @@ Codex stopped because Argo CD 3.5.3 looks up `argocd-cm`, `argocd-secret` and si
 4. **Names Twinfra chooses stay Twinfra-owned:** Argo CD Applications and AppProject, the Keycloak realm and client IDs, Secrets and ConfigMaps Twinfra creates, and Namespaces from the SSoT. The ban on `lab`, `wsl` and `vcloud` applies to all of them.
 5. **Add ADR-0047** (from `E:/vcloud-handoff/adr/ADR-0047-upstream-owned-resource-names.md`, fixing relative links) to `docs/adr/` and the ADR index, with an "Amended by ADR-0047" line at the top of ADR-0038.
 6. **Tests:** an upstream name listed and present (pass); a non-`twinfra-` name not listed (fail); a listed name missing from the pinned source (fail); a Twinfra-owned name containing `lab`, `wsl` or `vcloud` (fail).
+
+## Amendment 5 (2026-10-12, owner decision recorded in ADR-0048): `cairo-1` moves to bare metal
+
+1. **`cairo-1` is no longer a Hyper-V VM on the laptop.** It runs on bare-metal Ubuntu 24.04 on the Dell OptiPlex 9020 (`twinfra-dev-cairo-1`, 192.168.1.3). WO-31 builds it.
+2. **This work order's Hyper-V deliverables stay, re-targeted to the cold standby `cairo-2`:** `deploy/hyperv/`, the guards, the overlap rules and the tests. Nothing merged in PR #35 is reverted.
+3. **What changes.** The verified host constraints in this order (the laptop's RAM and disk), and Decision A ("`cairo-1` as a Hyper-V VM"), now apply to `cairo-2` only.
+4. **Unchanged:** the CIDR table, the multi-node readiness (`controlPlaneEndpoint` as a stable name) and the naming rules.

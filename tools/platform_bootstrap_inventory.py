@@ -13,15 +13,14 @@ import tempfile
 import yaml
 
 from platform_resources import ROOT
-from platform_dev import seed
+from platform_dev import host_environment
 from manifest_contract import podspec
 
 
 def inventory(bash='bash', helm='helm', region='cairo-1'):
     row = next(r for r in yaml.safe_load((ROOT / 'vcloud-ssot.yaml').read_text())['addressPlan']
                if r['environment'] == 'dev' and r['region'] == region)
-    data = yaml.safe_load(seed(row)['user-data'])
-    raw = next(f['content'] for f in data['write_files'] if f['path'] == '/etc/twinfra-host.env')
+    raw = host_environment(row)
     values = dict(line.split('=', 1) for line in raw.splitlines() if line and not line.startswith('#') and '=' in line)
     env = dict(os.environ, **values, VCLOUD_CONFIG_FILE='/nonexistent')
     def render(command):

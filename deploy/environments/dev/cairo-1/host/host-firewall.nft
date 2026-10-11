@@ -1,0 +1,20 @@
+# WO-31: only the Dell physical interface is filtered.
+destroy table inet twinfra_host
+table inet twinfra_host {
+    chain input {
+        type filter hook input priority 10; policy accept;
+        iifname "eno1" ct state established,related accept
+        iifname "eno1" meta l4proto { icmp, ipv6-icmp } accept
+        iifname "eno1" udp sport 67 udp dport 68 accept
+        iifname "eno1" ip saddr 192.168.1.0/24 tcp dport { 22, 6443 } accept
+        iifname "eno1" drop
+    }
+    chain forward {
+        type filter hook forward priority 10; policy accept;
+        iifname "eno1" ct state established,related accept
+        iifname "eno1" meta l4proto { icmp, ipv6-icmp } accept
+        iifname "eno1" udp sport 67 udp dport 68 accept
+        iifname "eno1" ip saddr 192.168.1.0/24 tcp dport { 22, 6443 } accept
+        iifname "eno1" drop
+    }
+}

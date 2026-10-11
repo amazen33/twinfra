@@ -34,3 +34,10 @@ that reference as a Dockerfile base or enabling the default CUDA smoke-test swit
 Grafana remains pending removal. Redis was replaced under WO-25 and LocalStack
 was removed under WO-06; neither remains a platform selection. Their frozen expiry dates and follow-up work orders appear in the
 register and every successful CI licence report.
+
+WO-31 uses the unmodified Ubuntu-installed nftables, LVM and ext4 utilities as
+base-os under [ADR-0044](../../docs/adr/0044-licence-gate-scope-and-classes.md).
+These OS packages retain their own Ubuntu package copyright/licence notices;
+they are not copied into a Twinfra application image. No new third-party tool,
+library or image is introduced. The owner installs Ubuntu's nftables package if
+absent; the static work order does not install software on the workstation or Dell.

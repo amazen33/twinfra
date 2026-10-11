@@ -1,7 +1,7 @@
 # Twinfra architecture decision log
 
 This is the single ADR log. Numbers 0001–0036 are unique; the next free number is
-**0048**. Module 3 delivery retains 0020; registry mirroring is 0028. The accepted
+**0049**. Module 3 delivery retains 0020; registry mirroring is 0028. The accepted
 D1–D8 owner decisions are copied verbatim in 0029–0035. D9–D12 remain open.
 Use the [work-order handoff](../work-orders/README.md) for implementation order.
 
@@ -78,6 +78,7 @@ only redirect here; no individual-file stubs remain.
 | [0045: WSL retirement](0045-wsl-retirement.md) | Accepted (owner) | None | WO-28 gated on dev acceptance |
 | [0046: environment and region names](0046-naming-dev-environment-and-regions.md) | Accepted (owner) | None | VM, contexts and conformance names |
 | [0047: upstream-owned names](0047-upstream-owned-resource-names.md) | Accepted (owner delegated to architect) | None | WO-21 static naming inventory; live acceptance Pending |
+| [0048: cairo-1 on a dedicated bare-metal host](0048-cairo-1-on-bare-metal-host.md) | Accepted (owner) | None | Amends 0032 and 0046; Dell primary, laptop operator/cairo-2 cold standby; [WO-31](../work-orders/WO-31-bare-metal-cairo-1.md); live acceptance Pending |
 
 ADR numbers **0037** and **0039–0041** are reserved for other approved work orders.
 

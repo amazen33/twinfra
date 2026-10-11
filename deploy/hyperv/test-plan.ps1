@@ -113,7 +113,7 @@ Check 'default route and the five exclusions' {
 }
 Check 'exact owned rerun makes zero changes' {
     $i=Inventory;Owned $i;$p=New-TwinfraPlan -Inventory $i -Image $image
-    $i.Vms=@(@{Name=$p.Settings.Name;Stamp=$p.Stamp;FilesVerified=$true;Generation=2;Cpu=8;MemoryGB=20;DynamicMemory=$false;Nested=$true;Switch='twinfra-nat';Disk=$p.Settings.Disk;Seed=$p.Settings.Seed;DiskGB=100;Ips=@('10.50.0.10');ClusterCidrs=@('10.110.0.0/16','10.111.0.0/16')})
+    $i.Vms=@(@{Name=$p.Settings.Name;Stamp=$p.Stamp;FilesVerified=$true;Generation=2;Cpu=8;MemoryGB=20;DynamicMemory=$false;Nested=$true;Switch='twinfra-nat';Disk=$p.Settings.Disk;Seed=$p.Settings.Seed;DiskGB=100;Ips=@('10.50.0.11');ClusterCidrs=@('10.120.0.0/16','10.121.0.0/16')})
     $i.FreeMemoryGB=1;$i.FreeDiskGB=1
     $rerun=New-TwinfraPlan -Inventory $i -Image $image
     Assert ($rerun.NoChanges -and $rerun.Actions.Count -eq 0) 'Rerun mutated plan'
@@ -130,13 +130,13 @@ Check 'second region shares owned network and next free address' {
     Refused $i @{Region='cairo-2';IpAddress='10.50.0.10';PodCidr='10.120.0.0/16';ServiceCidr='10.121.0.0/16'}
 }
 Check 'protected networks and intersecting planned ranges refused' {
-    foreach($range in @('10.20.0.0/16','192.168.1.0/24','10.50.0.0/16','10.111.0.0/17')) {Refused (Inventory) @{PodCidr=$range}}
+    foreach($range in @('10.20.0.0/16','192.168.1.0/24','10.50.0.0/16','10.121.0.0/17')) {Refused (Inventory) @{PodCidr=$range}}
 }
-Check 'duplicate planned entries refused' { Refused (Inventory) @{PodCidr='10.111.0.0/16'} }
+Check 'duplicate planned entries refused' { Refused (Inventory) @{PodCidr='10.121.0.0/16'} }
 Check 'specific route host prefix NAT and switch collisions refused' {
-    $i=Inventory;$i.Routes=@(@{Prefix='10.110.0.0/24';InterfaceAlias='foreign';NextHop='192.168.1.1'});Refused $i
-    $i=Inventory;$i.Addresses=@(@{Address='10.50.0.10/32';InterfaceAlias='foreign'});Refused $i
-    $i=Inventory;$i.Nats=@(@{Name='foreign';Prefix='10.111.0.0/16'});Refused $i
+    $i=Inventory;$i.Routes=@(@{Prefix='10.120.0.0/24';InterfaceAlias='foreign';NextHop='192.168.1.1'});Refused $i
+    $i=Inventory;$i.Addresses=@(@{Address='10.50.0.11/32';InterfaceAlias='foreign'});Refused $i
+    $i=Inventory;$i.Nats=@(@{Name='foreign';Prefix='10.121.0.0/16'});Refused $i
     $i=Inventory;$i.Switches=@(@{Name='foreign';SwitchType='Internal';Prefixes=@('10.50.0.0/24')});Refused $i
 }
 Check 'admin Hyper-V RAM disk and address guards' {
@@ -179,6 +179,18 @@ Check 'entry script parses, plan branch precedes every mutation' {
     $raw=Get-Content $entry -Raw
     Assert ($raw.IndexOf('if ($Plan -or $p.NoChanges)') -lt $raw.IndexOf('New-Item -ItemType')) 'Writes before -Plan return'
     Assert ($raw -notmatch 'Start-VM|Remove-VM|Remove-VMSwitch|wsl.exe|Set-NetNat') 'Foreign/live operations in provisioner'
+}
+Check 'cairo-2 default and bare-metal cairo-1 refused before host reads' {
+    $p=New-TwinfraPlan -Inventory (Inventory) -Image $image
+    Assert ($p.Settings.Region -eq 'cairo-2' -and $p.Settings.IpAddress -eq '10.50.0.11') 'Cold-standby defaults differ'
+    $failed=$false
+    try {New-TwinfraPlan -Inventory @{} -Image @{} -Region cairo-1 | Out-Null} catch {
+        $failed=$true
+        Assert ($_.Exception.Message -eq 'cairo-1 runs on bare metal (ADR-0048); no changes made') 'Changed bare-metal refusal'
+    }
+    Assert $failed 'cairo-1 allowed'
+    $raw=Get-Content (Join-Path $PSScriptRoot 'New-TwinfraDev.ps1') -Raw
+    Assert ($raw.IndexOf("if (`$Region -eq 'cairo-1')") -lt $raw.IndexOf('Import-Module')) 'Host read precedes bare-metal refusal'
 }
 Write-Output "OFFLINE FIXTURE -Plan output ($passed checks passed; no host inventory reads):"
 Format-TwinfraPlan (New-TwinfraPlan -Inventory (Inventory) -Image $image)

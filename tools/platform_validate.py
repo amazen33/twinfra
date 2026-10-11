@@ -43,7 +43,7 @@ def main():
     checked=[o for o in objects if podspec(o) or o['kind']=='PersistentVolume']
     report=audit_objects(checked,policy)
     if report['violations']:raise ValueError(str(report['violations']))
-    env=dict(os.environ,PLATFORM_PROFILE='dev-cairo-1',NODE_IP='10.50.0.10',POD_CIDR='10.110.0.0/16',
+    env=dict(os.environ,PLATFORM_PROFILE='dev-cairo-1',NODE_IP='192.168.1.3',POD_CIDR='10.110.0.0/16',
              CLUSTER_DNS_NAME='twinfra-dev-cairo-1',IMAGE_REGISTRY='registry.twinfra.example.com')
     command=['source "$1"; render_cilium_values','source "$1"; render_exception_policy']
     rendered=[]

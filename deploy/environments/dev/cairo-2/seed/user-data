@@ -1851,44 +1851,53 @@ write_files:
     \ result\n\n\ndef cached(runner):\n    result = {}\n    for line in runner(['ctr',\
     \ '-n', 'k8s.io', 'images', 'list']).splitlines():\n        fields = line.split()\n\
     \        if len(fields) >= 3 and fields[2].startswith('sha256:'):\n          \
-    \  result[fields[0]] = fields[2]\n    return result\n\n\ndef inspect_cri(item,\
+    \  result[fields[0]] = fields[2]\n    return result\n\n\ndef cri_problem(item,\
     \ runner):\n    try:\n        info = json.loads(runner(['crictl', 'inspecti',\
     \ item['canonical']]))\n    except (ValueError, json.JSONDecodeError):\n     \
-    \   return False\n    digests = info.get('status', {}).get('repoDigests', [])\n\
-    \    return any(value.endswith('@' + item['digest']) for value in digests)\n\n\
-    \ndef stage(lock, check=False, verify_cri=True, runner=run):\n    images = entries(lock)\n\
+    \   return 'CRI missing or digest mismatch'\n    digests = info.get('status',\
+    \ {}).get('repoDigests', [])\n    if not any(value.endswith('@' + item['digest'])\
+    \ for value in digests):\n        return 'CRI missing or digest mismatch'\n  \
+    \  return None if info.get('status', {}).get('pinned') is True else 'unpinned'\n\
+    \n\ndef inspect_cri(item, runner):\n    return cri_problem(item, runner) is None\n\
+    \n\ndef stage(lock, check=False, verify_cri=True, runner=run):\n    images = entries(lock)\n\
     \    state = cached(runner)\n    problems = []\n    for key, item in images.items():\n\
     \        actual = state.get(item['canonical'])\n        if actual is None:\n \
     \           problems.append({'name': key, 'reason': 'missing', 'image': item['canonical']})\n\
     \        elif actual != item['digest']:\n            problems.append({'name':\
     \ key, 'reason': 'digest mismatch', 'image': item['canonical']})\n        elif\
-    \ verify_cri and not inspect_cri(item, runner):\n            problems.append({'name':\
-    \ key, 'reason': 'CRI missing or digest mismatch', 'image': item['canonical']})\n\
-    \    if check:\n        # No temporary directory, pull, import, tag, file or runtime\
-    \ writes.\n        return problems\n    if any(p['reason'] != 'missing' for p\
-    \ in problems):\n        raise ValueError('Staging refused: ' + ', '.join(p['name']\
-    \ + ': ' + p['reason'] for p in problems))\n    missing = {p['name'] for p in\
-    \ problems}\n    for key, item in images.items():\n        if key not in missing:\n\
-    \            continue\n        if item.get('buildReceipt'):\n            raise\
-    \ ValueError('Missing locally built image: ' + key + '; import its verified OCI\
-    \ archive first')\n        # Explicit local client + empty hosts directory bypass\
-    \ CRI mirror configuration\n        # only for this owner-requested staging pull,\
-    \ never for kubelet/runtime pulls.\n        with tempfile.TemporaryDirectory(prefix='twinfra-empty-hosts-')\
-    \ as hosts:\n            runner(['ctr', '-n', 'k8s.io', 'images', 'pull', '--local',\
-    \ '--platform', 'linux/amd64',\n                    '--hosts-dir', hosts, item['source']])\n\
-    \        state = cached(runner)\n        if state.get(item['source']) != item['digest']:\n\
-    \            raise ValueError('Upstream digest mismatch after pull: ' + key)\n\
-    \        runner(['ctr', '-n', 'k8s.io', 'images', 'tag', item['source'], item['canonical']])\n\
-    \        runner(['ctr', '-n', 'k8s.io', 'images', 'label', item['canonical'],\
-    \ 'io.cri-containerd.image=managed'])\n    state = cached(runner)\n    for key,\
+    \ verify_cri:\n            reason = cri_problem(item, runner)\n            if\
+    \ reason:\n                problems.append({'name': key, 'reason': reason, 'image':\
+    \ item['canonical']})\n    if check:\n        # No temporary directory, pull,\
+    \ import, tag, file or runtime writes.\n        return problems\n    # A matching\
+    \ owned cache entry may need its pin upgraded; never repair a\n    # mismatched\
+    \ digest. CRI checks below still fail closed after the label event.\n    repairable\
+    \ = {p['name'] for p in problems if p['reason'] == 'unpinned'}\n    if any(p['reason']\
+    \ != 'missing' and p['name'] not in repairable for p in problems):\n        raise\
+    \ ValueError('Staging refused: ' + ', '.join(p['name'] + ': ' + p['reason'] for\
+    \ p in problems))\n    missing = {p['name'] for p in problems if p['reason'] ==\
+    \ 'missing'}\n    for key, item in images.items():\n        if key in missing\
+    \ and item.get('buildReceipt'):\n            raise ValueError('Missing locally\
+    \ built image: ' + key + '; import its verified OCI archive first')\n        #\
+    \ Explicit local client + empty hosts directory bypass CRI mirror configuration\n\
+    \        # only for this owner-requested staging pull, never for kubelet/runtime\
+    \ pulls.\n        if key in missing:\n            with tempfile.TemporaryDirectory(prefix='twinfra-empty-hosts-')\
+    \ as hosts:\n                runner(['ctr', '-n', 'k8s.io', 'images', 'pull',\
+    \ '--local', '--platform', 'linux/amd64',\n                        '--hosts-dir',\
+    \ hosts, item['source']])\n            state = cached(runner)\n            if\
+    \ state.get(item['source']) != item['digest']:\n                raise ValueError('Upstream\
+    \ digest mismatch after pull: ' + key)\n            runner(['ctr', '-n', 'k8s.io',\
+    \ 'images', 'tag', item['source'], item['canonical']])\n        if key in missing\
+    \ or key in repairable and not inspect_cri(item, runner):\n            runner(['ctr',\
+    \ '-n', 'k8s.io', 'images', 'label', item['canonical'],\n                    'io.cri-containerd.image=managed',\
+    \ 'io.cri-containerd.pinned=pinned'])\n    state = cached(runner)\n    for key,\
     \ item in images.items():\n        if state.get(item['canonical']) != item['digest']:\n\
     \            raise ValueError('Missing or mismatched image after staging: ' +\
     \ key)\n        if verify_cri:\n            # CRI consumes containerd image events\
     \ asynchronously. Bounded reads\n            # avoid a false failure immediately\
     \ after a successful tag/import.\n            for attempt in range(5):\n     \
     \           if inspect_cri(item, runner):\n                    break\n       \
-    \         if attempt == 4:\n                    raise ValueError('CRI missing\
-    \ or digest mismatch after staging: ' + key)\n                time.sleep(0.5)\n\
+    \         if attempt == 4:\n                    raise ValueError('CRI missing,\
+    \ digest mismatch or unpinned after staging: ' + key)\n                time.sleep(0.5)\n\
     \    return []\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n\
     \    parser.add_argument('--lock', type=Path)\n    parser.add_argument('--stdin',\
     \ action='store_true')\n    parser.add_argument('--check', action='store_true')\n\
@@ -1941,6 +1950,70 @@ write_files:
     twinfra.io/region=cairo-2 --overwrite
 
     '
+- path: /usr/local/lib/twinfra/dev-log-caps.sh
+  permissions: '0755'
+  content: "#!/usr/bin/env bash\n# SPDX-License-Identifier: MIT\n# Dev-only post-bootstrap\
+    \ configuration; shared Module -1 stays unchanged.\nset -Eeuo pipefail\n[[ $EUID\
+    \ == 0 ]] || { echo 'Dev log caps require root' >&2; exit 1; }\nconfig=/etc/twinfra-host.env\n\
+    [[ -f $config && ! -L $config && $(stat -c %u \"$config\") == 0 ]] || exit 1\n\
+    [[ $(stat -c %a \"$config\") =~ ^(600|644)$ ]] || exit 1\n# Runtime root-owned\
+    \ configuration is unavailable during offline lint.\n# shellcheck source=/dev/null\n\
+    source \"$config\"\n[[ ${PLATFORM_PROFILE:-} == dev-cairo-1 || ${PLATFORM_PROFILE:-}\
+    \ == dev-cairo-2 ]] || {\n    echo 'Log caps are dev-only' >&2; exit 1;\n}\npython3\
+    \ - <<'PY'\nimport os, re, stat, subprocess, tempfile\nfrom pathlib import Path\n\
+    \ndef update(path, raw):\n    path = Path(path)\n    if path.is_symlink() or path.exists()\
+    \ and (path.stat().st_uid != 0 or path.stat().st_mode & 0o022):\n        raise\
+    \ SystemExit('Unowned/insecure log-cap destination')\n    if path.exists() and\
+    \ path.read_text() == raw:\n        return False\n    path.parent.mkdir(parents=True,\
+    \ exist_ok=True)\n    with tempfile.NamedTemporaryFile(dir=path.parent, delete=False)\
+    \ as f:\n        f.write(raw.encode()); name=f.name\n    os.chmod(name, 0o644);\
+    \ os.replace(name, path)\n    return True\n\nconfig=Path('/var/lib/kubelet/config.yaml')\n\
+    if not config.is_file() or config.is_symlink() or config.stat().st_uid != 0:\n\
+    \    raise SystemExit('Wait for the shared bootstrap to create kubelet configuration')\n\
+    raw=config.read_text()\nfor key,value in [('containerLogMaxSize','10Mi'),('containerLogMaxFiles','3')]:\n\
+    \    pattern=r'(?m)^'+key+r':[^\\n]*\\n?'\n    if len(re.findall(pattern,raw))>1:raise\
+    \ SystemExit('Ambiguous kubelet log configuration')\n    raw=re.sub(pattern,key+':\
+    \ '+value+'\\n',raw) if re.search(pattern,raw) else raw.rstrip()+'\\n'+key+':\
+    \ '+value+'\\n'\nchanged=update(config,raw)\njournal=update('/etc/systemd/journald.conf.d/10-twinfra-dev.conf','[Journal]\\\
+    nSystemMaxUse=500M\\n')\nmarker=Path('/var/lib/twinfra/dev-log-caps.ready')\n\
+    if marker.is_symlink():raise SystemExit('Unowned log-cap marker')\nif journal\
+    \ or not marker.exists():subprocess.run(['systemctl','restart','systemd-journald'],check=True)\n\
+    if changed:subprocess.run(['systemctl','try-restart','kubelet'],check=True)\n\
+    if not marker.exists():update(marker,'WO-31 dev log caps\\n')\nprint('PASS: dev\
+    \ log caps'+(' applied' if changed or journal else ' verified; no configuration\
+    \ changes'))\nPY\n"
+- path: /etc/systemd/journald.conf.d/10-twinfra-dev.conf
+  permissions: '0644'
+  content: '[Journal]
+
+    SystemMaxUse=500M
+
+    '
+- path: /etc/systemd/system/twinfra-dev-log-caps.service
+  permissions: '0644'
+  content: '[Unit]
+
+    After=vcloud-host-bootstrap.service kubelet.service
+
+    StartLimitIntervalSec=0
+
+    [Service]
+
+    Type=oneshot
+
+    RemainAfterExit=yes
+
+    ExecStart=/usr/local/lib/twinfra/dev-log-caps.sh
+
+    Restart=on-failure
+
+    RestartSec=30
+
+    [Install]
+
+    WantedBy=multi-user.target
+
+    '
 runcmd:
 - - systemctl
   - daemon-reload
@@ -1955,6 +2028,10 @@ runcmd:
   - enable
   - --now
   - twinfra-node-zone.service
+- - systemctl
+  - enable
+  - --now
+  - twinfra-dev-log-caps.service
 power_state:
   mode: reboot
   delay: now
