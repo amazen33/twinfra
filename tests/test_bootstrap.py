@@ -12,6 +12,7 @@ import gzip
 import hashlib
 import importlib.util
 import copy
+import re
 try:
     import tomllib
 except ImportError:
@@ -377,12 +378,12 @@ run_smoke_tests
             self.assertEqual(bash(f'HOME=; load_config; {cli}').stdout,'/root')
             self.assertEqual(bash(f'export HOME=/operator-home; load_config; {cli}').stdout,'/operator-home')
 
-    def mocked_apply(self, reboot, failure_code=None):
+    def mocked_apply(self, reboot, failure_code=None, real_tail=False, smoke=True, bootstrap=True, smoke_failure=False):
         with tempfile.TemporaryDirectory(prefix="vcloud-order-", dir=ROOT / ".tools") as temp:
             path = shlex.quote(shell_path(temp))
             code = f"""
 eval "$(declare -f load_config | sed '1s/load_config/original_load_config/')"
-load_config() {{ original_load_config; STATE_DIR={path}; }}
+load_config() {{ original_load_config; STATE_DIR={path}; RUN_SMOKE_TESTS={str(smoke).lower()}; BOOTSTRAP_K8S={str(bootstrap).lower()}; }}
 preflight() {{ :; }}
 # ONLY the mocked apply-order scenario bypasses the gate; no real host ops run.
 check_policy_gate() {{ :; }}
@@ -397,9 +398,18 @@ install_tooling() {{ printf 'tools\\n' >> "$STATE_DIR/order"; }}
 install_kubernetes_packages() {{ printf 'packages\\n' >> "$STATE_DIR/order"; }}
 install_hpc_kvm() {{ printf 'hpc\\n' >> "$STATE_DIR/order"; }}
 configure_containerd() {{ printf 'runtime\\n' >> "$STATE_DIR/order"; }}
-bootstrap_kubernetes() {{ printf 'kubernetes\\n' >> "$STATE_DIR/order"; }}
+{'' if real_tail and not bootstrap else 'bootstrap_kubernetes() { printf \'kubernetes\\n\' >> "$STATE_DIR/order"; }'}
 validate_host() {{ printf 'validate\\n' >> "$STATE_DIR/order"; {f'(exit {failure_code})' if failure_code is not None else ':'}; }}
-run_smoke_tests() {{ printf 'smoke\\n' >> "$STATE_DIR/order"; }}
+{'' if real_tail else 'run_smoke_tests() { printf \'smoke\\n\' >> "$STATE_DIR/order"; }'}
+# Real tail uses the production functions/options/trap; only cluster effects are stubbed.
+write_manifest_validators() {{ printf 'unexpected bootstrap mutation' >&2; return 91; }}
+validate_manifests() {{ :; }}
+kubectl() {{
+    printf '%s\\n' "$*" >> "$STATE_DIR/cluster-calls"
+    if [[ $1 == get ]]; then return 1; fi
+    if [[ $1 == apply && {str(smoke_failure).lower()} == true ]]; then return 7; fi
+    return 0
+}}
 dpkg-query() {{ printf 'mock-package\\t1.0\\n'; }}
 # Model installed jq for the error-handler dependency check; result writes stay mocked.
 jq() {{ :; }}
@@ -409,7 +419,55 @@ main --apply
 """
             result = bash(code, check=False)
             state = Path(temp)
+            if real_tail:
+                result.cluster_calls=(state/'cluster-calls').read_text() if (state/'cluster-calls').exists() else ''
+                result.inventory=(state/'package-versions.tsv').read_text() if (state/'package-versions.tsv').exists() else ''
             return result, (state / "order").read_text().splitlines(), (state / "result-status").read_text(), (state / "complete").exists(), (state / "containerd-owned").exists()
+
+    def test_main_tail_reaches_ready_with_smoke_disabled_and_enabled(self):
+        for enabled in (False,True):
+            with self.subTest(enabled=enabled):
+                result,order,status,complete,_=self.mocked_apply(False,real_tail=True,smoke=enabled)
+                self.assertEqual(result.returncode,0,result.stderr)
+                self.assertIn('validate',order)
+                self.assertEqual(status,'ready')
+                self.assertTrue(complete)
+                self.assertIn('mock-package',result.inventory)
+                self.assertEqual('apply -f' in result.cluster_calls,enabled)
+                if enabled:
+                    self.assertIn('job/allowed',result.cluster_calls)
+                    self.assertIn('job/denied',result.cluster_calls)
+                else:self.assertEqual(result.cluster_calls,'')
+
+    def test_main_tail_reaches_ready_with_kubernetes_bootstrap_disabled(self):
+        # Actual bootstrap_kubernetes and run_smoke_tests guards, not mocked functions.
+        result,_,status,complete,_=self.mocked_apply(False,real_tail=True,bootstrap=False,smoke=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual(status,'ready')
+        self.assertTrue(complete)
+        self.assertEqual(result.cluster_calls,'')
+        self.assertIn('mock-package',result.inventory)
+
+    def test_main_tail_does_not_mask_real_smoke_failure(self):
+        result,_,status,complete,_=self.mocked_apply(False,real_tail=True,smoke=True,smoke_failure=True)
+        self.assertEqual(result.returncode,1,result.stderr)
+        self.assertEqual(status,'failed')
+        self.assertFalse(complete)
+        self.assertEqual(result.inventory,'')
+        self.assertIn('(exit 7)',result.stderr)
+
+    def test_no_statusless_early_return_guards(self):
+        # Covers ||/&& returns, compound skip blocks, if bodies and dispatch arms.
+        # Python returns in embedded code have values and do not match this rule.
+        bare=r'\breturn(?=[ \t]*(?:$|[;#}]))'
+        source=(ROOT/'00-setup-ubuntu-host.sh').read_text()
+        self.assertEqual(re.findall(bare,source,re.M),[])
+        for guard in ('[[ false ]] || return','[[ true ]] && return;',
+                      "[[ false ]] || { log skipped; return; }",'        return'):
+            self.assertIsNotNone(re.search(bare,guard,re.M),guard)
+        for guard in ('[[ false ]] || return 0','check_policy_gate || return $?',
+                      '[[ false ]] || return 42','[[ true ]] && return 0;'):
+            self.assertIsNone(re.search(bare,guard,re.M),guard)
 
     def test_command_exit_20_is_failure_exit_1_without_completion(self):
         result,order,status,complete,_=self.mocked_apply(False,failure_code=20)

@@ -441,3 +441,29 @@ Run `host-bootstrap`. Expected:
 - `passed`, followed by the dev log caps (kubelet restarts once), the node labels and `complete.json`.
 
 Then run `host-check`. Expected: `post-bootstrap` / `passed`.
+
+## Amendment 8 (2026-10-13, architect): a skipped step "fails" under `set -e`
+
+**Evidence from the Dell.** Bootstrap `twinfra-bootstrap-2681ad38646b4cde95166a129004336f` ran merged `main` `24b8bdb`. **Every validation gate passed**:
+- the contract checker reported `passed; 0 findings` twice;
+- Cilium was OK;
+- the log says `Requested host and readiness gates passed`.
+
+It then failed at line **3429**, `run_smoke_tests`, the last step before `write_result ready`.
+
+**Cause.** Line 3230 is `[[ $BOOTSTRAP_K8S == true && $RUN_SMOKE_TESTS == true ]] || return`. When the test is false, as for dev with `RUN_SMOKE_TESTS=false`, a bare `return` returns the failed test's status, **1**. Under `set -Eeuo pipefail` with the ERR trap, that counts as a failure. The same pattern is at line **833** in `bootstrap_kubernetes`; it's harmless only while `BOOTSTRAP_K8S=true`.
+
+### Fix (shared script; production render may change only in these lines and derived checksums)
+
+1. Change both guards to `|| return 0`.
+2. **Audit the whole script** for other early-return guards that return the failed test's status, such as `|| return` at the end of a line, `&& return` or `|| return;`. Fix every one that is meant as "skip". List them in the PR.
+3. **Tests:**
+   - Run `main`'s tail sequence (`validate_host` → `run_smoke_tests` → `write_result`) with the shell options and ERR trap used in production. Stub the cluster calls. Use `RUN_SMOKE_TESTS=false` and then `true`. Both must reach `write_result ready`.
+   - Repeat for `bootstrap_kubernetes` with `BOOTSTRAP_K8S=false`.
+   - Add a static test that fails on any `|| return` or `&& return` guard without an explicit status.
+
+### Live (owner, after merge, from `E:\twinfra-live`)
+
+`git pull` must show `00-setup-ubuntu-host.sh` changed. Then:
+1. Run `host-bootstrap`. Expected: `passed`.
+2. Run `host-check`. Expected: `post-bootstrap` / `passed`.

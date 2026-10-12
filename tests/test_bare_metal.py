@@ -34,11 +34,34 @@ AMENDMENT_4_BASE='4cb97b8950164e32f02e40635bfddf6ffa9b0858'
 AMENDMENT_5_BASE='c41c4cfab5cab15aa3ac38a7f159f7690a5b70be'
 AMENDMENT_6_BASE='cf4b659435497dbab538a68270dcc7186008049e'
 AMENDMENT_7_BASE='1f7d86fd872352a071ed0017a51f431b43c57aa8'
+AMENDMENT_8_BASE='24b8bdb793739fad3c27c3daf1438cd20b7984a6'
+
+
+def mask_skip_guards(raw):
+    """Exactly seven approved return-status lines; no broader function masking."""
+    raw=raw.replace('\r\n','\n')
+    pairs=[
+        ('        return\n    fi\n    archive=', '        return 0\n    fi\n    archive='),
+        ("    [[ $GPU_ENABLED == true ]] || { log 'GPU setup skipped: no requested/visible GPU'; return; }\n",
+         "    [[ $GPU_ENABLED == true ]] || { log 'GPU setup skipped: no requested/visible GPU'; return 0; }\n"),
+        ('        stage_bootstrap_images\n        return\n', '        stage_bootstrap_images\n        return $?\n'),
+        ('bootstrap_kubernetes() {\n    [[ $BOOTSTRAP_K8S == true ]] || return\n',
+         'bootstrap_kubernetes() {\n    [[ $BOOTSTRAP_K8S == true ]] || return 0\n'),
+        ('    [[ $BOOTSTRAP_K8S == true && $RUN_SMOKE_TESTS == true ]] || return\n',
+         '    [[ $BOOTSTRAP_K8S == true && $RUN_SMOKE_TESTS == true ]] || return 0\n'),
+        ('        --plan) validate_config; plan; return;;\n', '        --plan) validate_config; plan; return $?;;\n'),
+        ('    if [[ $1 == --validate ]]; then validate_host; return; fi\n',
+         '    if [[ $1 == --validate ]]; then validate_host; return $?; fi\n'),
+    ]
+    for index,(old,new) in enumerate(pairs):
+        if raw.count(old)+raw.count(new)!=1:raise ValueError('Unexpected skip-guard line '+str(index))
+        raw=raw.replace(new,old)
+    return raw
 
 
 def mask_checker_script(raw):
     """Only the generated checker block is allowed to differ in Amendment 7."""
-    raw=raw.replace('\r\n','\n')
+    raw=mask_skip_guards(raw)
     raw,count=re.subn(r'(?ms)^# BEGIN GENERATED POLICY CHECKER\n.*?^# END GENERATED POLICY CHECKER\n',
                       '@@GENERATED_POLICY_CHECKER@@\n',raw)
     if count!=1:raise ValueError('Expected exactly one generated checker block')
@@ -865,17 +888,18 @@ class PinsAndProfiles(unittest.TestCase):
 
     def test_amendment_7_changes_only_checker_and_derived_render_hashes(self):
         def base(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_7_BASE+':'+name])
+        def tested(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_8_BASE+':'+name])
         def main_mask(raw):
             raw,count=re.subn(r'(?ms)^def main\(\):\n.*?(?=^if __name__)', '@@CHECKER_MAIN@@\n',raw)
             self.assertEqual(count,1);return raw
-        self.assertEqual(main_mask((ROOT/'tools/manifest_contract.py').read_text()),
+        self.assertEqual(main_mask(tested('tools/manifest_contract.py').decode()),
                          main_mask(base('tools/manifest_contract.py').decode()))
-        self.assertEqual(mask_checker_script((ROOT/'00-setup-ubuntu-host.sh').read_text()),mask_checker_script(base('00-setup-ubuntu-host.sh').decode()))
+        self.assertEqual(mask_checker_script(tested('00-setup-ubuntu-host.sh').decode()),mask_checker_script(base('00-setup-ubuntu-host.sh').decode()))
         for name in ('user-data.yaml','user-data-remote.yaml'):
-            self.assertEqual(mask_production_render((ROOT/name).read_bytes(),mask_checker_script,remote='remote' in name),
+            self.assertEqual(mask_production_render(tested(name),mask_checker_script,remote='remote' in name),
                              mask_production_render(base(name),mask_checker_script,remote='remote' in name),name)
-        self.assertEqual(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),(ROOT/'user-data.yaml').read_bytes())
-        self.assertEqual(mask_production_render(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),mask_checker_script),
+        self.assertEqual(gzip.decompress(tested('user-data.yaml.gz')),tested('user-data.yaml'))
+        self.assertEqual(mask_production_render(gzip.decompress(tested('user-data.yaml.gz')),mask_checker_script),
                          mask_production_render(gzip.decompress(base('user-data.yaml.gz')),mask_checker_script))
         path='deploy/environments/dev/cairo-2/seed/user-data'
         def seed_mask(raw):
@@ -884,13 +908,39 @@ class PinsAndProfiles(unittest.TestCase):
             self.assertEqual(mask_checker_script(embedded),mask_checker_script(base('00-setup-ubuntu-host.sh').decode()))
             raw,count=re.subn(rb'(?ms)(^- path: /usr/local/sbin/00-setup-ubuntu-host.sh\n  owner: root:root\n  permissions: [^\n]+\n  content: ).*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',rb'\1@@CHECKER_SCRIPT@@\n',raw)
             self.assertEqual(count,1);return raw
-        self.assertEqual(seed_mask((ROOT/path).read_bytes()),seed_mask(base(path)))
+        self.assertEqual(seed_mask(tested(path)),seed_mask(base(path)))
         for name in ('host.env.example','deploy/environments/dev/cairo-1/host.env',
                      'deploy/environments/dev/cairo-2/seed/meta-data','deploy/environments/dev/cairo-2/seed/network-config',
                      'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
                      'security/licence-policy.json','security/licence-register.json','tools/ci/host-cli.lock.json',
                      'tools/ci/toolchain.lock.json','tools/ci/pr-baselines.json','vcloud-ssot.yaml',
                      'security/node-exceptions.json','deploy/common/host-admin.py','tools/ci/kubeadm_dry_run.py'):
+            self.assertEqual(tested(name).replace(b'\r\n',b'\n'),base(name),name)
+
+    def test_amendment_8_changes_only_return_statuses_and_derived_render_hashes(self):
+        def base(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_8_BASE+':'+name])
+        self.assertEqual(mask_skip_guards((ROOT/'00-setup-ubuntu-host.sh').read_text()),mask_skip_guards(base('00-setup-ubuntu-host.sh').decode()))
+        for name in ('user-data.yaml','user-data-remote.yaml'):
+            self.assertEqual(mask_production_render((ROOT/name).read_bytes(),mask_skip_guards,remote='remote' in name),
+                             mask_production_render(base(name),mask_skip_guards,remote='remote' in name),name)
+        self.assertEqual(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),(ROOT/'user-data.yaml').read_bytes())
+        self.assertEqual(mask_production_render(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),mask_skip_guards),
+                         mask_production_render(gzip.decompress(base('user-data.yaml.gz')),mask_skip_guards))
+        path='deploy/environments/dev/cairo-2/seed/user-data'
+        def seed_mask(raw):
+            raw=raw.replace(b'\r\n',b'\n');data=yaml.safe_load(raw)
+            embedded=next(f['content'] for f in data['write_files'] if f['path']=='/usr/local/sbin/00-setup-ubuntu-host.sh')
+            self.assertEqual(mask_skip_guards(embedded),mask_skip_guards(base('00-setup-ubuntu-host.sh').decode()))
+            raw,count=re.subn(rb'(?ms)(^- path: /usr/local/sbin/00-setup-ubuntu-host.sh\n  owner: root:root\n  permissions: [^\n]+\n  content: ).*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',rb'\1@@SKIP_GUARDS_SCRIPT@@\n',raw)
+            self.assertEqual(count,1);return raw
+        self.assertEqual(seed_mask((ROOT/path).read_bytes()),seed_mask(base(path)))
+        for name in ('host.env.example','deploy/environments/dev/cairo-1/host.env',
+                     'deploy/environments/dev/cairo-2/seed/meta-data','deploy/environments/dev/cairo-2/seed/network-config',
+                     'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
+                     'security/licence-policy.json','security/licence-register.json','tools/ci/host-cli.lock.json',
+                     'tools/ci/toolchain.lock.json','tools/ci/pr-baselines.json','vcloud-ssot.yaml',
+                     'security/node-exceptions.json','deploy/common/host-admin.py','tools/ci/kubeadm_dry_run.py',
+                     'tools/manifest_contract.py'):
             self.assertEqual((ROOT/name).read_bytes().replace(b'\r\n',b'\n'),base(name),name)
 
     def test_amendment_5_licences_add_only_existing_host_cli_artifacts(self):

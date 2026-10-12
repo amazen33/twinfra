@@ -436,6 +436,20 @@ After review and merge, update the owner's `E:\twinfra-live` checkout and run
 (one kubelet restart), labels and `complete.json`, then `post-bootstrap` / `passed`.
 Record the result in the [2026-10-13 Pending receipt](acceptance/dev-environment-2026-10-13.md).
 
+Amendment 8 fixes the next owner-reported failure on main `24b8bdb`: validation
+passed, but a disabled smoke step returned the failed guard's status under
+`set -Eeuo pipefail` and the ERR trap. Kubernetes/smoke skip guards now explicitly
+return 0. The audit also makes the CLI-cache and GPU skips explicitly successful;
+staging completion and main dispatch preserve their previous status with
+`return $?`. All seven audited lines are listed in the PR. Policy-error returns
+remain explicit and unchanged. Tests execute the real main tail with smoke
+off/on, bootstrap off, and a real mocked smoke failure; only successful/skipped
+steps may reach `write_result ready`. A static test bans status-less returns.
+
+After review and merge, `git pull` in `E:\twinfra-live` must show the shared
+bootstrap script changed. Run `host-bootstrap` (expect `passed`), then
+`host-check` (expect `post-bootstrap` / `passed`). Live acceptance remains Pending.
+
 WO-31 Amendment 4 makes the shared etcd strategic patch use Kubernetes' `mountPath`
 merge key from the rendered kubeadm `certificatesDir` (default
 `/etc/kubernetes/pki/etcd`). The preview rejects a missing, duplicated, writable

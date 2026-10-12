@@ -248,7 +248,7 @@ write_files:
     \ so a replaced binary is detected on rerun.\n    if [[ -x /usr/local/bin/$binary\
     \ && -f $stamp ]] &&\n        [[ $(head -n1 \"$stamp\") == \"$version/$ARCH\"\
     \ ]] &&\n        [[ $(tail -n1 \"$stamp\") == \"$(sha256sum \"/usr/local/bin/$binary\"\
-    \ | cut -d' ' -f1)\" ]]; then\n        return\n    fi\n    archive=\"$WORK_DIR/$asset\"\
+    \ | cut -d' ' -f1)\" ]]; then\n        return 0\n    fi\n    archive=\"$WORK_DIR/$asset\"\
     \n    gh_asset \"$repo\" \"$version\" \"$asset\" \"$archive\"\n    if [[ -n $member\
     \ ]]; then\n        unpack=\"$WORK_DIR/unpack-$binary\"\n        mkdir -p \"$unpack\"\
     \n        tar -xzf \"$archive\" -C \"$unpack\" \"$member\"\n        install -m\
@@ -407,9 +407,9 @@ write_files:
     \ /etc/fstab < \"$WORK_DIR/fstab-huge\"\n        if [[ $NEEDS_REBOOT == false\
     \ ]] && ! mountpoint -q \"/dev/hugepages-$size\"; then mount \"/dev/hugepages-$size\"\
     ; fi\n    done\n    systemctl daemon-reload\n}\n\ninstall_gpu() {\n    [[ $GPU_ENABLED\
-    \ == true ]] || { log 'GPU setup skipped: no requested/visible GPU'; return; }\n\
-    \    PHASE=gpu\n    local driver package candidate loaded_branch boot_id\n   \
-    \ boot_id=$(cat /proc/sys/kernel/random/boot_id)\n    install_missing ubuntu-drivers-common\
+    \ == true ]] || { log 'GPU setup skipped: no requested/visible GPU'; return 0;\
+    \ }\n    PHASE=gpu\n    local driver package candidate loaded_branch boot_id\n\
+    \    boot_id=$(cat /proc/sys/kernel/random/boot_id)\n    install_missing ubuntu-drivers-common\
     \ \"linux-headers-$(uname -r)\" mokutil\n    driver=$(nvidia-smi --query-gpu=driver_version\
     \ --format=csv,noheader 2>/dev/null | head -n1 || true)\n    if [[ -z $driver\
     \ ]] || ! version_at_least \"$driver\" 550; then\n        package=$NVIDIA_DRIVER_PACKAGE\n\
@@ -507,7 +507,7 @@ write_files:
     \ -c 'until crictl info >/dev/null 2>&1; do sleep 2; done'\n    crictl info |\
     \ jq -e '.status.conditions[] | select(.type == \"RuntimeReady\") | .status ==\
     \ true' >/dev/null\n    if [[ $IMAGE_STAGING == true ]]; then\n        stage_bootstrap_images\n\
-    \        return\n    fi\n    # A 401 response proves TLS reachability but not\
+    \        return $?\n    fi\n    # A 401 response proves TLS reachability but not\
     \ permission to pull the probe image.\n    local -a ca_args=()\n    [[ -z $REGISTRY_CA_FILE\
     \ ]] || ca_args=(--cacert \"$REGISTRY_CA_FILE\")\n    if curl --silent --show-error\
     \ --connect-timeout 10 --max-time 15 \"${ca_args[@]}\" \"$REGISTRY_MIRROR/v2/\"\
@@ -617,7 +617,7 @@ write_files:
     \ == dev-* ]]; then\n        cat <<EOF\ncommonLabels:\n  twinfra.io/environment:\
     \ dev\n  twinfra.io/region: \"${PLATFORM_PROFILE#dev-}\"\n  twinfra.io/component:\
     \ cilium\nEOF\n    fi\n}\n\nbootstrap_kubernetes() {\n    [[ $BOOTSTRAP_K8S ==\
-    \ true ]] || return\n    check_policy_gate || return $?\n    write_manifest_validators\n\
+    \ true ]] || return 0\n    check_policy_gate || return $?\n    write_manifest_validators\n\
     \    write_file \"$STATE_DIR/kubeadm-patches/etcd+strategic.yaml\" < <(render_etcd_patch)\n\
     \    PHASE=kubeadm-init\n    write_file \"$STATE_DIR/kubeadm.yaml\" 0600 < <(render_kubeadm)\n\
     \    kubeadm config validate --config \"$STATE_DIR/kubeadm.yaml\"\n    if [[ !\
@@ -1619,7 +1619,7 @@ write_files:
     \ 256Mi}\nEOF\n}\n\ncleanup_smoke() {\n    if [[ ${SMOKE_OWNED:-false} == true\
     \ ]]; then\n        kubectl delete namespace vcloud-host-validation --wait=true\
     \ --timeout=120s || true\n        SMOKE_OWNED=false\n    fi\n}\n\nrun_smoke_tests()\
-    \ {\n    [[ $BOOTSTRAP_K8S == true && $RUN_SMOKE_TESTS == true ]] || return\n\
+    \ {\n    [[ $BOOTSTRAP_K8S == true && $RUN_SMOKE_TESTS == true ]] || return 0\n\
     \    PHASE=cluster-smoke\n    if kubectl get namespace vcloud-host-validation\
     \ >/dev/null 2>&1; then\n        [[ $(kubectl get namespace vcloud-host-validation\
     \ -o jsonpath='{.metadata.labels.vcloud\\.io/owner}') == host-bootstrap ]] ||\
@@ -1723,12 +1723,12 @@ write_files:
     \ 20 exclusively for the deliberate reboot-required result below.\n    exit 1\n\
     }\n\nmain() {\n    set -Eeuo pipefail\n    export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n\
     \    load_config\n    case ${1:---plan} in\n        --plan) validate_config; plan;\
-    \ return;;\n        --apply|--validate) ;;\n        *) bad_config 'Usage: --plan,\
+    \ return $?;;\n        --apply|--validate) ;;\n        *) bad_config 'Usage: --plan,\
     \ --apply or --validate';;\n    esac\n    validate_config\n    # Reject version\
     \ drift from the approved node exception before preflight or APT.\n    if [[ $1\
     \ == --apply ]]; then check_policy_gate || return $?; fi\n    preflight\n    if\
-    \ [[ $1 == --validate ]]; then validate_host; return; fi\n    umask 022\n    mkdir\
-    \ -p \"$STATE_DIR\"\n    chmod 0700 \"$STATE_DIR\"\n    exec 9> \"$STATE_DIR/bootstrap.lock\"\
+    \ [[ $1 == --validate ]]; then validate_host; return $?; fi\n    umask 022\n \
+    \   mkdir -p \"$STATE_DIR\"\n    chmod 0700 \"$STATE_DIR\"\n    exec 9> \"$STATE_DIR/bootstrap.lock\"\
     \n    flock -n 9 || die 'Another bootstrap is running'\n    WORK_DIR=$(mktemp\
     \ -d \"$STATE_DIR/work.XXXXXX\")\n    APPLY_ACTIVE=true\n    trap 'on_error $?\
     \ $LINENO' ERR\n    trap cleanup EXIT\n    # Preserve a same-boot pending request;\

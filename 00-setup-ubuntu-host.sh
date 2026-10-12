@@ -202,7 +202,7 @@ install_cli() {
     if [[ -x /usr/local/bin/$binary && -f $stamp ]] &&
         [[ $(head -n1 "$stamp") == "$version/$ARCH" ]] &&
         [[ $(tail -n1 "$stamp") == "$(sha256sum "/usr/local/bin/$binary" | cut -d' ' -f1)" ]]; then
-        return
+        return 0
     fi
     archive="$WORK_DIR/$asset"
     gh_asset "$repo" "$version" "$asset" "$archive"
@@ -455,7 +455,7 @@ prepare_memory_network() {
 }
 
 install_gpu() {
-    [[ $GPU_ENABLED == true ]] || { log 'GPU setup skipped: no requested/visible GPU'; return; }
+    [[ $GPU_ENABLED == true ]] || { log 'GPU setup skipped: no requested/visible GPU'; return 0; }
     PHASE=gpu
     local driver package candidate loaded_branch boot_id
     boot_id=$(cat /proc/sys/kernel/random/boot_id)
@@ -620,7 +620,7 @@ EOF
     crictl info | jq -e '.status.conditions[] | select(.type == "RuntimeReady") | .status == true' >/dev/null
     if [[ $IMAGE_STAGING == true ]]; then
         stage_bootstrap_images
-        return
+        return $?
     fi
     # A 401 response proves TLS reachability but not permission to pull the probe image.
     local -a ca_args=()
@@ -830,7 +830,7 @@ EOF
 }
 
 bootstrap_kubernetes() {
-    [[ $BOOTSTRAP_K8S == true ]] || return
+    [[ $BOOTSTRAP_K8S == true ]] || return 0
     check_policy_gate || return $?
     write_manifest_validators
     write_file "$STATE_DIR/kubeadm-patches/etcd+strategic.yaml" < <(render_etcd_patch)
@@ -3227,7 +3227,7 @@ cleanup_smoke() {
 }
 
 run_smoke_tests() {
-    [[ $BOOTSTRAP_K8S == true && $RUN_SMOKE_TESTS == true ]] || return
+    [[ $BOOTSTRAP_K8S == true && $RUN_SMOKE_TESTS == true ]] || return 0
     PHASE=cluster-smoke
     if kubectl get namespace vcloud-host-validation >/dev/null 2>&1; then
         [[ $(kubectl get namespace vcloud-host-validation -o jsonpath='{.metadata.labels.vcloud\.io/owner}') == host-bootstrap ]] || die 'Validation namespace is owned by another user'
@@ -3375,7 +3375,7 @@ main() {
     export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
     load_config
     case ${1:---plan} in
-        --plan) validate_config; plan; return;;
+        --plan) validate_config; plan; return $?;;
         --apply|--validate) ;;
         *) bad_config 'Usage: --plan, --apply or --validate';;
     esac
@@ -3383,7 +3383,7 @@ main() {
     # Reject version drift from the approved node exception before preflight or APT.
     if [[ $1 == --apply ]]; then check_policy_gate || return $?; fi
     preflight
-    if [[ $1 == --validate ]]; then validate_host; return; fi
+    if [[ $1 == --validate ]]; then validate_host; return $?; fi
     umask 022
     mkdir -p "$STATE_DIR"
     chmod 0700 "$STATE_DIR"
