@@ -29,6 +29,15 @@ staging preserves the old name and pins both records. No live repair was run.
 
 ## Live acceptance
 
+Amendment 4 adds the config-derived etcd `mountPath` and a unique/read-only mount
+assertion. Production render changes are limited to that helper/patch block,
+the preview assertion and derived SHA256 metadata/gzip; cairo-2 embeds the same
+script update. Masked byte comparisons against main `4cb97b8` enforce the bound.
+The new hosted CI guard uses the checksum-verified kubeadm v1.36.5 binary with
+only the two dry-run manifest phases; its result is separate from live acceptance.
+Owner-reported image staging (11 images; staged-verified) preceded the merge-key
+failure. Codex did not inspect or reset the Dell.
+
 | Gate | Result | Evidence to record |
 | --- | --- | --- |
 | Dell ePSA Thorough memory test | Pending | Owner console result |
@@ -36,6 +45,7 @@ staging preserves the old name and pins both records. No live repair was run.
 | Kernel machine-check / hung-task errors | Pending | Owner-reviewed journal summary |
 | host-check / SSH hardening / integrity lockdown | Pending | Real sanitized report and effective settings |
 | Amendment 2 BPF migration / incomplete bootstrap re-run | Pending | Exact legacy unit disabled/removed; existing bpffs retained; containerd starts; new verified staging receipt; bootstrap images staged and kubeadm init completes |
+| Amendment 4 real kubeadm preview and init | Pending | Fresh bootstrap unit passes both preview phases; generated etcd has exactly one etcd-certs mount at the configured certificatesDir/etcd with readOnly true; real kubeadm init completes |
 | LAN 22/6443 reachable, 2379/10250 blocked | Pending | Laptop connection results |
 | Argo CD syncs from GitHub through the host firewall | Pending | Firewall confirmed/enabled; GitHub repository fetch and successful sync with Synced/Healthy application status |
 | Node Ready / Cilium healthy under lockdown | Pending | Actual status and deny-policy proof |

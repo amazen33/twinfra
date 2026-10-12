@@ -357,6 +357,16 @@ refused before host inventory reads with the ADR-0048 message.
 
 ## Static checks and acceptance
 
+WO-31 Amendment 4 makes the shared etcd strategic patch use Kubernetes' `mountPath`
+merge key from the rendered kubeadm `certificatesDir` (default
+`/etc/kubernetes/pki/etcd`). The preview rejects a missing, duplicated, writable
+or misplaced certificate mount before `kubeadm init` can proceed. CI also runs
+the real, checksum-verified v1.36.5 control-plane and local-etcd dry-run phases
+for dev and production; this is manifest validation, not host acceptance.
+After review/merge, the owner pulls `main` and repeats `host-bootstrap` under
+Amendment 2's incomplete-run guard. Amendment 4 reports that the previous preview
+failed before PKI, static Pods or etcd data existed; do not reset the node.
+
 ```bash
 python3 -m unittest discover -s tests -p test_bare_metal.py -v
 python3 -m unittest discover -s tests -p test_dev_environment.py -v

@@ -243,7 +243,7 @@ def enumerate_inputs(root, rendered=()):
                     eco = 'helm-chart'
                 elif '/releases/download/' in url and not re.search(r'\.(yaml|json|txt)$', url):
                     eco = 'tool'
-                elif 'get.helm.sh/' in url:
+                elif 'get.helm.sh/' in url or re.fullmatch(r'https://dl\.k8s\.io/release/v[0-9.]+/bin/linux/amd64/kubeadm', url):
                     eco = 'tool'
                 else:
                     eco = 'manifest'

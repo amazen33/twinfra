@@ -93,6 +93,10 @@ jobs:
         run: python .ci-control/tools/ci/stage_tools.py --destination .ci-control/.build/ci-tools --source source
       - name: Lint workflow
         run: .ci-control/.build/ci-tools/bin/actionlint -shellcheck="" .ci-control/.github/workflows/pr-tests.yaml
+      - name: Real kubeadm v1.36.5 dry-run for dev and production
+        # Test the candidate controls on every matrix leg; historical source
+        # snapshots keep their original patches and still run their full gates.
+        run: python .ci-control/tools/ci/kubeadm_dry_run.py --source .ci-control --assets .ci-control/.build/ci-tools --report .ci-control/.build/ci-report/kubeadm-dry-run
       - name: Run offline module gates and air-gapped Kustomize/schema/policy checks
         env:
           EXPECTED_COMMIT: ${{ matrix.commit }}

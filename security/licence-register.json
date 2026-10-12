@@ -10826,6 +10826,23 @@
       ]
     },
     {
+      "id": "tool|dl.k8s.io/release/v1.36.5/bin/linux/amd64/kubeadm|be2f2c73cd6d3414b37aafb05016bc3a1da3e17c8393aa75c34636198fefa77c",
+      "ecosystem": "tool",
+      "name": "dl.k8s.io/release/v1.36.5/bin/linux/amd64/kubeadm",
+      "version": "be2f2c73cd6d3414b37aafb05016bc3a1da3e17c8393aa75c34636198fefa77c",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/kubernetes/kubernetes/v1.36.5/LICENSE",
+      "verifiedOn": "2026-10-12",
+      "recordedOn": "2026-10-12",
+      "integrities": [
+        "sha256:be2f2c73cd6d3414b37aafb05016bc3a1da3e17c8393aa75c34636198fefa77c"
+      ]
+    },
+    {
       "id": "tool|get.helm.sh/helm-v3.22.0-linux-amd64.tar.gz|1e4ab49e429626cf6c6958d914248b78c9730803c2751b87627e171dc800e7bb",
       "ecosystem": "tool",
       "name": "get.helm.sh/helm-v3.22.0-linux-amd64.tar.gz",

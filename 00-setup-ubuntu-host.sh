@@ -2702,17 +2702,46 @@ validate_manifests() {
         python3 "$STATE_DIR/check-manifest-contract.py" --policy "$STATE_DIR/node-exceptions.json" --mode "$mode"
 }
 
+etcd_cert_mount_path() {
+    local certificates_dir
+    # Read the ClusterConfiguration, not an independent host setting. Before the
+    # config is written, consume the same renderer that will write kubeadm.yaml.
+    if [[ -n ${1:-} ]]; then
+        certificates_dir=$(yq eval-all -r 'select(.kind == "ClusterConfiguration") | (.certificatesDir // "/etc/kubernetes/pki")' "$1")
+    else
+        certificates_dir=$(render_kubeadm | yq eval-all -r 'select(.kind == "ClusterConfiguration") | (.certificatesDir // "/etc/kubernetes/pki")' -)
+    fi
+    [[ $certificates_dir == /* && $certificates_dir != *$'\n'* ]] || die 'Expected exactly one absolute kubeadm certificatesDir'
+    printf '%s/etcd\n' "${certificates_dir%/}"
+}
+
 render_etcd_patch() {
     # kubeadm's default etcd certificate mount is writable; the approved scope is read-only.
-    # This is a strategic merge PATCH fragment, not a standalone Kubernetes resource.
-    cat <<'EOF'
+    # Kubernetes merges volumeMounts by mountPath, not by volume name.
+    local mount_path
+    mount_path=$(etcd_cert_mount_path "${1:-}")
+    mount_path=$(ETCD_CERT_MOUNT_PATH="$mount_path" yq -n -o=json -I=0 'strenv(ETCD_CERT_MOUNT_PATH)')
+    cat <<EOF
 spec:
   containers:
     - name: etcd
       volumeMounts:
         - name: etcd-certs
+          mountPath: $mount_path
           readOnly: true
 EOF
+}
+
+validate_etcd_cert_mount() {
+    local directory=$1 mount_path
+    mount_path=$(etcd_cert_mount_path "$STATE_DIR/kubeadm.yaml")
+    # Reject duplicate names AND another mount using the expected target path.
+    ETCD_CERT_MOUNT_PATH="$mount_path" yq eval -e '
+      [.spec.containers[] | select(.name == "etcd") | .volumeMounts[] |
+       select(.name == "etcd-certs" or .mountPath == strenv(ETCD_CERT_MOUNT_PATH))] |
+      (length == 1 and .[0].name == "etcd-certs" and
+       .[0].mountPath == strenv(ETCD_CERT_MOUNT_PATH) and .[0].readOnly == true)
+    ' "$directory/etcd.yaml" >/dev/null || die "etcd preview must have exactly one read-only etcd-certs mount at $mount_path"
 }
 
 validate_static_control_plane() {
@@ -2743,6 +2772,7 @@ validate_kubeadm_preview() {
     # phases run here; they do not start kubelet or create a cluster.
     KUBEADM_INIT_DRYRUN_DIR="$preview" kubeadm init phase control-plane all --config "$STATE_DIR/kubeadm.yaml" --dry-run
     KUBEADM_INIT_DRYRUN_DIR="$preview" kubeadm init phase etcd local --config "$STATE_DIR/kubeadm.yaml" --dry-run
+    validate_etcd_cert_mount "$preview"
     validate_static_control_plane "$preview"
 }
 

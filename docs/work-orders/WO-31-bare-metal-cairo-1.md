@@ -288,3 +288,31 @@ Only the embedded `stage-images.py` in the `cairo-2` seed may change. Production
 Run `host-bootstrap` again. Amendment 2 allows this because the previous run is incomplete.
 
 Add to acceptance: on the Dell, `kubectl -n kube-system get events` shows **no `Pulling` events** for Cilium images, so kubelet resolved the staged images locally.
+
+## Amendment 4 (2026-10-12, architect): the etcd kubeadm patch has no merge key
+
+**Evidence from the Dell.** Bootstrap `twinfra-bootstrap-bfdaa1bcf84546329cdeef7667783fb7` ran merged `main` `4cb97b8`. Image staging **passed** (`{"status": "passed", "images": 11}`, `mirror_status: staged-verified`). Then the kubeadm **dry-run preview** (`00-setup-ubuntu-host.sh:2744-2745`) failed:
+
+```text
+could not apply the following patch of type "application/strategic-merge-patch+json" to target "etcd":
+{"spec":{"containers":[{"name":"etcd","volumeMounts":[{"name":"etcd-certs","readOnly":true}]}]}}
+: map: map[name:etcd-certs readOnly:true] does not contain declared merge key: mountPath
+```
+
+**Cause.** `render_etcd_patch` (lines 2705–2716; written to `$STATE_DIR/kubeadm-patches/etcd+strategic.yaml` at line 834) lists the volume mount by `name` only. Kubernetes declares `patchMergeKey: mountPath` for `volumeMounts`. This code dates from 2026-10-06 and had never run against kubeadm.
+
+**Host state.** The failure came from the preview, so the Dell has no `/etc/kubernetes/manifests` files, no PKI, no `admin.conf` and no `/var/lib/etcd` data. **Nothing needs to be reset.**
+
+### Fix (shared `00-setup-ubuntu-host.sh`; production renders may change only in this block and its derived checksums)
+
+1. **Add the merge key.** The patch item must include `mountPath`. Take it from the rendered kubeadm configuration: `<certificatesDir>/etcd`, which by default is `/etc/kubernetes/pki/etcd`. Keep `name: etcd-certs` and `readOnly: true`.
+2. **Check the result after the preview.** Confirm that the rendered `etcd.yaml` has exactly one `etcd-certs` mount at that path, with `readOnly: true`. Fail clearly otherwise.
+3. **CI guard for this whole class of bug.** Three Module -1 defects reached the Dell only because nothing exercised the real tools.
+   - Add a CI step that downloads **kubeadm v1.36.5** from `dl.k8s.io`, verified against its published SHA-256 (kubeadm is already a registered component, not a new tool).
+   - It renders the dev and production kubeadm configurations and patches.
+   - It runs `kubeadm init phase control-plane all --dry-run` and `kubeadm init phase etcd local --dry-run` with `KUBEADM_INIT_DRYRUN_DIR` set, then asserts the result from item 2.
+   - If this can't run on the GitHub runner without anything beyond `sudo` and `dl.k8s.io`, stop and report rather than skipping it.
+
+### Live (owner, after merge)
+
+Pull `main` and run `host-bootstrap` again. Amendment 2's re-run rule applies.
