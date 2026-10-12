@@ -369,7 +369,9 @@ their actual help captured. No cluster credentials are used by these calls.
 Amendment 6 runs every CLI help/version call under `env -i` with only the pinned
 binary directories and `/usr/bin:/bin` in PATH. HOME is absent at entry; the
 shared script's `load_config` defaults and exports it as `/root`. This matches
-the transient systemd unit instead of inheriting the CI runner's HOME. Existing
+the transient systemd unit instead of inheriting the CI runner's HOME. Help and
+version calls use `sudo -n` on the disposable runner, matching the root host
+process; no provisioner entry point or CLI configuration changes run. Existing
 nonempty HOME values are preserved; no CLI configuration is modified.
 
 Conditional calls were reviewed without changing the approved provisioning:

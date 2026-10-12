@@ -72,10 +72,12 @@ def verify_cli_install(work, state, binaries, lock):
 
 def cli_command(script, paths, command):
     """Match the systemd environment, then exercise Module -1's own default."""
-    code=('set -Eeuo pipefail; [[ ! -v HOME ]]; source '+shlex.quote(str(script))+'; '
+    code=('set -Eeuo pipefail; [[ $EUID == 0 && ! -v HOME ]]; source '+shlex.quote(str(script))+'; '
           'VCLOUD_CONFIG_FILE=/nonexistent-ci-config; load_config; '
           '[[ $HOME == /root ]]; exec '+shlex.join(command))
-    return ['env','-i','PATH='+':'.join(str(path) for path in paths)+':/usr/bin:/bin',
+    # Module -1 runs as root. Merely using /root as an unprivileged runner's HOME
+    # makes Helm reject its default config path, obscuring the host contract.
+    return ['sudo','-n','env','-i','PATH='+':'.join(str(path) for path in paths)+':/usr/bin:/bin',
             'bash','-c',code]
 
 
@@ -127,7 +129,7 @@ install_tooling
         output=execute(cli_command(script,paths,cmd),report/('cli-version-'+str(index)+'.log'))
         results.append(dict(command=cmd,status='passed',output=output))
     (report/'cli-summary.json').write_text(json.dumps(dict(status='passed',commands=results,
-        inputEnvironment='env -i; PATH only; HOME absent',homeDefault='Module -1 exports /root'),indent=2)+'\n')
+        inputEnvironment='sudo -n env -i; root; PATH only; HOME absent',homeDefault='Module -1 exports /root'),indent=2)+'\n')
     print('Pinned CLI installation and exact validate_host client commands passed',flush=True)
     return results
 

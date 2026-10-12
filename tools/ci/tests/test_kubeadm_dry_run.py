@@ -20,14 +20,14 @@ class KubeadmGuardTests(unittest.TestCase):
     def test_cli_validation_clears_environment_and_uses_script_home_default(self):
         command=guard.cli_command(PurePosixPath('/ci/host.sh'),
             [PurePosixPath('/ci/pinned'),PurePosixPath('/ci/assets/bin')],['argocd','version','--client'])
-        self.assertEqual(command[:5],['env','-i','PATH=/ci/pinned:/ci/assets/bin:/usr/bin:/bin','bash','-c'])
-        self.assertEqual(len(command),6)
-        self.assertIn('[[ ! -v HOME ]]',command[5])
-        self.assertIn('source /ci/host.sh;',command[5])
-        self.assertIn('load_config;',command[5])
-        self.assertTrue(command[5].endswith('exec argocd version --client'))
-        self.assertNotIn('export HOME',command[5])
-        self.assertNotIn('HOME=',command[5])
+        self.assertEqual(command[:7],['sudo','-n','env','-i','PATH=/ci/pinned:/ci/assets/bin:/usr/bin:/bin','bash','-c'])
+        self.assertEqual(len(command),8)
+        self.assertIn('[[ $EUID == 0 && ! -v HOME ]]',command[7])
+        self.assertIn('source /ci/host.sh;',command[7])
+        self.assertIn('load_config;',command[7])
+        self.assertTrue(command[7].endswith('exec argocd version --client'))
+        self.assertNotIn('export HOME',command[7])
+        self.assertNotIn('HOME=',command[7])
 
     def test_every_installed_cli_help_and_version_uses_minimal_environment(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -40,6 +40,9 @@ class KubeadmGuardTests(unittest.TestCase):
                 url=guard.URL.removesuffix('kubeadm')+'kubectl',sha256='fixture')))))
             def output(command,log,**kwargs):
                 self.assertNotIn('env',kwargs)
+                if log.name!='cli-install.log':
+                    self.assertEqual(command[:2],['sudo','-n'])
+                    command=command[2:]
                 self.assertEqual(command[:2],['env','-i'])
                 self.assertEqual(command[3:5],['bash','-c'])
                 self.assertNotIn('HOME=',command[2])
