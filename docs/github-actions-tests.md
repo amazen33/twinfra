@@ -86,6 +86,15 @@ the local CI rule alone does not protect an otherwise unprotected `main` branch.
 
 ## Dependency and execution boundaries
 
+WO-31 adds an optional bare-metal bundle. Fixtures cover both read-only host-check
+modes and every required cluster/listener identity, key-only SSH/SCP, copied SHA-256
+verification, sudo refusal, healthy no-op bootstrap, guarded SSH and scoped firewall
+rollback, finite LV ownership/reserve/mount settings, CRI pin refusal and dev log caps.
+Masked byte comparisons use the immutable pre-WO-31 main `968f336` (PR #38): only
+the embedded agent and dev log-cap blocks may differ in cairo-2; production renders
+remain byte-identical here because they do not embed the agent. Historical revisions
+without this bundle remain absent. Neither SSH nor any owner provisioner is executed.
+
 Jobs use disposable GitHub-hosted Ubuntu 24.04 runners with read-only repository
 permissions, checkout credentials disabled, and no deployment secrets. Actions
 use immutable commit pins. Python libraries and Node.js have explicit versions;

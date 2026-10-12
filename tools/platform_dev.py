@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import subprocess
 import yaml
+import ipaddress
 from platform_resources import ROOT,resource,security
 from platform_sources import vendor
 from manifest_contract import podspec
@@ -29,7 +30,7 @@ def refresh_console_image(check=False):
         if entry!=expected:raise ValueError('Dev console image lock differs from build receipt')
     else:
         data['images']['console']=expected
-        path.write_text(json.dumps(data,indent=2)+'\n',encoding='utf-8')
+        path.write_text(json.dumps(data,indent=2)+'\n',encoding='utf-8',newline='\n')
 def labels(component):return {'twinfra.io/environment':'dev','twinfra.io/region':'cairo-1','twinfra.io/component':component,'app.kubernetes.io/part-of':'twinfra'}
 def obj(kind,name,spec=None,api='v1',ns=NS):
     value=resource(kind,name,spec,ns,api,labels(name.removeprefix('twinfra-')))
@@ -117,7 +118,7 @@ def database():
     sc=obj('StorageClass','twinfra-local',ns=None,api='storage.k8s.io/v1');sc.update(provisioner='kubernetes.io/no-provisioner',volumeBindingMode='WaitForFirstConsumer',reclaimPolicy='Retain')
     pv=obj('PersistentVolume','twinfra-postgres-1',{'capacity':{'storage':'20Gi'},'volumeMode':'Filesystem','accessModes':['ReadWriteOnce'],
         'persistentVolumeReclaimPolicy':'Retain','storageClassName':'twinfra-local','claimRef':{'namespace':NS,'name':'twinfra-postgres-1'},
-        'local':{'path':'/var/lib/twinfra/local-pv/postgres-1'},'nodeAffinity':{'required':{'nodeSelectorTerms':[{'matchExpressions':[{'key':'kubernetes.io/hostname','operator':'In','values':['twinfra-node']}]}]}}},ns=None)
+        'local':{'path':'/var/lib/twinfra/local-pv/postgres-1'},'nodeAffinity':{'required':{'nodeSelectorTerms':[{'matchExpressions':[{'key':'kubernetes.io/hostname','operator':'In','values':[yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())['environments']['dev']['context']]}]}]}}},ns=None)
     pv['metadata']['annotations']={'twinfra.io/vetted':'true','twinfra.io/vetting-document':'docs/dev-environment.md','argocd.argoproj.io/sync-options':'Prune=false,Delete=false'}
     return [sc,pv,pg]+[obj('Database','twinfra-'+n,{'cluster':{'name':'twinfra-postgres'},'name':n,'owner':n,'ensure':'present','databaseReclaimPolicy':'retain'},'postgresql.cnpg.io/v1') for n in ('keycloak','openbao')]
 
@@ -236,18 +237,36 @@ def applications():
         a['metadata']['annotations']={'argocd.argoproj.io/sync-wave':str(wave)};return a
     return [project,app('twinfra-root','deploy/environments/dev/cairo-1/apps',0)], [app('twinfra-platform','deploy/environments/dev/cairo-1/platform',0),app('twinfra-services','deploy/environments/dev/cairo-1/services',10)]
 
-def seed(row):
-    from render_cloud_init import rendered
-    data=yaml.safe_load(rendered());env=next(v for v in data['write_files'] if v['path']=='/etc/vcloud-host.env')
+def host_environment(row):
+    """Only delivery inputs differ; Module -1 remains the single bootstrap."""
+    raw=(ROOT/'host.env.example').read_text()
+    if row.get('delivery')=='bare-metal':raw=raw.replace('/etc/vcloud-host.env','/etc/twinfra-host.env',1)
+    for cidr in (row['podCidr'],row['serviceCidr']):
+        network=ipaddress.IPv4Network(cidr)
+        for forbidden in ('192.168.1.0/24','10.20.0.0/24','10.50.0.0/24'):
+            if network.overlaps(ipaddress.IPv4Network(forbidden)):raise ValueError('Protected network overlap: '+cidr)
+    if ipaddress.IPv4Network(row['podCidr']).overlaps(ipaddress.IPv4Network(row['serviceCidr'])):
+        raise ValueError('Pod/service overlap')
+    if ipaddress.IPv4Address(row['ipAddress']) in ipaddress.IPv4Network(row['podCidr']) or ipaddress.IPv4Address(row['ipAddress']) in ipaddress.IPv4Network(row['serviceCidr']):
+        raise ValueError('Node/cluster overlap')
     values={'PLATFORM_PROFILE':'dev-'+row['region'],'CLUSTER_NAME':'twinfra-dev-'+row['region'],'CLUSTER_DNS_NAME':'twinfra-dev-'+row['region'],
         'BASE_DOMAIN':'twinfra.example.com','IMAGE_REGISTRY':'registry.twinfra.example.com','REGISTRY_MIRROR':'https://registry.twinfra.example.com',
         'POD_CIDR':row['podCidr'],'SERVICE_CIDR':row['serviceCidr'],'NODE_IP':row['ipAddress'],'NODE_NAME':'twinfra-node',
         'CONTROL_PLANE_ENDPOINT':'api.dev.'+row['region']+'.twinfra.example.com:6443','BOOTSTRAP_K8S':'true','INSTALL_HPC':'false','ENABLE_GPU':'false','GPU_SMOKE_TEST':'false','RUN_SMOKE_TESTS':'false','IMAGE_STAGING':'true'}
-    raw=env['content']
+    if row.get('interface'):values['NODE_INTERFACE']=row['interface']
+    if row.get('delivery')=='bare-metal':
+        values['NODE_NAME']=yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())['environments']['dev']['context']
     for key,value in values.items():
         pattern=r'(?m)^'+key+r'=.*$';line=key+'='+value
         raw=re.sub(pattern,line,raw) if re.search(pattern,raw) else raw+line+'\n'
-    env['content']=raw;env['path']='/etc/twinfra-host.env'
+    return raw
+
+
+def seed(row):
+    if row.get('delivery')=='bare-metal':raise ValueError('Bare-metal delivery has no NoCloud seed (ADR-0048)')
+    from render_cloud_init import rendered
+    data=yaml.safe_load(rendered());env=next(v for v in data['write_files'] if v['path']=='/etc/vcloud-host.env')
+    env['content']=host_environment(row);env['path']='/etc/twinfra-host.env'
     data['write_files'] += [{'path':'/etc/twinfra/bootstrap-images.lock.json','permissions':'0644','content':(COMMON/'bootstrap-images.lock.json').read_text()},
         {'path':'/usr/local/lib/twinfra/stage-images.py','permissions':'0644','content':(COMMON/'stage-images.py').read_text()}]
     for file in data['write_files']:
@@ -267,6 +286,11 @@ def seed(row):
     zone=next(f for f in data['write_files'] if f['path']=='/etc/systemd/system/twinfra-node-zone.service')
     zone['content']='[Unit]\nAfter=kubelet.service\nStartLimitIntervalSec=0\n[Service]\nType=oneshot\nExecStart=/usr/local/sbin/twinfra-node-profile.sh\nRestart=on-failure\nRestartSec=30\n[Install]\nWantedBy=multi-user.target\n'
     data['runcmd'] += [['systemctl','enable','--now','twinfra-node-zone.service']]
+    data['write_files'] += [
+        {'path':'/usr/local/lib/twinfra/dev-log-caps.sh','permissions':'0755','content':(COMMON/'dev-log-caps.sh').read_text()},
+        {'path':'/etc/systemd/journald.conf.d/10-twinfra-dev.conf','permissions':'0644','content':'[Journal]\nSystemMaxUse=500M\n'},
+        {'path':'/etc/systemd/system/twinfra-dev-log-caps.service','permissions':'0644','content':'[Unit]\nAfter=vcloud-host-bootstrap.service kubelet.service\nStartLimitIntervalSec=0\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/local/lib/twinfra/dev-log-caps.sh\nRestart=on-failure\nRestartSec=30\n[Install]\nWantedBy=multi-user.target\n'}]
+    data['runcmd'] += [['systemctl','enable','--now','twinfra-dev-log-caps.service']]
     network={'version':2,'ethernets':{'eth0':{'match':{'name':'e*'},'set-name':'eth0','dhcp4':False,'addresses':[row['ipAddress']+'/24'],
         'routes':[{'to':'default','via':'10.50.0.1'}],'nameservers':{'addresses':['1.1.1.1','9.9.9.9']}}}}
     return {'user-data':'#cloud-config\n'+yaml.safe_dump(data,sort_keys=False),'meta-data':yaml.safe_dump({'instance-id':'twinfra-dev-'+row['region'],'local-hostname':'twinfra-dev-'+row['region']}),
@@ -282,16 +306,25 @@ def outputs():
         result[TARGET/folder/'kustomization.yaml']=yaml.safe_dump({'apiVersion':'kustomize.config.k8s.io/v1beta1','kind':'Kustomization','resources':['workloads.yaml'],'labels':[{'pairs':{k:v for k,v in labels(component).items() if k.startswith('twinfra.io/')},'includeSelectors':False,'includeTemplates':True}]},sort_keys=False)
     for row in ssot['addressPlan']:
         if row['environment']=='dev':
-            for name,text in seed(row).items():result[ROOT/'deploy/environments/dev'/row['region']/'seed'/name]=text
+            if row.get('delivery')=='bare-metal':
+                result[ROOT/'deploy/environments/dev'/row['region']/'host.env']=host_environment(row)
+                from platform_host import firewall, ssh_config, firewall_unit
+                for name,text in {'host-firewall.nft':firewall(),'host-firewall.service':firewall_unit(),'10-twinfra-hardening.conf':ssh_config()}.items():
+                    result[ROOT/'deploy/environments/dev'/row['region']/'host'/name]=text
+            else:
+                for name,text in seed(row).items():result[ROOT/'deploy/environments/dev'/row['region']/'seed'/name]=text
     return result
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','stage-images'])
-    parser.add_argument('--context');parser.add_argument('--ssh');parser.add_argument('--check',action='store_true');parser.add_argument('--archive-dir',type=Path)
+    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','stage-images','host-check','host-bootstrap','host-ssh','host-firewall','host-storage'])
+    parser.add_argument('--context');parser.add_argument('--ssh',default='twinfra-operator@192.168.1.3');parser.add_argument('--check',action='store_true');parser.add_argument('--apply',action='store_true');parser.add_argument('--archive-dir',type=Path)
     args=parser.parse_args()
+    if args.action.startswith('host-'):
+        from platform_host import action
+        return action(args.action,args.context,args.ssh,args.check,args.apply)
     if args.action=='stage-images':
         from platform_image_staging import stage_applications
-        if not args.context or not args.ssh:parser.error('stage-images requires --context and --ssh')
+        if not args.context:parser.error('stage-images requires --context')
         report=stage_applications(args.context,args.ssh,args.check,args.archive_dir)
         for problem in report['problems']:print(problem['name']+': '+problem['reason']+' ('+problem['image']+')')
         print('PASS: all application images verified' if not report['problems'] else 'FAIL: application image cache incomplete')
@@ -301,5 +334,14 @@ def main():
         if args.action=='check':
             if not path.exists() or path.read_text()!=raw:raise ValueError('Dev render drift: '+str(path))
         else:path.parent.mkdir(parents=True,exist_ok=True);path.write_text(raw,encoding='utf-8',newline='\n')
+    obsolete=TARGET/'seed'
+    if obsolete.exists():
+        if args.action=='check':raise ValueError('Obsolete cairo-1 VM seed remains')
+        # Remove only the three generated seed files; never touch WSL or user data.
+        for name in ('user-data','meta-data','network-config'):
+            path=obsolete/name
+            if path.is_symlink():raise ValueError('Refusing linked seed')
+            if path.is_file():path.unlink()
+        obsolete.rmdir()
     print('PASS: dev profile '+args.action+'; no live actions')
 if __name__=='__main__':raise SystemExit(main())

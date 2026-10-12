@@ -38,15 +38,17 @@ def locked(name='sample'):
 
 
 class FakeCtr:
-    def __init__(self, state=None, bad_pull=False, missing_after_tag=False, cri_missing=False):
+    def __init__(self, state=None, bad_pull=False, missing_after_tag=False, cri_missing=False, pinned=None, ignore_pin=False):
         self.state = state or {}
+        self.pinned=set(self.state) if pinned is None else set(pinned)
+        self.ignore_pin=ignore_pin
         self.commands = []
         self.bad_pull, self.missing_after_tag, self.cri_missing = bad_pull, missing_after_tag, cri_missing
 
     def __call__(self, cmd):
         self.commands.append(cmd)
         if cmd[:2] == ['crictl', 'inspecti']:
-            return json.dumps({'status': {'repoDigests': [] if self.cri_missing else [cmd[2].split('@')[0] + '@' + self.state[cmd[2]]]}})
+            return json.dumps({'status': {'pinned':cmd[2] in self.pinned,'repoDigests': [] if self.cri_missing else [cmd[2].split('@')[0] + '@' + self.state[cmd[2]]]}})
         action = cmd[4]
         if action == 'list':
             return '\n'.join(name + ' manifest ' + sha + ' 1 KiB linux/amd64 -' for name, sha in self.state.items())
@@ -59,7 +61,7 @@ class FakeCtr:
             if not self.missing_after_tag:
                 self.state[cmd[-1]] = self.state[cmd[-2]]
         elif action == 'label':
-            pass
+            if 'io.cri-containerd.pinned=pinned' in cmd and not self.ignore_pin:self.pinned.add(cmd[5])
         else:
             raise AssertionError('Unexpected fake runtime action')
         return ''
@@ -153,7 +155,7 @@ class ApplicationStaging(unittest.TestCase):
         self.assertEqual(ssh.calls, [('agent', True)])
 
     def test_ssh_transport_quotes_command_and_uses_stdin(self):
-        transport = ssh_stage.SSH('twinfra-operator@10.50.0.10', 'twinfra-dev-cairo-1')
+        transport = ssh_stage.SSH('twinfra-operator@192.168.1.3', 'twinfra-dev-cairo-1')
         with patch.object(ssh_stage.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, b'{}')) as run:
             transport.run(['sudo', '-n', 'python3', '-c', 'print("fixture")'], payload=b'{}')
         args, options = run.call_args
@@ -362,7 +364,7 @@ class HTTPSProfile(unittest.TestCase):
             self.assertNotIn('twinfra-registry-cred', str(obj))
 
     def test_generated_seed_embeds_verified_lock_and_dev_switch(self):
-        row = yaml.safe_load((ROOT / 'vcloud-ssot.yaml').read_text())['addressPlan'][0]
+        row = next(r for r in yaml.safe_load((ROOT / 'vcloud-ssot.yaml').read_text())['addressPlan'] if r['environment']=='dev' and r['region']=='cairo-2')
         data = yaml.safe_load(dev.seed(row)['user-data'])
         files = {f['path']: f['content'] for f in data['write_files']}
         self.assertIn('IMAGE_STAGING=true', files['/etc/twinfra-host.env'])

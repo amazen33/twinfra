@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: MIT
 # Owner-only entry point. Codex/CI import Twinfra.psm1 against fixtures, never this file.
 [CmdletBinding()]
-param([switch]$Plan,[string]$Region='cairo-1',[int]$Cpu=8,[int]$MemoryGB=20,[int]$DiskGB=100,
-      [string]$IpAddress='10.50.0.10',[string]$PodCidr='10.110.0.0/16',
-      [string]$ServiceCidr='10.111.0.0/16',[string]$Root='E:\Twinfra',
+param([switch]$Plan,[string]$Region='cairo-2',[int]$Cpu=8,[int]$MemoryGB=20,[int]$DiskGB=100,
+      [string]$IpAddress='10.50.0.11',[string]$PodCidr='10.120.0.0/16',
+      [string]$ServiceCidr='10.121.0.0/16',[string]$Root='E:\Twinfra',
       [string]$SshPublicKeyFile,[string]$SeedDirectory)
+if ($Region -eq 'cairo-1') { throw 'cairo-1 runs on bare metal (ADR-0048); no changes made' }
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 Import-Module (Join-Path $PSScriptRoot 'Twinfra.psm1') -Force

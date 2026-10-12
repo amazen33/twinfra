@@ -46,10 +46,12 @@ def validate_archive(path, expected):
 
 class SSH:
     def __init__(self, target, context):
-        if context != 'twinfra-dev-cairo-1' or not re.fullmatch(r'[a-z_][a-z0-9_-]*@10\.50\.0\.10', target):
-            raise ValueError('Use the explicit twinfra-dev-cairo-1 context and user@10.50.0.10')
+        if context != 'twinfra-dev-cairo-1' or not re.fullmatch(r'[a-z_][a-z0-9_-]*@192\.168\.1\.3', target):
+            raise ValueError('Use the explicit twinfra-dev-cairo-1 context and user@192.168.1.3')
         self.prefix = ['ssh', '-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
-                       '-o', 'ConnectTimeout=15', target]
+                       '-o', 'PreferredAuthentications=publickey', '-o', 'PasswordAuthentication=no',
+                       '-o', 'KbdInteractiveAuthentication=no', '-o', 'ControlMaster=no',
+                       '-o', 'ControlPath=none', '-o', 'ConnectTimeout=15', target]
 
     def run(self, command, payload=None, archive=None, accept_report=False):
         args = self.prefix + [shlex.join(command)]
@@ -83,9 +85,11 @@ def stage_applications(context, target, check=False, archive_dir=None, transport
     report = ssh.agent(lock, check=True)
     if check:
         return report
-    if any(p['reason'] != 'missing' for p in report['problems']):
+    if any(p['reason'] not in ('missing', 'unpinned') for p in report['problems']):
         raise ValueError('Staging refused: existing canonical image/CRI digest mismatch')
     missing = {p['name'] for p in report['problems']}
+    unpinned = {p['name'] for p in report['problems'] if p['reason'] == 'unpinned'}
+    missing -= unpinned
     directory = archive_dir or ROOT / '.build/dev-images'
     archives = {}
     for name, filename in [('console', 'console.oci.tar'), ('postgres', 'postgresql-pgvector.tar')]:
@@ -106,7 +110,12 @@ def stage_applications(context, target, check=False, archive_dir=None, transport
         if actual.get(imported) != item['digest']:
             raise ValueError('Imported OCI digest mismatch: ' + name)
         ssh.run(['sudo', '-n', 'ctr', '-n', 'k8s.io', 'images', 'tag', imported, item['canonical']])
-        ssh.run(['sudo', '-n', 'ctr', '-n', 'k8s.io', 'images', 'label', item['canonical'], 'io.cri-containerd.image=managed'])
+        ssh.run(['sudo', '-n', 'ctr', '-n', 'k8s.io', 'images', 'label', item['canonical'],
+                 'io.cri-containerd.image=managed', 'io.cri-containerd.pinned=pinned'])
+    for name in unpinned:
+        if lock['images'][name].get('buildReceipt'):
+            ssh.run(['sudo', '-n', 'ctr', '-n', 'k8s.io', 'images', 'label', lock['images'][name]['canonical'],
+                     'io.cri-containerd.image=managed', 'io.cri-containerd.pinned=pinned'])
     # CRI learns new managed image records asynchronously. Bound read-only retries;
     # --check above remains a single snapshot and never enters this staging path.
     for attempt in range(5):

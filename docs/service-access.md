@@ -32,7 +32,7 @@ Use steps 13–15 of the [dev runbook](dev-environment.md) for gateway/identity
 tunnels and name-constrained CA trust. After owner authorization, a separate
 MiniStack API forward can verify that port 4566 reaches MiniStack.
 
-On the VM, with its verified local kubeadm configuration:
+On the Dell, with its verified local kubeadm configuration:
 
 ```bash
 sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n twinfra-platform-services \
@@ -42,7 +42,7 @@ sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n twinfra-platform-service
 In a separate Windows terminal:
 
 ```powershell
-ssh -N -o ExitOnForwardFailure=yes -L 127.0.0.1:4566:127.0.0.1:4566 twinfra-operator@10.50.0.10
+ssh -N -o BatchMode=yes -o StrictHostKeyChecking=yes -o ExitOnForwardFailure=yes -L 127.0.0.1:4566:127.0.0.1:4566 twinfra-operator@192.168.1.3
 Invoke-RestMethod http://127.0.0.1:4566/_ministack/health
 ```
 

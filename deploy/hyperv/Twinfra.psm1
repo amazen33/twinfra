@@ -33,10 +33,11 @@ function Test-ExcludedRoute([string]$Cidr) {
 function New-TwinfraPlan {
     param([Parameter(Mandatory)][hashtable]$Inventory,
           [Parameter(Mandatory)][hashtable]$Image,
-          [string]$Region='cairo-1',[int]$Cpu=8,[int]$MemoryGB=20,[int]$DiskGB=100,
-          [string]$IpAddress='10.50.0.10',[string]$PodCidr='10.110.0.0/16',
-          [string]$ServiceCidr='10.111.0.0/16',[string]$Root='E:\Twinfra',
+          [string]$Region='cairo-2',[int]$Cpu=8,[int]$MemoryGB=20,[int]$DiskGB=100,
+          [string]$IpAddress='10.50.0.11',[string]$PodCidr='10.120.0.0/16',
+          [string]$ServiceCidr='10.121.0.0/16',[string]$Root='E:\Twinfra',
           [string]$Environment='dev')
+    if ($Region -eq 'cairo-1') { throw 'cairo-1 runs on bare metal (ADR-0048); no changes made' }
     if ($Environment -ne 'dev' -or $Region -notmatch '^cairo-[12]$') { throw 'Only the approved dev regions are provisionable' }
     if ($Cpu -lt 1 -or $MemoryGB -lt 4 -or $DiskGB -lt 32) { throw 'Invalid VM sizing' }
     if (-not $Inventory.Admin) { throw 'Administrator PowerShell is required; no changes made' }

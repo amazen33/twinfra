@@ -1,0 +1,11 @@
+[Unit]
+Description=Twinfra owned eno1 firewall
+After=network-pre.target
+Before=network.target
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft -f /etc/twinfra/host-firewall.nft
+ExecReload=/usr/sbin/nft -f /etc/twinfra/host-firewall.nft
+[Install]
+WantedBy=multi-user.target

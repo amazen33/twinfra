@@ -46,13 +46,19 @@ def cached(runner):
     return result
 
 
-def inspect_cri(item, runner):
+def cri_problem(item, runner):
     try:
         info = json.loads(runner(['crictl', 'inspecti', item['canonical']]))
     except (ValueError, json.JSONDecodeError):
-        return False
+        return 'CRI missing or digest mismatch'
     digests = info.get('status', {}).get('repoDigests', [])
-    return any(value.endswith('@' + item['digest']) for value in digests)
+    if not any(value.endswith('@' + item['digest']) for value in digests):
+        return 'CRI missing or digest mismatch'
+    return None if info.get('status', {}).get('pinned') is True else 'unpinned'
+
+
+def inspect_cri(item, runner):
+    return cri_problem(item, runner) is None
 
 
 def stage(lock, check=False, verify_cri=True, runner=run):
@@ -65,29 +71,35 @@ def stage(lock, check=False, verify_cri=True, runner=run):
             problems.append({'name': key, 'reason': 'missing', 'image': item['canonical']})
         elif actual != item['digest']:
             problems.append({'name': key, 'reason': 'digest mismatch', 'image': item['canonical']})
-        elif verify_cri and not inspect_cri(item, runner):
-            problems.append({'name': key, 'reason': 'CRI missing or digest mismatch', 'image': item['canonical']})
+        elif verify_cri:
+            reason = cri_problem(item, runner)
+            if reason:
+                problems.append({'name': key, 'reason': reason, 'image': item['canonical']})
     if check:
         # No temporary directory, pull, import, tag, file or runtime writes.
         return problems
-    if any(p['reason'] != 'missing' for p in problems):
+    # A matching owned cache entry may need its pin upgraded; never repair a
+    # mismatched digest. CRI checks below still fail closed after the label event.
+    repairable = {p['name'] for p in problems if p['reason'] == 'unpinned'}
+    if any(p['reason'] != 'missing' and p['name'] not in repairable for p in problems):
         raise ValueError('Staging refused: ' + ', '.join(p['name'] + ': ' + p['reason'] for p in problems))
-    missing = {p['name'] for p in problems}
+    missing = {p['name'] for p in problems if p['reason'] == 'missing'}
     for key, item in images.items():
-        if key not in missing:
-            continue
-        if item.get('buildReceipt'):
+        if key in missing and item.get('buildReceipt'):
             raise ValueError('Missing locally built image: ' + key + '; import its verified OCI archive first')
         # Explicit local client + empty hosts directory bypass CRI mirror configuration
         # only for this owner-requested staging pull, never for kubelet/runtime pulls.
-        with tempfile.TemporaryDirectory(prefix='twinfra-empty-hosts-') as hosts:
-            runner(['ctr', '-n', 'k8s.io', 'images', 'pull', '--local', '--platform', 'linux/amd64',
-                    '--hosts-dir', hosts, item['source']])
-        state = cached(runner)
-        if state.get(item['source']) != item['digest']:
-            raise ValueError('Upstream digest mismatch after pull: ' + key)
-        runner(['ctr', '-n', 'k8s.io', 'images', 'tag', item['source'], item['canonical']])
-        runner(['ctr', '-n', 'k8s.io', 'images', 'label', item['canonical'], 'io.cri-containerd.image=managed'])
+        if key in missing:
+            with tempfile.TemporaryDirectory(prefix='twinfra-empty-hosts-') as hosts:
+                runner(['ctr', '-n', 'k8s.io', 'images', 'pull', '--local', '--platform', 'linux/amd64',
+                        '--hosts-dir', hosts, item['source']])
+            state = cached(runner)
+            if state.get(item['source']) != item['digest']:
+                raise ValueError('Upstream digest mismatch after pull: ' + key)
+            runner(['ctr', '-n', 'k8s.io', 'images', 'tag', item['source'], item['canonical']])
+        if key in missing or key in repairable and not inspect_cri(item, runner):
+            runner(['ctr', '-n', 'k8s.io', 'images', 'label', item['canonical'],
+                    'io.cri-containerd.image=managed', 'io.cri-containerd.pinned=pinned'])
     state = cached(runner)
     for key, item in images.items():
         if state.get(item['canonical']) != item['digest']:
@@ -99,7 +111,7 @@ def stage(lock, check=False, verify_cri=True, runner=run):
                 if inspect_cri(item, runner):
                     break
                 if attempt == 4:
-                    raise ValueError('CRI missing or digest mismatch after staging: ' + key)
+                    raise ValueError('CRI missing, digest mismatch or unpinned after staging: ' + key)
                 time.sleep(0.5)
     return []
 

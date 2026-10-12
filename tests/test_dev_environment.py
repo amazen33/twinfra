@@ -102,14 +102,15 @@ class Profile(unittest.TestCase):
         ssot=yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())
         for row in ssot['addressPlan']:
             if row['environment']!='dev':continue
-            seed=dev.seed(row);data=yaml.safe_load(seed['user-data'])
-            env=next(f['content'] for f in data['write_files'] if f['path']=='/etc/twinfra-host.env')
+            env=dev.host_environment(row)
             self.assertIn('CONTROL_PLANE_ENDPOINT=api.dev.'+row['region']+'.twinfra.example.com:6443',env)
             self.assertIn('POD_CIDR='+row['podCidr'],env)
             for disabled in ('ENABLE_GPU','INSTALL_HPC','GPU_SMOKE_TEST','RUN_SMOKE_TESTS'):
                 self.assertIn(disabled+'=false',env)
-            self.assertTrue(data['ssh_pwauth'] is False)
-            self.assertNotIn('passwd',str(data['users'][0].keys()).replace('lock_passwd',''))
+            if row.get('delivery')!='bare-metal':
+                data=yaml.safe_load(dev.seed(row)['user-data'])
+                self.assertTrue(data['ssh_pwauth'] is False)
+                self.assertNotIn('passwd',str(data['users'][0].keys()).replace('lock_passwd',''))
 
     def test_protected_main_and_kustomize_labels_without_selector_mutation(self):
         for app in dev.applications()[0]+dev.applications()[1]:

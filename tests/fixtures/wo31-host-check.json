@@ -1,0 +1,123 @@
+{
+  "scope": "Synthetic offline inputs; no SSH or host changes",
+  "before": {
+    "status": "passed",
+    "mode": "pre-bootstrap",
+    "checks": [
+      {
+        "name": "OS",
+        "status": "PASS",
+        "detail": "Ubuntu 24.04.5 LTS"
+      },
+      {
+        "name": "Architecture / VT-x / KVM",
+        "status": "PASS",
+        "detail": "x86_64"
+      },
+      {
+        "name": "RAM",
+        "status": "PASS",
+        "detail": "31 GiB; need 24 GiB"
+      },
+      {
+        "name": "Root and VG free space",
+        "status": "PASS",
+        "detail": "80 GiB root / 120.5 GiB VG"
+      },
+      {
+        "name": "Time sync",
+        "status": "PASS",
+        "detail": "synchronized"
+      },
+      {
+        "name": "eno1 address",
+        "status": "PASS",
+        "detail": "192.168.1.3"
+      },
+      {
+        "name": "Secure Boot / lockdown",
+        "status": "PASS",
+        "detail": "none [integrity] confidentiality"
+      },
+      {
+        "name": "Swap",
+        "status": "PASS",
+        "detail": "off"
+      },
+      {
+        "name": "sshd effective settings",
+        "status": "INFO",
+        "detail": {
+          "passwordauthentication": "no",
+          "kbdinteractiveauthentication": "no",
+          "permitrootlogin": "no"
+        }
+      },
+      {
+        "name": "Reserved ports",
+        "status": "PASS",
+        "detail": "free"
+      }
+    ]
+  },
+  "after": {
+    "status": "passed",
+    "mode": "post-bootstrap",
+    "checks": [
+      {
+        "name": "OS",
+        "status": "PASS",
+        "detail": "Ubuntu 24.04.5 LTS"
+      },
+      {
+        "name": "Architecture / VT-x / KVM",
+        "status": "PASS",
+        "detail": "x86_64"
+      },
+      {
+        "name": "RAM",
+        "status": "PASS",
+        "detail": "31 GiB; need 24 GiB"
+      },
+      {
+        "name": "Root and VG free space",
+        "status": "PASS",
+        "detail": "80 GiB root / 120.5 GiB VG"
+      },
+      {
+        "name": "Time sync",
+        "status": "PASS",
+        "detail": "synchronized"
+      },
+      {
+        "name": "eno1 address",
+        "status": "PASS",
+        "detail": "192.168.1.3"
+      },
+      {
+        "name": "Secure Boot / lockdown",
+        "status": "PASS",
+        "detail": "none [integrity] confidentiality"
+      },
+      {
+        "name": "Swap",
+        "status": "PASS",
+        "detail": "off"
+      },
+      {
+        "name": "sshd effective settings",
+        "status": "INFO",
+        "detail": {
+          "passwordauthentication": "no",
+          "kbdinteractiveauthentication": "no",
+          "permitrootlogin": "no"
+        }
+      },
+      {
+        "name": "Reserved ports / cluster ownership",
+        "status": "PASS",
+        "detail": "bootstrap-owned cluster verified"
+      }
+    ]
+  }
+}

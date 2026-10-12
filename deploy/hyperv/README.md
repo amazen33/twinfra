@@ -1,4 +1,6 @@
-# Hyper-V provisioning · dev cairo-1
+# Hyper-V provisioning · dev cairo-2
+
+Cold standby only; `cairo-1` is bare metal under [ADR-0048](../../docs/adr/0048-cairo-1-on-bare-metal-host.md) and is refused before host reads. WO-30 sizing is a separate future work order.
 
 Owner-only entry point: `New-TwinfraDev.ps1`. Codex/CI never run it.
 See [the dev runbook](../../docs/dev-environment.md) for prerequisites, approved
@@ -40,16 +42,16 @@ network changes occurred.
 
 ```text
 PLAN ONLY: no downloads, files, network or VM changes
-VM: twinfra-dev-cairo-1 | Generation 2 | 8 vCPU | 20 GiB static RAM | 100 GiB dynamic VHDX
+VM: twinfra-dev-cairo-2 | Generation 2 | 8 vCPU | 20 GiB static RAM | 100 GiB dynamic VHDX
 Free RAM measured: 24 GiB | Required: 24 GiB; if short, close browsers/desktop apps and stop WSL or other guests yourself
 Free E: disk measured: 113 GiB | Required: 110 GiB
 Nested virtualization: enabled; VM remains Off until owner starts it
-Switch: twinfra-nat | 10.50.0.0/24 | gateway 10.50.0.1 | VM 10.50.0.10
-Pods: 10.110.0.0/16 | Services: 10.111.0.0/16
+Switch: twinfra-nat | 10.50.0.0/24 | gateway 10.50.0.1 | VM 10.50.0.11
+Pods: 10.120.0.0/16 | Services: 10.121.0.0/16
 Image URL: https://cloud-images.ubuntu.com/noble/20260926/noble-server-cloudimg-amd64.img
 File: noble-server-cloudimg-amd64.img | Size: 625612288 bytes | SHA256: 6a81c37564db9b1ee84e141922625e1d7c5b389b99bb3c572e0243607d5bb4d2
 Checksums: https://cloud-images.ubuntu.com/noble/20260926/SHA256SUMS
-Disk: E:\Twinfra\twinfra-dev-cairo-1\twinfra-dev-cairo-1.vhdx | Seed: E:\Twinfra\twinfra-dev-cairo-1\seed.iso
+Disk: E:\Twinfra\twinfra-dev-cairo-2\twinfra-dev-cairo-2.vhdx | Seed: E:\Twinfra\twinfra-dev-cairo-2\seed.iso
 Actions: Verify Canonical download; Create NoCloud ISO; Create/verify owned NAT; Convert/resize dynamic VHDX; Create Generation 2 VM (left Off)
 Existing VM already verified: False
 ```
