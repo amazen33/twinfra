@@ -86,6 +86,20 @@ the local CI rule alone does not protect an otherwise unprotected `main` branch.
 
 ## Dependency and execution boundaries
 
+WO-31 Amendment 4 adds a real kubeadm v1.36.5 preview on the disposable Ubuntu
+runner. The binary comes from `dl.k8s.io`, matches the reviewed tool lock and its
+published SHA-256, and reports the exact version before use. On each matrix leg,
+the candidate CI control checkout renders its dev-cairo-1 and production configs
+and etcd patches. Only `sudo -n env KUBEADM_INIT_DRYRUN_DIR=... kubeadm init phase
+control-plane all --dry-run` and `... etcd local --dry-run` run; no preflight,
+kubelet, container runtime, image pull or cluster is required. The gate checks
+the four generated manifests and exactly one config-derived, read-only
+`etcd-certs` mount. Any command/checksum/assertion failure fails the job.
+Evidence is uploaded under `kubeadm-dry-run/` in every validation artifact.
+Historical selected revisions still run their original offline suites; their
+old etcd patches are not used as the candidate preview input. Windows unit tests
+exercise path/command/checksum failures; the real Linux binary is tested in CI.
+
 WO-31 adds an optional bare-metal bundle. Fixtures cover both read-only host-check
 modes and every required cluster/listener identity, key-only SSH/SCP, copied SHA-256
 verification, sudo refusal, healthy no-op bootstrap, guarded SSH and scoped firewall

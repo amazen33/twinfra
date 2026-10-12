@@ -1,6 +1,11 @@
 {
   "platform": "linux-amd64",
   "artifacts": {
+    "kubeadm": {
+      "url": "https://dl.k8s.io/release/v1.36.5/bin/linux/amd64/kubeadm",
+      "sha256": "be2f2c73cd6d3414b37aafb05016bc3a1da3e17c8393aa75c34636198fefa77c",
+      "output": "bin/kubeadm"
+    },
     "helm": {
       "url": "https://get.helm.sh/helm-v3.22.0-linux-amd64.tar.gz",
       "sha256": "1e4ab49e429626cf6c6958d914248b78c9730803c2751b87627e171dc800e7bb",

@@ -1412,17 +1412,36 @@ write_files:
     }\n# END GENERATED POLICY CHECKER\n\nvalidate_manifests() {\n    local mode=$1\n\
     \    shift\n    kubeconform -strict -summary -kubernetes-version \"${KUBERNETES_VERSION#v}\"\
     \ \"$@\"\n    yq eval-all -o=json -I=0 '[.]' \"$@\" |\n        python3 \"$STATE_DIR/check-manifest-contract.py\"\
-    \ --policy \"$STATE_DIR/node-exceptions.json\" --mode \"$mode\"\n}\n\nrender_etcd_patch()\
-    \ {\n    # kubeadm's default etcd certificate mount is writable; the approved\
-    \ scope is read-only.\n    # This is a strategic merge PATCH fragment, not a standalone\
-    \ Kubernetes resource.\n    cat <<'EOF'\nspec:\n  containers:\n    - name: etcd\n\
-    \      volumeMounts:\n        - name: etcd-certs\n          readOnly: true\nEOF\n\
-    }\n\nvalidate_static_control_plane() {\n    local directory=$1\n    local -a manifests=()\n\
-    \    local component entry\n    # A fifth static Pod must not bypass the four-component\
-    \ exception by living next\n    # to the checked files. Kubelet ignores dot files;\
-    \ every other entry is restricted.\n    for entry in \"$directory\"/*; do\n  \
-    \      [[ -e $entry || -L $entry ]] || continue\n        case ${entry##*/} in\n\
-    \            kube-apiserver.yaml|kube-controller-manager.yaml|kube-scheduler.yaml|etcd.yaml)\n\
+    \ --policy \"$STATE_DIR/node-exceptions.json\" --mode \"$mode\"\n}\n\netcd_cert_mount_path()\
+    \ {\n    local certificates_dir\n    # Read the ClusterConfiguration, not an independent\
+    \ host setting. Before the\n    # config is written, consume the same renderer\
+    \ that will write kubeadm.yaml.\n    if [[ -n ${1:-} ]]; then\n        certificates_dir=$(yq\
+    \ eval-all -r 'select(.kind == \"ClusterConfiguration\") | (.certificatesDir //\
+    \ \"/etc/kubernetes/pki\")' \"$1\")\n    else\n        certificates_dir=$(render_kubeadm\
+    \ | yq eval-all -r 'select(.kind == \"ClusterConfiguration\") | (.certificatesDir\
+    \ // \"/etc/kubernetes/pki\")' -)\n    fi\n    [[ $certificates_dir == /* && $certificates_dir\
+    \ != *$'\\n'* ]] || die 'Expected exactly one absolute kubeadm certificatesDir'\n\
+    \    printf '%s/etcd\\n' \"${certificates_dir%/}\"\n}\n\nrender_etcd_patch() {\n\
+    \    # kubeadm's default etcd certificate mount is writable; the approved scope\
+    \ is read-only.\n    # Kubernetes merges volumeMounts by mountPath, not by volume\
+    \ name.\n    local mount_path\n    mount_path=$(etcd_cert_mount_path \"${1:-}\"\
+    )\n    mount_path=$(ETCD_CERT_MOUNT_PATH=\"$mount_path\" yq -n -o=json -I=0 'strenv(ETCD_CERT_MOUNT_PATH)')\n\
+    \    cat <<EOF\nspec:\n  containers:\n    - name: etcd\n      volumeMounts:\n\
+    \        - name: etcd-certs\n          mountPath: $mount_path\n          readOnly:\
+    \ true\nEOF\n}\n\nvalidate_etcd_cert_mount() {\n    local directory=$1 mount_path\n\
+    \    mount_path=$(etcd_cert_mount_path \"$STATE_DIR/kubeadm.yaml\")\n    # Reject\
+    \ duplicate names AND another mount using the expected target path.\n    ETCD_CERT_MOUNT_PATH=\"\
+    $mount_path\" yq eval -e '\n      [.spec.containers[] | select(.name == \"etcd\"\
+    ) | .volumeMounts[] |\n       select(.name == \"etcd-certs\" or .mountPath ==\
+    \ strenv(ETCD_CERT_MOUNT_PATH))] |\n      (length == 1 and .[0].name == \"etcd-certs\"\
+    \ and\n       .[0].mountPath == strenv(ETCD_CERT_MOUNT_PATH) and .[0].readOnly\
+    \ == true)\n    ' \"$directory/etcd.yaml\" >/dev/null || die \"etcd preview must\
+    \ have exactly one read-only etcd-certs mount at $mount_path\"\n}\n\nvalidate_static_control_plane()\
+    \ {\n    local directory=$1\n    local -a manifests=()\n    local component entry\n\
+    \    # A fifth static Pod must not bypass the four-component exception by living\
+    \ next\n    # to the checked files. Kubelet ignores dot files; every other entry\
+    \ is restricted.\n    for entry in \"$directory\"/*; do\n        [[ -e $entry\
+    \ || -L $entry ]] || continue\n        case ${entry##*/} in\n            kube-apiserver.yaml|kube-controller-manager.yaml|kube-scheduler.yaml|etcd.yaml)\n\
     \                [[ -f $entry && ! -L $entry ]] || die \"Unexpected static Pod\
     \ file type: $entry\";;\n            *) die \"Unapproved static Pod directory\
     \ entry: $entry\";;\n        esac\n    done\n    for component in kube-apiserver\
@@ -1435,12 +1454,12 @@ write_files:
     \    # phases run here; they do not start kubelet or create a cluster.\n    KUBEADM_INIT_DRYRUN_DIR=\"\
     $preview\" kubeadm init phase control-plane all --config \"$STATE_DIR/kubeadm.yaml\"\
     \ --dry-run\n    KUBEADM_INIT_DRYRUN_DIR=\"$preview\" kubeadm init phase etcd\
-    \ local --config \"$STATE_DIR/kubeadm.yaml\" --dry-run\n    validate_static_control_plane\
-    \ \"$preview\"\n}\n\n# BEGIN GENERATED FOUNDATION\nrender_foundation() {\n   \
-    \ if [[ $PLATFORM_PROFILE == dev-* ]]; then\n        cat <<'EOF'\napiVersion:\
-    \ v1\nkind: Namespace\nmetadata:\n  name: twinfra-platform-services\n  labels:\n\
-    \    twinfra.io/managed: 'true'\n    pod-security.kubernetes.io/enforce: restricted\n\
-    \    pod-security.kubernetes.io/enforce-version: v1.30\n    pod-security.kubernetes.io/audit:\
+    \ local --config \"$STATE_DIR/kubeadm.yaml\" --dry-run\n    validate_etcd_cert_mount\
+    \ \"$preview\"\n    validate_static_control_plane \"$preview\"\n}\n\n# BEGIN GENERATED\
+    \ FOUNDATION\nrender_foundation() {\n    if [[ $PLATFORM_PROFILE == dev-* ]];\
+    \ then\n        cat <<'EOF'\napiVersion: v1\nkind: Namespace\nmetadata:\n  name:\
+    \ twinfra-platform-services\n  labels:\n    twinfra.io/managed: 'true'\n    pod-security.kubernetes.io/enforce:\
+    \ restricted\n    pod-security.kubernetes.io/enforce-version: v1.30\n    pod-security.kubernetes.io/audit:\
     \ restricted\n    pod-security.kubernetes.io/audit-version: v1.30\n    pod-security.kubernetes.io/warn:\
     \ restricted\n    pod-security.kubernetes.io/warn-version: v1.30\n---\napiVersion:\
     \ networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  name: twinfra-default-deny\n\

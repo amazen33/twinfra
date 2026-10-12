@@ -48,6 +48,11 @@ def bash(code, check=True):
         f"python3() {{ {shlex.quote(shell_path(sys.executable))} \"$@\"; }}; "
         "VCLOUD_CONFIG_FILE=/vcloud-offline-no-config; load_config; "
     )
+    if OPTIONS.yq:
+        if os.name == 'nt':
+            # Git Bash must not rewrite the Kubernetes mount path for native yq.
+            prefix += 'export MSYS2_ENV_CONV_EXCL=ETCD_CERT_MOUNT_PATH; '
+        prefix += f'yq() {{ {shlex.quote(shell_path(OPTIONS.yq))} "$@"; }}; '
     result = subprocess.run([OPTIONS.bash, "-c", prefix + code], cwd=ROOT, text=True, capture_output=True)
     if check and result.returncode:
         raise AssertionError(f"Bash exited {result.returncode}: {result.stdout}\n{result.stderr}")
@@ -577,7 +582,33 @@ printf 'apiVersion: v1\\nkind: Pod\\nmetadata: {{name: bad}}\\nspec: {{container
         self.assertEqual(bash('render_exception_policy').stdout, (ROOT / 'security/node-exceptions.json').read_text())
         self.assertEqual(bash('render_policy_checker').stdout, (ROOT / 'tools/manifest_contract.py').read_text())
         patch = yaml.safe_load(bash('render_etcd_patch').stdout)
-        self.assertEqual(patch['spec']['containers'][0]['volumeMounts'], [dict(name='etcd-certs', readOnly=True)])
+        self.assertEqual(patch['spec']['containers'][0]['volumeMounts'],
+                         [dict(name='etcd-certs', mountPath='/etc/kubernetes/pki/etcd', readOnly=True)])
+
+    def test_etcd_merge_key_uses_rendered_certificates_directory(self):
+        with tempfile.TemporaryDirectory(dir=ROOT / '.tools') as temp:
+            config = Path(temp) / 'kubeadm.yaml'
+            config.write_text('kind: ClusterConfiguration\ncertificatesDir: /custom/pki/\n')
+            patch = yaml.safe_load(bash('render_etcd_patch ' + shlex.quote(shell_path(config))).stdout)
+            self.assertEqual(patch['spec']['containers'][0]['volumeMounts'],
+                             [dict(name='etcd-certs', mountPath='/custom/pki/etcd', readOnly=True)])
+
+    def test_etcd_preview_rejects_missing_duplicate_writable_and_wrong_path_mounts(self):
+        with tempfile.TemporaryDirectory(dir=ROOT / '.tools') as temp:
+            root = Path(temp)
+            (root / 'kubeadm.yaml').write_text('kind: ClusterConfiguration\ncertificatesDir: /custom/pki\n')
+            mount = dict(name='etcd-certs', mountPath='/custom/pki/etcd', readOnly=True)
+            code = 'STATE_DIR=' + shlex.quote(shell_path(root)) + '; validate_etcd_cert_mount "$STATE_DIR"'
+            cases = [[mount], [], [mount, mount], [mount | dict(readOnly=False)],
+                     [mount | dict(mountPath='/wrong')], [mount | dict(name='wrong')],
+                     [mount, mount | dict(name='another')]]
+            for index, mounts in enumerate(cases):
+                with self.subTest(case=index):
+                    (root / 'etcd.yaml').write_text(yaml.safe_dump(dict(spec=dict(containers=[dict(name='etcd', volumeMounts=mounts)]))))
+                    result = bash(code, check=False)
+                    self.assertEqual(result.returncode == 0, index == 0, result.stderr)
+                    if index:
+                        self.assertIn('exactly one read-only etcd-certs mount at /custom/pki/etcd', result.stderr)
 
     def test_policy_hash_and_reviewed_inventory_integrity(self):
         module = contract_module()
@@ -613,6 +644,7 @@ printf 'apiVersion: v1\\nkind: Pod\\nmetadata: {{name: bad}}\\nspec: {{container
                 (fixtures / (obj['metadata']['name'] + '.yaml')).write_text(yaml.safe_dump(obj))
             code = f'''
 STATE_DIR={directory}; WORK_DIR="$STATE_DIR"
+NODE_IP=192.168.50.10; NODE_NAME=vcloud01; render_kubeadm > "$STATE_DIR/kubeadm.yaml"
 render_exception_policy > "$STATE_DIR/node-exceptions.json"
 render_policy_checker > "$STATE_DIR/check-manifest-contract.py"
 yq() {{ {shlex.quote(shell_path(OPTIONS.yq))} "$@"; }}

@@ -30,11 +30,35 @@ agent=importlib.util.module_from_spec(spec);spec.loader.exec_module(agent)
 MAIN='968f336f9335739c35b79ed838dc7cfaeebff235'
 AMENDMENT_2_BASE='a8f4f434c7bed890311793590952dd5295d2e97e'
 AMENDMENT_3_BASE='a7512ed9ab059857b60e9b4848fad2287e4549ab'
+AMENDMENT_4_BASE='4cb97b8950164e32f02e40635bfddf6ffa9b0858'
+
+
+def mask_etcd_script(raw):
+    """Amendment 4 allows only patch/path helpers and one preview assertion."""
+    raw=raw.replace('\r\n','\n')
+    raw,count=re.subn(r'(?ms)^(?:etcd_cert_mount_path|render_etcd_patch)\(\) \{\n.*?(?=^validate_static_control_plane\(\))',
+                      '@@ETCD_PATCH_AND_MOUNT_ASSERTION@@\n\n',raw)
+    if count!=1:raise ValueError('Etcd mask must match exactly one patch/helper block')
+    raw=raw.replace('    validate_etcd_cert_mount "$preview"\n','')
+    return raw
+
+
+def mask_production_render(raw,masker=mask_etcd_script,remote=False):
+    raw=raw.decode().replace('\r\n','\n')
+    raw=re.sub(r'(?m)^# Generated; script SHA256=[a-f0-9]{64}\.$','# Generated; script SHA256=@@DERIVED@@.',raw)
+    if remote:
+        return re.sub(r"(?m)^(      expected=')[a-f0-9]{64}('$)",r'\1@@DERIVED@@\2',raw)
+    data=yaml.safe_load(raw)
+    embedded=next(f['content'] for f in data['write_files'] if f['path']=='/usr/local/sbin/00-setup-ubuntu-host.sh')
+    literal='\n'.join('      '+line if line else '' for line in embedded.rstrip('\n').split('\n'))
+    if raw.count(literal)!=1:raise ValueError('Expected exactly one embedded script literal')
+    replacement='\n'.join('      '+line if line else '' for line in masker(embedded).rstrip('\n').split('\n'))
+    return raw.replace(literal,replacement,1)
 
 
 def mask_bpffs_script(raw):
-    """Only Amendment 2's BPF helper/setup and mount dependency may differ."""
-    raw=raw.replace('\r\n','\n')
+    """Cumulative approved BPF and etcd blocks, with strict per-amendment tests."""
+    raw=mask_etcd_script(raw)
     raw=raw.replace('    check_bpffs_migration # WO-31: read-only ownership guard before any apply writes.\n','')
     raw=re.sub(r'(?ms)^# BEGIN WO-31 BPFFS COMPATIBILITY\n.*?^# END WO-31 BPFFS COMPATIBILITY\n\n','',raw)
     raw=re.sub(r"(?ms)^        mkdir -p /sys/fs/bpf\n.*?^        \[\[ \$\(findmnt -n -o FSTYPE --target /sys/fs/bpf\) == bpf \]\] \|\| die 'Unexpected filesystem at /sys/fs/bpf'\n",'        @@BPFFS_SETUP@@\n',raw)
@@ -623,31 +647,74 @@ class PinsAndProfiles(unittest.TestCase):
         expected=hashlib.sha256((ROOT/'00-setup-ubuntu-host.sh').read_bytes().replace(b'\r\n',b'\n')).hexdigest()
         self.assertEqual(after['fingerprint'],expected)
         before['fingerprint']=after['fingerprint'];before['reason']=after['reason']
+        # Adding the verified kubeadm binary changes the enclosing tool lock's
+        # fingerprint, but not its existing schema finding, evidence or expiry.
+        old_tool=next(f for f in baseline['findings'] if f['id']=='schema-source:tools/ci/toolchain.lock.json')
+        new_tool=next(f for f in current['findings'] if f['id']==old_tool['id'])
+        old_tool['fingerprint']=new_tool['fingerprint']
         self.assertEqual(current,baseline)
-        for frozen in ('security/licence-register.json','security/licence-policy.json','tools/ci/pr-baselines.json'):
+        for frozen in ('security/licence-policy.json','tools/ci/pr-baselines.json'):
             self.assertEqual((ROOT/frozen).read_bytes().replace(b'\r\n',b'\n'),subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_2_BASE+':'+frozen]))
 
 
     def test_amendment_3_changes_only_cairo_2_embedded_staging_agent(self):
         def base(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_3_BASE+':'+name])
+        # Preserve proof of Amendment 3's exact merged snapshot. Amendment 4's
+        # additional script/render/evidence changes have their own bound below.
+        def tested(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_4_BASE+':'+name])
         for name in ('00-setup-ubuntu-host.sh','host.env.example','user-data.yaml','user-data-remote.yaml',
                      'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
                      'deploy/environments/dev/cairo-1/host.env','deploy/environments/dev/cairo-2/seed/meta-data',
                      'deploy/environments/dev/cairo-2/seed/network-config','security/licence-baseline.json',
                      'security/licence-register.json','security/licence-policy.json','tools/ci/pr-baselines.json'):
-            self.assertEqual((ROOT/name).read_bytes().replace(b'\r\n',b'\n'),base(name),name)
-        self.assertEqual((ROOT/'user-data.yaml.gz').read_bytes(),base('user-data.yaml.gz'))
+            self.assertEqual(tested(name),base(name),name)
+        self.assertEqual(tested('user-data.yaml.gz'),base('user-data.yaml.gz'))
         path='deploy/environments/dev/cairo-2/seed/user-data'
         def mask(raw):
             raw=raw.replace(b'\r\n',b'\n')
             raw,count=re.subn(rb'(?ms)(^- path: /usr/local/lib/twinfra/stage-images.py\n  permissions: [^\n]+\n  content: ).*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',rb'\1@@AMENDMENT_3_AGENT@@\n',raw)
             self.assertEqual(count,1)
             return raw
-        current=(ROOT/path).read_bytes();self.assertNotEqual(current.replace(b'\r\n',b'\n'),base(path))
+        current=tested(path);self.assertNotEqual(current.replace(b'\r\n',b'\n'),base(path))
         self.assertEqual(mask(current),mask(base(path)))
         data=yaml.safe_load(current)
         agent_code=next(f['content'] for f in data['write_files'] if f['path']=='/usr/local/lib/twinfra/stage-images.py')
         self.assertEqual(agent_code,(ROOT/'deploy/common/stage-images.py').read_text())
+
+    def test_amendment_4_render_changes_only_etcd_block_and_derived_checksums(self):
+        def base(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_4_BASE+':'+name])
+        self.assertEqual(mask_etcd_script((ROOT/'00-setup-ubuntu-host.sh').read_text()),mask_etcd_script(base('00-setup-ubuntu-host.sh').decode()))
+        for name in ('user-data.yaml','user-data-remote.yaml'):
+            self.assertEqual(mask_production_render((ROOT/name).read_bytes(),remote='remote' in name),
+                             mask_production_render(base(name),remote='remote' in name),name)
+        self.assertEqual(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),(ROOT/'user-data.yaml').read_bytes())
+        self.assertEqual(mask_production_render(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes())),
+                         mask_production_render(gzip.decompress(base('user-data.yaml.gz'))))
+        path='deploy/environments/dev/cairo-2/seed/user-data'
+        def mask_seed(raw):
+            raw=raw.replace(b'\r\n',b'\n')
+            data=yaml.safe_load(raw)
+            script=next(f['content'] for f in data['write_files'] if f['path']=='/usr/local/sbin/00-setup-ubuntu-host.sh')
+            self.assertEqual(mask_etcd_script(script),mask_etcd_script(base('00-setup-ubuntu-host.sh').decode()))
+            raw,count=re.subn(rb'(?ms)(^- path: /usr/local/sbin/00-setup-ubuntu-host.sh\n  owner: root:root\n  permissions: [^\n]+\n  content: ).*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',rb'\1@@AMENDMENT_4_ETCD_SCRIPT@@\n',raw)
+            self.assertEqual(count,1)
+            return raw
+        self.assertEqual(mask_seed((ROOT/path).read_bytes()),mask_seed(base(path)))
+        for name in ('host.env.example','deploy/environments/dev/cairo-1/host.env',
+                     'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
+                     'deploy/environments/dev/cairo-2/seed/meta-data','deploy/environments/dev/cairo-2/seed/network-config',
+                     'security/licence-policy.json','tools/ci/pr-baselines.json'):
+            self.assertEqual((ROOT/name).read_bytes().replace(b'\r\n',b'\n'),base(name),name)
+
+    def test_amendment_4_licence_evidence_changes_only_kubeadm_artifact(self):
+        before=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_4_BASE+':security/licence-register.json']))
+        after=json.loads((ROOT/'security/licence-register.json').read_text())
+        added=[c for c in after['components'] if c['id'] not in {c['id'] for c in before['components']}]
+        self.assertEqual(len(added),1)
+        self.assertEqual(added[0]['name'],'dl.k8s.io/release/v1.36.5/bin/linux/amd64/kubeadm')
+        self.assertEqual(added[0]['spdx'],'Apache-2.0')
+        after['components'].remove(added[0])
+        self.assertEqual(before,after)
 
 
 if __name__=='__main__':unittest.main()
