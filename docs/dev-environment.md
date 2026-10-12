@@ -357,6 +357,49 @@ refused before host inventory reads with the ADR-0048 message.
 
 ## Static checks and acceptance
 
+### Module -1 CLI validation review
+
+WO-31 Amendment 5 replaces only `tkn version --client` with
+`tkn version --component client`. The v0.46.1 published-digest-verified binary's
+help lists `--component`, and client output is `0.46.1`. The nine unconditional
+calls (`kubectl`, `kubeadm`, `helm`, `cilium`, `kubeconform`, `tkn`, `argocd`, `yq`,
+`jq`) are executed against the pinned binaries in the required CI step, with
+their actual help captured. No cluster credentials are used by these calls.
+
+Conditional calls were reviewed without changing the approved provisioning:
+
+| Existing call | Review source / execution boundary |
+| --- | --- |
+| `mpirun --version` | [Open MPI 4.1 manual](https://www.open-mpi.org/doc/v4.1/man1/mpirun.1.php); version output exits without launching an MPI job |
+| `ucx_info -v` | [UCX 1.16 help source](https://github.com/openucx/ucx/blob/v1.16.0/src/tools/info/ucx_info.c); version flag |
+| `apptainer --version` | [Apptainer 1.4 help](https://apptainer.org/docs/user/1.4/quick_start.html); global version flag |
+| `srun --version` | [Slurm manual](https://slurm.schedmd.com/srun.html); prints version and exits |
+| `nvidia-ctk --version` | [Pinned toolkit v1.20.1 CLI source](https://github.com/NVIDIA/nvidia-container-toolkit/blob/v1.20.1/cmd/nvidia-ctk/main.go); CLI version output |
+| `nvidia-smi` and driver query | [NVIDIA CLI reference](https://docs.nvidia.com/deploy/nvidia-smi/index.html); default summary and `--query-gpu=driver_version --format=csv,noheader` require a loaded NVIDIA driver/GPU |
+
+The HPC packages come from Ubuntu/APT and the existing Apptainer PPA without
+exact package-version pins; the driver is the approved auto-selection with a
+550+ floor. These are source/help reviews, not claims of matching pinned
+HPC/driver binaries or hardware acceptance. `INSTALL_HPC=false` and GPU disabled
+remain the dev profile. CI installs only the pinned host CLI suite; it does not
+install optional HPC packages, drivers or enable GPU/HPC workloads.
+
+### Resume after a validation failure (owner, after merge)
+
+`host-check` now has `pre-bootstrap`, `resume`, and `post-bootstrap` modes.
+`resume` requires a non-ready result, owned `admin.conf`, the exact kubeadm
+cluster name/API endpoint, node name/InternalIP and kube-apiserver/etcd/kubelet
+listener owners. Wrong identities or occupied ports without `admin.conf` block.
+It reports `PASS (bootstrap-owned cluster, incomplete)`; it is not completed
+bootstrap acceptance. Amendment 2's input replacement rules remain unchanged.
+
+From merged `main`, the owner runs `host-check`, then `host-bootstrap`, then
+`host-check` again. Expected modes are `resume`, followed by a bootstrap result
+`ready`, then `post-bootstrap`. Module -1's unchanged existing-cluster branch
+skips `kubeadm init`; fake tests make any init/reset call fail and verify static
+Pod, PKI and admin.conf bytes remain unchanged. Dev log caps, labels and
+`complete.json` follow successful validation. No automatic reset is added.
+
 WO-31 Amendment 4 makes the shared etcd strategic patch use Kubernetes' `mountPath`
 merge key from the rendered kubeadm `certificatesDir` (default
 `/etc/kubernetes/pki/etcd`). The preview rejects a missing, duplicated, writable

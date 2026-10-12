@@ -46,6 +46,7 @@ failure. Codex did not inspect or reset the Dell.
 | host-check / SSH hardening / integrity lockdown | Pending | Real sanitized report and effective settings |
 | Amendment 2 BPF migration / incomplete bootstrap re-run | Pending | Exact legacy unit disabled/removed; existing bpffs retained; containerd starts; new verified staging receipt; bootstrap images staged and kubeadm init completes |
 | Amendment 4 real kubeadm preview and init | Pending | Fresh bootstrap unit passes both preview phases; generated etcd has exactly one etcd-certs mount at the configured certificatesDir/etcd with readOnly true; real kubeadm init completes |
+| Amendment 5 identity-verified validation resume | Pending | From merged main, host-check reports resume with all identities verified; host-bootstrap skips init/reset and finishes ready, log caps, labels and complete.json; final host-check reports post-bootstrap passed |
 | LAN 22/6443 reachable, 2379/10250 blocked | Pending | Laptop connection results |
 | Argo CD syncs from GitHub through the host firewall | Pending | Firewall confirmed/enabled; GitHub repository fetch and successful sync with Synced/Healthy application status |
 | Node Ready / Cilium healthy under lockdown | Pending | Actual status and deny-policy proof |

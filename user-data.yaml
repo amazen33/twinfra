@@ -1,5 +1,5 @@
 #cloud-config
-# Generated; script SHA256=ee4a1e608b931420d20f7d17624e6d3301642de41705a51528f6289cd8dc8567.
+# Generated; script SHA256=d291351c2decbef9a7c9a81087ca9e340ec5bb7373102d7c3ce15475d3b6d5d6.
 # Source template. Run `python3 tools/render_cloud_init.py` after changing the script.
 # The generated user-data.yaml embeds the complete script; it requires no script URL.
 package_update: true
@@ -3336,7 +3336,7 @@ write_files:
       assert 'cri' not in data.get('disabled_plugins', []), 'CRI is disabled'
       PY
           kubectl version --client; kubeadm version -o short; helm version --short; cilium version --client
-          kubeconform -v; tkn version --client; argocd version --client; yq --version; jq --version
+          kubeconform -v; tkn version --component client; argocd version --client; yq --version; jq --version
           if [[ $INSTALL_HPC == true ]]; then
               mpirun --version; ucx_info -v; apptainer --version; srun --version
           fi

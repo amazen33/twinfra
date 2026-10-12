@@ -316,3 +316,50 @@ could not apply the following patch of type "application/strategic-merge-patch+j
 ### Live (owner, after merge)
 
 Pull `main` and run `host-bootstrap` again. Amendment 2's re-run rule applies.
+
+## Amendment 5 (2026-10-12, architect): the final validation step uses a wrong `tkn` flag, and a half-finished bootstrap cannot resume
+
+**Evidence from the Dell.** Bootstrap `twinfra-bootstrap-eaee89bc810f4f3dae4a5f4e6f41c507` (15:57 UTC) used PR #43's code. **`kubeadm init` succeeded**, and the cluster is healthy:
+- node `twinfra-dev-cairo-1` is `Ready` with InternalIP 192.168.1.3 and containerd 2.2.1;
+- etcd, the API server, controller-manager, scheduler, Cilium (agent, operator, envoy) and CoreDNS are all `Running`, with Cilium on the staged digest-only images;
+- the SSoT namespaces and default-deny policies were applied.
+
+The run then failed in the last phase, `validation`, at `00-setup-ubuntu-host.sh:3285`: `Error: unknown flag: --client`. That came from `tkn version --client`; tkn is pinned at v0.46.1. `result.json` therefore says `status: failed, phase: validation`.
+
+**Then the next `host-bootstrap` was refused.** `host-check` saw `Reserved ports: BLOCK, occupied before verified bootstrap`. Amendment 1's two modes don't cover a cluster that kubeadm created but whose bootstrap didn't reach `ready`.
+
+### Fix 1: the version line (shared script; production render may change only here and in derived checksums)
+
+1. **The `tkn` call.** Replace `tkn version --client` with the form the pinned tkn v0.46.1 supports for client-only output. That is expected to be `tkn version --component client`; check it against the pinned binary's `--help`.
+2. **Check every version call.** Review every other version call on lines 3284–3285 (and the HPC and GPU ones) against its pinned tool in the same way.
+3. **CI guard.** Extend the Amendment 4 CI step:
+   - Install the pinned CLI tools exactly as `install_cli` does (same URLs, same checksums) into a temporary directory.
+   - Run the exact version commands from `validate_host`.
+   - If that needs more than `sudo` and the pinned download hosts, stop and report.
+
+### Fix 2: resume an incomplete bootstrap (`host-admin.py`, `host-check`)
+
+1. **A third mode, `resume`.** It applies only when **all** of these are true:
+   - `result.json` exists and is **not** `ready`;
+   - `/etc/kubernetes/admin.conf` exists;
+   - `kube-system/kubeadm-config` has `clusterName` `twinfra-dev-cairo-1` and `controlPlaneEndpoint` `api.dev.cairo-1.twinfra.example.com:6443`;
+   - the node `twinfra-dev-cairo-1` has InternalIP `192.168.1.3`;
+   - `ss` shows 6443 / 2379–2380 / 10250 owned by `kube-apiserver` / `etcd` / `kubelet`.
+
+   If anything differs, it stays BLOCK.
+2. **What the mode means.**
+   - In `resume`, the ports report `PASS (bootstrap-owned cluster, incomplete)`, and `host-bootstrap` may run Module -1 again.
+   - The acceptance item "`host-check` passes" still means the **post-bootstrap (`ready`)** mode.
+3. **The re-run must not touch the existing cluster.** Confirm, and test, that Module -1 skips `kubeadm init` when the cluster already exists and is the expected one: the same identity checks as above. **If Module -1 would re-initialise, reset or overwrite the existing cluster, stop and report.** Never add an automatic `kubeadm reset`.
+4. **Staging inputs.** The input-replacement rule from Amendment 2 still applies; the result is not `ready` and there's no `complete.json`.
+5. **Tests (fake host):**
+   - `resume` passes with everything matching;
+   - a wrong cluster name, InternalIP or port owner blocks;
+   - with no `admin.conf` and ports in use: blocked;
+   - Module -1's skip-init path, with a fake `kubeadm` that fails if `init` is called.
+
+### Live (owner, after merge, from merged `main` only)
+
+1. Run `host-check`: the mode is `resume`.
+2. Run `host-bootstrap`: it should finish with `ready`, then the dev log caps, the node labels and `complete.json`.
+3. Run `host-check` again: mode `post-bootstrap`, status `passed`.

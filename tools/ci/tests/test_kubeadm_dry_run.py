@@ -57,6 +57,31 @@ class KubeadmGuardTests(unittest.TestCase):
         self.assertNotIn('-R', command)
         self.assertNotIn('/etc/kubernetes', ' '.join(command))
 
+    def test_version_commands_are_taken_from_shared_validation_and_client_only(self):
+        source=ROOT.parents[1]/'00-setup-ubuntu-host.sh'
+        commands=guard.version_commands(source)
+        self.assertEqual(commands[0],['kubectl','version','--client'])
+        self.assertIn(['tkn','version','--component','client'],commands)
+        self.assertIn(['cilium','version','--client'],commands)
+        self.assertIn(['argocd','version','--client'],commands)
+        with tempfile.TemporaryDirectory() as tmp:
+            bad=Path(tmp)/'host.sh';bad.write_text(source.read_text().replace('kubectl version --client;',''))
+            with self.assertRaisesRegex(ValueError,'Missing/unexpected'):guard.version_commands(bad)
+
+    def test_cli_archive_and_shared_binary_stamp_must_both_match(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);work=root/'work';state=root/'state';binaries=root/'bin'
+            for folder in (work,state,binaries):folder.mkdir()
+            (work/'release.tar.gz').write_bytes(b'archive');(binaries/'tkn').write_bytes(b'binary')
+            archive=hashlib.sha256(b'archive').hexdigest();binary=hashlib.sha256(b'binary').hexdigest()
+            lock=dict(artifacts=dict(tkn=dict(asset='release.tar.gz',sha256=archive,version='v0.46.1')))
+            (state/'cli-tkn').write_text('v0.46.1/amd64\n'+binary+'\n')
+            guard.verify_cli_install(work,state,binaries,lock)
+            (binaries/'tkn').write_bytes(b'tampered')
+            with self.assertRaisesRegex(ValueError,'stamp/version/binary'):guard.verify_cli_install(work,state,binaries,lock)
+            (work/'release.tar.gz').write_bytes(b'tampered')
+            with self.assertRaisesRegex(ValueError,'release checksum'):guard.verify_cli_install(work,state,binaries,lock)
+
 
 if __name__ == '__main__':
     unittest.main()

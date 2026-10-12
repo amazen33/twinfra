@@ -3282,7 +3282,7 @@ for name, settings in runtime['containerd']['runtimes'].items():
 assert 'cri' not in data.get('disabled_plugins', []), 'CRI is disabled'
 PY
     kubectl version --client; kubeadm version -o short; helm version --short; cilium version --client
-    kubeconform -v; tkn version --client; argocd version --client; yq --version; jq --version
+    kubeconform -v; tkn version --component client; argocd version --client; yq --version; jq --version
     if [[ $INSTALL_HPC == true ]]; then
         mpirun --version; ucx_info -v; apptainer --version; srun --version
     fi

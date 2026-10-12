@@ -93,6 +93,11 @@
       "sha256": "ddbc4a2d113bbd46d283cfedcbcd117a70caefd7673f41f2b4e0000badf103bc",
       "output": "lib/powershell/pwsh",
       "runtimeArchive": true
+    },
+    "kubectl": {
+      "url": "https://dl.k8s.io/release/v1.36.5/bin/linux/amd64/kubectl",
+      "sha256": "33bc88a24c3b09cf55bfd59e6ca977881b61fc3f25ab65bc80c65b430248648e",
+      "output": "bin/kubectl"
     }
   }
 }

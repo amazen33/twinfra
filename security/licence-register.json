@@ -10826,6 +10826,40 @@
       ]
     },
     {
+      "id": "tool|argoproj/argo-cd/argocd-linux-amd64|v3.5.3",
+      "ecosystem": "tool",
+      "name": "argoproj/argo-cd/argocd-linux-amd64",
+      "version": "v3.5.3",
+      "locations": [
+        "tools/ci/host-cli.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.3/LICENSE",
+      "verifiedOn": "2026-10-12",
+      "recordedOn": "2026-10-12",
+      "integrities": [
+        "sha256:b860f73f57cbddd993cd446f5236d797c1b1ac8554857b2683d2669f17e765b4"
+      ]
+    },
+    {
+      "id": "tool|cilium/cilium-cli/cilium-linux-amd64.tar.gz|v0.20.1",
+      "ecosystem": "tool",
+      "name": "cilium/cilium-cli/cilium-linux-amd64.tar.gz",
+      "version": "v0.20.1",
+      "locations": [
+        "tools/ci/host-cli.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/cilium/cilium-cli/v0.20.1/LICENSE",
+      "verifiedOn": "2026-10-12",
+      "recordedOn": "2026-10-12",
+      "integrities": [
+        "sha256:24e817dcfcc8a12e325ce7547617bcbcf171c5b0b335bb24d2bb1207ba047f61"
+      ]
+    },
+    {
       "id": "tool|dl.k8s.io/release/v1.36.5/bin/linux/amd64/kubeadm|be2f2c73cd6d3414b37aafb05016bc3a1da3e17c8393aa75c34636198fefa77c",
       "ecosystem": "tool",
       "name": "dl.k8s.io/release/v1.36.5/bin/linux/amd64/kubeadm",
@@ -10843,13 +10877,31 @@
       ]
     },
     {
+      "id": "tool|dl.k8s.io/release/v1.36.5/bin/linux/amd64/kubectl|33bc88a24c3b09cf55bfd59e6ca977881b61fc3f25ab65bc80c65b430248648e",
+      "ecosystem": "tool",
+      "name": "dl.k8s.io/release/v1.36.5/bin/linux/amd64/kubectl",
+      "version": "33bc88a24c3b09cf55bfd59e6ca977881b61fc3f25ab65bc80c65b430248648e",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/kubernetes/kubernetes/v1.36.5/LICENSE",
+      "verifiedOn": "2026-10-12",
+      "recordedOn": "2026-10-12",
+      "integrities": [
+        "sha256:33bc88a24c3b09cf55bfd59e6ca977881b61fc3f25ab65bc80c65b430248648e"
+      ]
+    },
+    {
       "id": "tool|get.helm.sh/helm-v3.22.0-linux-amd64.tar.gz|1e4ab49e429626cf6c6958d914248b78c9730803c2751b87627e171dc800e7bb",
       "ecosystem": "tool",
       "name": "get.helm.sh/helm-v3.22.0-linux-amd64.tar.gz",
       "version": "1e4ab49e429626cf6c6958d914248b78c9730803c2751b87627e171dc800e7bb",
       "locations": [
         "module-3/toolchain.lock.json",
-        "tools/ci/toolchain.lock.json"
+        "tools/ci/toolchain.lock.json",
+        "tools/ci/host-cli.lock.json"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",
@@ -10934,6 +10986,23 @@
       "adr": "0042"
     },
     {
+      "id": "tool|kubernetes-sigs/cri-tools/crictl-v1.36.0-linux-amd64.tar.gz|v1.36.0",
+      "ecosystem": "tool",
+      "name": "kubernetes-sigs/cri-tools/crictl-v1.36.0-linux-amd64.tar.gz",
+      "version": "v1.36.0",
+      "locations": [
+        "tools/ci/host-cli.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/kubernetes-sigs/cri-tools/v1.36.0/LICENSE",
+      "verifiedOn": "2026-10-12",
+      "recordedOn": "2026-10-12",
+      "integrities": [
+        "sha256:83855e114566a8a8c44c548d515670f51de3a5e1da8b2effb59870e2f10c25a3"
+      ]
+    },
+    {
       "id": "tool|kubernetes-sigs/kustomize/kustomize_v5.8.1_linux_amd64.tar.gz|kustomize/v5.8.1",
       "ecosystem": "tool",
       "name": "kubernetes-sigs/kustomize/kustomize_v5.8.1_linux_amd64.tar.gz",
@@ -10956,7 +11025,8 @@
       "name": "mikefarah/yq/yq_linux_amd64",
       "version": "v4.54.1",
       "locations": [
-        "tools/ci/toolchain.lock.json"
+        "tools/ci/toolchain.lock.json",
+        "tools/ci/host-cli.lock.json"
       ],
       "spdx": "MIT",
       "class": "allowed",
@@ -11086,13 +11156,31 @@
       ]
     },
     {
+      "id": "tool|tektoncd/cli/tkn_0.46.1_Linux_x86_64.tar.gz|v0.46.1",
+      "ecosystem": "tool",
+      "name": "tektoncd/cli/tkn_0.46.1_Linux_x86_64.tar.gz",
+      "version": "v0.46.1",
+      "locations": [
+        "tools/ci/host-cli.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/tektoncd/cli/v0.46.1/LICENSE",
+      "verifiedOn": "2026-10-12",
+      "recordedOn": "2026-10-12",
+      "integrities": [
+        "sha256:bc9fe51595af87cee422ae19a62ab46c8cdcb0a74f7157ffa8b9a9ef39b3d390"
+      ]
+    },
+    {
       "id": "tool|yannh/kubeconform/kubeconform-linux-amd64.tar.gz|v0.8.0",
       "ecosystem": "tool",
       "name": "yannh/kubeconform/kubeconform-linux-amd64.tar.gz",
       "version": "v0.8.0",
       "locations": [
         "module-3/toolchain.lock.json",
-        "tools/ci/toolchain.lock.json"
+        "tools/ci/toolchain.lock.json",
+        "tools/ci/host-cli.lock.json"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",

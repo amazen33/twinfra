@@ -47,13 +47,13 @@
     {
       "id": "image-digest:00-setup-ubuntu-host.sh",
       "kind": "image-digest",
-      "reason": "Existing image references need immutable digest evidence; owner-approved WO-31 Amendments 2 and 4 change only BPF/etcd compatibility and preview blocks and derived render hashes; image references and expiry unchanged",
+      "reason": "Existing image references need immutable digest evidence; owner-approved WO-31 Amendments 2, 4 and 5 change only BPF/etcd compatibility, preview and tkn client-version blocks and derived render hashes; image references and expiry unchanged",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Existing image references need immutable digest evidence",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "00-setup-ubuntu-host.sh",
-      "fingerprint": "ee4a1e608b931420d20f7d17624e6d3301642de41705a51528f6289cd8dc8567"
+      "fingerprint": "d291351c2decbef9a7c9a81087ca9e340ec5bb7373102d7c3ce15475d3b6d5d6"
     },
     {
       "id": "image-digest:deploy/kustomize/base/argocd/install.yaml",
@@ -1184,7 +1184,7 @@
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "tools/ci/toolchain.lock.json",
-      "fingerprint": "4b62f1860a38bc287416d2d55bd843273645bd5d77a26bec9e27892e997c9d4f"
+      "fingerprint": "52bb9e92f63c53ae381b616f8fcf1f14c98e24289a6ad874dda54635e29116a8"
     },
     {
       "id": "schema-source:deploy/common/schema.lock.json",

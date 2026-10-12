@@ -88,6 +88,7 @@ def inventory(expected):
     # Only three effective SSH values are reported. Never expose key material.
     ssh={line.split()[0]:line.split()[1] for line in settings.splitlines()
          if line.split() and line.split()[0] in ('passwordauthentication','kbdinteractiveauthentication','permitrootlogin')}
+    admin=at('/etc/kubernetes/admin.conf');secure(admin)
     state={'os':fields(read('/etc/os-release')),'architecture':run(['uname','-m']).strip(),
         'vtX':bool(re.search(r'\bvmx\b',cpu)),'kvm':at('/dev/kvm').exists(),
         'ramGiB':int(mem[1])/1024**2 if mem else 0,
@@ -97,8 +98,8 @@ def inventory(expected):
         'timeSynced':run(['timedatectl','show','-p','NTPSynchronized','--value']).strip()=='yes',
         'addresses':[a['local'] for iface in addresses for a in iface['addr_info'] if a.get('family')=='inet'],
         'secureBoot':len(boot)==5 and boot[4]==1,'lockdown':read('/sys/kernel/security/lockdown').strip(),
-        'sshd':ssh,'listeners':listeners,'result':result,'cluster':{},'nodes':[]}
-    if result and result.get('status')=='ready':
+        'sshd':ssh,'listeners':listeners,'result':result,'adminConf':admin.is_file(),'cluster':{},'nodes':[]}
+    if result and admin.is_file():
         cm=json.loads(run(['kubectl','--kubeconfig','/etc/kubernetes/admin.conf','-n','kube-system','get','configmap','kubeadm-config','-o','json']))
         raw=cm.get('data',{}).get('ClusterConfiguration','')
         state['cluster']={key:config_value(raw,key) for key in ('clusterName','controlPlaneEndpoint')}
@@ -120,20 +121,25 @@ def evaluate(state, expected):
     checks.append({'name':'Swap','status':'WARN' if state['swap'] else 'PASS','detail':'active; shared bootstrap disables it' if state['swap'] else 'off'})
     checks.append({'name':'sshd effective settings','status':'INFO','detail':state['sshd']})
     result=state['result'];post=bool(result and result.get('status')=='ready')
-    mode='post-bootstrap' if post else 'pre-bootstrap'
-    if not post:
-        add('Reserved ports',not state['listeners'],'free' if not state['listeners'] else 'occupied before verified bootstrap')
+    resume=bool(isinstance(result,dict) and isinstance(result.get('status'),str) and not post and state.get('adminConf'))
+    mode='post-bootstrap' if post else 'resume' if resume else 'pre-bootstrap'
+    if not post and not resume:
+        free=not state['listeners'] and not state.get('adminConf')
+        detail='admin.conf exists without a valid bootstrap result' if state.get('adminConf') else 'free' if free else 'occupied before verified bootstrap'
+        add('Reserved ports',free,detail)
     else:
-        ready=result.get('kubernetes')==expected['kubernetes'] and result.get('mirror_status')=='staged-verified'
+        ready=bool(state.get('adminConf'))
+        if post:ready=ready and result.get('kubernetes')==expected['kubernetes'] and result.get('mirror_status')=='staged-verified'
         cluster=state['cluster']
         ready=ready and cluster.get('clusterName')==expected['context'] and cluster.get('controlPlaneEndpoint')==expected['endpoint']
         nodes=[n for n in state['nodes'] if n.get('metadata',{}).get('name')==expected['node']]
         ready=ready and len(nodes)==1 and [a['address'] for a in nodes[0]['status']['addresses'] if a['type']=='InternalIP']==[expected['ip']]
-        if nodes:ready=ready and any(c.get('type')=='Ready' and c.get('status')=='True' for c in nodes[0]['status'].get('conditions',[]))
+        if post and nodes:ready=ready and any(c.get('type')=='Ready' and c.get('status')=='True' for c in nodes[0]['status'].get('conditions',[]))
         for port,owner in PORTS.items():
             matches=[l for l in state['listeners'] if l['port']==port]
             ready=ready and bool(matches) and all(set(l['owners'])=={owner} for l in matches)
-        add('Reserved ports / cluster ownership',bool(ready),'bootstrap-owned cluster verified' if ready else 'bootstrap identity/version/listener verification failed')
+        detail='bootstrap-owned cluster, incomplete' if resume else 'bootstrap-owned cluster verified'
+        add('Reserved ports / cluster ownership',bool(ready),detail if ready else 'bootstrap identity/version/listener verification failed')
     return {'status':'failed' if any(c['status']=='BLOCK' for c in checks) else 'passed','mode':mode,'checks':checks}
 
 
