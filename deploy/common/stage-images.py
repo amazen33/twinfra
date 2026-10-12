@@ -46,9 +46,19 @@ def cached(runner):
     return result
 
 
+def cri_reference(canonical):
+    """ParseDockerRef drops a tag when a digest is present; preserve host ports."""
+    if '@' not in canonical:
+        return canonical
+    repository, sha = canonical.rsplit('@', 1)
+    if ':' in repository.rsplit('/', 1)[-1]:
+        repository = repository.rsplit(':', 1)[0]
+    return repository + '@' + sha
+
+
 def cri_problem(item, runner):
     try:
-        info = json.loads(runner(['crictl', 'inspecti', item['canonical']]))
+        info = json.loads(runner(['crictl', 'inspecti', cri_reference(item['canonical'])]))
     except (ValueError, json.JSONDecodeError):
         return 'CRI missing or digest mismatch'
     digests = info.get('status', {}).get('repoDigests', [])
@@ -67,10 +77,14 @@ def stage(lock, check=False, verify_cri=True, runner=run):
     problems = []
     for key, item in images.items():
         actual = state.get(item['canonical'])
-        if actual is None:
-            problems.append({'name': key, 'reason': 'missing', 'image': item['canonical']})
-        elif actual != item['digest']:
+        normalized = cri_reference(item['canonical'])
+        alias = state.get(normalized)
+        if any(value is not None and value != item['digest'] for value in (actual, alias)):
             problems.append({'name': key, 'reason': 'digest mismatch', 'image': item['canonical']})
+        elif actual is None:
+            problems.append({'name': key, 'reason': 'missing', 'image': item['canonical']})
+        elif normalized != item['canonical'] and alias is None:
+            problems.append({'name': key, 'reason': 'missing digest-only name', 'image': item['canonical']})
         elif verify_cri:
             reason = cri_problem(item, runner)
             if reason:
@@ -78,9 +92,9 @@ def stage(lock, check=False, verify_cri=True, runner=run):
     if check:
         # No temporary directory, pull, import, tag, file or runtime writes.
         return problems
-    # A matching owned cache entry may need its pin upgraded; never repair a
-    # mismatched digest. CRI checks below still fail closed after the label event.
-    repairable = {p['name'] for p in problems if p['reason'] == 'unpinned'}
+    # Repair matching records' names/pins without pulling/importing again. Neither
+    # canonical nor digest-only records with the wrong digest may be adopted.
+    repairable = {p['name'] for p in problems if p['reason'] in ('unpinned', 'missing digest-only name')}
     if any(p['reason'] != 'missing' and p['name'] not in repairable for p in problems):
         raise ValueError('Staging refused: ' + ', '.join(p['name'] + ': ' + p['reason'] for p in problems))
     missing = {p['name'] for p in problems if p['reason'] == 'missing'}
@@ -97,13 +111,22 @@ def stage(lock, check=False, verify_cri=True, runner=run):
             if state.get(item['source']) != item['digest']:
                 raise ValueError('Upstream digest mismatch after pull: ' + key)
             runner(['ctr', '-n', 'k8s.io', 'images', 'tag', item['source'], item['canonical']])
-        if key in missing or key in repairable and not inspect_cri(item, runner):
-            runner(['ctr', '-n', 'k8s.io', 'images', 'label', item['canonical'],
-                    'io.cri-containerd.image=managed', 'io.cri-containerd.pinned=pinned'])
+        if key in missing or key in repairable:
+            normalized = cri_reference(item['canonical'])
+            if state.get(normalized) not in (None, item['digest']):
+                raise ValueError('Digest-only image mismatch before labels: ' + key)
+            if normalized != item['canonical'] and state.get(normalized) is None:
+                runner(['ctr', '-n', 'k8s.io', 'images', 'tag', item['canonical'], normalized])
+                state[normalized] = item['digest']
+            for reference in dict.fromkeys((item['canonical'], normalized)):
+                runner(['ctr', '-n', 'k8s.io', 'images', 'label', reference,
+                        'io.cri-containerd.image=managed', 'io.cri-containerd.pinned=pinned'])
     state = cached(runner)
     for key, item in images.items():
         if state.get(item['canonical']) != item['digest']:
             raise ValueError('Missing or mismatched image after staging: ' + key)
+        if state.get(cri_reference(item['canonical'])) != item['digest']:
+            raise ValueError('Missing or mismatched digest-only image after staging: ' + key)
         if verify_cri:
             # CRI consumes containerd image events asynchronously. Bounded reads
             # avoid a false failure immediately after a successful tag/import.

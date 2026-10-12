@@ -29,6 +29,7 @@ spec=importlib.util.spec_from_file_location('host_agent',ROOT/'deploy/common/hos
 agent=importlib.util.module_from_spec(spec);spec.loader.exec_module(agent)
 MAIN='968f336f9335739c35b79ed838dc7cfaeebff235'
 AMENDMENT_2_BASE='a8f4f434c7bed890311793590952dd5295d2e97e'
+AMENDMENT_3_BASE='a7512ed9ab059857b60e9b4848fad2287e4549ab'
 
 
 def mask_bpffs_script(raw):
@@ -625,6 +626,28 @@ class PinsAndProfiles(unittest.TestCase):
         self.assertEqual(current,baseline)
         for frozen in ('security/licence-register.json','security/licence-policy.json','tools/ci/pr-baselines.json'):
             self.assertEqual((ROOT/frozen).read_bytes().replace(b'\r\n',b'\n'),subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_2_BASE+':'+frozen]))
+
+
+    def test_amendment_3_changes_only_cairo_2_embedded_staging_agent(self):
+        def base(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_3_BASE+':'+name])
+        for name in ('00-setup-ubuntu-host.sh','host.env.example','user-data.yaml','user-data-remote.yaml',
+                     'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
+                     'deploy/environments/dev/cairo-1/host.env','deploy/environments/dev/cairo-2/seed/meta-data',
+                     'deploy/environments/dev/cairo-2/seed/network-config','security/licence-baseline.json',
+                     'security/licence-register.json','security/licence-policy.json','tools/ci/pr-baselines.json'):
+            self.assertEqual((ROOT/name).read_bytes().replace(b'\r\n',b'\n'),base(name),name)
+        self.assertEqual((ROOT/'user-data.yaml.gz').read_bytes(),base('user-data.yaml.gz'))
+        path='deploy/environments/dev/cairo-2/seed/user-data'
+        def mask(raw):
+            raw=raw.replace(b'\r\n',b'\n')
+            raw,count=re.subn(rb'(?ms)(^- path: /usr/local/lib/twinfra/stage-images.py\n  permissions: [^\n]+\n  content: ).*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',rb'\1@@AMENDMENT_3_AGENT@@\n',raw)
+            self.assertEqual(count,1)
+            return raw
+        current=(ROOT/path).read_bytes();self.assertNotEqual(current.replace(b'\r\n',b'\n'),base(path))
+        self.assertEqual(mask(current),mask(base(path)))
+        data=yaml.safe_load(current)
+        agent_code=next(f['content'] for f in data['write_files'] if f['path']=='/usr/local/lib/twinfra/stage-images.py')
+        self.assertEqual(agent_code,(ROOT/'deploy/common/stage-images.py').read_text())
 
 
 if __name__=='__main__':unittest.main()

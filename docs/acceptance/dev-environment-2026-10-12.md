@@ -2,7 +2,7 @@
 
 Environment: `twinfra-dev-cairo-1` on the Dell, namespace
 `twinfra-platform-services`. Decision: [ADR-0048](../adr/0048-cairo-1-on-bare-metal-host.md).
-Work order: [WO-31 with Amendment 1](../work-orders/WO-31-bare-metal-cairo-1.md).
+Work order: [WO-31 with Amendments 1–3](../work-orders/WO-31-bare-metal-cairo-1.md).
 
 ## Static scope
 
@@ -22,6 +22,11 @@ its shared pinning agent and dev log-cap allowances from Amendment 1 remain.
 Masked comparisons against pre-WO-31 main `968f336` and Amendment 2 base
 `a8f4f43` verify remaining bytes. No new dependencies.
 
+Amendment 3 changes only the embedded staging agent in the cairo-2 seed against
+merged PR #41 main `a7512ed`; production renders and all image locks remain
+byte-identical. Fake CRI lookup uses digest-only names for digest references;
+staging preserves the old name and pins both records. No live repair was run.
+
 ## Live acceptance
 
 | Gate | Result | Evidence to record |
@@ -35,13 +40,16 @@ Masked comparisons against pre-WO-31 main `968f336` and Amendment 2 base
 | Argo CD syncs from GitHub through the host firewall | Pending | Firewall confirmed/enabled; GitHub repository fetch and successful sync with Synced/Healthy application status |
 | Node Ready / Cilium healthy under lockdown | Pending | Actual status and deny-policy proof |
 | Actual containerd version and every image pinned | Pending | `containerd --version`; CRI pinned status |
+| Amendment 3 Cilium resolves staged digest-only names locally | Pending | Normalized `crictl inspecti` reports expected digest and pinned true; `kubectl -n kube-system get events` shows no Pulling events for Cilium agent/operator/envoy images |
 | PostgreSQL 20 GiB LV / UUID mount / ownership | Pending | LV size, mount options, 26:26 and 0700 |
 | All dev overlay Pods Running | Pending | Namespace inventory |
 | etcd WAL fsync p99 under 10 ms | Pending | Metric interval and measured value, even if target missed |
 | API through stable name / HTTPS console and Keycloak | Pending | Laptop checks and browser result |
 
-Source review confirms containerd 2.2.1's pin-label/CRI-field implementation;
-the Dell's installed package/version and runtime behavior remain unverified.
+Source review confirms containerd 2.2.1's pin-label/CRI-field implementation.
+Owner-provided Amendment 3 evidence reports containerd 2.2.1
+(`2.2.1-0ubuntu1~24.04.3`) and crictl v1.36.0 on the Dell; Codex did not inspect
+the host. Live digest-only lookup and no-Pulling acceptance remain Pending.
 OpenBao remains sealed and GPU/HPC/Spinifex remain disabled. This receipt does
 not claim HA, production readiness, backup or DR acceptance.
 

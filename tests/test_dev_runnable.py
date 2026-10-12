@@ -6,6 +6,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tarfile
@@ -41,6 +42,7 @@ class FakeCtr:
     def __init__(self, state=None, bad_pull=False, missing_after_tag=False, cri_missing=False, pinned=None, ignore_pin=False):
         self.state = state or {}
         self.pinned=set(self.state) if pinned is None else set(pinned)
+        self.managed=set(self.state)
         self.ignore_pin=ignore_pin
         self.commands = []
         self.bad_pull, self.missing_after_tag, self.cri_missing = bad_pull, missing_after_tag, cri_missing
@@ -48,7 +50,15 @@ class FakeCtr:
     def __call__(self, cmd):
         self.commands.append(cmd)
         if cmd[:2] == ['crictl', 'inspecti']:
-            return json.dumps({'status': {'pinned':cmd[2] in self.pinned,'repoDigests': [] if self.cri_missing else [cmd[2].split('@')[0] + '@' + self.state[cmd[2]]]}})
+            # Independent fake of ParseDockerRef: CRI only resolves digest-only
+            # records when a digest is supplied, even if a tag was also supplied.
+            reference=cmd[2]
+            if '@' in reference:
+                name,sha=reference.rsplit('@',1)
+                reference=re.sub(r':[^/:]+$','',name)+'@'+sha
+            if reference not in self.state or reference not in self.managed:
+                raise ValueError('No managed image under the CRI-normalized name')
+            return json.dumps({'status': {'pinned':reference in self.pinned,'repoDigests': [] if self.cri_missing else [reference.split('@')[0] + '@' + self.state[reference]]}})
         action = cmd[4]
         if action == 'list':
             return '\n'.join(name + ' manifest ' + sha + ' 1 KiB linux/amd64 -' for name, sha in self.state.items())
@@ -61,6 +71,7 @@ class FakeCtr:
             if not self.missing_after_tag:
                 self.state[cmd[-1]] = self.state[cmd[-2]]
         elif action == 'label':
+            if 'io.cri-containerd.image=managed' in cmd:self.managed.add(cmd[5])
             if 'io.cri-containerd.pinned=pinned' in cmd and not self.ignore_pin:self.pinned.add(cmd[5])
         else:
             raise AssertionError('Unexpected fake runtime action')
@@ -68,6 +79,60 @@ class FakeCtr:
 
 
 class BootstrapStaging(unittest.TestCase):
+    def tagged(self):
+        item=locked();item['canonical']=item['canonical'].replace('@',':v1.2.3@');return item
+
+    def test_tag_and_digest_staging_adds_both_pinned_names(self):
+        item=self.tagged();ctr=FakeCtr()
+        self.assertEqual(stager.stage({'images':{'sample':item}},runner=ctr),[])
+        normalized=item['canonical'].replace(':v1.2.3@','@')
+        for reference in (item['canonical'],normalized):
+            self.assertEqual(ctr.state[reference],item['digest'])
+            self.assertIn(reference,ctr.pinned);self.assertIn(reference,ctr.managed)
+        self.assertTrue(all(c[2]==normalized for c in ctr.commands if c[0]=='crictl'))
+        ctr.commands.clear()
+        self.assertEqual(stager.stage({'images':{'sample':item}},runner=ctr),[])
+        self.assertTrue(all(c[0]=='crictl' or c[4]=='list' for c in ctr.commands))
+
+    def test_existing_correct_tag_and_digest_record_is_repaired_without_pull(self):
+        item=self.tagged();ctr=FakeCtr({item['canonical']:item['digest']})
+        normalized=item['canonical'].replace(':v1.2.3@','@')
+        self.assertEqual(stager.stage({'images':{'sample':item}},runner=ctr),[])
+        self.assertEqual(ctr.state[normalized],item['digest']);self.assertIn(normalized,ctr.pinned)
+        self.assertFalse(any(c[0]=='ctr' and c[4] in ('pull','import') for c in ctr.commands))
+
+    def test_tag_only_entry_keeps_its_name_and_label_contract(self):
+        item=locked();item['canonical']=item['canonical'].split('@')[0]+':v1.2.3';ctr=FakeCtr()
+        self.assertEqual(stager.stage({'images':{'sample':item}},runner=ctr),[])
+        self.assertTrue(all(c[2]==item['canonical'] for c in ctr.commands if c[0]=='crictl'))
+        tags=[c for c in ctr.commands if c[0]=='ctr' and c[4]=='tag']
+        self.assertEqual(tags,[['ctr','-n','k8s.io','images','tag',item['source'],item['canonical']]])
+        self.assertIn(item['canonical'],ctr.pinned)
+
+    def test_wrong_canonical_or_digest_alias_is_refused_without_writes(self):
+        item=self.tagged();normalized=item['canonical'].replace(':v1.2.3@','@')
+        for wrong in (item['canonical'],normalized):
+            state={item['canonical']:item['digest'],normalized:item['digest']};state[wrong]='sha256:'+'b'*64
+            ctr=FakeCtr(state)
+            with self.assertRaisesRegex(ValueError,'digest mismatch'):stager.stage({'images':{'sample':item}},runner=ctr)
+            self.assertEqual(ctr.state,state);self.assertTrue(all(c[0]=='ctr' and c[4]=='list' for c in ctr.commands))
+
+    def test_check_missing_digest_alias_and_unpinned_are_readonly(self):
+        item=self.tagged();normalized=item['canonical'].replace(':v1.2.3@','@')
+        for state,pins,reason in (({item['canonical']:item['digest']},None,'missing digest-only name'),
+                                 ({item['canonical']:item['digest'],normalized:item['digest']},[], 'unpinned')):
+            ctr=FakeCtr(state,pinned=pins);before=(dict(ctr.state),set(ctr.pinned),set(ctr.managed))
+            with patch.object(stager.tempfile,'TemporaryDirectory',side_effect=AssertionError('check wrote temp files')):
+                self.assertEqual(stager.stage({'images':{'sample':item}},check=True,runner=ctr)[0]['reason'],reason)
+            self.assertEqual(before,(ctr.state,ctr.pinned,ctr.managed))
+            self.assertTrue(all(c[0]=='crictl' or c[4]=='list' for c in ctr.commands))
+
+    def test_digest_normalization_preserves_registry_port(self):
+        item=self.tagged();item['canonical']=item['canonical'].replace('registry.twinfra.example.com/','registry.twinfra.example.com:443/')
+        self.assertEqual(stager.cri_reference(item['canonical']),item['canonical'].replace(':v1.2.3@','@'))
+        for reference in (item['canonical'],locked()['canonical'],'registry.twinfra.example.com/repo:v1.2.3'):
+            self.assertEqual(ssh_stage.cri_reference(reference),stager.cri_reference(reference))
+
     def test_digest_mismatch_stops_before_tag(self):
         ctr = FakeCtr(bad_pull=True)
         with self.assertRaisesRegex(ValueError, 'Upstream digest mismatch'):
@@ -120,13 +185,58 @@ class FakeSSH:
 class ApplicationStaging(unittest.TestCase):
     def fixture(self):
         data = json.loads((dev.COMMON / 'images.lock.json').read_text())
-        return {e['canonical']: e['digest'] for e in data['images'].values()}
+        return {ref:e['digest'] for e in data['images'].values() for ref in (e['canonical'],stager.cri_reference(e['canonical']))}
+
+    def test_fake_ssh_repairs_digest_alias_for_upstream_and_built_cache(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);common=root/'deploy/common';common.mkdir(parents=True)
+            upstream=locked('upstream');local=locked('built')|{'buildReceipt':'fixture'}
+            for item in (upstream,local):item['canonical']=item['canonical'].replace('@',':v1.2.3@')
+            (common/'images.lock.json').write_text(json.dumps({'images':{'upstream':upstream,'console':local}}))
+            ctr=FakeCtr({i['canonical']:i['digest'] for i in (upstream,local)});ssh=FakeSSH(ctr)
+            with patch.object(ssh_stage,'ROOT',root),patch.object(ssh_stage,'validate_archive',side_effect=AssertionError('Repair requested archive')):
+                self.assertEqual(ssh_stage.stage_applications('twinfra-dev-cairo-1','operator@192.168.1.3',transport=ssh)['problems'],[])
+            for item in (upstream,local):
+                normalized=item['canonical'].replace(':v1.2.3@','@')
+                self.assertEqual(ctr.state[normalized],item['digest']);self.assertIn(normalized,ctr.pinned);self.assertIn(normalized,ctr.managed)
+            self.assertFalse(any(c[0]=='ctr' and c[4] in ('pull','import') for c in ctr.commands))
+            ctr.commands.clear();ssh.calls.clear()
+            with patch.object(ssh_stage,'ROOT',root):
+                self.assertEqual(ssh_stage.stage_applications('twinfra-dev-cairo-1','operator@192.168.1.3',check=True,transport=ssh)['problems'],[])
+            self.assertEqual(ssh.calls,[('agent',True)])
+            self.assertTrue(all(c[0]=='crictl' or c[4]=='list' for c in ctr.commands))
 
     def test_fake_ssh_already_staged_is_noop(self):
         ctr = FakeCtr(self.fixture());ssh = FakeSSH(ctr)
         report = ssh_stage.stage_applications('twinfra-dev-cairo-1', 'operator@10.50.0.10', transport=ssh)
         self.assertEqual(report['problems'], [])
         self.assertTrue(all(c[0] == 'crictl' or c[4] == 'list' for c in ctr.commands))
+
+    def test_new_local_tag_digest_import_handles_delayed_cri_lookup(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);common=root/'deploy/common';common.mkdir(parents=True)
+            upstream=locked('upstream');local=locked('built')|{'buildReceipt':'fixture'}
+            local['canonical']=local['canonical'].replace('@',':v1.2.3@')
+            normalized=local['canonical'].replace(':v1.2.3@','@');imported=local['canonical'].split('@')[0]+':build'
+            (common/'images.lock.json').write_text(json.dumps({'images':{'upstream':upstream,'console':local}}))
+            archive=root/'console.oci.tar';archive.write_bytes(b'fixture; graph validation covered by existing real OCI tests')
+            class DelayedCRI(FakeCtr):
+                pending=2
+                def __call__(self,cmd):
+                    if cmd[:2]==['crictl','inspecti'] and cmd[2]==normalized and self.pending:
+                        self.commands.append(cmd);self.pending-=1;raise ValueError('CRI event not yet consumed')
+                    return super().__call__(cmd)
+            ctr=DelayedCRI({upstream['canonical']:upstream['digest']});ssh=FakeSSH(ctr);original=ssh.run
+            def run(cmd,archive=None):
+                if 'import' in cmd:
+                    ssh.calls.append(('command',cmd));ctr.state[imported]=local['digest'];return b''
+                return original(cmd,archive)
+            with patch.object(ssh_stage,'ROOT',root),patch.object(ssh_stage,'validate_archive',return_value=imported),patch.object(ssh,'run',side_effect=run),patch.object(ssh_stage.time,'sleep'):
+                self.assertEqual(ssh_stage.stage_applications('twinfra-dev-cairo-1','operator@192.168.1.3',archive_dir=root,transport=ssh)['problems'],[])
+            for reference in (local['canonical'],normalized):
+                self.assertEqual(ctr.state[reference],local['digest']);self.assertIn(reference,ctr.pinned);self.assertIn(reference,ctr.managed)
+            self.assertEqual(ctr.pending,0)
+            self.assertGreaterEqual(sum(c[:2]==['crictl','inspecti'] and c[2]==normalized for c in ctr.commands),3)
 
     def test_fake_ssh_digest_mismatch_fails_before_mutation(self):
         state = self.fixture();state[next(iter(state))] = 'sha256:' + 'b' * 64

@@ -76,6 +76,29 @@ class SSH:
             raise ValueError('VM did not return a valid image-staging report') from None
 
 
+def cri_reference(canonical):
+    # Same standalone normalization as stage-images.py; no new runtime library.
+    if '@' not in canonical:
+        return canonical
+    repository, sha = canonical.rsplit('@', 1)
+    if ':' in repository.rsplit('/', 1)[-1]:
+        repository = repository.rsplit(':', 1)[0]
+    return repository + '@' + sha
+
+
+def pin_canonical(ssh, item):
+    lines = ssh.run(['sudo', '-n', 'ctr', '-n', 'k8s.io', 'images', 'list']).decode().splitlines()
+    actual = {f[0]: f[2] for line in lines if len(f := line.split()) >= 3 and f[2].startswith('sha256:')}
+    canonical = item['canonical'];normalized = cri_reference(canonical)
+    if actual.get(canonical) != item['digest'] or actual.get(normalized) not in (None, item['digest']):
+        raise ValueError('Canonical or digest-only OCI digest mismatch before labels')
+    if normalized != canonical and normalized not in actual:
+        ssh.run(['sudo', '-n', 'ctr', '-n', 'k8s.io', 'images', 'tag', canonical, normalized])
+    for reference in dict.fromkeys((canonical, normalized)):
+        ssh.run(['sudo', '-n', 'ctr', '-n', 'k8s.io', 'images', 'label', reference,
+                 'io.cri-containerd.image=managed', 'io.cri-containerd.pinned=pinned'])
+
+
 def stage_applications(context, target, check=False, archive_dir=None, transport=None):
     ssh = transport or SSH(target, context)
     lock = json.loads((ROOT / 'deploy/common/images.lock.json').read_text())
@@ -85,11 +108,10 @@ def stage_applications(context, target, check=False, archive_dir=None, transport
     report = ssh.agent(lock, check=True)
     if check:
         return report
-    if any(p['reason'] not in ('missing', 'unpinned') for p in report['problems']):
+    if any(p['reason'] not in ('missing', 'unpinned', 'missing digest-only name') for p in report['problems']):
         raise ValueError('Staging refused: existing canonical image/CRI digest mismatch')
-    missing = {p['name'] for p in report['problems']}
-    unpinned = {p['name'] for p in report['problems'] if p['reason'] == 'unpinned'}
-    missing -= unpinned
+    missing = {p['name'] for p in report['problems'] if p['reason'] == 'missing'}
+    repairable = {p['name'] for p in report['problems'] if p['reason'] in ('unpinned', 'missing digest-only name')}
     directory = archive_dir or ROOT / '.build/dev-images'
     archives = {}
     for name, filename in [('console', 'console.oci.tar'), ('postgres', 'postgresql-pgvector.tar')]:
@@ -110,12 +132,10 @@ def stage_applications(context, target, check=False, archive_dir=None, transport
         if actual.get(imported) != item['digest']:
             raise ValueError('Imported OCI digest mismatch: ' + name)
         ssh.run(['sudo', '-n', 'ctr', '-n', 'k8s.io', 'images', 'tag', imported, item['canonical']])
-        ssh.run(['sudo', '-n', 'ctr', '-n', 'k8s.io', 'images', 'label', item['canonical'],
-                 'io.cri-containerd.image=managed', 'io.cri-containerd.pinned=pinned'])
-    for name in unpinned:
+        pin_canonical(ssh, item)
+    for name in repairable:
         if lock['images'][name].get('buildReceipt'):
-            ssh.run(['sudo', '-n', 'ctr', '-n', 'k8s.io', 'images', 'label', lock['images'][name]['canonical'],
-                     'io.cri-containerd.image=managed', 'io.cri-containerd.pinned=pinned'])
+            pin_canonical(ssh, lock['images'][name])
     # CRI learns new managed image records asynchronously. Bound read-only retries;
     # --check above remains a single snapshot and never enters this staging path.
     for attempt in range(5):
