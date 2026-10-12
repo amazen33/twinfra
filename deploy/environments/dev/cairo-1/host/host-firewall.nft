@@ -9,12 +9,9 @@ table inet twinfra_host {
         iifname "eno1" ip saddr 192.168.1.0/24 tcp dport { 22, 6443 } accept
         iifname "eno1" drop
     }
-    chain forward {
-        type filter hook forward priority 10; policy accept;
-        iifname "eno1" ct state established,related accept
-        iifname "eno1" meta l4proto { icmp, ipv6-icmp } accept
-        iifname "eno1" udp sport 67 udp dport 68 accept
-        iifname "eno1" ip saddr 192.168.1.0/24 tcp dport { 22, 6443 } accept
-        iifname "eno1" drop
+    # After conntrack, before DNAT: block direct LAN access to cluster CIDRs only.
+    chain cluster_ingress {
+        type filter hook prerouting priority -150; policy accept;
+        iifname "eno1" ip daddr { 10.110.0.0/16, 10.111.0.0/16 } ct state new drop
     }
 }

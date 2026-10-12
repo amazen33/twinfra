@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 """WO-31 owner-only SSH agent. No action at import; fixture-injectable IO."""
 import hashlib
+from contextlib import contextmanager
 import json
 import os
 from pathlib import Path
@@ -179,11 +180,12 @@ def firewall_apply(data):
     # Validate syntax before scheduling/loading. Only our file/table can change.
     write(name,data['rules']);write(unit,data['unit']);run(['nft','-c','-f',name])
     rollback='twinfra-firewall-rollback-'+uuid.uuid4().hex
-    run(['systemd-run','--unit='+rollback,'--on-active=120','/usr/sbin/nft','delete','table','inet','twinfra_host'])
+    # Disable persistence even if deletion finds the owned table already gone.
+    run(['systemd-run','--unit='+rollback,'--on-active=120','/bin/sh','-c',
+         '/usr/sbin/nft delete table inet twinfra_host; /usr/bin/systemctl disable twinfra-host-firewall.service'])
     run(['nft','-f',name])
     record(name,'firewall');record(unit,'firewall-unit')
-    # Enable our own unit, without a second load; never enable nftables.service.
-    run(['systemctl','daemon-reload']);run(['systemctl','enable','twinfra-host-firewall.service'])
+    run(['systemctl','daemon-reload'])
     return {'status':'passed','rollback':rollback,'message':'Rollback armed; fresh key connection required to cancel'}
 
 
@@ -227,7 +229,7 @@ def storage_apply():
         if not re.fullmatch(r'[a-fA-F0-9-]{36}',found):raise ValueError('Invalid ext4 UUID')
         write(marker_path,json.dumps({'owner':'WO-31 twinfra-dev-cairo-1','bytes':20*GIB,'uuid':found})+'\n',0o600)
     if not at(mount).exists():at(mount).mkdir(parents=True,exist_ok=False)
-    fstab=read('/etc/fstab');line='UUID='+found+' '+mount+' ext4 nodev,nosuid,noexec,noatime 0 2'
+    fstab=read('/etc/fstab');line='UUID='+found+' '+mount+' ext4 nodev,nosuid,noexec,noatime,nofail,x-systemd.device-timeout=30s 0 2'
     entries=[row for row in fstab.splitlines() if not row.lstrip().startswith('#') and mount in row.split()]
     if entries and entries!=[line]:raise ValueError('Foreign fstab entry at owned mount')
     if not entries:write('/etc/fstab',fstab.rstrip()+'\n'+line+'\n')
@@ -247,6 +249,7 @@ def storage_apply():
 
 
 def bootstrap_state(data):
+    refuse_active_bootstrap()
     report=evaluate(inventory(data),data)
     report['ready']=False
     stage=at('/var/lib/twinfra/host-bootstrap')
@@ -279,6 +282,61 @@ def api_mapping(data):
 
 
 def bootstrap_apply(data):
+    # Lock covers staging and unit creation, including simultaneous SSH clients.
+    with bootstrap_lock():
+        refuse_active_bootstrap()
+        return bootstrap_start(data)
+
+
+@contextmanager
+def bootstrap_lock():
+    import fcntl  # Ubuntu base OS; imported only during an owner action.
+    path=at('/run/twinfra-bootstrap.lock');secure(path)
+    path.parent.mkdir(parents=True,exist_ok=True)
+    with path.open('a') as lock:
+        os.chmod(path,0o600)
+        try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
+        except BlockingIOError:raise ValueError('Bootstrap already starting or finishing; second run refused') from None
+        try:yield
+        finally:fcntl.flock(lock,fcntl.LOCK_UN)
+
+
+def refuse_active_bootstrap():
+    raw=run(['systemctl','list-units','--all','--type=service','--plain','--no-legend','twinfra-bootstrap-*.service'])
+    for line in raw.splitlines():
+        fields=line.split()
+        if len(fields)<4:raise ValueError('Invalid bootstrap unit inventory')
+        unit,_,active,sub=fields[:4]
+        if active in ('activating','deactivating','reloading') or active=='active' and sub!='exited':
+            raise ValueError('Bootstrap already active; second run refused. Logs: journalctl -u '+unit)
+
+
+def bootstrap_status(data):
+    unit=data['unit']
+    if not re.fullmatch(r'twinfra-bootstrap-[a-f0-9]{32}',unit):raise ValueError('Foreign bootstrap unit')
+    receipt=at('/var/lib/twinfra/host-bootstrap/unit.json');secure(receipt)
+    if not receipt.is_file() or json.loads(receipt.read_text())!={'unit':unit,'hashes':data['hashes']}:
+        raise ValueError('Unowned/different bootstrap unit')
+    fields=dict(line.split('=',1) for line in run(['systemctl','show',unit+'.service',
+        '--property=LoadState,ActiveState,SubState,ExecMainCode,ExecMainStatus,Result']).splitlines() if '=' in line)
+    report={'unit':unit,'message':'Logs: journalctl -u '+unit+'.service',
+            'activeState':fields.get('ActiveState'),'subState':fields.get('SubState')}
+    if fields.get('LoadState')!='loaded':return report|{'status':'failed','message':'Bootstrap unit unavailable; '+report['message']}
+    if fields.get('ActiveState') in ('activating','deactivating','reloading') or fields.get('ActiveState')=='active' and fields.get('SubState')!='exited':
+        return report|{'status':'running'}
+    # ExecMainCode=1 is CLD_EXITED. A signal or never-started process is failure,
+    # even if ExecMainStatus happens to be zero.
+    code=fields.get('ExecMainStatus')
+    status='failed'
+    if fields.get('ExecMainCode')=='1':
+        if code=='0' and fields.get('Result')=='success':status='passed'
+        elif code=='20':status='reboot-required'
+    report|={'status':status,'exitCode':int(code) if code and code.isdecimal() else None}
+    if status=='reboot-required':report['message']='Shared bootstrap requests reboot; owner reboots and reruns. '+report['message']
+    return report
+
+
+def bootstrap_start(data):
     import pwd
     if not re.fullmatch(r'/tmp/twinfra-inputs\.[A-Za-z0-9]{8}',data['incoming']):raise ValueError('Unsafe staging path')
     incoming=at(data['incoming'])
@@ -310,13 +368,30 @@ def bootstrap_apply(data):
     healthy=evaluate(inventory(data),data)
     if healthy['status']!='passed':raise ValueError('Host checks failed before shared bootstrap')
     flag='--validate' if healthy['mode']=='post-bootstrap' else '--apply'
-    result=command(['env','VCLOUD_CONFIG_FILE=/etc/twinfra-host.env','bash',str(stage/'00-setup-ubuntu-host.sh'),flag],allowed=(0,20))
-    if result.returncode==20:return {'status':'reboot-required','message':'Shared bootstrap requests reboot; owner reboots and reruns'}
+    unit='twinfra-bootstrap-'+uuid.uuid4().hex
+    write('/var/lib/twinfra/host-bootstrap/unit.json',json.dumps({'unit':unit,'hashes':data['hashes']})+'\n',0o600)
+    # No --wait/--pipe or runtime timeout: PID 1 owns the unchanged bootstrap.
+    # RemainAfterExit retains its exit status for subsequent fresh SSH queries.
+    run(['systemd-run','--unit='+unit,'--no-block','--property=Type=oneshot',
+         '--property=RemainAfterExit=yes','--property=TimeoutStartSec=infinity',
+         '--property=RuntimeMaxSec=infinity','--property=StandardOutput=journal','--property=StandardError=journal',
+         '/usr/bin/env','VCLOUD_CONFIG_FILE=/etc/twinfra-host.env','/usr/bin/bash',str(stage/'00-setup-ubuntu-host.sh'),flag])
+    return {'status':'running','unit':unit,'message':'Bootstrap detached. Logs: journalctl -u '+unit+'.service'}
+
+
+def bootstrap_finish(data):
+    with bootstrap_lock():
+        report=bootstrap_status(data)
+        if report['status']!='passed':return report
+        return bootstrap_complete(data,report)
+
+
+def bootstrap_complete(data,report):
     run(['/usr/local/lib/twinfra/dev-log-caps.sh'])
     run(['kubectl','--kubeconfig','/etc/kubernetes/admin.conf','label','node',data['node'],
          'topology.kubernetes.io/zone=cairo-1a','twinfra.io/environment=dev','twinfra.io/region=cairo-1','--overwrite'])
     write('/var/lib/twinfra/host-bootstrap/complete.json',json.dumps(data['hashes'])+'\n',0o600)
-    return {'status':'passed','message':'Shared bootstrap, pinned staging and dev log caps completed'}
+    return report|{'message':'Shared bootstrap, pinned staging and dev log caps completed. '+report['message']}
 
 
 def dispatch(data):
@@ -330,19 +405,26 @@ def dispatch(data):
         command(['bash','-s'],input_text=code)
         return {'status':'passed','message':'Only unchanged Module -1 preflight ran; no file or runtime writes'}
     if action=='bootstrap':return bootstrap_apply(data)
+    if action=='bootstrap-status':return bootstrap_status(data)
+    if action=='bootstrap-finish':return bootstrap_finish(data)
     if action=='ssh':return ssh_harden(data)
     if action=='firewall':return firewall_apply(data)
     if action=='firewall-confirm':
         if not re.fullmatch(r'twinfra-firewall-rollback-[a-f0-9]{32}',data['rollback']):raise ValueError('Foreign rollback unit')
         run(['systemctl','stop',data['rollback']+'.timer'])
-        return {'status':'passed','message':'Fresh key login verified; rollback timer cancelled'}
+        # A timer that already fired cannot authorize persistent firewall state.
+        if command(['systemctl','show',data['rollback']+'.service','--property=ExecMainStartTimestampMonotonic','--value'],allowed=(0,1,4)).stdout.strip() not in ('0',''):
+            raise ValueError('Firewall rollback already ran; apply again after inspecting host state')
+        run(['systemctl','enable','twinfra-host-firewall.service'])
+        return {'status':'passed','message':'Fresh key login verified; rollback timer cancelled; owned firewall service enabled'}
     if action=='storage':return storage_apply()
     raise ValueError('Unknown host action')
 
 
 def main():
-    if os.geteuid()!=0:raise ValueError('Owner action requires sudo -n')
-    try:report=dispatch(json.loads(sys.argv[1]))
+    try:
+        if os.geteuid()!=0:raise ValueError('Owner action requires sudo -n')
+        report=dispatch(json.loads(sys.argv[1]))
     except ValueError as error:
         # These validation/command errors contain only public guard names, never
         # captured stderr, kubeconfigs, environment dumps or credential material.

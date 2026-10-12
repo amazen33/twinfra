@@ -118,7 +118,7 @@ def database():
     sc=obj('StorageClass','twinfra-local',ns=None,api='storage.k8s.io/v1');sc.update(provisioner='kubernetes.io/no-provisioner',volumeBindingMode='WaitForFirstConsumer',reclaimPolicy='Retain')
     pv=obj('PersistentVolume','twinfra-postgres-1',{'capacity':{'storage':'20Gi'},'volumeMode':'Filesystem','accessModes':['ReadWriteOnce'],
         'persistentVolumeReclaimPolicy':'Retain','storageClassName':'twinfra-local','claimRef':{'namespace':NS,'name':'twinfra-postgres-1'},
-        'local':{'path':'/var/lib/twinfra/local-pv/postgres-1'},'nodeAffinity':{'required':{'nodeSelectorTerms':[{'matchExpressions':[{'key':'kubernetes.io/hostname','operator':'In','values':['twinfra-node']}]}]}}},ns=None)
+        'local':{'path':'/var/lib/twinfra/local-pv/postgres-1'},'nodeAffinity':{'required':{'nodeSelectorTerms':[{'matchExpressions':[{'key':'kubernetes.io/hostname','operator':'In','values':[yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())['environments']['dev']['context']]}]}]}}},ns=None)
     pv['metadata']['annotations']={'twinfra.io/vetted':'true','twinfra.io/vetting-document':'docs/dev-environment.md','argocd.argoproj.io/sync-options':'Prune=false,Delete=false'}
     return [sc,pv,pg]+[obj('Database','twinfra-'+n,{'cluster':{'name':'twinfra-postgres'},'name':n,'owner':n,'ensure':'present','databaseReclaimPolicy':'retain'},'postgresql.cnpg.io/v1') for n in ('keycloak','openbao')]
 
@@ -254,6 +254,8 @@ def host_environment(row):
         'POD_CIDR':row['podCidr'],'SERVICE_CIDR':row['serviceCidr'],'NODE_IP':row['ipAddress'],'NODE_NAME':'twinfra-node',
         'CONTROL_PLANE_ENDPOINT':'api.dev.'+row['region']+'.twinfra.example.com:6443','BOOTSTRAP_K8S':'true','INSTALL_HPC':'false','ENABLE_GPU':'false','GPU_SMOKE_TEST':'false','RUN_SMOKE_TESTS':'false','IMAGE_STAGING':'true'}
     if row.get('interface'):values['NODE_INTERFACE']=row['interface']
+    if row.get('delivery')=='bare-metal':
+        values['NODE_NAME']=yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())['environments']['dev']['context']
     for key,value in values.items():
         pattern=r'(?m)^'+key+r'=.*$';line=key+'='+value
         raw=re.sub(pattern,line,raw) if re.search(pattern,raw) else raw+line+'\n'

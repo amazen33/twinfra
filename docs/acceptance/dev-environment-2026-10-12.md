@@ -28,6 +28,7 @@ pre-WO-31 main `968f336` verify all remaining bytes. No new dependencies.
 | Kernel machine-check / hung-task errors | Pending | Owner-reviewed journal summary |
 | host-check / SSH hardening / integrity lockdown | Pending | Real sanitized report and effective settings |
 | LAN 22/6443 reachable, 2379/10250 blocked | Pending | Laptop connection results |
+| Argo CD syncs from GitHub through the host firewall | Pending | Firewall confirmed/enabled; GitHub repository fetch and successful sync with Synced/Healthy application status |
 | Node Ready / Cilium healthy under lockdown | Pending | Actual status and deny-policy proof |
 | Actual containerd version and every image pinned | Pending | `containerd --version`; CRI pinned status |
 | PostgreSQL 20 GiB LV / UUID mount / ownership | Pending | LV size, mount options, 26:26 and 0700 |

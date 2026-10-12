@@ -1,7 +1,9 @@
 """WO-31 static fixtures only. No SSH, sudo, host inventory or VM execution."""
 import copy
+from contextlib import nullcontext
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -38,15 +40,16 @@ def fixture(post=False):
         state.update(result={'status':'ready','kubernetes':'v1.36.5','mirror_status':'staged-verified'},
             cluster={'clusterName':'twinfra-dev-cairo-1','controlPlaneEndpoint':'api.dev.cairo-1.twinfra.example.com:6443'},
             listeners=[{'port':p,'owners':[name]} for p,name in agent.PORTS.items()],
-            nodes=[{'metadata':{'name':'twinfra-node'},'status':{'addresses':[{'type':'InternalIP','address':'192.168.1.3'}],
+            nodes=[{'metadata':{'name':'twinfra-dev-cairo-1'},'status':{'addresses':[{'type':'InternalIP','address':'192.168.1.3'}],
                 'conditions':[{'type':'Ready','status':'True'}]}}])
     return state
 
 
 class HostSSH:
-    def __init__(self,state=None,fail_probe=0,sudo_failure=False,ready=False):
+    def __init__(self,state=None,fail_probe=0,sudo_failure=False,ready=False,unit_states=None,busy=False):
         self.state=state or fixture();self.calls=[];self.probes=0
         self.fail_probe,self.sudo_failure,self.ready=fail_probe,sudo_failure,ready
+        self.unit_states=list(unit_states or [{'status':'passed','exitCode':0}]);self.busy=busy
         self.prefix=images.SSH('twinfra-operator@192.168.1.3','twinfra-dev-cairo-1').prefix
 
     def run(self,cmd,payload=None):
@@ -62,6 +65,9 @@ class HostSSH:
         if action in ('check','bootstrap-state'):
             result=agent.evaluate(self.state,data)
             if action=='bootstrap-state':result['ready']=self.ready
+            if self.busy:result={'status':'failed','message':'Bootstrap already active; second run refused'}
+        elif action=='bootstrap':result={'status':'running','unit':'twinfra-bootstrap-'+'a'*32,'message':'Logs: journalctl -u twinfra-bootstrap-'+'a'*32}
+        elif action=='bootstrap-status':result=self.unit_states.pop(0)
         elif action=='firewall':result={'status':'passed','rollback':'twinfra-firewall-rollback-'+'a'*32}
         else:result={'status':'passed'}
         return json.dumps(result).encode()
@@ -179,18 +185,31 @@ class HostBootstrap(unittest.TestCase):
             data=host.expected()|{'incoming':'/tmp/twinfra-inputs.ABCDEF12','operator':'synthetic','hashes':hashes}
             fake_pwd=types.SimpleNamespace(getpwnam=lambda name:types.SimpleNamespace(pw_uid=incoming.stat().st_uid))
             calls=[]
-            def command(cmd,**kw):calls.append(cmd);return subprocess.CompletedProcess(cmd,0,'','')
-            with patch.dict(sys.modules,{'pwd':fake_pwd}),patch.object(agent,'ROOT',root),patch.object(agent,'secure'),patch.object(agent.stat,'S_IMODE',return_value=0o700),patch.object(agent,'inventory',return_value=fixture()),patch.object(agent,'command',side_effect=command):
-                self.assertEqual(agent.bootstrap_apply(data)['status'],'passed')
+            def command(cmd,**kw):
+                calls.append(cmd)
+                out='LoadState=loaded\nActiveState=active\nSubState=exited\nExecMainCode=1\nExecMainStatus=0\nResult=success\n' if cmd[:2]==['systemctl','show'] else ''
+                return subprocess.CompletedProcess(cmd,0,out,'')
+            with patch.dict(sys.modules,{'pwd':fake_pwd}),patch.object(agent,'ROOT',root),patch.object(agent,'secure'),patch.object(agent.stat,'S_IMODE',return_value=0o700),patch.object(agent,'inventory',return_value=fixture()),patch.object(agent,'command',side_effect=command),patch.object(agent,'bootstrap_lock',side_effect=nullcontext):
+                report=agent.bootstrap_apply(data)
+                self.assertEqual(report['status'],'running')
+                self.assertFalse((root/'var/lib/twinfra/host-bootstrap/complete.json').exists())
+                self.assertEqual(agent.bootstrap_finish(data|{'unit':report['unit']})['status'],'passed')
             stage=root/'var/lib/twinfra/host-bootstrap'
             for name,sha in hashes.items():self.assertEqual(hashlib.sha256((stage/name).read_bytes()).hexdigest(),sha)
             self.assertEqual(json.loads((stage/'complete.json').read_text()),hashes)
-            self.assertTrue(any(c[0]=='env' and c[-1]=='--apply' for c in calls))
+            launch=next(c for c in calls if c[0]=='systemd-run')
+            for option in ('--no-block','--property=Type=oneshot','--property=RemainAfterExit=yes','--property=TimeoutStartSec=infinity','--property=RuntimeMaxSec=infinity'):
+                self.assertIn(option,launch)
+            self.assertEqual(launch[-1],'--apply')
+            self.assertNotIn('--wait',launch);self.assertNotIn('--pipe',launch)
+            self.assertFalse(any(c[0] in ('env','bash','/usr/bin/env','/usr/bin/bash') and c[-1]=='--apply' for c in calls))
+            labels=next(c for c in calls if c[0]=='kubectl')
+            self.assertEqual(labels[5],'twinfra-dev-cairo-1')
             before={str(f.relative_to(root)):f.read_bytes() for f in root.rglob('*') if f.is_file()}
             calls.clear()
             with patch.object(agent,'ROOT',root),patch.object(agent,'secure'),patch.object(agent,'inventory',return_value=fixture(True)),patch.object(agent,'command',side_effect=command):
                 self.assertTrue(agent.bootstrap_state(data)['ready'])
-            self.assertEqual(len(calls),1);self.assertEqual(calls[0][-1],'--validate')
+            self.assertEqual(len(calls),2);self.assertEqual(calls[-1][-1],'--validate')
             self.assertEqual(before,{str(f.relative_to(root)):f.read_bytes() for f in root.rglob('*') if f.is_file()})
 
     def test_sudo_denied_before_scp_or_bootstrap(self):
@@ -209,10 +228,10 @@ class HostBootstrap(unittest.TestCase):
     def test_transferred_hash_inventory_and_private_staging(self):
         ssh=HostSSH();copies=[]
         def scp(cmd,**kwargs):copies.append(cmd);return subprocess.CompletedProcess(cmd,0,b'',b'')
-        self.assertEqual(host.bootstrap(ssh,copier=scp)['status'],'passed')
+        self.assertEqual(host.bootstrap(ssh,copier=scp,sleeper=lambda _:None)['status'],'passed')
         self.assertEqual(len(copies),5)
         for cmd in copies:self.assertIn('StrictHostKeyChecking=yes',cmd)
-        data=json.loads(ssh.calls[-1][0][-1])
+        data=next(json.loads(c[-1]) for c,p in ssh.calls if c[0]=='sudo' and json.loads(c[-1])['action']=='bootstrap')
         self.assertEqual(data['hashes']['00-setup-ubuntu-host.sh'],hashlib.sha256((ROOT/'00-setup-ubuntu-host.sh').read_bytes()).hexdigest())
         self.assertEqual(data['incoming'],'/tmp/twinfra-inputs.ABCDEF12')
 
@@ -230,9 +249,67 @@ class HostBootstrap(unittest.TestCase):
             data={'incoming':'/tmp/twinfra-inputs.ABCDEF12','operator':'synthetic','hashes':{name:'a'*64 for name in names}}
             fake_pwd=types.SimpleNamespace(getpwnam=lambda name:types.SimpleNamespace(pw_uid=incoming.stat().st_uid))
             # NTFS has no POSIX mode bits; supply the private 0700 metadata fixture.
-            with patch.dict(sys.modules,{'pwd':fake_pwd}),patch.object(agent,'ROOT',root),patch.object(agent.stat,'S_IMODE',return_value=0o700),patch.object(agent,'command',side_effect=AssertionError('Bootstrap ran')):
+            with patch.dict(sys.modules,{'pwd':fake_pwd}),patch.object(agent,'ROOT',root),patch.object(agent.stat,'S_IMODE',return_value=0o700),patch.object(agent,'refuse_active_bootstrap'),patch.object(agent,'bootstrap_lock',side_effect=nullcontext),patch.object(agent,'command',side_effect=AssertionError('Bootstrap ran')):
                 with self.assertRaisesRegex(ValueError,'SHA256'):agent.bootstrap_apply(data)
             self.assertFalse((root/'var/lib/twinfra/host-bootstrap').exists())
+
+    def test_fresh_key_polling_running_then_success(self):
+        ssh=HostSSH(unit_states=[{'status':'running'},{'status':'running'},{'status':'passed','exitCode':0}])
+        with patch.object(host,'request',wraps=host.request),patch('sys.stderr',new=io.StringIO()) as output:
+            result=host.bootstrap(ssh,copier=lambda *a,**k:subprocess.CompletedProcess(a,0),sleeper=lambda _:None)
+        self.assertEqual(result['status'],'passed')
+        actions=[json.loads(c[-1])['action'] for c,p in ssh.calls if c[0]=='sudo']
+        self.assertEqual(actions,['bootstrap-state','bootstrap','bootstrap-status','bootstrap-status','bootstrap-status','bootstrap-finish'])
+        self.assertIn('journalctl -u',output.getvalue())
+        for option in ('ControlMaster=no','ControlPath=none','BatchMode=yes','PreferredAuthentications=publickey'):
+            self.assertIn(option,ssh.prefix)
+
+    def test_reboot_required_and_failure_do_not_finish(self):
+        for status,code in (('reboot-required',20),('failed',1)):
+            with self.subTest(status=status):
+                ssh=HostSSH(unit_states=[{'status':status,'exitCode':code}])
+                result=host.bootstrap(ssh,copier=lambda *a,**k:subprocess.CompletedProcess(a,0),sleeper=lambda _:None)
+                self.assertEqual(result,{'status':status,'exitCode':code})
+                self.assertNotIn('bootstrap-finish',[json.loads(c[-1])['action'] for c,p in ssh.calls if c[0]=='sudo'])
+                with patch.object(host,'execute',return_value=result),patch('sys.stdout',new=io.StringIO()):
+                    self.assertEqual(host.action('host-bootstrap','twinfra-dev-cairo-1','operator@192.168.1.3'),code)
+
+    def test_concurrent_refusal_before_transfer(self):
+        ssh=HostSSH(busy=True)
+        with patch.object(host.subprocess,'run',side_effect=AssertionError('SCP invoked')):
+            self.assertEqual(host.bootstrap(ssh)['status'],'failed')
+        self.assertEqual(len(ssh.calls),1)
+        for active,sub in (('activating','start'),('active','running'),('deactivating','stop')):
+            with patch.object(agent,'run',return_value='twinfra-bootstrap-'+'a'*32+'.service loaded '+active+' '+sub+' Bootstrap\n'):
+                with self.assertRaisesRegex(ValueError,'second run refused'):agent.refuse_active_bootstrap()
+
+    def test_unit_exit_code_signal_and_unavailable_reports(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);unit='twinfra-bootstrap-'+'a'*32;data={'unit':unit,'hashes':{}}
+            file=root/'var/lib/twinfra/host-bootstrap/unit.json';file.parent.mkdir(parents=True);file.write_text(json.dumps(data))
+            for active,sub,code,status,result,expected in (
+                ('activating','start',0,0,'success','running'),('active','exited',1,0,'success','passed'),
+                ('failed','failed',1,20,'exit-code','reboot-required'),('failed','failed',1,1,'exit-code','failed'),
+                ('failed','failed',2,9,'signal','failed'),('inactive','dead',0,0,'success','failed')):
+                raw=f'LoadState=loaded\nActiveState={active}\nSubState={sub}\nExecMainCode={code}\nExecMainStatus={status}\nResult={result}\n'
+                with patch.object(agent,'ROOT',root),patch.object(agent,'secure'),patch.object(agent,'run',return_value=raw):
+                    self.assertEqual(agent.bootstrap_status(data)['status'],expected)
+                    if expected!='passed':
+                        with patch.object(agent,'bootstrap_lock',side_effect=nullcontext),patch.object(agent,'bootstrap_complete',side_effect=AssertionError('Finished prematurely')):
+                            self.assertEqual(agent.bootstrap_finish(data)['status'],expected)
+            with patch.object(agent,'ROOT',root),patch.object(agent,'secure'),patch.object(agent,'run',return_value='LoadState=not-found\n'):
+                self.assertEqual(agent.bootstrap_status(data)['status'],'failed')
+
+    def test_unit_start_lock_refuses_simultaneous_client(self):
+        fake=types.SimpleNamespace(LOCK_EX=2,LOCK_NB=4,LOCK_UN=8,flock=lambda *a:(_ for _ in ()).throw(BlockingIOError()))
+        with tempfile.TemporaryDirectory() as tmp,patch.dict(sys.modules,{'fcntl':fake}),patch.object(agent,'ROOT',Path(tmp)),patch.object(agent,'secure'):
+            with self.assertRaisesRegex(ValueError,'second run refused'):
+                with agent.bootstrap_lock():self.fail('Lock granted')
+
+    def test_non_root_action_returns_json_failure(self):
+        with patch.object(agent.os,'geteuid',return_value=1000,create=True),patch('sys.stdout',new=io.StringIO()) as output:
+            agent.main()
+        self.assertEqual(json.loads(output.getvalue()),{'status':'failed','message':'Owner action requires sudo -n'})
 
 
 class Hardening(unittest.TestCase):
@@ -241,7 +318,7 @@ class Hardening(unittest.TestCase):
             root=Path(tmp);mount=root/'var/lib/twinfra/local-pv/postgres-1';mount.mkdir(parents=True)
             uuid='11111111-1111-1111-1111-111111111111';calls=[]
             files={'var/lib/twinfra/host-hardening/storage.json':json.dumps({'owner':'WO-31 twinfra-dev-cairo-1','bytes':20*agent.GIB,'uuid':uuid}),
-                'etc/fstab':'UUID='+uuid+' /var/lib/twinfra/local-pv/postgres-1 ext4 nodev,nosuid,noexec,noatime 0 2\n',
+                'etc/fstab':'UUID='+uuid+' /var/lib/twinfra/local-pv/postgres-1 ext4 nodev,nosuid,noexec,noatime,nofail,x-systemd.device-timeout=30s 0 2\n',
                 'etc/systemd/system/kubelet.service.d/20-twinfra-storage.conf':'[Unit]\nRequiresMountsFor=/var/lib/twinfra/local-pv/postgres-1\n'}
             for name,raw in files.items():
                 p=root/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(raw,newline='\n')
@@ -287,11 +364,21 @@ class Hardening(unittest.TestCase):
         rules=host.firewall()
         self.assertNotIn('flush ruleset',rules)
         statements=[l.strip() for l in rules.splitlines() if l.strip().startswith('iifname')]
-        self.assertEqual(len(statements),10)
+        self.assertEqual(len(statements),6)
         self.assertTrue(all(l.startswith('iifname "eno1"') for l in statements))
         self.assertIn('ip saddr 192.168.1.0/24 tcp dport { 22, 6443 }',rules)
         self.assertNotIn('cilium_',rules);self.assertNotIn('lxc',rules)
         self.assertIn('policy accept',rules)
+        self.assertNotIn('hook forward',rules);self.assertNotIn('chain forward',rules)
+        self.assertIn('hook prerouting priority -150',rules)
+        profile=yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())['environments']['dev']
+        self.assertEqual(statements[-1],'iifname "eno1" ip daddr { '+profile['podCidr']+', '+profile['serviceCidr']+' } ct state new drop')
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);ssot={'environments':{'dev':profile|{'podCidr':'10.112.0.0/16','serviceCidr':'10.113.0.0/16'}}}
+            (root/'vcloud-ssot.yaml').write_text(yaml.safe_dump(ssot))
+            with patch.object(host,'ROOT',root):changed=host.firewall()
+            self.assertIn('ip daddr { 10.112.0.0/16, 10.113.0.0/16 } ct state new drop',changed)
+            self.assertNotIn(profile['podCidr'],changed);self.assertNotIn(profile['serviceCidr'],changed)
 
     def test_rollback_armed_before_load_and_only_fresh_login_cancels(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -308,11 +395,46 @@ class Hardening(unittest.TestCase):
             load=next(i for i,c in enumerate(calls) if c[:2]==['nft','-f'])
             self.assertLess(timer,load);self.assertIn('--on-active=120',calls[timer])
             self.assertFalse(any(c==['systemctl','enable','nftables.service'] for c in calls))
+            self.assertNotIn(['systemctl','enable','twinfra-host-firewall.service'],calls)
+            self.assertIn('/usr/bin/systemctl disable twinfra-host-firewall.service',calls[timer][-1])
+            self.assertTrue(calls[timer][-1].startswith('/usr/sbin/nft delete table inet twinfra_host;'))
         ssh=HostSSH(fail_probe=2)
         with self.assertRaisesRegex(ValueError,'Key-login'):host.execute('host-firewall',ssh,apply=True)
         self.assertNotIn('firewall-confirm',[json.loads(c[-1])['action'] for c,p in ssh.calls if c[0]=='sudo'])
         ssh=HostSSH();host.execute('host-firewall',ssh,apply=True)
         self.assertEqual(ssh.probes,2)
+
+    def test_firewall_confirm_enables_only_after_timer_cancel(self):
+        rollback='twinfra-firewall-rollback-'+'a'*32
+        calls=[]
+        def command(cmd,**kw):
+            calls.append(cmd);return subprocess.CompletedProcess(cmd,0,'0\n' if 'show' in cmd else '','')
+        with patch.object(agent,'command',side_effect=command):
+            self.assertEqual(agent.dispatch(host.expected()|{'action':'firewall-confirm','rollback':rollback})['status'],'passed')
+        self.assertEqual(calls[0],['systemctl','stop',rollback+'.timer'])
+        self.assertEqual(calls[-1],['systemctl','enable','twinfra-host-firewall.service'])
+        with patch.object(agent,'run',return_value=''),patch.object(agent,'command',return_value=subprocess.CompletedProcess([],0,'123\n','')):
+            with self.assertRaisesRegex(ValueError,'already ran'):
+                agent.dispatch(host.expected()|{'action':'firewall-confirm','rollback':rollback})
+
+    def test_rollback_deletes_owned_table_and_disables_service_on_delete_failure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            calls=[]
+            def command(cmd,**kw):
+                calls.append(cmd)
+                return subprocess.CompletedProcess(cmd,1 if cmd[0] in ('nft','systemctl') and cmd[1] in ('list','is-active','is-enabled') else 0,'disabled\n' if 'is-enabled' in cmd else '','')
+            with patch.object(agent,'ROOT',Path(tmp)),patch.object(agent,'secure'),patch.object(agent,'command',side_effect=command):
+                agent.firewall_apply({'rules':host.firewall(),'unit':host.firewall_unit()})
+            rollback=next(c[-1] for c in calls if c[0]=='systemd-run')
+            # Exercise the emitted shell flow with fake commands only: persistence
+            # must be disabled whether deletion succeeds or the table is gone.
+            script=rollback.replace('/usr/sbin/nft','fake_nft').replace('/usr/bin/systemctl','fake_systemctl')
+            self.assertNotIn('/usr/sbin/nft',script);self.assertNotIn('/usr/bin/systemctl',script)
+            for deletion_exit in (0,1):
+                functions='fake_nft() { printf "nft:%s\\n" "$*"; return '+str(deletion_exit)+'; }; fake_systemctl() { printf "systemctl:%s\\n" "$*"; }; '
+                result=subprocess.run([os.environ.get('BASH_BINARY','bash'),'-c',functions+script],capture_output=True,text=True,timeout=10)
+                self.assertEqual(result.returncode,0,result.stderr)
+                self.assertEqual(result.stdout.splitlines(),['nft:delete table inet twinfra_host','systemctl:disable twinfra-host-firewall.service'])
 
     def test_storage_no_adoption_reserve_and_owned_rerun(self):
         state={'lvExists':False,'directoryExists':False,'vgFreeBytes':40*agent.GIB}
@@ -340,7 +462,7 @@ class Hardening(unittest.TestCase):
             with patch.object(agent,'ROOT',root),patch.object(agent,'secure'),patch.object(agent,'command',side_effect=command),patch.object(agent.os,'chown',create=True) as chown:
                 self.assertEqual(agent.storage_apply()['status'],'passed')
             self.assertIn(['lvcreate','--yes','--size','20G','--name','twinfra-postgres-1','ubuntu-vg'],calls)
-            self.assertIn('ext4 nodev,nosuid,noexec,noatime 0 2',(root/'etc/fstab').read_text())
+            self.assertIn('ext4 nodev,nosuid,noexec,noatime,nofail,x-systemd.device-timeout=30s 0 2',(root/'etc/fstab').read_text())
             self.assertIn('RequiresMountsFor=/var/lib/twinfra/local-pv/postgres-1',(root/'etc/systemd/system/kubelet.service.d/20-twinfra-storage.conf').read_text())
             chown.assert_called_once_with(root/'var/lib/twinfra/local-pv/postgres-1',26,26)
 
@@ -373,8 +495,12 @@ class PinsAndProfiles(unittest.TestCase):
         row=yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())['addressPlan'][0]
         raw=dev.host_environment(row)
         for value in ('NODE_IP=192.168.1.3','NODE_INTERFACE=eno1','PLATFORM_PROFILE=dev-cairo-1','IMAGE_STAGING=true',
+            'NODE_NAME=twinfra-dev-cairo-1',
             'POD_CIDR=10.110.0.0/16','SERVICE_CIDR=10.111.0.0/16','CONTROL_PLANE_ENDPOINT=api.dev.cairo-1.twinfra.example.com:6443'):
             self.assertIn(value,raw)
+        self.assertEqual(host.expected()['node'],yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())['environments']['dev']['context'])
+        pv=next(o for o in dev.database() if o['kind']=='PersistentVolume')
+        self.assertEqual(pv['spec']['nodeAffinity']['required']['nodeSelectorTerms'][0]['matchExpressions'][0]['values'],['twinfra-dev-cairo-1'])
         for field in ('podCidr','serviceCidr'):
             for cidr in ('192.168.1.0/24','10.20.0.0/24','10.50.0.0/24'):
                 with self.assertRaisesRegex(ValueError,'overlap'):dev.host_environment(row|{field:cidr})

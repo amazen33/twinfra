@@ -19,7 +19,7 @@ The generated [host.env](../deploy/environments/dev/cairo-1/host.env) replaces
 cairo-1's NoCloud seed. The exact shared [Module -1](../00-setup-ubuntu-host.sh)
 remains the only bootstrap, with its existing version pins and checks.
 Linux hostname is `twinfra-dev-cairo-1`; the kubelet's approved node identifier
-remains `twinfra-node`, matching the unchanged Local PV affinity.
+is `twinfra-dev-cairo-1`, taken from the SSoT and matching the Local PV affinity.
 GPU/vLLM, HPC and Spinifex remain disabled; OpenBao remains sealed until WO-08.
 Planning allowances total **20 GiB**, not measured use:
 
@@ -107,12 +107,18 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
    `PermitRootLogin no` to `10-twinfra-hardening.conf`, validates/reloads and
    confirms `sshd -T`. The `10-` prefix wins before installer's `50-cloud-init.conf`.
    The generated [firewall](../deploy/environments/dev/cairo-1/host/host-firewall.nft)
-   atomically replaces only `inet twinfra_host`, filtering `eno1` input/forward
-   traffic. It allows established/related, ICMP, DHCP replies, and LAN TCP 22/6443;
-   everything else on that interface drops. Other interfaces use accept policy.
+   atomically replaces only `inet twinfra_host`, filtering `eno1` host ingress.
+   It allows established/related, ICMP, DHCP replies, and LAN TCP 22/6443;
+   other host ingress on that interface drops. There is no forward chain.
+   One prerouting rule, after conntrack and before DNAT, drops **new** traffic
+   from `eno1` addressed to the SSoT dev pod/service CIDRs (`10.110.0.0/16`,
+   `10.111.0.0/16`). GitHub responses to pod-initiated connections remain allowed.
+   Other interfaces use accept policy.
    A 120-second rollback is armed before load and cancelled only after a fresh
    SSH connection succeeds. On connection failure, leave the timer armed and
-   recover at the Dell console. Only `twinfra-host-firewall.service` is enabled;
+   recover at the Dell console. Only after that fresh login and timer cancellation
+   is `twinfra-host-firewall.service` enabled. The rollback deletes the owned table
+   and disables that service, even if table deletion fails;
    the stock service is never enabled, and existing enabled/active stock service
    or unowned table/configuration is refused. Foreign tables are untouched.
 
@@ -123,7 +129,8 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
    ```
 
    Expected: `ubuntu-vg/twinfra-postgres-1`, 20 GiB, ext4 UUID mount at
-   `/var/lib/twinfra/local-pv/postgres-1`, options `nodev,nosuid,noexec,noatime`,
+   `/var/lib/twinfra/local-pv/postgres-1`, fstab options
+   `nodev,nosuid,noexec,noatime,nofail,x-systemd.device-timeout=30s`,
    owner 26:26, mode 0700. Kubelet gets `RequiresMountsFor=`. No adoption of
    unmarked existing data, LVs, directories or links. At least 20 GiB remains
    free in the VG. The vetted PV and CNPG cluster remain **20Gi**, unchanged.
@@ -137,10 +144,20 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
 
    Expected: SHA-256 verified copies in root-owned `/var/lib/twinfra/host-bootstrap`,
    root-owned env/lock/staging-agent delivery, then the original bootstrap via
-   `sudo -n`. The Dell also receives the same local API-name mapping as the
+   a transient `twinfra-bootstrap-<id>.service`, started using `sudo -n` and
+   `systemd-run --no-block`. PID 1 owns the process, with no start/runtime timeout;
+   it survives an SSH disconnect. A root-owned lock covers staging/unit creation,
+   and another run is refused while a bootstrap unit is active. The client polls
+   state and exit code over fresh key-only connections every five seconds.
+   Follow logs on the Dell with `sudo journalctl -fu twinfra-bootstrap-<id>.service`
+   (the actual unit name is printed). If the client disconnects, inspect that unit
+   before rerunning; do not start a second bootstrap while it is running.
+   The Dell also receives the same local API-name mapping as the
    NoCloud path; a conflicting existing hosts entry is refused. The same dev
    `stage_bootstrap_images` stages eleven bootstrap images
-   before kubeadm. Exit 20 means the owner reboots the Dell and reruns this command;
+   before kubeadm. Exit 0 permits dev log caps, node labels and `complete.json`;
+   any other failure stops those post-bootstrap steps and points to the journal.
+   Exit 20 means the owner reboots the Dell and reruns this command;
    there is no automatic reboot. A healthy verified rerun performs no transfers,
    APT or configuration writes. Dev post-bootstrap caps are journald 500M and
    kubelet 10Mi per log / 3 files. The original bootstrap logic is unchanged.
@@ -154,7 +171,7 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
    kubectl --context twinfra-dev-cairo-1 get nodes
    ```
 
-   Expected: explicit context; node `twinfra-node` Ready, zone cairo-1a.
+   Expected: explicit context; node `twinfra-dev-cairo-1` Ready, zone cairo-1a.
    Verify the existing context name before renaming; never print raw kubeconfig.
 
 8. **Owner: application images.** Prepare verified OCI archives with the existing
@@ -202,6 +219,18 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
     console services Ready; Argo reconciles protected `main`. Wait for CRDs and
     repeat apply if needed. Verify the finite LV is mounted before applying the
     platform; never create a plain root-filesystem PV directory instead.
+
+    **Live firewall acceptance (Pending):** with the owned firewall confirmed
+    and enabled, request a fresh GitHub fetch and wait for the automated sync:
+
+    ```powershell
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services annotate application twinfra-root argocd.argoproj.io/refresh=hard --overwrite
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services get applications -o custom-columns=NAME:.metadata.name,REPO:.spec.source.repoURL,REVISION:.status.sync.revision,SYNC:.status.sync.status,HEALTH:.status.health.status
+    ```
+
+    Record a successful fetch of `https://github.com/amazen33/twinfra.git`, the
+    actual synced revision and Synced/Healthy status in the acceptance receipt.
+    Cached manifests alone do not pass this gate.
 
 11. **Owner: loopback forwards, tunnels and browser checks.** On the Dell, in
     separate foreground sessions, run each forward:
