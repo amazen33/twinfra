@@ -139,6 +139,16 @@ Strict byte comparisons against merged main `1f7d86f` allow only the checker blo
 and derived render hashes; a separate comparison confines source changes to
 `main()`. Production callers, `flatten()`, policy and pinned versions stay intact.
 
+Amendment 8 runs the real main apply tail under the production shell options and
+ERR trap with external host/cluster operations stubbed. Smoke disabled/enabled
+and Kubernetes bootstrap disabled must reach `write_result ready`; a mocked
+smoke apply failure must still write failed, exit 1 and omit the completion marker.
+A static rule rejects status-less early returns, including `|| return`,
+`&& return`, compound skip blocks and dispatch arms. Render-byte comparisons
+against merged main `24b8bdb` permit only the seven audited return-status lines
+and derived checksums/gzip. Existing staging and policy failures retain their
+explicit statuses; no live provisioner or cluster is executed.
+
 WO-31 adds an optional bare-metal bundle. Fixtures cover both read-only host-check
 modes and every required cluster/listener identity, key-only SSH/SCP, copied SHA-256
 verification, sudo refusal, healthy no-op bootstrap, guarded SSH and scoped firewall
