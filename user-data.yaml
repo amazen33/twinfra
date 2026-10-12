@@ -1,5 +1,5 @@
 #cloud-config
-# Generated; script SHA256=0ac9c891cc85ab63f641c53b013f579bfb6a98bcd00eeca8459928e9eb48cbd9.
+# Generated; script SHA256=0c8f3247718c5bc2dac51a45ae388bd08072ec6bc5dcc988e489c81db43d1da2.
 # Source template. Run `python3 tools/render_cloud_init.py` after changing the script.
 # The generated user-data.yaml embeds the complete script; it requires no script URL.
 package_update: true
@@ -2737,7 +2737,26 @@ write_files:
           parser.add_argument('--policy', type=Path, required=True)
           parser.add_argument('--mode', choices=['workloads', 'control-plane'], default='workloads')
           args = parser.parse_args()
-          result = audit_objects(json.load(sys.stdin), json.loads(args.policy.read_text()), args.mode)
+          objects = json.load(sys.stdin)
+          # kubectl returns one object (often kind: List); yq callers already supply an array.
+          if not isinstance(objects, list):
+              objects = [objects]
+          violations = []
+          pending = [(objects, 'input')]
+          while pending:
+              values, path = pending.pop()
+              if not isinstance(values, list):
+                  violations.append(f'{path}: expected a list of objects')
+                  continue
+              for index, obj in enumerate(values):
+                  location = f'{path}[{index}]'
+                  if not isinstance(obj, dict):
+                      violations.append(f'{location}: expected an object')
+                  elif obj.get('kind') == 'List':
+                      pending.append((obj.get('items', []), location + '.items'))
+          # Never let malformed elements reach flatten(), including nested List items.
+          result = (dict(status='blocked', violations=violations) if violations else
+                    audit_objects(objects, json.loads(args.policy.read_text()), args.mode))
           print(f'SSoT contract: {result["status"]}; {len(result["violations"])} findings', file=sys.stderr)
           for finding in result['violations']:
               print(finding, file=sys.stderr)

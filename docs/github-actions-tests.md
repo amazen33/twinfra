@@ -129,6 +129,16 @@ host agent's requirement for matching reboot-result evidence.
 The root wrapper executes only help/version commands after loading defaults;
 it does not invoke `main`, provision the runner or modify tool configuration.
 
+Amendment 7's offline host suite executes the generated contract checker on a
+single object, a direct kubectl `kind: List`, existing object arrays, bare scalar
+inputs and malformed nested List entries. Invalid entries must produce violations
+and exit 1 without a traceback. The Cilium fixture uses the actual pinned Helm
+render and the dev node-exception policy: the agent DaemonSet and all three
+Cilium controllers pass in direct/List/array form; host-mount drift still fails.
+Strict byte comparisons against merged main `1f7d86f` allow only the checker block
+and derived render hashes; a separate comparison confines source changes to
+`main()`. Production callers, `flatten()`, policy and pinned versions stay intact.
+
 WO-31 adds an optional bare-metal bundle. Fixtures cover both read-only host-check
 modes and every required cluster/listener identity, key-only SSH/SCP, copied SHA-256
 verification, sudo refusal, healthy no-op bootstrap, guarded SSH and scoped firewall

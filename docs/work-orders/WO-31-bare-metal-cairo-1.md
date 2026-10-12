@@ -400,3 +400,44 @@ Don't reboot. Run, in order:
 1. `host-check`, expecting `resume`;
 2. `host-bootstrap`, expecting `passed`;
 3. `host-check`, expecting `post-bootstrap` / `passed`.
+
+## Amendment 7 (2026-10-13, architect): the manifest-contract checker crashes on a single `List` object
+
+**Evidence from the Dell.** Bootstrap `twinfra-bootstrap-ef50942ca1534590a73d925220e465d6` ran merged `main` `1f7d86f`.
+- **Amendment 6 works:** every version command passed, and the failure exited with 1, not 20.
+- **Cilium status is OK.**
+- **It then failed at `00-setup-ubuntu-host.sh:3307-3308`:**
+  ```text
+  File "/var/lib/vcloud-host/check-manifest-contract.py", line 14, in flatten
+      if obj.get('kind') == 'List':
+  AttributeError: 'str' object has no attribute 'get'
+  ```
+
+**Cause.** `kubectl get daemonset/cilium daemonset/cilium-envoy deployment/cilium-operator -o json` returns **one** object of kind `List`. The checker's `main()` passes it straight to `flatten()`, which iterates the dictionary's keys. The other caller, `validate_manifests` (line 2703), wraps its input with `yq '[.]'`. This one doesn't, and neither does the GPU caller at line 3322.
+
+**Pre-check on the live cluster (read-only).** Wrapping the same input with `jq -c '[.]'` and running the installed checker gave `SSoT contract: passed; 0 findings`. The remaining gates also hold:
+- `kube-proxy-replacement` is `true`;
+- node capacity is `hugepages-2Mi: 256Mi` and `hugepages-1Gi: 1Gi`, against 128 × 2 MiB and 1 × 1 GiB required;
+- smoke tests are off for dev.
+
+So this is expected to be the **last** validation defect before `ready`.
+
+### Fix (shared script, inside the generated checker; production render may change only here and in derived checksums)
+
+1. **Normalise input in the checker's `main()`.**
+   - A top-level JSON object becomes a one-element list; a list is used as is.
+   - Any element that is not an object is reported as a **violation**, never a traceback.
+   - Keep `flatten()`'s handling of `kind: List`.
+2. **Keep the callers as they are.** The fix is in one place and covers lines 3307 and 3322.
+3. **Tests.** Run the checker on:
+   - a single `kind: List` object, as `kubectl get a b c -o json` returns it: pass;
+   - a list of objects: unchanged behaviour;
+   - a bare string or number: a violation, exit 1, no traceback;
+   - a real Cilium DaemonSet fixture with the dev node-exception policy: `0 findings`.
+
+### Live (owner, after merge, from `E:\twinfra-live`)
+
+Run `host-bootstrap`. Expected:
+- `passed`, followed by the dev log caps (kubelet restarts once), the node labels and `complete.json`.
+
+Then run `host-check`. Expected: `post-bootstrap` / `passed`.
