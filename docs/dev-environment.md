@@ -202,6 +202,24 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
    explicit, upstream-by-digest actions; kubelet retains mirror-only configuration
    (`MIRROR_REQUIRED=true`). Production refuses `IMAGE_STAGING=true`.
 
+   [WO-31 Amendment 3](work-orders/WO-31-bare-metal-cairo-1.md) retains each
+   `repository:tag@digest` name and adds `repository@digest` for CRI/kubelet
+   lookup. Both records are managed and pinned; verification uses the digest-only
+   name. Missing aliases for correct cached images are repaired without another
+   pull/import or local archive. Tag-only names are unchanged; a digest mismatch
+   on either record stops staging. `--check` only reads the cache and CRI.
+
+   **Live acceptance (Pending):** after merge, update `main` and rerun
+   `host-bootstrap` for the incomplete first run. Record the normalized CRI
+   digest/pin checks and the Cilium event evidence:
+
+   ```powershell
+   kubectl --context twinfra-dev-cairo-1 -n kube-system get events
+   ```
+
+   No `Pulling` events for Cilium agent/operator/envoy images may appear in the
+   acceptance interval; capture the interval and events before retention expires.
+
 9. **Owner: dev CA and TLS.**
 
    ```powershell

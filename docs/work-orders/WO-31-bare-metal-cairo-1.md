@@ -258,3 +258,33 @@ Don't change the Dell by hand: it keeps the failed state so the migration runs a
 1. Update `E:\vCloud` to `main`.
 2. Run `host-bootstrap` again.
 3. Expected: the old unit is removed, containerd starts, the bootstrap images are staged and `kubeadm init` completes.
+
+## Amendment 3 (2026-10-12, architect): staged images named with both a tag and a digest are invisible to the CRI
+
+**Evidence from the Dell.** Bootstrap `twinfra-bootstrap-868ae4c1c01843cc971a151f9b41473b` ran PR #41's code. The BPF migration worked: `Removed ".../multi-user.target.wants/sys-fs-bpf.mount"`, and containerd started. It then stopped at `phase: bootstrap-image-staging` with `CRI missing, digest mismatch or unpinned after staging: cilium`.
+- The runtime is containerd **2.2.1** (Ubuntu `2.2.1-0ubuntu1~24.04.3`), with crictl v1.36.0.
+- `crictl images -o json` shows the image staged correctly: `pinned: true`, and `repoDigests` contains `registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d…`.
+- `crictl inspecti` returns "no such image" for all three forms: `<repo>:v1.20.2@<digest>`, `<repo>@<digest>` and `<repo>:v1.20.2`.
+
+**Cause.** The CRI resolves a reference with `ParseDockerRef`, which **drops the tag when a digest is present**. It therefore looks up `<repo>@<digest>`, and no image record has that name. **kubelet does the same lookup**, so at run time it would treat the Cilium images as missing and try to pull them. With no upstream fallback, Cilium would never start. This affects every lock entry whose canonical name has both a tag and a digest: the Cilium agent, operator and envoy. Tag-only entries work, and they verified and pinned on the Dell.
+
+### Fix (`deploy/common/stage-images.py` and `tools/platform_image_staging.py`)
+
+1. **Add the digest-only name.** For every entry whose canonical reference has both a tag and a digest, also `ctr images tag` it to the **normalised** name `<canonical repository>@<digest>`. Label it `io.cri-containerd.image=managed io.cri-containerd.pinned=pinned`. Keep the existing name.
+2. **Verify the normalised name.** `crictl inspecti` uses `<repository>@<digest>` when there is a digest, otherwise the canonical name. It checks the digest and `pinned: true`.
+3. **Re-run.** On a re-run, an existing correct `tag@digest` record with the digest-only name missing counts as *repairable* (add the name and pin it), not as a digest mismatch.
+4. **Tests.** Use a fake `crictl` that resolves only the normalised form, as containerd does:
+   - a `tag@digest` entry passes after staging;
+   - a tag-only entry is unchanged;
+   - an actual digest mismatch still fails;
+   - `--check` makes no changes.
+
+### Scope of render changes
+
+Only the embedded `stage-images.py` in the `cairo-2` seed may change. Production renders only reference the agent's path, so they stay unchanged.
+
+### Live (owner, after merge)
+
+Run `host-bootstrap` again. Amendment 2 allows this because the previous run is incomplete.
+
+Add to acceptance: on the Dell, `kubectl -n kube-system get events` shows **no `Pulling` events** for Cilium images, so kubelet resolved the staged images locally.

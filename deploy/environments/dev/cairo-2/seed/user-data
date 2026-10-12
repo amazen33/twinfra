@@ -1865,31 +1865,39 @@ write_files:
     \ result\n\n\ndef cached(runner):\n    result = {}\n    for line in runner(['ctr',\
     \ '-n', 'k8s.io', 'images', 'list']).splitlines():\n        fields = line.split()\n\
     \        if len(fields) >= 3 and fields[2].startswith('sha256:'):\n          \
-    \  result[fields[0]] = fields[2]\n    return result\n\n\ndef cri_problem(item,\
-    \ runner):\n    try:\n        info = json.loads(runner(['crictl', 'inspecti',\
-    \ item['canonical']]))\n    except (ValueError, json.JSONDecodeError):\n     \
-    \   return 'CRI missing or digest mismatch'\n    digests = info.get('status',\
+    \  result[fields[0]] = fields[2]\n    return result\n\n\ndef cri_reference(canonical):\n\
+    \    \"\"\"ParseDockerRef drops a tag when a digest is present; preserve host\
+    \ ports.\"\"\"\n    if '@' not in canonical:\n        return canonical\n    repository,\
+    \ sha = canonical.rsplit('@', 1)\n    if ':' in repository.rsplit('/', 1)[-1]:\n\
+    \        repository = repository.rsplit(':', 1)[0]\n    return repository + '@'\
+    \ + sha\n\n\ndef cri_problem(item, runner):\n    try:\n        info = json.loads(runner(['crictl',\
+    \ 'inspecti', cri_reference(item['canonical'])]))\n    except (ValueError, json.JSONDecodeError):\n\
+    \        return 'CRI missing or digest mismatch'\n    digests = info.get('status',\
     \ {}).get('repoDigests', [])\n    if not any(value.endswith('@' + item['digest'])\
     \ for value in digests):\n        return 'CRI missing or digest mismatch'\n  \
     \  return None if info.get('status', {}).get('pinned') is True else 'unpinned'\n\
     \n\ndef inspect_cri(item, runner):\n    return cri_problem(item, runner) is None\n\
     \n\ndef stage(lock, check=False, verify_cri=True, runner=run):\n    images = entries(lock)\n\
     \    state = cached(runner)\n    problems = []\n    for key, item in images.items():\n\
-    \        actual = state.get(item['canonical'])\n        if actual is None:\n \
-    \           problems.append({'name': key, 'reason': 'missing', 'image': item['canonical']})\n\
-    \        elif actual != item['digest']:\n            problems.append({'name':\
+    \        actual = state.get(item['canonical'])\n        normalized = cri_reference(item['canonical'])\n\
+    \        alias = state.get(normalized)\n        if any(value is not None and value\
+    \ != item['digest'] for value in (actual, alias)):\n            problems.append({'name':\
     \ key, 'reason': 'digest mismatch', 'image': item['canonical']})\n        elif\
-    \ verify_cri:\n            reason = cri_problem(item, runner)\n            if\
-    \ reason:\n                problems.append({'name': key, 'reason': reason, 'image':\
-    \ item['canonical']})\n    if check:\n        # No temporary directory, pull,\
-    \ import, tag, file or runtime writes.\n        return problems\n    # A matching\
-    \ owned cache entry may need its pin upgraded; never repair a\n    # mismatched\
-    \ digest. CRI checks below still fail closed after the label event.\n    repairable\
-    \ = {p['name'] for p in problems if p['reason'] == 'unpinned'}\n    if any(p['reason']\
-    \ != 'missing' and p['name'] not in repairable for p in problems):\n        raise\
-    \ ValueError('Staging refused: ' + ', '.join(p['name'] + ': ' + p['reason'] for\
-    \ p in problems))\n    missing = {p['name'] for p in problems if p['reason'] ==\
-    \ 'missing'}\n    for key, item in images.items():\n        if key in missing\
+    \ actual is None:\n            problems.append({'name': key, 'reason': 'missing',\
+    \ 'image': item['canonical']})\n        elif normalized != item['canonical'] and\
+    \ alias is None:\n            problems.append({'name': key, 'reason': 'missing\
+    \ digest-only name', 'image': item['canonical']})\n        elif verify_cri:\n\
+    \            reason = cri_problem(item, runner)\n            if reason:\n    \
+    \            problems.append({'name': key, 'reason': reason, 'image': item['canonical']})\n\
+    \    if check:\n        # No temporary directory, pull, import, tag, file or runtime\
+    \ writes.\n        return problems\n    # Repair matching records' names/pins\
+    \ without pulling/importing again. Neither\n    # canonical nor digest-only records\
+    \ with the wrong digest may be adopted.\n    repairable = {p['name'] for p in\
+    \ problems if p['reason'] in ('unpinned', 'missing digest-only name')}\n    if\
+    \ any(p['reason'] != 'missing' and p['name'] not in repairable for p in problems):\n\
+    \        raise ValueError('Staging refused: ' + ', '.join(p['name'] + ': ' + p['reason']\
+    \ for p in problems))\n    missing = {p['name'] for p in problems if p['reason']\
+    \ == 'missing'}\n    for key, item in images.items():\n        if key in missing\
     \ and item.get('buildReceipt'):\n            raise ValueError('Missing locally\
     \ built image: ' + key + '; import its verified OCI archive first')\n        #\
     \ Explicit local client + empty hosts directory bypass CRI mirror configuration\n\
@@ -1901,18 +1909,26 @@ write_files:
     \ state.get(item['source']) != item['digest']:\n                raise ValueError('Upstream\
     \ digest mismatch after pull: ' + key)\n            runner(['ctr', '-n', 'k8s.io',\
     \ 'images', 'tag', item['source'], item['canonical']])\n        if key in missing\
-    \ or key in repairable and not inspect_cri(item, runner):\n            runner(['ctr',\
-    \ '-n', 'k8s.io', 'images', 'label', item['canonical'],\n                    'io.cri-containerd.image=managed',\
-    \ 'io.cri-containerd.pinned=pinned'])\n    state = cached(runner)\n    for key,\
-    \ item in images.items():\n        if state.get(item['canonical']) != item['digest']:\n\
-    \            raise ValueError('Missing or mismatched image after staging: ' +\
-    \ key)\n        if verify_cri:\n            # CRI consumes containerd image events\
-    \ asynchronously. Bounded reads\n            # avoid a false failure immediately\
-    \ after a successful tag/import.\n            for attempt in range(5):\n     \
-    \           if inspect_cri(item, runner):\n                    break\n       \
-    \         if attempt == 4:\n                    raise ValueError('CRI missing,\
-    \ digest mismatch or unpinned after staging: ' + key)\n                time.sleep(0.5)\n\
-    \    return []\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n\
+    \ or key in repairable:\n            normalized = cri_reference(item['canonical'])\n\
+    \            if state.get(normalized) not in (None, item['digest']):\n       \
+    \         raise ValueError('Digest-only image mismatch before labels: ' + key)\n\
+    \            if normalized != item['canonical'] and state.get(normalized) is None:\n\
+    \                runner(['ctr', '-n', 'k8s.io', 'images', 'tag', item['canonical'],\
+    \ normalized])\n                state[normalized] = item['digest']\n         \
+    \   for reference in dict.fromkeys((item['canonical'], normalized)):\n       \
+    \         runner(['ctr', '-n', 'k8s.io', 'images', 'label', reference,\n     \
+    \                   'io.cri-containerd.image=managed', 'io.cri-containerd.pinned=pinned'])\n\
+    \    state = cached(runner)\n    for key, item in images.items():\n        if\
+    \ state.get(item['canonical']) != item['digest']:\n            raise ValueError('Missing\
+    \ or mismatched image after staging: ' + key)\n        if state.get(cri_reference(item['canonical']))\
+    \ != item['digest']:\n            raise ValueError('Missing or mismatched digest-only\
+    \ image after staging: ' + key)\n        if verify_cri:\n            # CRI consumes\
+    \ containerd image events asynchronously. Bounded reads\n            # avoid a\
+    \ false failure immediately after a successful tag/import.\n            for attempt\
+    \ in range(5):\n                if inspect_cri(item, runner):\n              \
+    \      break\n                if attempt == 4:\n                    raise ValueError('CRI\
+    \ missing, digest mismatch or unpinned after staging: ' + key)\n             \
+    \   time.sleep(0.5)\n    return []\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n\
     \    parser.add_argument('--lock', type=Path)\n    parser.add_argument('--stdin',\
     \ action='store_true')\n    parser.add_argument('--check', action='store_true')\n\
     \    args = parser.parse_args()\n    if bool(args.lock) == args.stdin:\n     \
