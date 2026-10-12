@@ -47,13 +47,13 @@
     {
       "id": "image-digest:00-setup-ubuntu-host.sh",
       "kind": "image-digest",
-      "reason": "Existing image references need immutable digest evidence; WO-29 adds only guarded dev staging, production rendering verified byte-identical",
+      "reason": "Existing image references need immutable digest evidence; owner-approved WO-31 Amendment 2 changes only BPF compatibility blocks and derived render hashes; image references and expiry unchanged",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Existing image references need immutable digest evidence",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "00-setup-ubuntu-host.sh",
-      "fingerprint": "aebbf5d00e47b7c37ef0e11cec151650cb4dc0ee9aaf0c37ca3dca68f9cbf0e8"
+      "fingerprint": "79764adada30504c3ce5aae0e1e361fb064f06fd2c0d9bd84f85f962150601cd"
     },
     {
       "id": "image-digest:deploy/kustomize/base/argocd/install.yaml",

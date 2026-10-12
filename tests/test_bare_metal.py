@@ -2,6 +2,7 @@
 import copy
 from contextlib import nullcontext
 import hashlib
+import gzip
 import importlib.util
 import io
 import json
@@ -27,6 +28,21 @@ from test_dev_runnable import FakeCtr, FakeSSH, locked, stager
 spec=importlib.util.spec_from_file_location('host_agent',ROOT/'deploy/common/host-admin.py')
 agent=importlib.util.module_from_spec(spec);spec.loader.exec_module(agent)
 MAIN='968f336f9335739c35b79ed838dc7cfaeebff235'
+AMENDMENT_2_BASE='a8f4f434c7bed890311793590952dd5295d2e97e'
+
+
+def mask_bpffs_script(raw):
+    """Only Amendment 2's BPF helper/setup and mount dependency may differ."""
+    raw=raw.replace('\r\n','\n')
+    raw=raw.replace('    check_bpffs_migration # WO-31: read-only ownership guard before any apply writes.\n','')
+    raw=re.sub(r'(?ms)^# BEGIN WO-31 BPFFS COMPATIBILITY\n.*?^# END WO-31 BPFFS COMPATIBILITY\n\n','',raw)
+    raw=re.sub(r"(?ms)^        mkdir -p /sys/fs/bpf\n.*?^        \[\[ \$\(findmnt -n -o FSTYPE --target /sys/fs/bpf\) == bpf \]\] \|\| die 'Unexpected filesystem at /sys/fs/bpf'\n",'        @@BPFFS_SETUP@@\n',raw)
+    raw=raw.replace('        prepare_bpffs\n','        @@BPFFS_SETUP@@\n')
+    raw=raw.replace('Requires=sys-fs-bpf.mount\nAfter=sys-fs-bpf.mount\n','@@BPFFS_DEPENDENCY@@\n')
+    raw=raw.replace('RequiresMountsFor=/sys/fs/bpf\n','@@BPFFS_DEPENDENCY@@\n')
+    if raw.count('@@BPFFS_SETUP@@')!=1 or raw.count('@@BPFFS_DEPENDENCY@@')!=1:
+        raise ValueError('BPF mask does not match the exact approved blocks')
+    return raw
 
 
 def fixture(post=False):
@@ -166,6 +182,44 @@ class HostChecks(unittest.TestCase):
 
 
 class HostBootstrap(unittest.TestCase):
+    def test_staging_replacement_only_for_owned_incomplete_run(self):
+        for condition in ('incomplete','complete','active','unowned','ready','invalid-receipt','tampered-input'):
+            with self.subTest(condition=condition),tempfile.TemporaryDirectory() as tmp:
+                root=Path(tmp);incoming=root/'tmp/twinfra-inputs.ABCDEF12';incoming.mkdir(parents=True)
+                stage=root/'var/lib/twinfra/host-bootstrap';stage.mkdir(parents=True)
+                for name in agent.BOOTSTRAP_FILES:
+                    (stage/name).write_text('old '+name+'\n',newline='\n')
+                    (incoming/name).write_text('new '+name+'\n',newline='\n')
+                previous={name:hashlib.sha256((stage/name).read_bytes()).hexdigest() for name in agent.BOOTSTRAP_FILES}
+                hashes={name:hashlib.sha256((incoming/name).read_bytes()).hexdigest() for name in agent.BOOTSTRAP_FILES}
+                receipt=stage/'receipt.json';receipt.write_text(json.dumps(previous))
+                result=root/'var/lib/vcloud-host/result.json';result.parent.mkdir(parents=True)
+                result.write_text(json.dumps({'status':'ready' if condition=='ready' else 'failed','phase':'containerd'}))
+                if condition=='complete':(stage/'complete.json').write_text(json.dumps(previous))
+                if condition=='invalid-receipt':receipt.write_text(json.dumps({'host.env':'invalid'}))
+                if condition=='tampered-input':(stage/'host.env').write_text('foreign changes')
+                data=host.expected()|{'incoming':'/tmp/twinfra-inputs.ABCDEF12','operator':'synthetic','hashes':hashes}
+                fake_pwd=types.SimpleNamespace(getpwnam=lambda name:types.SimpleNamespace(pw_uid=incoming.stat().st_uid))
+                def secure(path):
+                    if condition=='unowned' and path==receipt:raise ValueError('Unowned/insecure host path')
+                calls=[]
+                def command(cmd,**kw):
+                    calls.append(cmd)
+                    raw='twinfra-bootstrap-'+'a'*32+'.service loaded activating start Bootstrap\n' if condition=='active' and 'list-units' in cmd else ''
+                    return subprocess.CompletedProcess(cmd,0,raw,'')
+                before={str(f.relative_to(root)):f.read_bytes() for f in root.rglob('*') if f.is_file()}
+                with patch.dict(sys.modules,{'pwd':fake_pwd}),patch.object(agent,'ROOT',root),patch.object(agent,'secure',side_effect=secure),patch.object(agent.stat,'S_IMODE',return_value=0o700),patch.object(agent,'inventory',return_value=fixture()),patch.object(agent,'command',side_effect=command),patch.object(agent,'bootstrap_lock',side_effect=nullcontext):
+                    if condition=='incomplete':
+                        self.assertEqual(agent.bootstrap_apply(data)['status'],'running')
+                        self.assertEqual(json.loads(receipt.read_text()),hashes)
+                        for name,sha in hashes.items():self.assertEqual(hashlib.sha256((stage/name).read_bytes()).hexdigest(),sha)
+                        self.assertTrue(any(c[0]=='systemd-run' for c in calls))
+                        self.assertFalse((stage/'complete.json').exists())
+                    else:
+                        with self.assertRaises(ValueError):agent.bootstrap_apply(data)
+                        self.assertEqual(before,{str(f.relative_to(root)):f.read_bytes() for f in root.rglob('*') if f.is_file()})
+                        self.assertFalse(any(c[0]=='systemd-run' for c in calls))
+
     def test_api_input_mapping_preserves_foreign_lines_and_refuses_conflict(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);path=root/'etc/hosts';path.parent.mkdir();path.write_text('127.0.0.1 localhost\n')
@@ -509,13 +563,35 @@ class PinsAndProfiles(unittest.TestCase):
 
     def test_masked_byte_comparisons_against_main(self):
         def base(name):return subprocess.check_output(['git','-C',str(ROOT),'show',MAIN+':'+name])
-        for name in ('00-setup-ubuntu-host.sh','host.env.example','user-data.yaml','user-data-remote.yaml'):
-            self.assertEqual((ROOT/name).read_bytes().replace(b'\r\n',b'\n'),base(name),name)
+        self.assertEqual(mask_bpffs_script((ROOT/'00-setup-ubuntu-host.sh').read_text()),mask_bpffs_script(base('00-setup-ubuntu-host.sh').decode()))
+        self.assertEqual((ROOT/'host.env.example').read_bytes().replace(b'\r\n',b'\n'),base('host.env.example'))
+        production_base=lambda name:subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_2_BASE+':'+name])
+        def production_mask(raw,remote=False):
+            raw=raw.decode().replace('\r\n','\n')
+            raw=re.sub(r'(?m)^# Generated; script SHA256=[a-f0-9]{64}\.$','# Generated; script SHA256=@@DERIVED@@.',raw)
+            if remote:
+                return re.sub(r"(?m)^(      expected=')[a-f0-9]{64}('$)",r'\1@@DERIVED@@\2',raw)
+            data=yaml.safe_load(raw)
+            embedded=next(f['content'] for f in data['write_files'] if f['path']=='/usr/local/sbin/00-setup-ubuntu-host.sh')
+            literal='\n'.join('      '+line if line else '' for line in embedded.rstrip('\n').split('\n'))
+            self.assertEqual(raw.count(literal),1)
+            masked=mask_bpffs_script(embedded)
+            replacement='\n'.join('      '+line if line else '' for line in masked.rstrip('\n').split('\n'))
+            return raw.replace(literal,replacement,1)
+        for name in ('user-data.yaml','user-data-remote.yaml'):
+            self.assertEqual(production_mask((ROOT/name).read_bytes(),name.endswith('remote.yaml')),production_mask(production_base(name),name.endswith('remote.yaml')),name)
             self.assertNotIn(b'containerLogMaxSize: 10Mi',base(name))
-        self.assertEqual((ROOT/'user-data.yaml.gz').read_bytes(),base('user-data.yaml.gz'))
+        self.assertEqual(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),(ROOT/'user-data.yaml').read_bytes())
+        self.assertEqual(production_mask(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes())),production_mask(gzip.decompress(production_base('user-data.yaml.gz'))))
         path='deploy/environments/dev/cairo-2/seed/user-data'
         def mask(raw):
             raw=raw.replace(b'\r\n',b'\n')
+            # Check every inner non-BPF byte before masking its YAML serialization.
+            data=yaml.safe_load(raw)
+            embedded=next(f['content'] for f in data['write_files'] if f['path']=='/usr/local/sbin/00-setup-ubuntu-host.sh')
+            self.assertEqual(mask_bpffs_script(embedded),mask_bpffs_script(base('00-setup-ubuntu-host.sh').decode()))
+            raw,count=re.subn(rb'(?ms)(^- path: /usr/local/sbin/00-setup-ubuntu-host.sh\n  owner: root:root\n  permissions: [^\n]+\n  content: ).*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',rb'\1@@SHARED_BPFFS_SCRIPT@@\n',raw)
+            self.assertEqual(count,1)
             # Preserve path/permissions, mask only the existing agent content value.
             raw,count=re.subn(rb'(?ms)(^- path: /usr/local/lib/twinfra/stage-images.py\n  permissions: [^\n]+\n  content: ).*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',rb'\1@@SHARED_AGENT@@\n',raw)
             self.assertEqual(count,1)
@@ -527,6 +603,28 @@ class PinsAndProfiles(unittest.TestCase):
         for name in ('meta-data','network-config'):
             path='deploy/environments/dev/cairo-2/seed/'+name
             self.assertEqual((ROOT/path).read_bytes().replace(b'\r\n',b'\n'),base(path))
+
+    def test_amendment_2_changes_only_approved_blocks_against_current_main(self):
+        base=lambda name:subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_2_BASE+':'+name]).decode()
+        current=(ROOT/'00-setup-ubuntu-host.sh').read_text()
+        self.assertEqual(mask_bpffs_script(current),mask_bpffs_script(base('00-setup-ubuntu-host.sh')))
+        self.assertNotEqual(current,base('00-setup-ubuntu-host.sh'))
+        for name in ('host.env.example','deploy/environments/dev/cairo-1/host.env',
+                     'deploy/environments/dev/cairo-2/seed/network-config','deploy/environments/dev/cairo-2/seed/meta-data'):
+            self.assertEqual((ROOT/name).read_text(),base(name))
+
+    def test_amendment_2_licence_evidence_preserves_policy_and_expiry(self):
+        name='security/licence-baseline.json'
+        baseline=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_2_BASE+':'+name]))
+        current=json.loads((ROOT/name).read_text())
+        before=next(f for f in baseline['findings'] if f['id']=='image-digest:00-setup-ubuntu-host.sh')
+        after=next(f for f in current['findings'] if f['id']==before['id'])
+        expected=hashlib.sha256((ROOT/'00-setup-ubuntu-host.sh').read_bytes().replace(b'\r\n',b'\n')).hexdigest()
+        self.assertEqual(after['fingerprint'],expected)
+        before['fingerprint']=after['fingerprint'];before['reason']=after['reason']
+        self.assertEqual(current,baseline)
+        for frozen in ('security/licence-register.json','security/licence-policy.json','tools/ci/pr-baselines.json'):
+            self.assertEqual((ROOT/frozen).read_bytes().replace(b'\r\n',b'\n'),subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_2_BASE+':'+frozen]))
 
 
 if __name__=='__main__':unittest.main()

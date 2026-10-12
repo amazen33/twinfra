@@ -182,6 +182,74 @@ class BootstrapTests(unittest.TestCase):
             result = bash(f"WORK_DIR={shlex.quote(path)}; destination=\"$WORK_DIR/config\"; printf 'original' > \"$destination\"; printf 'desired' | cat > \"$WORK_DIR/input\"; write_file \"$destination\" < \"$WORK_DIR/input\"; [[ $FILE_CHANGED == true ]]; first=$(stat -c '%Y' \"$destination\"); write_file \"$destination\" < \"$WORK_DIR/input\"; [[ $FILE_CHANGED == false ]]; [[ $first == \"$(stat -c '%Y' \"$destination\")\" ]]; [[ $(cat \"$destination.vcloud-original\") == original ]]; printf 'changed' > \"$WORK_DIR/input\"; write_file \"$destination\" < \"$WORK_DIR/input\"; [[ $(cat \"$destination.vcloud-original\") == original ]]")
             self.assertEqual(result.returncode, 0)
 
+    def bpffs_fixture(self, old=None, backup=False, filesystem='bpf', mount_ok=True):
+        # Only the fixture's .mount path is substituted; legacy constant bytes
+        # remain unchanged. All host commands are fake, including mkdir/mount.
+        with tempfile.TemporaryDirectory(prefix='vcloud-bpffs-',dir=ROOT/'.tools') as temp:
+            directory=Path(temp);unit=directory/'sys-fs-bpf.mount';link=directory/'enabled-link'
+            link.write_text('fixture link')
+            if old is not None:unit.write_bytes(old)
+            if backup:Path(str(unit)+'.vcloud-original').write_bytes(b'foreign backup')
+            script=(ROOT/'00-setup-ubuntu-host.sh').read_text()
+            needle='local unit=/etc/systemd/system/sys-fs-bpf.mount'
+            self.assertEqual(script.count(needle),2)
+            script=script.replace(needle,'local unit='+shlex.quote(shell_path(unit)))
+            fixture_script=directory/'bootstrap.sh';fixture_script.write_text(script,encoding='utf-8',newline='\n')
+            calls=directory/'calls'
+            code=f'''set -Eeuo pipefail
+source {shlex.quote(shell_path(fixture_script))}
+calls={shlex.quote(shell_path(calls))}
+fs={shlex.quote(filesystem)}
+systemctl() {{ printf 'systemctl:%s\\n' "$*" >> "$calls"; if [[ $* == 'disable sys-fs-bpf.mount' ]]; then command rm -- {shlex.quote(shell_path(link))}; fi; }}
+mkdir() {{ printf 'mkdir:%s\\n' "$*" >> "$calls"; }}
+findmnt() {{ printf '%s\\n' "$fs"; }}
+mount() {{ printf 'mount:%s\\n' "$*" >> "$calls"; fs={'bpf' if mount_ok else 'tmpfs'}; }}
+write_file() {{ printf 'UNEXPECTED_WRITE:%s\\n' "$*" >> "$calls"; return 1; }}
+check_bpffs_migration
+prepare_bpffs
+'''
+            result=subprocess.run([OPTIONS.bash,'-c',code],capture_output=True,text=True,cwd=ROOT)
+            return result,unit.read_bytes() if unit.exists() else None,link.exists(),calls.read_text().splitlines() if calls.exists() else []
+
+    def test_bpffs_identical_unit_migrated_and_existing_mount_retained(self):
+        base=subprocess.check_output(['git','-C',str(ROOT),'show','a8f4f434c7bed890311793590952dd5295d2e97e:00-setup-ubuntu-host.sh']).decode()
+        old=base.split("write_file /etc/systemd/system/sys-fs-bpf.mount <<'EOF'\n",1)[1].split('\nEOF',1)[0]+'\n'
+        self.assertEqual(bash('legacy_bpffs_mount_unit').stdout,old)
+        result,unit,link,calls=self.bpffs_fixture(old.encode())
+        self.assertEqual(result.returncode,0,result.stderr);self.assertIsNone(unit);self.assertFalse(link)
+        self.assertEqual(calls,['systemctl:disable sys-fs-bpf.mount','systemctl:daemon-reload','mkdir:-p /sys/fs/bpf'])
+
+    def test_bpffs_different_unit_refused_without_changes(self):
+        old=bash('legacy_bpffs_mount_unit').stdout.encode()
+        for foreign in (old+b'# foreign\n',old.rstrip(b'\n'),old.replace(b'\n',b'\r\n')):
+            result,unit,link,calls=self.bpffs_fixture(foreign)
+            self.assertNotEqual(result.returncode,0);self.assertIn('differs from the exact legacy file',result.stderr)
+            self.assertEqual(unit,foreign);self.assertTrue(link);self.assertEqual(calls,[])
+
+    def test_bpffs_original_backup_refused_without_changes(self):
+        for old in (bash('legacy_bpffs_mount_unit').stdout.encode(),None):
+            result,unit,link,calls=self.bpffs_fixture(old,backup=True)
+            self.assertNotEqual(result.returncode,0);self.assertIn('vcloud-original exists',result.stderr)
+            self.assertEqual(unit,old);self.assertTrue(link);self.assertEqual(calls,[])
+
+    def test_bpffs_absent_mount_created_without_unit(self):
+        result,unit,link,calls=self.bpffs_fixture(filesystem='')
+        self.assertEqual(result.returncode,0,result.stderr);self.assertIsNone(unit)
+        self.assertEqual(calls,['mkdir:-p /sys/fs/bpf','mount:-t bpf -o rw,nosuid,nodev,noexec,mode=700 bpffs /sys/fs/bpf'])
+        result,_,_,calls=self.bpffs_fixture()
+        self.assertEqual(result.returncode,0,result.stderr);self.assertEqual(calls,['mkdir:-p /sys/fs/bpf'])
+
+    def test_bpffs_fstype_check_and_containerd_dependency(self):
+        result,_,_,_=self.bpffs_fixture(filesystem='',mount_ok=False)
+        self.assertNotEqual(result.returncode,0);self.assertIn('Unexpected filesystem at /sys/fs/bpf',result.stderr)
+        script=(ROOT/'00-setup-ubuntu-host.sh').read_text()
+        self.assertNotIn('write_file /etc/systemd/system/sys-fs-bpf.mount',script)
+        self.assertNotIn('systemctl enable sys-fs-bpf.mount',script)
+        self.assertNotIn('Requires=sys-fs-bpf.mount',script);self.assertNotIn('After=sys-fs-bpf.mount',script)
+        self.assertIn('[Unit]\nRequiresMountsFor=/sys/fs/bpf\n[Service]\nLimitNOFILE=1048576',script)
+        preflight=script.split('preflight() {\n',1)[1].split('\n}\n',1)[0]
+        self.assertIn('check_bpffs_migration',preflight)
+
     def test_kubeadm_config(self):
         config = list(yaml.safe_load_all(bash("NODE_IP=192.168.50.10; NODE_NAME=vcloud01; render_kubeadm").stdout))
         init, cluster, kubelet = config

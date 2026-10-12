@@ -15,9 +15,12 @@ were performed by Codex. Host-check fixture: Ubuntu 24.04, x86-64/VT-x/KVM,
 The pre-bootstrap fixture passes with free reserved ports; the post-bootstrap
 fixture passes only with all Amendment 1 identity and process-owner inputs.
 
-Module -1 and production renders are unchanged. Only the shared pinning agent
-and dev log-cap blocks change the cairo-2 seed; masked comparisons against
-pre-WO-31 main `968f336` verify all remaining bytes. No new dependencies.
+WO-31 Amendment 2 changes Module -1's BPF setup and containerd mount dependency.
+Production renders change only those embedded blocks and derived script SHA256
+metadata (plus the regenerated gzip). The cairo-2 seed also embeds that fix;
+its shared pinning agent and dev log-cap allowances from Amendment 1 remain.
+Masked comparisons against pre-WO-31 main `968f336` and Amendment 2 base
+`a8f4f43` verify remaining bytes. No new dependencies.
 
 ## Live acceptance
 
@@ -27,6 +30,7 @@ pre-WO-31 main `968f336` verify all remaining bytes. No new dependencies.
 | 24-hour soak / all Pods Running / no freeze | Pending | Start/end UTC and observed state |
 | Kernel machine-check / hung-task errors | Pending | Owner-reviewed journal summary |
 | host-check / SSH hardening / integrity lockdown | Pending | Real sanitized report and effective settings |
+| Amendment 2 BPF migration / incomplete bootstrap re-run | Pending | Exact legacy unit disabled/removed; existing bpffs retained; containerd starts; new verified staging receipt; bootstrap images staged and kubeadm init completes |
 | LAN 22/6443 reachable, 2379/10250 blocked | Pending | Laptop connection results |
 | Argo CD syncs from GitHub through the host firewall | Pending | Firewall confirmed/enabled; GitHub repository fetch and successful sync with Synced/Healthy application status |
 | Node Ready / Cilium healthy under lockdown | Pending | Actual status and deny-policy proof |

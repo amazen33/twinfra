@@ -207,3 +207,54 @@ The live acceptance item "`host-check` passes" means this after-bootstrap mode. 
 - `result.json` not `ready`: blocking.
 - Wrong `clusterName` or `InternalIP`: blocking.
 - 6443 owned by another process: blocking.
+
+## Amendment 2 (2026-10-12, architect): the first live bootstrap failed in Module -1; fix the BPF mount and allow a re-run
+
+**Evidence from the Dell.** The bootstrap was `twinfra-bootstrap-cb3b0b124ec249d1b7a6fa7e34fc7a22`, run after the requested reboot; `result.json` shows `phase: containerd`, `status: failed`. The facts:
+- systemd is 255.4-1ubuntu8.17, which logs: `sys-fs-bpf.mount: Cannot create mount unit for API file system /sys/fs/bpf. Refusing.`
+- `Failed to restart containerd.service: Unit sys-fs-bpf.mount has a bad unit file setting.` That is `00-setup-ubuntu-host.sh` line 587.
+- `/sys/fs/bpf` **is already mounted** by systemd itself (`bpf rw,nosuid,nodev,noexec,relatime,mode=700`).
+- The script writes `/etc/systemd/system/sys-fs-bpf.mount` (lines 326–343) and enables it (line 342). Its containerd drop-in has `Requires=sys-fs-bpf.mount` and `After=sys-fs-bpf.mount` (lines 576–583).
+
+Ubuntu 24.04's systemd treats `/sys/fs/bpf` as an API file system and refuses unit files for it. **This affects production too.** So this amendment allows changing the shared Module -1 and the production renders, **limited to the items below**.
+
+### Fix in the shared `00-setup-ubuntu-host.sh`
+
+1. **No mount unit.** Stop writing `sys-fs-bpf.mount`.
+   - If `/sys/fs/bpf` is not `bpf`, run `mount -t bpf -o rw,nosuid,nodev,noexec,mode=700 bpffs /sys/fs/bpf`.
+   - Keep the existing `findmnt` FSTYPE check. On systemd hosts, PID 1 already mounts it at boot.
+2. **containerd drop-in.** Replace `Requires=`/`After=sys-fs-bpf.mount` with `RequiresMountsFor=/sys/fs/bpf`. It binds to systemd's own mount unit.
+3. **Migration, with no adoption.** If `/etc/systemd/system/sys-fs-bpf.mount` exists **byte-identical** to the content the old script wrote, then:
+   - `systemctl disable` it, which removes the `multi-user.target.wants` link;
+   - delete the file;
+   - `daemon-reload`.
+
+   Keep the old content in the script as a constant for this comparison. If the file differs, or a `sys-fs-bpf.mount.vcloud-original` exists, stop with a clear message and change nothing.
+
+### Fix in `deploy/common/host-admin.py`: allow a re-run with new inputs
+
+The previous run left `/var/lib/twinfra/host-bootstrap/receipt.json` with the old input hashes. Fixing the script changes its hash, so `bootstrap_apply` would refuse with "different bootstrap staging". Replace the staging set with newly verified inputs **only** when all of these hold:
+- the existing receipt is root-owned and valid;
+- there is **no** `complete.json`;
+- no `twinfra-bootstrap-*` unit is active;
+- `result.json` is not `ready`.
+
+A completed bootstrap with different inputs is still refused; upgrades are a later work order.
+
+### Tests
+
+- **Rendered script:** it writes no `.mount` unit for `/sys/fs/bpf`, and the containerd drop-in has `RequiresMountsFor=/sys/fs/bpf`. ShellCheck passes.
+- **Migration with a fake `systemctl`:** the identical old file is disabled and removed; a different file is refused; a `.vcloud-original` backup is refused.
+- **`host-admin.py`:** these are allowed or refused as follows:
+  - an incomplete previous run with an owned receipt: replaced;
+  - with `complete.json`: refused;
+  - with an active unit: refused;
+  - with an unowned receipt: refused.
+- **Production render:** the diff against `main` is limited to the BPF and containerd drop-in blocks. Say so in the PR.
+
+### Live (owner, after merge)
+
+Don't change the Dell by hand: it keeps the failed state so the migration runs against the real host. After the merge:
+1. Update `E:\vCloud` to `main`.
+2. Run `host-bootstrap` again.
+3. Expected: the old unit is removed, containerd starts, the bootstrap images are staged and `kubeadm init` completes.
