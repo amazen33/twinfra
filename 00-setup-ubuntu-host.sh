@@ -11,6 +11,8 @@
 # No automatic reboot, kubeadm reset, firewall disable, disk formatting, or VFIO rebinding.
 
 load_config() {
+    # Transient systemd units/cloud-init may omit HOME; root-owned CLI defaults need it.
+    : "${HOME:=/root}"; export HOME
     local config_file="${VCLOUD_CONFIG_FILE:-/etc/vcloud-host.env}"
     # An env file is executable shell configuration. Never source a writable user file as root.
     if [[ -f "$config_file" ]]; then
@@ -3345,7 +3347,8 @@ on_error() {
     trap - ERR
     log "Failed in phase $PHASE at line $line (exit $code). Inspect the journal; no automatic reset." >&2
     if command -v jq >/dev/null && [[ -d $STATE_DIR ]]; then write_result failed || true; fi
-    exit "$code"
+    # Reserve 20 exclusively for the deliberate reboot-required result below.
+    exit 1
 }
 
 main() {

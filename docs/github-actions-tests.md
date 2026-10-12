@@ -116,6 +116,16 @@ CLI archive/binary corruption, missing commands and version-command failures
 fail CI. HPC/GPU conditional checks have a separate
 [source review and execution boundary](dev-environment.md#module--1-cli-validation-review).
 
+Amendment 6 removes the inherited runner-HOME workaround. CLI installation and
+each pinned help/version command start through `env -i` with PATH only; the
+version wrapper asserts HOME is absent, sources Module -1, and exercises its
+own exported `/root` default. The exact commands still come from `validate_host`.
+`cli-summary.json` records this environment boundary. A missing default or any
+version failure fails the required step on the candidate and all six historical
+matrix legs. Offline tests also exercise a fake Argo CD requiring HOME, a generic
+command exit 20 becoming failure exit 1, the deliberate reboot exit 20, and the
+host agent's requirement for matching reboot-result evidence.
+
 WO-31 adds an optional bare-metal bundle. Fixtures cover both read-only host-check
 modes and every required cluster/listener identity, key-only SSH/SCP, copied SHA-256
 verification, sudo refusal, healthy no-op bootstrap, guarded SSH and scoped firewall

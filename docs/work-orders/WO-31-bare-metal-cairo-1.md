@@ -360,6 +360,43 @@ The run then failed in the last phase, `validation`, at `00-setup-ubuntu-host.sh
 
 ### Live (owner, after merge, from merged `main` only)
 
-1. Run `host-check`: the mode is `resume`.
+1. Run `host-check`: the mode is `resume`. (Confirmed live 2026-10-12 with `main` `cf4b659`.)
 2. Run `host-bootstrap`: it should finish with `ready`, then the dev log caps, the node labels and `complete.json`.
 3. Run `host-check` again: mode `post-bootstrap`, status `passed`.
+
+## Amendment 6 (2026-10-12, architect): `argocd` needs `HOME`, and a failure exit code collides with "reboot required"
+
+**Evidence from the Dell.** Bootstrap `twinfra-bootstrap-0435eff9c22a47e0b82fab0fb654f366` ran merged `main` `cf4b659`. Resume mode worked, and the validation line now passes `tkn` (it printed `0.46.1`). The next command, `argocd version --client`, failed:
+
+```text
+time="2026-10-12T17:56:44Z" level=fatal msg="$HOME is not defined"
+[vCloud] Failed in phase validation at line 3285 (exit 20). Inspect the journal; no automatic reset.
+```
+
+`host-admin.py` then reported `reboot-required`, but **no reboot is needed**:
+- there is no `/var/run/reboot-required`;
+- the running kernel is the only one installed;
+- the boot command line already has the 2 MiB and 1 GiB hugepage settings, and both are allocated.
+
+**Two defects.**
+1. **No `HOME`.** Module -1 runs without `HOME` under the transient systemd unit, and in production under cloud-init it may have none either. The `argocd` CLI refuses to run without it. The CI step from Amendment 5 kept the runner's `HOME` (commit "preserve runner home during CLI validation"), which **hid this defect**.
+2. **Exit code 20 is ambiguous.** The failure handler exits with the failing command's status. Argo CD's generic error is **20**, the same code Module -1 reserves for "reboot required" (`exit 20` after `write_result reboot-required`).
+
+### Fix (shared script and `host-admin.py`; production render may change only in these blocks and derived checksums)
+
+1. **`HOME` in Module -1.** The script already requires root, so set `HOME` near the start if it's missing: `: "${HOME:=/root}"; export HOME`. Don't change any tool's configuration.
+2. **Reserve exit code 20.** The failure handler must exit with a fixed code (**1**) and **never** 20. Exit 20 comes only from the deliberate reboot-required path.
+3. **Belt and braces in `host-admin.py`.** Report `reboot-required` only when the unit's exit code is 20 **and** `result.json` has `status: reboot-required`. Otherwise report `failed` and point to the journal.
+4. **Make CI match the host.** The CLI validation step must run the version commands in a **minimal environment**, like the systemd unit: `env -i PATH=<pinned bin dir>:/usr/bin:/bin`, with no `HOME`. It must exercise the script's own `HOME` default. Remove the runner-`HOME` workaround.
+5. **Tests:**
+   - a fake `argocd` that fails without `HOME` passes once the script sets the default;
+   - a failing command that exits 20 makes the script exit 1;
+   - the reboot path still exits 20;
+   - `host-admin` treats exit 20 with a non-reboot `result.json` as `failed`.
+
+### Live (owner, after merge, from `E:\twinfra-live`)
+
+Don't reboot. Run, in order:
+1. `host-check`, expecting `resume`;
+2. `host-bootstrap`, expecting `passed`;
+3. `host-check`, expecting `post-bootstrap` / `passed`.

@@ -337,7 +337,17 @@ def bootstrap_status(data):
     status='failed'
     if fields.get('ExecMainCode')=='1':
         if code=='0' and fields.get('Result')=='success':status='passed'
-        elif code=='20':status='reboot-required'
+        elif code=='20':
+            # A tool (notably argocd) can also return 20 for a generic failure.
+            # Only the shared bootstrap's owned result can request a reboot.
+            result=at('/var/lib/vcloud-host/result.json')
+            try:
+                secure(result)
+                recorded=json.loads(result.read_text()) if result.is_file() else None
+                if isinstance(recorded,dict) and recorded.get('status')=='reboot-required':
+                    status='reboot-required'
+            except (OSError,ValueError):
+                pass  # Missing, invalid or unowned evidence remains failed, with journal guidance.
     report|={'status':status,'exitCode':int(code) if code and code.isdecimal() else None}
     if status=='reboot-required':report['message']='Shared bootstrap requests reboot; owner reboots and reruns. '+report['message']
     return report

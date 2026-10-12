@@ -17,6 +17,43 @@ spec.loader.exec_module(guard)
 
 
 class KubeadmGuardTests(unittest.TestCase):
+    def test_cli_validation_clears_environment_and_uses_script_home_default(self):
+        command=guard.cli_command(PurePosixPath('/ci/host.sh'),
+            [PurePosixPath('/ci/pinned'),PurePosixPath('/ci/assets/bin')],['argocd','version','--client'])
+        self.assertEqual(command[:5],['env','-i','PATH=/ci/pinned:/ci/assets/bin:/usr/bin:/bin','bash','-c'])
+        self.assertEqual(len(command),6)
+        self.assertIn('[[ ! -v HOME ]]',command[5])
+        self.assertIn('source /ci/host.sh;',command[5])
+        self.assertIn('load_config;',command[5])
+        self.assertTrue(command[5].endswith('exec argocd version --client'))
+        self.assertNotIn('export HOME',command[5])
+        self.assertNotIn('HOME=',command[5])
+
+    def test_every_installed_cli_help_and_version_uses_minimal_environment(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);source=root/'source';assets=root/'assets';report=root/'report'
+            (source/'tools/ci').mkdir(parents=True);assets.mkdir();report.mkdir()
+            script=source/'00-setup-ubuntu-host.sh'
+            script.write_text((ROOT.parents[1]/script.name).read_text())
+            (source/'tools/ci/host-cli.lock.json').write_text('{"artifacts":{}}')
+            (source/'tools/ci/toolchain.lock.json').write_text(json.dumps(dict(artifacts=dict(kubectl=dict(
+                url=guard.URL.removesuffix('kubeadm')+'kubectl',sha256='fixture')))))
+            def output(command,log,**kwargs):
+                self.assertNotIn('env',kwargs)
+                self.assertEqual(command[:2],['env','-i'])
+                self.assertEqual(command[3:5],['bash','-c'])
+                self.assertNotIn('HOME=',command[2])
+                self.assertNotIn('os.environ',command[5])
+                if '--help' in command[5] and 'kubeconform' in command[5]:return 'Usage: kubeconform\n-v version'
+                return 'fixture'
+            with patch.object(guard,'execute',side_effect=output) as executed,patch.object(guard,'verify_cli_install'),\
+                 patch.object(guard,'verify_binary'),patch.object(guard.urllib.request,'urlopen'):
+                results=guard.validate_clis(source,assets,report)
+            self.assertEqual(len(results),9)
+            self.assertEqual(executed.call_count,19)
+            summary=json.loads((report/'cli-summary.json').read_text())
+            self.assertIn('HOME absent',summary['inputEnvironment'])
+
     def test_binary_and_published_checksum_are_both_required(self):
         with tempfile.TemporaryDirectory() as temp:
             binary = Path(temp) / 'kubeadm'

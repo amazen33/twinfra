@@ -70,13 +70,20 @@ def verify_cli_install(work, state, binaries, lock):
             raise ValueError('Shared install_cli stamp/version/binary mismatch: '+name)
 
 
+def cli_command(script, paths, command):
+    """Match the systemd environment, then exercise Module -1's own default."""
+    code=('set -Eeuo pipefail; [[ ! -v HOME ]]; source '+shlex.quote(str(script))+'; '
+          'VCLOUD_CONFIG_FILE=/nonexistent-ci-config; load_config; '
+          '[[ $HOME == /root ]]; exec '+shlex.join(command))
+    return ['env','-i','PATH='+':'.join(str(path) for path in paths)+':/usr/bin:/bin',
+            'bash','-c',code]
+
+
 def validate_clis(source,assets,report):
     """Execute the shared installer, redirecting only its writes/hash target."""
     root=assets/'host-cli-install';root.mkdir(exist_ok=True)
     work=root/'work';state=root/'state';binaries=root/'bin'
     for path in (work,state,binaries):path.mkdir(exist_ok=True)
-    env=dict(os.environ,PATH=str(assets/'bin')+os.pathsep+os.environ['PATH'],
-             KUBECONFIG=str(root/'nonexistent-kubeconfig'))
     script=source/'00-setup-ubuntu-host.sh'
     code=('set -Eeuo pipefail; source '+shlex.quote(str(script))+'; '
           'VCLOUD_CONFIG_FILE=/nonexistent-ci-config; load_config; ARCH=amd64; TKN_ARCH=x86_64; '
@@ -96,7 +103,8 @@ sha256sum() {
 }
 install_tooling
 ''')
-    execute(['bash','-c',code],report/'cli-install.log',env=env,timeout=900)
+    execute(['env','-i','PATH='+str(assets/'bin')+':/usr/bin:/bin','bash','-c',code],
+            report/'cli-install.log',timeout=900)
     lock=json.loads((source/'tools/ci/host-cli.lock.json').read_text())
     verify_cli_install(work,state,binaries,lock)
     # kubectl uses the same Kubernetes version as the node's APT package; the
@@ -105,20 +113,21 @@ install_tooling
     if kubectl['url']!=URL.removesuffix('kubeadm')+'kubectl':raise ValueError('Unexpected kubectl release')
     with urllib.request.urlopen(kubectl['url']+'.sha256',timeout=60) as response:
         verify_binary(assets/'bin/kubectl',response.read(1024),kubectl['sha256'])
-    env['PATH']=str(binaries)+os.pathsep+env['PATH']
+    paths=[binaries,assets/'bin']
     commands=version_commands(script);results=[]
     for index,cmd in enumerate(commands):
         # Help comes from the installed pinned binary, before its exact call.
         help_command=[cmd[0],*([cmd[1]] if len(cmd)>1 and not cmd[1].startswith('-') else []),'--help']
-        help_output=execute(help_command,report/('cli-help-'+str(index)+'.log'),env=env,
+        help_output=execute(cli_command(script,paths,help_command),report/('cli-help-'+str(index)+'.log'),
                             allowed=(0,1) if cmd[0]=='kubeconform' else (0,))
         # Pinned kubeconform deliberately returns 1 after printing its help.
         # This allowance is confined to help; its exact -v call must return 0.
         if cmd[0]=='kubeconform' and not (help_output.startswith('Usage: kubeconform') and '-v' in help_output):
             raise ValueError('Unexpected kubeconform help response')
-        output=execute(cmd,report/('cli-version-'+str(index)+'.log'),env=env)
+        output=execute(cli_command(script,paths,cmd),report/('cli-version-'+str(index)+'.log'))
         results.append(dict(command=cmd,status='passed',output=output))
-    (report/'cli-summary.json').write_text(json.dumps(dict(status='passed',commands=results),indent=2)+'\n')
+    (report/'cli-summary.json').write_text(json.dumps(dict(status='passed',commands=results,
+        inputEnvironment='env -i; PATH only; HOME absent',homeDefault='Module -1 exports /root'),indent=2)+'\n')
     print('Pinned CLI installation and exact validate_host client commands passed',flush=True)
     return results
 

@@ -47,13 +47,13 @@
     {
       "id": "image-digest:00-setup-ubuntu-host.sh",
       "kind": "image-digest",
-      "reason": "Existing image references need immutable digest evidence; owner-approved WO-31 Amendments 2, 4 and 5 change only BPF/etcd compatibility, preview and tkn client-version blocks and derived render hashes; image references and expiry unchanged",
+      "reason": "Existing image references need immutable digest evidence; owner-approved WO-31 Amendments 2, 4, 5 and 6 change only BPF/etcd compatibility, preview, tkn client-version, HOME default and failure-exit blocks and derived render hashes; image references and expiry unchanged",
       "owner": "Ahmed Mazen (@amazen33)",
       "requiredEvidence": "Existing image references need immutable digest evidence",
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "00-setup-ubuntu-host.sh",
-      "fingerprint": "d291351c2decbef9a7c9a81087ca9e340ec5bb7373102d7c3ce15475d3b6d5d6"
+      "fingerprint": "0ac9c891cc85ab63f641c53b013f579bfb6a98bcd00eeca8459928e9eb48cbd9"
     },
     {
       "id": "image-digest:deploy/kustomize/base/argocd/install.yaml",

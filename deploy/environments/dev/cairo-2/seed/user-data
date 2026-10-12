@@ -102,8 +102,10 @@ write_files:
     \ is required for APT, kernel/mount/sysctl/driver configuration and kubeadm PKI.\n\
     # Ordinary validation pods run as UID 10001 without capabilities or host mounts.\n\
     # No automatic reboot, kubeadm reset, firewall disable, disk formatting, or VFIO\
-    \ rebinding.\n\nload_config() {\n    local config_file=\"${VCLOUD_CONFIG_FILE:-/etc/vcloud-host.env}\"\
-    \n    # An env file is executable shell configuration. Never source a writable\
+    \ rebinding.\n\nload_config() {\n    # Transient systemd units/cloud-init may\
+    \ omit HOME; root-owned CLI defaults need it.\n    : \"${HOME:=/root}\"; export\
+    \ HOME\n    local config_file=\"${VCLOUD_CONFIG_FILE:-/etc/vcloud-host.env}\"\n\
+    \    # An env file is executable shell configuration. Never source a writable\
     \ user file as root.\n    if [[ -f \"$config_file\" ]]; then\n        [[ $(stat\
     \ -c '%u' \"$config_file\") == 0 ]] || die \"Config must be root-owned: $config_file\"\
     \n        [[ $(stat -c '%a' \"$config_file\") =~ ^(600|644)$ ]] || die \"Config\
@@ -1706,8 +1708,9 @@ write_files:
     \ ]]; then rm -rf -- \"$WORK_DIR\"; fi\n}\n\non_error() {\n    local code=$1 line=$2\n\
     \    trap - ERR\n    log \"Failed in phase $PHASE at line $line (exit $code).\
     \ Inspect the journal; no automatic reset.\" >&2\n    if command -v jq >/dev/null\
-    \ && [[ -d $STATE_DIR ]]; then write_result failed || true; fi\n    exit \"$code\"\
-    \n}\n\nmain() {\n    set -Eeuo pipefail\n    export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n\
+    \ && [[ -d $STATE_DIR ]]; then write_result failed || true; fi\n    # Reserve\
+    \ 20 exclusively for the deliberate reboot-required result below.\n    exit 1\n\
+    }\n\nmain() {\n    set -Eeuo pipefail\n    export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n\
     \    load_config\n    case ${1:---plan} in\n        --plan) validate_config; plan;\
     \ return;;\n        --apply|--validate) ;;\n        *) bad_config 'Usage: --plan,\
     \ --apply or --validate';;\n    esac\n    validate_config\n    # Reject version\
