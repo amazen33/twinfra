@@ -4,6 +4,7 @@ import importlib.util
 import json
 from pathlib import Path, PurePosixPath
 import tempfile
+import subprocess
 import unittest
 from unittest.mock import patch
 
@@ -81,6 +82,17 @@ class KubeadmGuardTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'stamp/version/binary'):guard.verify_cli_install(work,state,binaries,lock)
             (work/'release.tar.gz').write_bytes(b'tampered')
             with self.assertRaisesRegex(ValueError,'release checksum'):guard.verify_cli_install(work,state,binaries,lock)
+
+    def test_version_nonzero_is_fatal_and_help_allowance_is_explicit(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            log=Path(tmp)/'result.log'
+            result=subprocess.CompletedProcess(['kubeconform'],1,'Usage: kubeconform\n  -v show version\n')
+            with patch.object(guard.subprocess,'run',return_value=result):
+                with self.assertRaises(RuntimeError):guard.execute(['kubeconform','-v'],log)
+                self.assertIn('Usage:',guard.execute(['kubeconform','--help'],log,allowed=(0,1)))
+            result.returncode=2
+            with patch.object(guard.subprocess,'run',return_value=result):
+                with self.assertRaises(RuntimeError):guard.execute(['kubeconform','--help'],log,allowed=(0,1))
 
 
 if __name__ == '__main__':

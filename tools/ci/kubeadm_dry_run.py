@@ -42,11 +42,11 @@ def artifact_owner_command(preview, uid, gid):
             *[str(preview / name) for name in MANIFESTS]]
 
 
-def execute(command, log, *, env=None, timeout=180):
+def execute(command, log, *, env=None, timeout=180, allowed=(0,)):
     result = subprocess.run(command, env=env, text=True, stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, timeout=timeout)
     log.write_text(result.stdout, encoding='utf-8')
-    if result.returncode:
+    if result.returncode not in allowed:
         raise RuntimeError('Command failed: ' + shlex.join(command) + '\n' + result.stdout[-8000:])
     return result.stdout.strip()
 
@@ -110,7 +110,12 @@ install_tooling
     for index,cmd in enumerate(commands):
         # Help comes from the installed pinned binary, before its exact call.
         help_command=[cmd[0],*([cmd[1]] if len(cmd)>1 and not cmd[1].startswith('-') else []),'--help']
-        execute(help_command,report/('cli-help-'+str(index)+'.log'),env=env)
+        help_output=execute(help_command,report/('cli-help-'+str(index)+'.log'),env=env,
+                            allowed=(0,1) if cmd[0]=='kubeconform' else (0,))
+        # Pinned kubeconform deliberately returns 1 after printing its help.
+        # This allowance is confined to help; its exact -v call must return 0.
+        if cmd[0]=='kubeconform' and not (help_output.startswith('Usage: kubeconform') and '-v' in help_output):
+            raise ValueError('Unexpected kubeconform help response')
         output=execute(cmd,report/('cli-version-'+str(index)+'.log'),env=env)
         results.append(dict(command=cmd,status='passed',output=output))
     (report/'cli-summary.json').write_text(json.dumps(dict(status='passed',commands=results),indent=2)+'\n')
