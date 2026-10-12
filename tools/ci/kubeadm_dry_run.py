@@ -2,7 +2,8 @@
 """Real kubeadm manifest preview on a disposable Ubuntu CI runner only.
 
 No kubelet, CRI, image pull, cluster initialization or host provisioner is run.
-The only sudo commands generate manifests with --dry-run into the report folder.
+Sudo generates manifests with --dry-run, then returns only those four public
+Pod YAML files to the runner user for assertion and artifact upload.
 """
 import argparse
 import hashlib
@@ -16,6 +17,7 @@ import urllib.request
 VERSION = 'v1.36.5'
 URL = 'https://dl.k8s.io/release/' + VERSION + '/bin/linux/amd64/kubeadm'
 SHA256 = 'be2f2c73cd6d3414b37aafb05016bc3a1da3e17c8393aa75c34636198fefa77c'
+MANIFESTS = ('kube-apiserver.yaml', 'kube-controller-manager.yaml', 'kube-scheduler.yaml', 'etcd.yaml')
 
 
 def verify_binary(binary, published):
@@ -29,6 +31,13 @@ def phase_commands(binary, config, preview):
     return [['sudo', '-n', 'env', 'KUBEADM_INIT_DRYRUN_DIR=' + str(preview),
              str(binary), 'init', 'phase', *phase, '--config', str(config), '--dry-run']
             for phase in [('control-plane', 'all'), ('etcd', 'local')]]
+
+
+def artifact_owner_command(preview, uid, gid):
+    # kubeadm writes mode 0600 as root. Never recurse, change host paths, or
+    # expose generated credentials: these are exactly four static Pod manifests.
+    return ['sudo', '-n', 'chown', str(uid) + ':' + str(gid),
+            *[str(preview / name) for name in MANIFESTS]]
 
 
 def execute(command, log, *, env=None):
@@ -70,9 +79,11 @@ def run(source, assets, report):
             execute(['bash', '-c', render], directory / 'render.log', env=env)
             for index, command in enumerate(phase_commands(binary, config, preview)):
                 execute(command, directory / ('phase-' + str(index) + '.log'))
-            expected = {'kube-apiserver.yaml', 'kube-controller-manager.yaml', 'kube-scheduler.yaml', 'etcd.yaml'}
-            if {p.name for p in preview.iterdir()} != expected:
+            if {p.name for p in preview.iterdir()} != set(MANIFESTS):
                 raise ValueError('Dry-run did not produce exactly four static Pod manifests')
+            if any(p.is_symlink() or not p.is_file() for p in preview.iterdir()):
+                raise ValueError('Dry-run manifests must be regular files, not links')
+            execute(artifact_owner_command(preview, os.getuid(), os.getgid()), directory / 'artifact-owner.log')
             execute(['bash', '-c', prefix + 'validate_etcd_cert_mount ' + shlex.quote(str(preview))],
                     directory / 'assert-etcd.log', env=env)
             summary['profiles'].append(dict(name=name, status='passed', phases=2, etcdMount='read-only; unique; config-derived'))

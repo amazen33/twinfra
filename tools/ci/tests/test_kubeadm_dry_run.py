@@ -49,6 +49,14 @@ class KubeadmGuardTests(unittest.TestCase):
         self.assertIn('--source .ci-control', step['run'])
         self.assertIn('/ci-report/kubeadm-dry-run', step['run'])
 
+    def test_ownership_is_limited_to_four_public_preview_manifests(self):
+        command = guard.artifact_owner_command(PurePosixPath('/ci/report/preview'), 1001, 1001)
+        self.assertEqual(command[:4], ['sudo', '-n', 'chown', '1001:1001'])
+        self.assertEqual(set(command[4:]), {'/ci/report/preview/' + name for name in guard.MANIFESTS})
+        self.assertEqual(len(command[4:]), 4)
+        self.assertNotIn('-R', command)
+        self.assertNotIn('/etc/kubernetes', ' '.join(command))
+
 
 if __name__ == '__main__':
     unittest.main()

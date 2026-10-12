@@ -95,6 +95,9 @@ control-plane all --dry-run` and `... etcd local --dry-run` run; no preflight,
 kubelet, container runtime, image pull or cluster is required. The gate checks
 the four generated manifests and exactly one config-derived, read-only
 `etcd-certs` mount. Any command/checksum/assertion failure fails the job.
+Because kubeadm writes those four public YAML files as root with mode 0600,
+`sudo -n chown` returns only those exact regular files to the runner user before
+assertion/upload; it never recurses or changes host paths or credential files.
 Evidence is uploaded under `kubeadm-dry-run/` in every validation artifact.
 Historical selected revisions still run their original offline suites; their
 old etcd patches are not used as the candidate preview input. Windows unit tests
