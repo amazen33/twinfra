@@ -228,6 +228,7 @@ install_missing() {
 
 preflight() {
     [[ $EUID == 0 ]] || die 'Run apply/validate as root'
+    check_bpffs_migration # WO-31: read-only ownership guard before any apply writes.
     [[ $(uname -s) == Linux && -r /etc/os-release ]] || die 'A real Ubuntu host is required'
     # shellcheck disable=SC1091
     source /etc/os-release
@@ -301,6 +302,52 @@ unset -f vcloud_strip_boot_args
 EOF
 }
 
+# BEGIN WO-31 BPFFS COMPATIBILITY
+legacy_bpffs_mount_unit() {
+    # Constant bytes emitted by Module -1 before WO-31 Amendment 2. Never install.
+    cat <<'EOF'
+[Unit]
+Description=vCloud BPF filesystem
+Before=containerd.service kubelet.service
+[Mount]
+What=bpffs
+Where=/sys/fs/bpf
+Type=bpf
+Options=rw,nosuid,nodev,noexec,mode=700
+[Install]
+WantedBy=multi-user.target
+EOF
+}
+
+check_bpffs_migration() {
+    local unit=/etc/systemd/system/sys-fs-bpf.mount
+    # Check both guards before any migration or mount change. Never adopt a
+    # foreign unit, linked file, or an installation with an original backup.
+    [[ ! -e ${unit}.vcloud-original && ! -L ${unit}.vcloud-original ]] || die 'BPF mount migration refused: sys-fs-bpf.mount.vcloud-original exists; no changes made'
+    if [[ -e $unit || -L $unit ]]; then
+        if [[ ! -f $unit || -L $unit ]] || ! cmp -s "$unit" <(legacy_bpffs_mount_unit); then
+            die 'BPF mount migration refused: sys-fs-bpf.mount differs from the exact legacy file; no changes made'
+        fi
+    fi
+}
+
+prepare_bpffs() {
+    local unit=/etc/systemd/system/sys-fs-bpf.mount
+    check_bpffs_migration
+    if [[ -f $unit ]]; then
+        systemctl disable sys-fs-bpf.mount
+        rm -- "$unit"
+        systemctl daemon-reload
+    fi
+    # systemd 255 owns this API filesystem and rejects an explicit .mount unit.
+    mkdir -p /sys/fs/bpf
+    if [[ $(findmnt -n -o FSTYPE --target /sys/fs/bpf) != bpf ]]; then
+        mount -t bpf -o rw,nosuid,nodev,noexec,mode=700 bpffs /sys/fs/bpf
+    fi
+    [[ $(findmnt -n -o FSTYPE --target /sys/fs/bpf) == bpf ]] || die 'Unexpected filesystem at /sys/fs/bpf'
+}
+# END WO-31 BPFFS COMPATIBILITY
+
 prepare_kernel() {
     PHASE=kernel
     # SSoT requires Ubuntu 24.04's supported kernel track.
@@ -323,24 +370,7 @@ prepare_kernel() {
         validate_kernel
         printf 'overlay\nbr_netfilter\n' | write_file /etc/modules-load.d/99-vcloud.conf
         modprobe overlay; modprobe br_netfilter
-        mkdir -p /sys/fs/bpf
-        # Mount via a dedicated systemd unit, avoiding duplicate /etc/fstab entries.
-        write_file /etc/systemd/system/sys-fs-bpf.mount <<'EOF'
-[Unit]
-Description=vCloud BPF filesystem
-Before=containerd.service kubelet.service
-[Mount]
-What=bpffs
-Where=/sys/fs/bpf
-Type=bpf
-Options=rw,nosuid,nodev,noexec,mode=700
-[Install]
-WantedBy=multi-user.target
-EOF
-        systemctl daemon-reload
-        if ! mountpoint -q /sys/fs/bpf; then systemctl start sys-fs-bpf.mount; fi
-        systemctl enable sys-fs-bpf.mount
-        [[ $(findmnt -n -o FSTYPE --target /sys/fs/bpf) == bpf ]] || die 'Unexpected filesystem at /sys/fs/bpf'
+        prepare_bpffs
     fi
 }
 
@@ -575,8 +605,7 @@ debug: false
 EOF
     write_file /etc/systemd/system/containerd.service.d/99-vcloud.conf <<'EOF'
 [Unit]
-Requires=sys-fs-bpf.mount
-After=sys-fs-bpf.mount
+RequiresMountsFor=/sys/fs/bpf
 [Service]
 LimitNOFILE=1048576
 TasksMax=infinity

@@ -16,6 +16,7 @@ import uuid
 ROOT=Path('/')
 GIB=1024**3
 PORTS={6443:'kube-apiserver',2379:'etcd',2380:'etcd',10250:'kubelet'}
+BOOTSTRAP_FILES={'host.env','00-setup-ubuntu-host.sh','bootstrap-images.lock.json','stage-images.py','dev-log-caps.sh'}
 
 
 def at(name):return ROOT/name.lstrip('/')
@@ -344,7 +345,7 @@ def bootstrap_start(data):
     if incoming.stat().st_uid!=pwd.getpwnam(data['operator']).pw_uid or stat.S_IMODE(incoming.stat().st_mode)!=0o700:
         raise ValueError('Unowned private upload directory')
     # Verify ALL input bytes before copying, sourcing configuration or running bootstrap.
-    expected_names={'host.env','00-setup-ubuntu-host.sh','bootstrap-images.lock.json','stage-images.py','dev-log-caps.sh'}
+    expected_names=BOOTSTRAP_FILES
     if set(data['hashes'])!=expected_names:raise ValueError('Unexpected bootstrap file inventory')
     for name,sha in data['hashes'].items():
         file=incoming/name
@@ -353,8 +354,25 @@ def bootstrap_start(data):
     stage=at('/var/lib/twinfra/host-bootstrap');secure(stage)
     if stage.exists():
         receipt=stage/'receipt.json';secure(receipt)
-        if not receipt.is_file() or json.loads(receipt.read_text())!=data['hashes']:
-            raise ValueError('Unowned/different bootstrap staging directory')
+        if not receipt.is_file():raise ValueError('Unowned bootstrap staging directory')
+        previous=json.loads(receipt.read_text())
+        if not isinstance(previous,dict) or set(previous)!=expected_names or any(not isinstance(sha,str) or not re.fullmatch(r'[a-f0-9]{64}',sha) for sha in previous.values()):
+            raise ValueError('Invalid owned bootstrap receipt')
+        for name,sha in previous.items():
+            path=stage/name;secure(path)
+            if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest()!=sha:
+                raise ValueError('Previous bootstrap staged input differs from owned receipt')
+        if previous!=data['hashes']:
+            # Amendment 2 permits recovery of a failed first run, never upgrades.
+            completion=stage/'complete.json'
+            if completion.exists() or completion.is_symlink():raise ValueError('Completed bootstrap with different inputs; upgrades refused')
+            refuse_active_bootstrap()
+            result=at('/var/lib/vcloud-host/result.json');secure(result)
+            if result.exists():
+                if not result.is_file():raise ValueError('Invalid previous bootstrap result')
+                status=json.loads(result.read_text())
+                if not isinstance(status,dict) or not isinstance(status.get('status'),str):raise ValueError('Invalid previous bootstrap result')
+                if status['status']=='ready':raise ValueError('Ready bootstrap with different inputs; upgrades refused')
     stage.mkdir(parents=True,exist_ok=True);os.chmod(stage,0o700)
     for name in expected_names:
         write('/var/lib/twinfra/host-bootstrap/'+name,(incoming/name).read_text(),0o600)

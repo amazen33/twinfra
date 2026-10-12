@@ -259,8 +259,9 @@ write_files:
     \ ]]; then\n            missing+=(\"$package\")\n        fi\n    done\n    if\
     \ ((${#missing[@]})); then apt-get install -y --no-install-recommends \"${missing[@]}\"\
     ; fi\n}\n\npreflight() {\n    [[ $EUID == 0 ]] || die 'Run apply/validate as root'\n\
-    \    [[ $(uname -s) == Linux && -r /etc/os-release ]] || die 'A real Ubuntu host\
-    \ is required'\n    # shellcheck disable=SC1091\n    source /etc/os-release\n\
+    \    check_bpffs_migration # WO-31: read-only ownership guard before any apply\
+    \ writes.\n    [[ $(uname -s) == Linux && -r /etc/os-release ]] || die 'A real\
+    \ Ubuntu host is required'\n    # shellcheck disable=SC1091\n    source /etc/os-release\n\
     \    [[ $ID == ubuntu && $VERSION_ID == 24.04 ]] || die 'SSoT v2.2 requires Ubuntu\
     \ 24.04 LTS'\n    [[ -d /run/systemd/system ]] || die 'systemd must be PID 1;\
     \ containers and WSL are not supported targets'\n    case $(dpkg --print-architecture)\
@@ -314,34 +315,47 @@ write_files:
     }\nGRUB_CMDLINE_LINUX=\"\\$(vcloud_strip_boot_args \"\\${GRUB_CMDLINE_LINUX:-}\"\
     ) systemd.unified_cgroup_hierarchy=1 cgroup_no_v1=all $huge_args\"\nGRUB_CMDLINE_LINUX_DEFAULT=\"\
     \\$(vcloud_strip_boot_args \"\\${GRUB_CMDLINE_LINUX_DEFAULT:-}\")\"\nunset -f\
-    \ vcloud_strip_boot_args\nEOF\n}\n\nprepare_kernel() {\n    PHASE=kernel\n   \
-    \ # SSoT requires Ubuntu 24.04's supported kernel track.\n    if ! version_at_least\
-    \ \"$(uname -r | cut -d- -f1)\" 6.8; then\n        [[ $REBOOT_ATTEMPTED == false\
-    \ ]] || die 'The requested kernel is still not active after reboot; inspect the\
-    \ provider/GRUB boot selection'\n        apt-get install -y linux-generic linux-headers-generic\n\
-    \        mark_reboot 'Boot the installed Ubuntu kernel >= 6.8'\n    fi\n    #\
-    \ GRUB is explicit: fail clearly on images booted by systemd-boot/UKI/provider-specific\n\
-    \    # bootloaders; do not pretend that editing an unused file configures their\
-    \ kernel.\n    command -v update-grub >/dev/null && [[ -f /etc/default/grub ]]\
-    \ || die 'GRUB boot configuration required; adapt kernel arguments for this image\
-    \ bootloader'\n    write_file /etc/default/grub.d/99-vcloud-host.cfg < <(render_grub)\n\
-    \    if [[ $FILE_CHANGED == true ]]; then update-grub; mark_reboot 'Activate cgroup\
-    \ v2 and persistent HugeTLB boot reservations'; fi\n    [[ $(stat -fc '%T' /sys/fs/cgroup)\
-    \ == cgroup2fs ]] || mark_reboot 'cgroup v2 is not active'\n    # Kernel/module\
-    \ checks run only on the requested kernel, after a possible reboot.\n    if version_at_least\
+    \ vcloud_strip_boot_args\nEOF\n}\n\n# BEGIN WO-31 BPFFS COMPATIBILITY\nlegacy_bpffs_mount_unit()\
+    \ {\n    # Constant bytes emitted by Module -1 before WO-31 Amendment 2. Never\
+    \ install.\n    cat <<'EOF'\n[Unit]\nDescription=vCloud BPF filesystem\nBefore=containerd.service\
+    \ kubelet.service\n[Mount]\nWhat=bpffs\nWhere=/sys/fs/bpf\nType=bpf\nOptions=rw,nosuid,nodev,noexec,mode=700\n\
+    [Install]\nWantedBy=multi-user.target\nEOF\n}\n\ncheck_bpffs_migration() {\n \
+    \   local unit=/etc/systemd/system/sys-fs-bpf.mount\n    # Check both guards before\
+    \ any migration or mount change. Never adopt a\n    # foreign unit, linked file,\
+    \ or an installation with an original backup.\n    [[ ! -e ${unit}.vcloud-original\
+    \ && ! -L ${unit}.vcloud-original ]] || die 'BPF mount migration refused: sys-fs-bpf.mount.vcloud-original\
+    \ exists; no changes made'\n    if [[ -e $unit || -L $unit ]]; then\n        if\
+    \ [[ ! -f $unit || -L $unit ]] || ! cmp -s \"$unit\" <(legacy_bpffs_mount_unit);\
+    \ then\n            die 'BPF mount migration refused: sys-fs-bpf.mount differs\
+    \ from the exact legacy file; no changes made'\n        fi\n    fi\n}\n\nprepare_bpffs()\
+    \ {\n    local unit=/etc/systemd/system/sys-fs-bpf.mount\n    check_bpffs_migration\n\
+    \    if [[ -f $unit ]]; then\n        systemctl disable sys-fs-bpf.mount\n   \
+    \     rm -- \"$unit\"\n        systemctl daemon-reload\n    fi\n    # systemd\
+    \ 255 owns this API filesystem and rejects an explicit .mount unit.\n    mkdir\
+    \ -p /sys/fs/bpf\n    if [[ $(findmnt -n -o FSTYPE --target /sys/fs/bpf) != bpf\
+    \ ]]; then\n        mount -t bpf -o rw,nosuid,nodev,noexec,mode=700 bpffs /sys/fs/bpf\n\
+    \    fi\n    [[ $(findmnt -n -o FSTYPE --target /sys/fs/bpf) == bpf ]] || die\
+    \ 'Unexpected filesystem at /sys/fs/bpf'\n}\n# END WO-31 BPFFS COMPATIBILITY\n\
+    \nprepare_kernel() {\n    PHASE=kernel\n    # SSoT requires Ubuntu 24.04's supported\
+    \ kernel track.\n    if ! version_at_least \"$(uname -r | cut -d- -f1)\" 6.8;\
+    \ then\n        [[ $REBOOT_ATTEMPTED == false ]] || die 'The requested kernel\
+    \ is still not active after reboot; inspect the provider/GRUB boot selection'\n\
+    \        apt-get install -y linux-generic linux-headers-generic\n        mark_reboot\
+    \ 'Boot the installed Ubuntu kernel >= 6.8'\n    fi\n    # GRUB is explicit: fail\
+    \ clearly on images booted by systemd-boot/UKI/provider-specific\n    # bootloaders;\
+    \ do not pretend that editing an unused file configures their kernel.\n    command\
+    \ -v update-grub >/dev/null && [[ -f /etc/default/grub ]] || die 'GRUB boot configuration\
+    \ required; adapt kernel arguments for this image bootloader'\n    write_file\
+    \ /etc/default/grub.d/99-vcloud-host.cfg < <(render_grub)\n    if [[ $FILE_CHANGED\
+    \ == true ]]; then update-grub; mark_reboot 'Activate cgroup v2 and persistent\
+    \ HugeTLB boot reservations'; fi\n    [[ $(stat -fc '%T' /sys/fs/cgroup) == cgroup2fs\
+    \ ]] || mark_reboot 'cgroup v2 is not active'\n    # Kernel/module checks run\
+    \ only on the requested kernel, after a possible reboot.\n    if version_at_least\
     \ \"$(uname -r | cut -d- -f1)\" 6.8; then\n        if ! modinfo overlay >/dev/null\
     \ 2>&1 || ! modinfo br_netfilter >/dev/null 2>&1; then\n            install_missing\
     \ \"linux-modules-extra-$(uname -r)\"\n        fi\n        validate_kernel\n \
     \       printf 'overlay\\nbr_netfilter\\n' | write_file /etc/modules-load.d/99-vcloud.conf\n\
-    \        modprobe overlay; modprobe br_netfilter\n        mkdir -p /sys/fs/bpf\n\
-    \        # Mount via a dedicated systemd unit, avoiding duplicate /etc/fstab entries.\n\
-    \        write_file /etc/systemd/system/sys-fs-bpf.mount <<'EOF'\n[Unit]\nDescription=vCloud\
-    \ BPF filesystem\nBefore=containerd.service kubelet.service\n[Mount]\nWhat=bpffs\n\
-    Where=/sys/fs/bpf\nType=bpf\nOptions=rw,nosuid,nodev,noexec,mode=700\n[Install]\n\
-    WantedBy=multi-user.target\nEOF\n        systemctl daemon-reload\n        if !\
-    \ mountpoint -q /sys/fs/bpf; then systemctl start sys-fs-bpf.mount; fi\n     \
-    \   systemctl enable sys-fs-bpf.mount\n        [[ $(findmnt -n -o FSTYPE --target\
-    \ /sys/fs/bpf) == bpf ]] || die 'Unexpected filesystem at /sys/fs/bpf'\n    fi\n\
+    \        modprobe overlay; modprobe br_netfilter\n        prepare_bpffs\n    fi\n\
     }\n\nvalidate_kernel() {\n    local config option\n    config=\"/boot/config-$(uname\
     \ -r)\"\n    version_at_least \"$(uname -r | cut -d- -f1)\" 6.8 || die 'Running\
     \ kernel is older than 6.8'\n    [[ -r $config ]] || die \"Cannot verify running\
@@ -484,20 +498,20 @@ write_files:
     \n        fi\n    done\n    write_file /etc/crictl.yaml <<EOF\nruntime-endpoint:\
     \ $CRI_SOCKET\nimage-endpoint: $CRI_SOCKET\ntimeout: 30\ndebug: false\nEOF\n \
     \   write_file /etc/systemd/system/containerd.service.d/99-vcloud.conf <<'EOF'\n\
-    [Unit]\nRequires=sys-fs-bpf.mount\nAfter=sys-fs-bpf.mount\n[Service]\nLimitNOFILE=1048576\n\
-    TasksMax=infinity\nEOF\n    [[ $FILE_CHANGED == true ]] && changed=true\n    systemctl\
-    \ daemon-reload\n    systemctl enable containerd\n    if [[ $changed == true ]];\
-    \ then systemctl restart containerd; else systemctl start containerd; fi\n   \
-    \ timeout 60 bash -c 'until crictl info >/dev/null 2>&1; do sleep 2; done'\n \
-    \   crictl info | jq -e '.status.conditions[] | select(.type == \"RuntimeReady\"\
-    ) | .status == true' >/dev/null\n    if [[ $IMAGE_STAGING == true ]]; then\n \
-    \       stage_bootstrap_images\n        return\n    fi\n    # A 401 response proves\
-    \ TLS reachability but not permission to pull the probe image.\n    local -a ca_args=()\n\
-    \    [[ -z $REGISTRY_CA_FILE ]] || ca_args=(--cacert \"$REGISTRY_CA_FILE\")\n\
-    \    if curl --silent --show-error --connect-timeout 10 --max-time 15 \"${ca_args[@]}\"\
-    \ \"$REGISTRY_MIRROR/v2/\" -o /dev/null; then\n        MIRROR_STATUS=reachable-cri-pull-pending\n\
-    \        log 'Registry endpoint responded; validating the CRI image pull'\n  \
-    \  elif [[ $MIRROR_REQUIRED == true ]]; then\n        die 'Required registry mirror\
+    [Unit]\nRequiresMountsFor=/sys/fs/bpf\n[Service]\nLimitNOFILE=1048576\nTasksMax=infinity\n\
+    EOF\n    [[ $FILE_CHANGED == true ]] && changed=true\n    systemctl daemon-reload\n\
+    \    systemctl enable containerd\n    if [[ $changed == true ]]; then systemctl\
+    \ restart containerd; else systemctl start containerd; fi\n    timeout 60 bash\
+    \ -c 'until crictl info >/dev/null 2>&1; do sleep 2; done'\n    crictl info |\
+    \ jq -e '.status.conditions[] | select(.type == \"RuntimeReady\") | .status ==\
+    \ true' >/dev/null\n    if [[ $IMAGE_STAGING == true ]]; then\n        stage_bootstrap_images\n\
+    \        return\n    fi\n    # A 401 response proves TLS reachability but not\
+    \ permission to pull the probe image.\n    local -a ca_args=()\n    [[ -z $REGISTRY_CA_FILE\
+    \ ]] || ca_args=(--cacert \"$REGISTRY_CA_FILE\")\n    if curl --silent --show-error\
+    \ --connect-timeout 10 --max-time 15 \"${ca_args[@]}\" \"$REGISTRY_MIRROR/v2/\"\
+    \ -o /dev/null; then\n        MIRROR_STATUS=reachable-cri-pull-pending\n     \
+    \   log 'Registry endpoint responded; validating the CRI image pull'\n    elif\
+    \ [[ $MIRROR_REQUIRED == true ]]; then\n        die 'Required registry mirror\
     \ unreachable; configure DNS/TLS before bootstrapping'\n    else\n        MIRROR_STATUS=unreachable-using-fallback\n\
     \        log 'Mirror unreachable; configured upstream fallback will be used (mirror\
     \ gate remains unverified)'\n    fi\n    crictl pull \"$REGISTRY_PROBE_IMAGE\"\

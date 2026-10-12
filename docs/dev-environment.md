@@ -160,7 +160,19 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
    Exit 20 means the owner reboots the Dell and reruns this command;
    there is no automatic reboot. A healthy verified rerun performs no transfers,
    APT or configuration writes. Dev post-bootstrap caps are journald 500M and
-   kubelet 10Mi per log / 3 files. The original bootstrap logic is unchanged.
+   kubelet 10Mi per log / 3 files. [WO-31 Amendment 2](work-orders/WO-31-bare-metal-cairo-1.md)
+   changes the shared bootstrap only for systemd 255 BPF filesystem compatibility:
+   use the existing API mount (mount bpffs only when absent), remove only the
+   exact legacy mount unit, and give containerd `RequiresMountsFor=/sys/fs/bpf`.
+   A different legacy file or `.vcloud-original` backup stops BPF migration.
+
+   **Failed first-run recovery:** after merge, update the operator checkout to
+   protected `main` and rerun `host-bootstrap`. Leave the Dell's failed state
+   untouched so the guarded migration runs against it. New inputs replace an
+   old staging set only with a valid root-owned receipt and matching old bytes,
+   no `complete.json`, no active bootstrap unit, and a result that is not `ready`.
+   Completed/ready bootstraps with different inputs are refused; upgrades are
+   outside this work order. Live acceptance remains Pending.
 
 7. **Owner: retrieve kubeconfig into an operator-only directory outside Git.**
 

@@ -44,7 +44,7 @@ inputs, expired entries and invalid class conditions fail the required gate.
 
 | Revision content | Required validation |
 | --- | --- |
-| Module -1 | Exact SSoT and Cloud-Init generation, upstream Cloud-Init schema, Bash syntax and ShellCheck, Cilium/NVIDIA Helm renders, strict offline Kubernetes schemas, all 42 host regression tests including the node exception policy |
+| Module -1 | Exact SSoT and Cloud-Init generation, upstream Cloud-Init schema, Bash syntax and ShellCheck, Cilium/NVIDIA Helm renders, strict offline Kubernetes schemas, host regression tests including the node exception policy and guarded systemd 255 BPF migration |
 | Module 1 | All 17 component ADRs, identities, local documentation links, frozen approved node policy/inventory hashes, real Mermaid parser and required data-flow edges |
 | Module 2 | Vendored Helm and CRD integrity, strict rendered kubeconform validation, all 54 infrastructure guardrail tests |
 | Module 3, when present | CI/GitOps manifest validation, pipeline and application tests, Prometheus rule validation and alert scenarios |

@@ -104,7 +104,10 @@ and [upstream kubeadm installation](https://kubernetes.io/docs/setup/production-
 1. Preflight rejects unsupported OS/architecture, inadequate RAM/disk/CPU, hidden 1 GiB
    page features, CIDR overlap, conflicting distributions and unmanaged active runtimes.
 2. Kernel preparation installs the supported 24.04 kernel if needed, verifies eBPF/BTF/overlay/HugeTLB features,
-   loads modules and persists bpffs as a systemd mount required by containerd.
+   loads modules and uses systemd's API filesystem at `/sys/fs/bpf`, mounting
+   bpffs directly only when absent. containerd uses `RequiresMountsFor=/sys/fs/bpf`.
+   WO-31 Amendment 2 removes only a byte-identical legacy `sys-fs-bpf.mount`;
+   a different unit or `.vcloud-original` backup is refused without BPF changes.
 3. Persist cgroup v2 and both HugeTLB pools with GRUB. Apply network/memory/file/inotify
    sysctls. Disable swap entries and mask current swap units. All original edited files
    receive one `.vcloud-original` backup; subsequent identical writes preserve content/mtime.
