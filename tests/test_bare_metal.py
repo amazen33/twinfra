@@ -32,10 +32,25 @@ AMENDMENT_2_BASE='a8f4f434c7bed890311793590952dd5295d2e97e'
 AMENDMENT_3_BASE='a7512ed9ab059857b60e9b4848fad2287e4549ab'
 AMENDMENT_4_BASE='4cb97b8950164e32f02e40635bfddf6ffa9b0858'
 AMENDMENT_5_BASE='c41c4cfab5cab15aa3ac38a7f159f7690a5b70be'
+AMENDMENT_6_BASE='cf4b659435497dbab538a68270dcc7186008049e'
+
+
+def mask_home_exitcode(raw):
+    """Mask only Amendment 6's two literal shared-script changes."""
+    raw=raw.replace('\r\n','\n')
+    default='    # Transient systemd units/cloud-init may omit HOME; root-owned CLI defaults need it.\n    : "${HOME:=/root}"; export HOME\n'
+    if raw.count(default)>1:raise ValueError('Duplicate HOME default')
+    raw=raw.replace(default,'')
+    start=raw.index('on_error() {\n');end=raw.index('\nmain() {',start)
+    body=raw[start:end]
+    old='    exit "$code"\n'
+    new='    # Reserve 20 exclusively for the deliberate reboot-required result below.\n    exit 1\n'
+    if body.count(old)+body.count(new)!=1:raise ValueError('Unexpected error handler exit')
+    return raw[:start]+body.replace(new,old)+raw[end:]
 
 
 def mask_tkn_version(raw):
-    raw=raw.replace('\r\n','\n')
+    raw=mask_home_exitcode(raw)
     old='tkn version --client';new='tkn version --component client'
     if raw.count(old)+raw.count(new)!=1:raise ValueError('Expected exactly one tkn version call')
     return raw.replace(old,'@@TKN_CLIENT_VERSION@@').replace(new,'@@TKN_CLIENT_VERSION@@')
@@ -407,6 +422,8 @@ class HostBootstrap(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);unit='twinfra-bootstrap-'+'a'*32;data={'unit':unit,'hashes':{}}
             file=root/'var/lib/twinfra/host-bootstrap/unit.json';file.parent.mkdir(parents=True);file.write_text(json.dumps(data))
+            result_file=root/'var/lib/vcloud-host/result.json';result_file.parent.mkdir(parents=True)
+            result_file.write_text('{"status":"reboot-required"}')
             for active,sub,code,status,result,expected in (
                 ('activating','start',0,0,'success','running'),('active','exited',1,0,'success','passed'),
                 ('failed','failed',1,20,'exit-code','reboot-required'),('failed','failed',1,1,'exit-code','failed'),
@@ -419,6 +436,36 @@ class HostBootstrap(unittest.TestCase):
                             self.assertEqual(agent.bootstrap_finish(data)['status'],expected)
             with patch.object(agent,'ROOT',root),patch.object(agent,'secure'),patch.object(agent,'run',return_value='LoadState=not-found\n'):
                 self.assertEqual(agent.bootstrap_status(data)['status'],'failed')
+
+    def test_exit_20_requires_owned_reboot_result_and_otherwise_reports_failure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);unit='twinfra-bootstrap-'+'b'*32;data={'unit':unit,'hashes':{}}
+            receipt=root/'var/lib/twinfra/host-bootstrap/unit.json';receipt.parent.mkdir(parents=True)
+            receipt.write_text(json.dumps(data))
+            result=root/'var/lib/vcloud-host/result.json';result.parent.mkdir(parents=True)
+            raw='LoadState=loaded\nActiveState=failed\nSubState=failed\nExecMainCode=1\nExecMainStatus=20\nResult=exit-code\n'
+            for content in (None,'{"status":"failed"}','{"status":"ready"}','{}','[]','invalid JSON',
+                            '{"status":"reboot-required"}'):
+                with self.subTest(content=content):
+                    if content is None:result.unlink(missing_ok=True)
+                    else:result.write_text(content)
+                    expected='reboot-required' if content=='{"status":"reboot-required"}' else 'failed'
+                    with patch.object(agent,'ROOT',root),patch.object(agent,'secure'),patch.object(agent,'run',return_value=raw):
+                        report=agent.bootstrap_status(data)
+                    self.assertEqual(report['status'],expected)
+                    self.assertEqual(report['exitCode'],20)
+                    self.assertIn('journalctl -u '+unit,report['message'])
+                    with patch.object(host,'execute',return_value=report),patch('sys.stdout',new=io.StringIO()):
+                        self.assertEqual(host.action('host-bootstrap','twinfra-dev-cairo-1','operator@192.168.1.3'),
+                                         20 if expected=='reboot-required' else 1)
+            def secure(path):
+                if path==result:raise ValueError('Unowned result')
+            with patch.object(agent,'ROOT',root),patch.object(agent,'secure',side_effect=secure),patch.object(agent,'run',return_value=raw):
+                self.assertEqual(agent.bootstrap_status(data)['status'],'failed')
+            for exit_code in (0,1):
+                result.write_text('{"status":"reboot-required"}')
+                with patch.object(agent,'ROOT',root),patch.object(agent,'secure'),patch.object(agent,'run',return_value=raw.replace('ExecMainStatus=20','ExecMainStatus='+str(exit_code))):
+                    self.assertEqual(agent.bootstrap_status(data)['status'],'failed')
 
     def test_unit_start_lock_refuses_simultaneous_client(self):
         fake=types.SimpleNamespace(LOCK_EX=2,LOCK_NB=4,LOCK_UN=8,flock=lambda *a:(_ for _ in ()).throw(BlockingIOError()))
@@ -759,12 +806,13 @@ class PinsAndProfiles(unittest.TestCase):
 
     def test_amendment_5_changes_only_tkn_version_and_derived_render_hashes(self):
         def base(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_5_BASE+':'+name])
-        self.assertEqual(mask_tkn_version((ROOT/'00-setup-ubuntu-host.sh').read_text()),mask_tkn_version(base('00-setup-ubuntu-host.sh').decode()))
+        def tested(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_6_BASE+':'+name])
+        self.assertEqual(mask_tkn_version(tested('00-setup-ubuntu-host.sh').decode()),mask_tkn_version(base('00-setup-ubuntu-host.sh').decode()))
         for name in ('user-data.yaml','user-data-remote.yaml'):
-            self.assertEqual(mask_production_render((ROOT/name).read_bytes(),mask_tkn_version,remote='remote' in name),
+            self.assertEqual(mask_production_render(tested(name),mask_tkn_version,remote='remote' in name),
                              mask_production_render(base(name),mask_tkn_version,remote='remote' in name),name)
-        self.assertEqual(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),(ROOT/'user-data.yaml').read_bytes())
-        self.assertEqual(mask_production_render(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),mask_tkn_version),
+        self.assertEqual(gzip.decompress(tested('user-data.yaml.gz')),tested('user-data.yaml'))
+        self.assertEqual(mask_production_render(gzip.decompress(tested('user-data.yaml.gz')),mask_tkn_version),
                          mask_production_render(gzip.decompress(base('user-data.yaml.gz')),mask_tkn_version))
         path='deploy/environments/dev/cairo-2/seed/user-data'
         def seed_mask(raw):
@@ -773,11 +821,35 @@ class PinsAndProfiles(unittest.TestCase):
             self.assertEqual(mask_tkn_version(embedded),mask_tkn_version(base('00-setup-ubuntu-host.sh').decode()))
             raw,count=re.subn(rb'(?ms)(^- path: /usr/local/sbin/00-setup-ubuntu-host.sh\n  owner: root:root\n  permissions: [^\n]+\n  content: ).*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',rb'\1@@TKN_VERSION_SCRIPT@@\n',raw)
             self.assertEqual(count,1);return raw
-        self.assertEqual(seed_mask((ROOT/path).read_bytes()),seed_mask(base(path)))
+        self.assertEqual(seed_mask(tested(path)),seed_mask(base(path)))
         for name in ('host.env.example','deploy/environments/dev/cairo-1/host.env',
                      'deploy/environments/dev/cairo-2/seed/meta-data','deploy/environments/dev/cairo-2/seed/network-config',
                      'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
                      'security/licence-policy.json','tools/ci/pr-baselines.json'):
+            self.assertEqual(tested(name).replace(b'\r\n',b'\n'),base(name),name)
+
+    def test_amendment_6_changes_only_home_exitcode_and_derived_render_hashes(self):
+        def base(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_6_BASE+':'+name])
+        self.assertEqual(mask_home_exitcode((ROOT/'00-setup-ubuntu-host.sh').read_text()),mask_home_exitcode(base('00-setup-ubuntu-host.sh').decode()))
+        for name in ('user-data.yaml','user-data-remote.yaml'):
+            self.assertEqual(mask_production_render((ROOT/name).read_bytes(),mask_home_exitcode,remote='remote' in name),
+                             mask_production_render(base(name),mask_home_exitcode,remote='remote' in name),name)
+        self.assertEqual(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),(ROOT/'user-data.yaml').read_bytes())
+        self.assertEqual(mask_production_render(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),mask_home_exitcode),
+                         mask_production_render(gzip.decompress(base('user-data.yaml.gz')),mask_home_exitcode))
+        path='deploy/environments/dev/cairo-2/seed/user-data'
+        def seed_mask(raw):
+            raw=raw.replace(b'\r\n',b'\n');data=yaml.safe_load(raw)
+            embedded=next(f['content'] for f in data['write_files'] if f['path']=='/usr/local/sbin/00-setup-ubuntu-host.sh')
+            self.assertEqual(mask_home_exitcode(embedded),mask_home_exitcode(base('00-setup-ubuntu-host.sh').decode()))
+            raw,count=re.subn(rb'(?ms)(^- path: /usr/local/sbin/00-setup-ubuntu-host.sh\n  owner: root:root\n  permissions: [^\n]+\n  content: ).*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',rb'\1@@HOME_EXIT_SCRIPT@@\n',raw)
+            self.assertEqual(count,1);return raw
+        self.assertEqual(seed_mask((ROOT/path).read_bytes()),seed_mask(base(path)))
+        for name in ('host.env.example','deploy/environments/dev/cairo-1/host.env',
+                     'deploy/environments/dev/cairo-2/seed/meta-data','deploy/environments/dev/cairo-2/seed/network-config',
+                     'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
+                     'security/licence-policy.json','security/licence-register.json','tools/ci/host-cli.lock.json',
+                     'tools/ci/toolchain.lock.json','tools/ci/pr-baselines.json'):
             self.assertEqual((ROOT/name).read_bytes().replace(b'\r\n',b'\n'),base(name),name)
 
     def test_amendment_5_licences_add_only_existing_host_cli_artifacts(self):

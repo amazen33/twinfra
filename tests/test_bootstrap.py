@@ -366,7 +366,18 @@ run_smoke_tests
                 rendered = ''.join(p.read_text() for p in state.glob('*.yaml'))
                 self.assertEqual('/nvidia/cuda:' in rendered, enabled)
 
-    def mocked_apply(self, reboot):
+    def test_argocd_without_home_fails_then_script_exports_default(self):
+        with tempfile.TemporaryDirectory(dir=ROOT / '.tools') as temp:
+            fake=Path(temp)/'argocd'
+            fake.write_text('#!/usr/bin/env bash\n[[ -n ${HOME:-} ]] || exit 20\nprintf "%s" "$HOME"\n')
+            fake.chmod(0o755)
+            cli=shlex.quote(shell_path(fake))
+            result=bash(f'unset HOME; if {cli}; then exit 90; else [[ $? == 20 ]]; fi; load_config; {cli}')
+            self.assertEqual(result.stdout,'/root')
+            self.assertEqual(bash(f'HOME=; load_config; {cli}').stdout,'/root')
+            self.assertEqual(bash(f'export HOME=/operator-home; load_config; {cli}').stdout,'/operator-home')
+
+    def mocked_apply(self, reboot, failure_code=None):
         with tempfile.TemporaryDirectory(prefix="vcloud-order-", dir=ROOT / ".tools") as temp:
             path = shlex.quote(shell_path(temp))
             code = f"""
@@ -387,9 +398,11 @@ install_kubernetes_packages() {{ printf 'packages\\n' >> "$STATE_DIR/order"; }}
 install_hpc_kvm() {{ printf 'hpc\\n' >> "$STATE_DIR/order"; }}
 configure_containerd() {{ printf 'runtime\\n' >> "$STATE_DIR/order"; }}
 bootstrap_kubernetes() {{ printf 'kubernetes\\n' >> "$STATE_DIR/order"; }}
-validate_host() {{ printf 'validate\\n' >> "$STATE_DIR/order"; }}
+validate_host() {{ printf 'validate\\n' >> "$STATE_DIR/order"; {f'(exit {failure_code})' if failure_code is not None else ':'}; }}
 run_smoke_tests() {{ printf 'smoke\\n' >> "$STATE_DIR/order"; }}
 dpkg-query() {{ printf 'mock-package\\t1.0\\n'; }}
+# Model installed jq for the error-handler dependency check; result writes stay mocked.
+jq() {{ :; }}
 write_result() {{ printf '%s' "$1" > "$STATE_DIR/result-status"; }}
 cleanup() {{ :; }}
 main --apply
@@ -397,6 +410,14 @@ main --apply
             result = bash(code, check=False)
             state = Path(temp)
             return result, (state / "order").read_text().splitlines(), (state / "result-status").read_text(), (state / "complete").exists(), (state / "containerd-owned").exists()
+
+    def test_command_exit_20_is_failure_exit_1_without_completion(self):
+        result,order,status,complete,_=self.mocked_apply(False,failure_code=20)
+        self.assertEqual(result.returncode,1,result.stderr)
+        self.assertEqual(status,'failed')
+        self.assertIn('(exit 20)',result.stderr)
+        self.assertNotIn('smoke',order)
+        self.assertFalse(complete)
 
     def test_reboot_defers_all_runtime_and_cluster_actions(self):
         result, order, status, complete, owned = self.mocked_apply(True)

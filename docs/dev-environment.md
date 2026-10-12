@@ -366,6 +366,14 @@ calls (`kubectl`, `kubeadm`, `helm`, `cilium`, `kubeconform`, `tkn`, `argocd`, `
 `jq`) are executed against the pinned binaries in the required CI step, with
 their actual help captured. No cluster credentials are used by these calls.
 
+Amendment 6 runs every CLI help/version call under `env -i` with only the pinned
+binary directories and `/usr/bin:/bin` in PATH. HOME is absent at entry; the
+shared script's `load_config` defaults and exports it as `/root`. This matches
+the transient systemd unit instead of inheriting the CI runner's HOME. Help and
+version calls use `sudo -n` on the disposable runner, matching the root host
+process; no provisioner entry point or CLI configuration changes run. Existing
+nonempty HOME values are preserved; no CLI configuration is modified.
+
 Conditional calls were reviewed without changing the approved provisioning:
 
 | Existing call | Review source / execution boundary |
@@ -399,6 +407,19 @@ From merged `main`, the owner runs `host-check`, then `host-bootstrap`, then
 skips `kubeadm init`; fake tests make any init/reset call fail and verify static
 Pod, PKI and admin.conf bytes remain unchanged. Dev log caps, labels and
 `complete.json` follow successful validation. No automatic reset is added.
+
+Amendment 6 fixes the owner-reported Argo CD `$HOME is not defined` failure on
+merged main `cf4b659`. A trapped command failure now records `failed` and exits
+1, retaining its original code in the journal. Exit 20 is reserved for the
+deliberate reboot path. The host agent also requires an owned result with
+`status: reboot-required` before interpreting unit exit 20 as a reboot request;
+missing, invalid, unowned or non-reboot results report failure with journal
+guidance. Offline tests cover both failure and deliberate reboot paths.
+
+For this validation failure, **do not reboot**. After review and merge, from
+the owner's `E:\twinfra-live` checkout of updated main, run `host-check`
+(expect `resume`), `host-bootstrap` (expect `passed`), then `host-check`
+(expect `post-bootstrap` / `passed`). Live acceptance remains Pending.
 
 WO-31 Amendment 4 makes the shared etcd strategic patch use Kubernetes' `mountPath`
 merge key from the rendered kubeadm `certificatesDir` (default
