@@ -421,6 +421,21 @@ the owner's `E:\twinfra-live` checkout of updated main, run `host-check`
 (expect `resume`), `host-bootstrap` (expect `passed`), then `host-check`
 (expect `post-bootstrap` / `passed`). Live acceptance remains Pending.
 
+WO-31 Amendment 7 fixes the subsequent checker failure reported on merged main
+`1f7d86f`: a direct `kubectl get ... -o json` returns one `kind: List` object.
+The generated checker's `main()` now wraps a single object, preserves existing
+arrays, and reports non-object entries (including nested List items) as violations
+with exit 1. `flatten()`, policy decisions and the kubectl/yq callers are unchanged.
+Tests run the generated CLI against actual pinned Cilium chart output with the
+dev node-exception policy; single DaemonSet, array and kubectl List inputs pass,
+while an unapproved mount still fails. Production renders may change only in
+the generated checker block and derived checksums/gzip.
+
+After review and merge, update the owner's `E:\twinfra-live` checkout and run
+`host-bootstrap`, then `host-check`. Expected: bootstrap `passed`, dev log caps
+(one kubelet restart), labels and `complete.json`, then `post-bootstrap` / `passed`.
+Record the result in the [2026-10-13 Pending receipt](acceptance/dev-environment-2026-10-13.md).
+
 WO-31 Amendment 4 makes the shared etcd strategic patch use Kubernetes' `mountPath`
 merge key from the rendered kubeadm `certificatesDir` (default
 `/etc/kubernetes/pki/etcd`). The preview rejects a missing, duplicated, writable

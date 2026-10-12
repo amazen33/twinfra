@@ -532,6 +532,79 @@ main --apply
             self.assertEqual(result['status'], 'blocked')
             self.assertEqual(len(result['violations']), 3)
 
+    def run_generated_checker(self, objects, dev=False):
+        with tempfile.TemporaryDirectory(dir=ROOT / '.tools') as temp:
+            root=Path(temp);checker=root/'check-manifest-contract.py';policy=root/'node-exceptions.json'
+            checker.write_text(bash('render_policy_checker').stdout,encoding='utf-8')
+            policy.write_text(bash(('PLATFORM_PROFILE=dev-cairo-1; ' if dev else '')+
+                                   'render_exception_policy').stdout,encoding='utf-8')
+            return subprocess.run([sys.executable,str(checker),'--policy',str(policy)],
+                                  input=json.dumps(objects),text=True,capture_output=True)
+
+    def test_checker_accepts_single_object_and_kubectl_list(self):
+        objects=[dict(apiVersion='v1',kind='ConfigMap',metadata=dict(name=name,namespace='workload-apps'))
+                 for name in ('first','second','third')]
+        for payload in (objects[0],objects,dict(apiVersion='v1',kind='List',items=objects),
+                        [dict(apiVersion='v1',kind='List',items=objects)]):
+            with self.subTest(payload=payload):
+                result=self.run_generated_checker(payload)
+                self.assertEqual(result.returncode,0,result.stderr)
+                self.assertIn('passed; 0 findings',result.stderr)
+
+    def test_checker_arrays_preserve_policy_violation_results(self):
+        # An input-shape correction must not broaden node-host mount approval.
+        pod=dict(apiVersion='v1',kind='Pod',metadata=dict(name='unapproved',namespace='workload-apps'),
+                 spec=dict(containers=[dict(name='app',image='registry.vcloud.example.com/app:1.2.3')],
+                           securityContext=dict(runAsNonRoot=True,runAsUser=10001),
+                           volumes=[dict(name='root',hostPath=dict(path='/'))]))
+        array=self.run_generated_checker([pod])
+        self.assertEqual(array.returncode,1)
+        self.assertIn('forbidden hostPath',array.stderr)
+        for payload in (pod,dict(apiVersion='v1',kind='List',items=[pod])):
+            result=self.run_generated_checker(payload)
+            self.assertEqual((result.returncode,result.stderr),(array.returncode,array.stderr))
+
+    def test_checker_non_object_input_is_violation_without_traceback(self):
+        for value in ('bare string','',123,0,False,None):
+            for payload in (value,[value],
+                            [dict(apiVersion='v1',kind='ConfigMap',metadata=dict(name='valid')),value]):
+                with self.subTest(payload=payload):
+                    result=self.run_generated_checker(payload)
+                    self.assertEqual(result.returncode,1,result.stderr)
+                    self.assertIn('blocked;',result.stderr)
+                    self.assertIn('expected an object',result.stderr)
+                    self.assertNotIn('Traceback',result.stderr)
+
+    def test_checker_rejects_non_objects_inside_nested_lists(self):
+        for items in (['bad',0,False,None],{'kind':'ConfigMap'},'bad',1,None):
+            payload=dict(apiVersion='v1',kind='List',items=[dict(apiVersion='v1',kind='List',items=items)])
+            with self.subTest(items=items):
+                result=self.run_generated_checker(payload)
+                self.assertEqual(result.returncode,1,result.stderr)
+                self.assertIn('.items',result.stderr)
+                self.assertNotIn('Traceback',result.stderr)
+
+    def test_checker_real_cilium_daemonset_with_dev_node_exception_policy(self):
+        # Fixture is actual pinned Cilium Helm output staged by CI before this suite.
+        # The approved dev derivative relocates only the registry prefix.
+        raw=(ROOT/'.tools/rendered/cilium-rendered.yaml').read_text(encoding='utf-8-sig')
+        objects=[o for o in yaml.safe_load_all(raw.replace('registry.vcloud.example.com/',
+                    'registry.twinfra.example.com/')) if o and o['kind'] in ('DaemonSet','Deployment')]
+        agent=next(o for o in objects if o['kind']=='DaemonSet' and o['metadata']['name']=='cilium')
+        self.assertTrue(agent['spec']['template']['spec']['hostNetwork'])
+        self.assertTrue(any('hostPath' in v for v in agent['spec']['template']['spec']['volumes']))
+        self.assertEqual({o['metadata']['name'] for o in objects},{'cilium','cilium-envoy','cilium-operator'})
+        for payload in (agent,objects,dict(apiVersion='v1',kind='List',items=objects)):
+            with self.subTest(shape='List' if isinstance(payload,dict) and payload.get('kind')=='List' else type(payload).__name__):
+                result=self.run_generated_checker(payload,dev=True)
+                self.assertEqual(result.returncode,0,result.stderr)
+                self.assertIn('passed; 0 findings',result.stderr)
+        drift=copy.deepcopy(agent)
+        next(v for v in drift['spec']['template']['spec']['volumes'] if 'hostPath' in v)['hostPath']['path']='/etc/shadow'
+        result=self.run_generated_checker(dict(apiVersion='v1',kind='List',items=[drift]),dev=True)
+        self.assertEqual(result.returncode,1)
+        self.assertIn('drift from approved node-agent',result.stderr)
+
     @unittest.skipUnless(OPTIONS.yq and OPTIONS.kubeconform, 'Supply --yq and --kubeconform to exercise real Helm post-renderers')
     def test_post_renderer_filters_mps_and_validates_exact_output(self):
         with tempfile.TemporaryDirectory(dir=ROOT / '.tools') as temp:

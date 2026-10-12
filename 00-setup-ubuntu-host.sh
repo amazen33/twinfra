@@ -2683,7 +2683,26 @@ def main():
     parser.add_argument('--policy', type=Path, required=True)
     parser.add_argument('--mode', choices=['workloads', 'control-plane'], default='workloads')
     args = parser.parse_args()
-    result = audit_objects(json.load(sys.stdin), json.loads(args.policy.read_text()), args.mode)
+    objects = json.load(sys.stdin)
+    # kubectl returns one object (often kind: List); yq callers already supply an array.
+    if not isinstance(objects, list):
+        objects = [objects]
+    violations = []
+    pending = [(objects, 'input')]
+    while pending:
+        values, path = pending.pop()
+        if not isinstance(values, list):
+            violations.append(f'{path}: expected a list of objects')
+            continue
+        for index, obj in enumerate(values):
+            location = f'{path}[{index}]'
+            if not isinstance(obj, dict):
+                violations.append(f'{location}: expected an object')
+            elif obj.get('kind') == 'List':
+                pending.append((obj.get('items', []), location + '.items'))
+    # Never let malformed elements reach flatten(), including nested List items.
+    result = (dict(status='blocked', violations=violations) if violations else
+              audit_objects(objects, json.loads(args.policy.read_text()), args.mode))
     print(f'SSoT contract: {result["status"]}; {len(result["violations"])} findings', file=sys.stderr)
     for finding in result['violations']:
         print(finding, file=sys.stderr)

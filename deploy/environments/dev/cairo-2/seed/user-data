@@ -1406,8 +1406,19 @@ write_files:
     \ resources=inventory)\n\n\ndef main():\n    parser = argparse.ArgumentParser(description=__doc__)\n\
     \    parser.add_argument('--policy', type=Path, required=True)\n    parser.add_argument('--mode',\
     \ choices=['workloads', 'control-plane'], default='workloads')\n    args = parser.parse_args()\n\
-    \    result = audit_objects(json.load(sys.stdin), json.loads(args.policy.read_text()),\
-    \ args.mode)\n    print(f'SSoT contract: {result[\"status\"]}; {len(result[\"\
+    \    objects = json.load(sys.stdin)\n    # kubectl returns one object (often kind:\
+    \ List); yq callers already supply an array.\n    if not isinstance(objects, list):\n\
+    \        objects = [objects]\n    violations = []\n    pending = [(objects, 'input')]\n\
+    \    while pending:\n        values, path = pending.pop()\n        if not isinstance(values,\
+    \ list):\n            violations.append(f'{path}: expected a list of objects')\n\
+    \            continue\n        for index, obj in enumerate(values):\n        \
+    \    location = f'{path}[{index}]'\n            if not isinstance(obj, dict):\n\
+    \                violations.append(f'{location}: expected an object')\n      \
+    \      elif obj.get('kind') == 'List':\n                pending.append((obj.get('items',\
+    \ []), location + '.items'))\n    # Never let malformed elements reach flatten(),\
+    \ including nested List items.\n    result = (dict(status='blocked', violations=violations)\
+    \ if violations else\n              audit_objects(objects, json.loads(args.policy.read_text()),\
+    \ args.mode))\n    print(f'SSoT contract: {result[\"status\"]}; {len(result[\"\
     violations\"])} findings', file=sys.stderr)\n    for finding in result['violations']:\n\
     \        print(finding, file=sys.stderr)\n    return 1 if result['violations']\
     \ else 0\n\n\nif __name__ == '__main__':\n    raise SystemExit(main())\nVCLOUD_POLICY_PYTHON\n\
