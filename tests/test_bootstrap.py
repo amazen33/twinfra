@@ -94,6 +94,42 @@ class BootstrapTests(unittest.TestCase):
         result = subprocess.run([OPTIONS.bash, "-n", str(ROOT / "00-setup-ubuntu-host.sh")], capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_existing_cluster_skips_init_and_preserves_static_pods_and_pki(self):
+        # Remap ONLY fixed host filesystem paths into a synthetic root. All
+        # kubectl/Helm/Cilium calls are mocks; the real shared function executes.
+        with tempfile.TemporaryDirectory(dir=ROOT / '.tools') as temp:
+            root=Path(temp);etc=root/'etc/kubernetes';etc.mkdir(parents=True)
+            (etc/'manifests').mkdir();(etc/'pki/etcd').mkdir(parents=True)
+            (etc/'admin.conf').write_text('synthetic fixture');(etc/'admin.conf').chmod(0o600)
+            (etc/'pki/etcd/ca.crt').write_text('synthetic certificate fixture')
+            (etc/'manifests/etcd.yaml').write_text('synthetic static Pod fixture')
+            before={str(p.relative_to(etc)):p.read_bytes() for p in etc.rglob('*') if p.is_file()}
+            directory=shlex.quote(shell_path(root));target=shlex.quote(shell_path(etc))
+            code=f'''
+STATE_DIR={directory}/state; mkdir -p "$STATE_DIR"
+NODE_NAME=twinfra-dev-cairo-1; NODE_IP=192.168.1.3; GPU_ENABLED=false
+PLATFORM_PROFILE=dev-cairo-1; CLUSTER_NAME=twinfra-dev-cairo-1
+CONTROL_PLANE_ENDPOINT=api.dev.cairo-1.twinfra.example.com:6443
+eval "$(declare -f bootstrap_kubernetes | sed 's|/etc/kubernetes|'{target}'|g')"
+check_policy_gate() {{ :; }}
+write_manifest_validators() {{ :; }}
+write_file() {{ mkdir -p "$(dirname "$1")"; cat > "$1"; }}
+kubeadm() {{
+    printf '%s\\n' "$*" >> "$STATE_DIR/kubeadm-calls"
+    [[ $1 != init && $1 != reset ]] || return 97
+    [[ $1 == config && $2 == validate ]] || return 98
+}}
+validate_kubeadm_preview() {{ die 'Unexpected preview/init path on existing cluster'; }}
+validate_static_control_plane() {{ [[ $1 == {target}/manifests ]]; }}
+kubectl() {{ :; }}; helm() {{ :; }}; cilium() {{ :; }}
+validate_manifests() {{ :; }}
+bootstrap_kubernetes
+'''
+            bash(code)
+            self.assertEqual((root/'state/kubeadm-calls').read_text().splitlines(),
+                             ['config validate --config '+shell_path(root)+'/state/kubeadm.yaml'])
+            self.assertEqual(before,{str(p.relative_to(etc)):p.read_bytes() for p in etc.rglob('*') if p.is_file()})
+
     def test_default_profile(self):
         output = bash("validate_config; plan").stdout
         self.assertIn("128 x 2 MiB + 1 x 1 GiB", output)

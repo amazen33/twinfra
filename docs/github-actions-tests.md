@@ -103,6 +103,19 @@ Historical selected revisions still run their original offline suites; their
 old etcd patches are not used as the candidate preview input. Windows unit tests
 exercise path/command/checksum failures; the real Linux binary is tested in CI.
 
+Amendment 5 extends that same required step with the shared `install_tooling` /
+`install_cli` functions, redirecting only their install destination and final
+binary hash lookup into a temporary CI directory. It retains their release URLs,
+published checksums, selected archive members and stamps, then checks the
+reviewed `host-cli.lock.json`. No global installation or APT changes occur.
+Pinned kubectl comes from `dl.k8s.io` with both locked/published SHA256 checks;
+jq and kubeadm use the existing staged tools. The gate reads and runs the two
+exact client-version lines from `validate_host`, including
+`tkn version --component client`, and captures each binary's help and output.
+CLI archive/binary corruption, missing commands and version-command failures
+fail CI. HPC/GPU conditional checks have a separate
+[source review and execution boundary](dev-environment.md#module--1-cli-validation-review).
+
 WO-31 adds an optional bare-metal bundle. Fixtures cover both read-only host-check
 modes and every required cluster/listener identity, key-only SSH/SCP, copied SHA-256
 verification, sudo refusal, healthy no-op bootstrap, guarded SSH and scoped firewall

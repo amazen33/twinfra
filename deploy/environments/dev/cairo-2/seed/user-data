@@ -1659,13 +1659,13 @@ write_files:
     \ is True, name + ' does not use systemd cgroups'\nassert 'cri' not in data.get('disabled_plugins',\
     \ []), 'CRI is disabled'\nPY\n    kubectl version --client; kubeadm version -o\
     \ short; helm version --short; cilium version --client\n    kubeconform -v; tkn\
-    \ version --client; argocd version --client; yq --version; jq --version\n    if\
-    \ [[ $INSTALL_HPC == true ]]; then\n        mpirun --version; ucx_info -v; apptainer\
-    \ --version; srun --version\n    fi\n    if [[ $GPU_ENABLED == true ]]; then\n\
-    \        nvidia-smi\n        nvidia-ctk --version\n        version_at_least \"\
-    $(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -n1)\" 550\
-    \ || die 'Driver < 550'\n    fi\n    if [[ $BOOTSTRAP_K8S == true ]]; then\n \
-    \       check_policy_gate || return $?\n        # Validation checks current policy/compiler\
+    \ version --component client; argocd version --client; yq --version; jq --version\n\
+    \    if [[ $INSTALL_HPC == true ]]; then\n        mpirun --version; ucx_info -v;\
+    \ apptainer --version; srun --version\n    fi\n    if [[ $GPU_ENABLED == true\
+    \ ]]; then\n        nvidia-smi\n        nvidia-ctk --version\n        version_at_least\
+    \ \"$(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -n1)\"\
+    \ 550 || die 'Driver < 550'\n    fi\n    if [[ $BOOTSTRAP_K8S == true ]]; then\n\
+    \        check_policy_gate || return $?\n        # Validation checks current policy/compiler\
     \ bytes without modifying the host.\n        cmp -s \"$STATE_DIR/node-exceptions.json\"\
     \ <(render_exception_policy) || die 'Installed node exception policy drift'\n\
     \        cmp -s \"$STATE_DIR/check-manifest-contract.py\" <(render_policy_checker)\

@@ -31,11 +31,19 @@ MAIN='968f336f9335739c35b79ed838dc7cfaeebff235'
 AMENDMENT_2_BASE='a8f4f434c7bed890311793590952dd5295d2e97e'
 AMENDMENT_3_BASE='a7512ed9ab059857b60e9b4848fad2287e4549ab'
 AMENDMENT_4_BASE='4cb97b8950164e32f02e40635bfddf6ffa9b0858'
+AMENDMENT_5_BASE='c41c4cfab5cab15aa3ac38a7f159f7690a5b70be'
+
+
+def mask_tkn_version(raw):
+    raw=raw.replace('\r\n','\n')
+    old='tkn version --client';new='tkn version --component client'
+    if raw.count(old)+raw.count(new)!=1:raise ValueError('Expected exactly one tkn version call')
+    return raw.replace(old,'@@TKN_CLIENT_VERSION@@').replace(new,'@@TKN_CLIENT_VERSION@@')
 
 
 def mask_etcd_script(raw):
     """Amendment 4 allows only patch/path helpers and one preview assertion."""
-    raw=raw.replace('\r\n','\n')
+    raw=mask_tkn_version(raw)
     raw,count=re.subn(r'(?ms)^(?:etcd_cert_mount_path|render_etcd_patch)\(\) \{\n.*?(?=^validate_static_control_plane\(\))',
                       '@@ETCD_PATCH_AND_MOUNT_ASSERTION@@\n\n',raw)
     if count!=1:raise ValueError('Etcd mask must match exactly one patch/helper block')
@@ -76,9 +84,9 @@ def fixture(post=False):
         'vgFreeGiB':120.5,'swap':[],'timeSynced':True,'addresses':['192.168.1.3'],
         'secureBoot':True,'lockdown':'none [integrity] confidentiality',
         'sshd':{'passwordauthentication':'no','kbdinteractiveauthentication':'no','permitrootlogin':'no'},
-        'listeners':[],'result':None,'cluster':{},'nodes':[]}
+        'listeners':[],'result':None,'adminConf':False,'cluster':{},'nodes':[]}
     if post:
-        state.update(result={'status':'ready','kubernetes':'v1.36.5','mirror_status':'staged-verified'},
+        state.update(result={'status':'ready','kubernetes':'v1.36.5','mirror_status':'staged-verified'},adminConf=True,
             cluster={'clusterName':'twinfra-dev-cairo-1','controlPlaneEndpoint':'api.dev.cairo-1.twinfra.example.com:6443'},
             listeners=[{'port':p,'owners':[name]} for p,name in agent.PORTS.items()],
             nodes=[{'metadata':{'name':'twinfra-dev-cairo-1'},'status':{'addresses':[{'type':'InternalIP','address':'192.168.1.3'}],
@@ -125,7 +133,8 @@ class HostChecks(unittest.TestCase):
             contents={'etc/os-release':'ID=ubuntu\nVERSION_ID="24.04"\n','proc/cpuinfo':'flags: vmx\n',
                 'proc/meminfo':'MemTotal: 32505856 kB\n','proc/swaps':'Filename Type Size Used Priority\n',
                 'sys/kernel/security/lockdown':'none [integrity] confidentiality',
-                'dev/kvm':'fixture','var/lib/vcloud-host/result.json':json.dumps(fixture(True)['result'])}
+                'dev/kvm':'fixture','etc/kubernetes/admin.conf':'synthetic fixture only',
+                'var/lib/vcloud-host/result.json':json.dumps(fixture(True)['result'])}
             for name,raw in contents.items():
                 file=root/name;file.parent.mkdir(parents=True,exist_ok=True);file.write_text(raw)
             file=root/'sys/firmware/efi/efivars/SecureBoot-8be4df61-93ca-11d2-aa0d-00e098032b8c'
@@ -147,6 +156,11 @@ class HostChecks(unittest.TestCase):
             with patch.object(agent,'ROOT',root),patch.object(agent,'secure'),patch.object(agent,'run',side_effect=run):
                 state=agent.inventory(host.expected())
                 self.assertEqual(agent.evaluate(state,host.expected())['status'],'passed')
+                failed=root/'var/lib/vcloud-host/result.json'
+                failed.write_text(json.dumps(fixture(True)['result']|{'status':'failed','phase':'validation'}))
+                before={str(f.relative_to(root)):f.read_bytes() for f in root.rglob('*') if f.is_file()}
+                resumed=agent.evaluate(agent.inventory(host.expected()),host.expected())
+                self.assertEqual(resumed['status'],'passed');self.assertEqual(resumed['mode'],'resume')
             self.assertTrue(all(c[0] in ('uname','df','vgs','timedatectl','ip','ss','sshd','kubectl') for c in calls))
             self.assertEqual(before,{str(f.relative_to(root)):f.read_bytes() for f in root.rglob('*') if f.is_file()})
 
@@ -171,9 +185,28 @@ class HostChecks(unittest.TestCase):
         self.assertEqual(report['checks'][-1]['detail'],'bootstrap-owned cluster verified')
         self.assertEqual(report,json.loads((ROOT/'tests/fixtures/wo31-host-check.json').read_text())['after'])
 
-    def test_not_ready_result_blocks_occupied_ports(self):
-        state=fixture(True);state['result']['status']='reboot-required'
-        self.assertEqual(self.check(state)['status'],'failed')
+    def test_resume_matching_cluster_is_allowed_and_incomplete(self):
+        state=fixture(True);state['result']['status']='failed';state['result']['phase']='validation'
+        report=self.check(state)
+        self.assertEqual(report['status'],'passed');self.assertEqual(report['mode'],'resume')
+        self.assertEqual(report['checks'][-1]['detail'],'bootstrap-owned cluster, incomplete')
+
+    def test_resume_wrong_identity_or_listener_blocks_before_transfer(self):
+        for case in ('cluster','endpoint','node','ip','owner','admin','result'):
+            with self.subTest(case=case):
+                state=fixture(True);state['result']['status']='failed'
+                if case=='cluster':state['cluster']['clusterName']='foreign'
+                elif case=='endpoint':state['cluster']['controlPlaneEndpoint']='foreign:6443'
+                elif case=='node':state['nodes'][0]['metadata']['name']='foreign'
+                elif case=='ip':state['nodes'][0]['status']['addresses'][0]['address']='192.168.1.4'
+                elif case=='owner':state['listeners'][0]['owners']=['foreign']
+                elif case=='admin':state['adminConf']=False
+                else:state['result']=None
+                self.assertEqual(self.check(state)['status'],'failed')
+                ssh=HostSSH(state)
+                with patch.object(host.subprocess,'run',side_effect=AssertionError('SCP invoked')):
+                    self.assertEqual(host.bootstrap(ssh)['status'],'failed')
+                self.assertEqual(len(ssh.calls),1)
 
     def test_all_post_bootstrap_ownership_inputs_are_mandatory(self):
         mutations=[('result','kubernetes','v1.35.0'),('result','mirror_status','reachable'),
@@ -342,6 +375,14 @@ class HostBootstrap(unittest.TestCase):
         self.assertIn('journalctl -u',output.getvalue())
         for option in ('ControlMaster=no','ControlPath=none','BatchMode=yes','PreferredAuthentications=publickey'):
             self.assertIn(option,ssh.prefix)
+
+    def test_resume_transfers_then_runs_shared_bootstrap_and_finishes(self):
+        state=fixture(True);state['result']['status']='failed';state['result']['phase']='validation'
+        ssh=HostSSH(state)
+        result=host.bootstrap(ssh,copier=lambda *a,**k:subprocess.CompletedProcess(a,0),sleeper=lambda _:None)
+        self.assertEqual(result['status'],'passed')
+        self.assertEqual([json.loads(c[-1])['action'] for c,p in ssh.calls if c[0]=='sudo'],
+                         ['bootstrap-state','bootstrap','bootstrap-status','bootstrap-finish'])
 
     def test_reboot_required_and_failure_do_not_finish(self):
         for status,code in (('reboot-required',20),('failed',1)):
@@ -708,13 +749,52 @@ class PinsAndProfiles(unittest.TestCase):
 
     def test_amendment_4_licence_evidence_changes_only_kubeadm_artifact(self):
         before=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_4_BASE+':security/licence-register.json']))
-        after=json.loads((ROOT/'security/licence-register.json').read_text())
+        after=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_5_BASE+':security/licence-register.json']))
         added=[c for c in after['components'] if c['id'] not in {c['id'] for c in before['components']}]
         self.assertEqual(len(added),1)
         self.assertEqual(added[0]['name'],'dl.k8s.io/release/v1.36.5/bin/linux/amd64/kubeadm')
         self.assertEqual(added[0]['spdx'],'Apache-2.0')
         after['components'].remove(added[0])
         self.assertEqual(before,after)
+
+    def test_amendment_5_changes_only_tkn_version_and_derived_render_hashes(self):
+        def base(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_5_BASE+':'+name])
+        self.assertEqual(mask_tkn_version((ROOT/'00-setup-ubuntu-host.sh').read_text()),mask_tkn_version(base('00-setup-ubuntu-host.sh').decode()))
+        for name in ('user-data.yaml','user-data-remote.yaml'):
+            self.assertEqual(mask_production_render((ROOT/name).read_bytes(),mask_tkn_version,remote='remote' in name),
+                             mask_production_render(base(name),mask_tkn_version,remote='remote' in name),name)
+        self.assertEqual(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),(ROOT/'user-data.yaml').read_bytes())
+        self.assertEqual(mask_production_render(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),mask_tkn_version),
+                         mask_production_render(gzip.decompress(base('user-data.yaml.gz')),mask_tkn_version))
+        path='deploy/environments/dev/cairo-2/seed/user-data'
+        def seed_mask(raw):
+            raw=raw.replace(b'\r\n',b'\n');data=yaml.safe_load(raw)
+            embedded=next(f['content'] for f in data['write_files'] if f['path']=='/usr/local/sbin/00-setup-ubuntu-host.sh')
+            self.assertEqual(mask_tkn_version(embedded),mask_tkn_version(base('00-setup-ubuntu-host.sh').decode()))
+            raw,count=re.subn(rb'(?ms)(^- path: /usr/local/sbin/00-setup-ubuntu-host.sh\n  owner: root:root\n  permissions: [^\n]+\n  content: ).*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',rb'\1@@TKN_VERSION_SCRIPT@@\n',raw)
+            self.assertEqual(count,1);return raw
+        self.assertEqual(seed_mask((ROOT/path).read_bytes()),seed_mask(base(path)))
+        for name in ('host.env.example','deploy/environments/dev/cairo-1/host.env',
+                     'deploy/environments/dev/cairo-2/seed/meta-data','deploy/environments/dev/cairo-2/seed/network-config',
+                     'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
+                     'security/licence-policy.json','tools/ci/pr-baselines.json'):
+            self.assertEqual((ROOT/name).read_bytes().replace(b'\r\n',b'\n'),base(name),name)
+
+    def test_amendment_5_licences_add_only_existing_host_cli_artifacts(self):
+        before=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_5_BASE+':security/licence-register.json']))
+        after=json.loads((ROOT/'security/licence-register.json').read_text())
+        old={c['id']:c for c in before['components']};new={c['id']:c for c in after['components']}
+        self.assertEqual(len(new)-len(old),5)
+        names={'cilium/cilium-cli/cilium-linux-amd64.tar.gz','tektoncd/cli/tkn_0.46.1_Linux_x86_64.tar.gz',
+               'argoproj/argo-cd/argocd-linux-amd64','kubernetes-sigs/cri-tools/crictl-v1.36.0-linux-amd64.tar.gz',
+               'dl.k8s.io/release/v1.36.5/bin/linux/amd64/kubectl'}
+        self.assertEqual({new[key]['name'] for key in new.keys()-old.keys()},names)
+        for key,row in old.items():
+            candidate=copy.deepcopy(new[key])
+            if 'tools/ci/host-cli.lock.json' in candidate['locations']:candidate['locations'].remove('tools/ci/host-cli.lock.json')
+            self.assertEqual(candidate,row,key)
+        for key in new.keys()-old.keys():
+            self.assertEqual(new[key]['spdx'],'Apache-2.0');self.assertEqual(new[key]['class'],'allowed')
 
 
 if __name__=='__main__':unittest.main()
