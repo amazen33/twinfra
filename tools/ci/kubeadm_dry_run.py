@@ -76,7 +76,7 @@ def validate_clis(source,assets,report):
     work=root/'work';state=root/'state';binaries=root/'bin'
     for path in (work,state,binaries):path.mkdir(exist_ok=True)
     env=dict(os.environ,PATH=str(assets/'bin')+os.pathsep+os.environ['PATH'],
-             HOME=str(root),KUBECONFIG=str(root/'nonexistent-kubeconfig'))
+             KUBECONFIG=str(root/'nonexistent-kubeconfig'))
     script=source/'00-setup-ubuntu-host.sh'
     code=('set -Eeuo pipefail; source '+shlex.quote(str(script))+'; '
           'VCLOUD_CONFIG_FILE=/nonexistent-ci-config; load_config; ARCH=amd64; TKN_ARCH=x86_64; '
