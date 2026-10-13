@@ -334,7 +334,9 @@ def validate_exceptions(value,root=ROOT,on=None,bootstrap=False):
 
 
 def evaluate(result,exceptions,kev,state=None,on=None,bootstrap=False,root=ROOT):
-    on=on or today();state=dict(state or {})
+    on=on or today()
+    fallback=min(INITIAL_DATE,on) if state is None else on
+    state=dict(state or {})
     entries=validate_exceptions(exceptions,root,on,bootstrap)
     kev_ids={v['cveID'] for v in kev['vulnerabilities']}
     if not isinstance(kev.get('catalogVersion'),str) or not isinstance(kev.get('vulnerabilities'),list):
@@ -344,7 +346,7 @@ def evaluate(result,exceptions,kev,state=None,on=None,bootstrap=False,root=ROOT)
         value=dict(raw)
         # Missing issues cannot continually reset pre-existing risk's grace clock.
         # New PR introductions are immediate; the initial pinned baseline has a fixed anchor.
-        first=date.fromisoformat(state.get(value['key'],(on if value['introduced'] else min(INITIAL_DATE,on)).isoformat()))
+        first=date.fromisoformat(state.get(value['key'],(on if value['introduced'] else fallback).isoformat()))
         if first>on:raise ValueError('Future first-seen date')
         state[value['key']]=first.isoformat();value['firstSeen']=first.isoformat()
         value['kev']=bool(set(value['aliases']) & kev_ids)
@@ -366,7 +368,10 @@ def evaluate(result,exceptions,kev,state=None,on=None,bootstrap=False,root=ROOT)
     return report
 
 
-def safe(value):return html.escape(str(value),quote=False).replace('`','\\`').replace('|','\\|').replace('\n',' ').replace('\r',' ').replace('@','＠')
+def safe(value):
+    value=html.escape(str(value),quote=False).replace('`','\\`').replace('|','\\|').replace('\n',' ').replace('\r',' ')
+    # Prevent user/org notifications while keeping repository@digest copyable.
+    return re.sub(r'(?<!\w)@','＠',value)
 
 
 def markdown(report):
@@ -417,7 +422,7 @@ def main():
             (args.out/'kev.json').write_bytes(raw);print('CISA KEV SHA256: '+sha(raw))
             state,link=previous_state()
             value=evaluate(read(args.out/'findings.json'),read(args.root/'security/vulnerability-exceptions.json'),
-                           json.loads(raw),state,bootstrap=bootstrap_context(),root=args.root)
+                           json.loads(raw),state if link else None,bootstrap=bootstrap_context(),root=args.root)
             value['kev']['downloadSHA256']=sha(raw);value['trackingIssue']=link
             report_files(value,args.out)
             return int(value['status']!='passed')

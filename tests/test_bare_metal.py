@@ -942,15 +942,22 @@ class PinsAndProfiles(unittest.TestCase):
                      'tools/ci/toolchain.lock.json','tools/ci/pr-baselines.json','vcloud-ssot.yaml',
                      'security/node-exceptions.json','deploy/common/host-admin.py','tools/ci/kubeadm_dry_run.py',
                      'tools/manifest_contract.py'):
-            # Preserve Amendment 8's original CI-helper receipt. Amendment 13
-            # separately permits/bounds only the new image-reference hook.
-            tested=(subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_13_BASE+':'+name])
-                    if name=='tools/ci/kubeadm_dry_run.py' else (ROOT/name).read_bytes())
-            self.assertEqual(tested.replace(b'\r\n',b'\n'),base(name),name)
+            # Preserve both original receipts: WO-32 registry additions and
+            # Amendment 13's CI-helper hook are independently bounded by their
+            # respective supply-chain and image-reference regression suites.
+            receipt=(AMENDMENT_13_BASE if name=='tools/ci/kubeadm_dry_run.py' else
+                '3b6ec829105ebc1511b067d53c24d0766b701fb6' if name in (
+                    'security/licence-register.json','tools/ci/toolchain.lock.json') else None)
+            actual=(subprocess.check_output(['git','-C',str(ROOT),'show',receipt+':'+name])
+                    if receipt else (ROOT/name).read_bytes())
+            self.assertEqual(actual.replace(b'\r\n',b'\n'),base(name),name)
 
     def test_amendment_5_licences_add_only_existing_host_cli_artifacts(self):
         before=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_5_BASE+':security/licence-register.json']))
-        after=json.loads((ROOT/'security/licence-register.json').read_text())
+        # Freeze the original Amendment 5 result rather than prohibiting every
+        # later work order from registering its explicitly approved components.
+        after=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',
+            '3b6ec829105ebc1511b067d53c24d0766b701fb6:security/licence-register.json']))
         old={c['id']:c for c in before['components']};new={c['id']:c for c in after['components']}
         self.assertEqual(len(new)-len(old),5)
         names={'cilium/cilium-cli/cilium-linux-amd64.tar.gz','tektoncd/cli/tkn_0.46.1_Linux_x86_64.tar.gz',

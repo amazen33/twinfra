@@ -68,6 +68,11 @@ class Gate(unittest.TestCase):
         self.assertEqual(self.evaluate(value(),on=date(2026,10,26))['status'],'passed')
         self.assertEqual(self.evaluate(value(),on=date(2026,10,27))['status'],'failed')
 
+    def test_newly_discovered_risk_in_existing_issue_gets_its_own_first_seen_date(self):
+        report=self.evaluate(value(),state={},on=date(2026,11,1))
+        self.assertEqual(report['status'],'passed');self.assertEqual(report['findings'][0]['firstSeen'],'2026-11-01')
+        self.assertEqual(self.evaluate(value(),state=report['firstSeen'],on=date(2026,11,15))['status'],'failed')
+
     def test_expired_malformed_and_over90_day_exceptions_fail(self):
         v=value('Critical')
         for fault in ({'expires':'2026-10-12'},{'expires':'2027-01-12'}, {'reason':''},{'createdOn':'bad'}, {'extra':True}):
@@ -219,6 +224,21 @@ class InventoryAndIntegrity(unittest.TestCase):
             self.assertEqual(a,b)
         self.assertEqual(len(old['findings']),len(new['findings']))
         self.assertEqual((ROOT/'tools/ci/pr-baselines.json').read_bytes(),subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':tools/ci/pr-baselines.json']))
+
+    def test_licence_register_preserves_existing_terms_and_only_adds_scanners_actions(self):
+        old=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':security/licence-register.json']))
+        old={v['id']:v for v in old['components']}
+        current={v['id']:v for v in sc.read(ROOT/'security/licence-register.json')['components']}
+        for name,entry in old.items():
+            value=copy.deepcopy(current[name])
+            value['locations']=[p for p in value['locations'] if p!='.github/workflows/supply-chain.yaml']
+            self.assertEqual(value,entry,name)
+        extra=[v for k,v in current.items() if k not in old]
+        self.assertEqual(len(extra),5)
+        self.assertEqual({v['name'] for v in extra if v['ecosystem']=='github-action'},{'actions/cache','actions/download-artifact'})
+        scanners=[v for v in extra if v['ecosystem']=='tool'];self.assertEqual(len(scanners),3)
+        for entry in scanners:
+            self.assertEqual(entry['spdx'],'Apache-2.0');self.assertEqual(entry['class'],'build-tool');self.assertTrue(entry['unmodified'])
 
 
 class ReportingAndWorkflow(unittest.TestCase):

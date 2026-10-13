@@ -10972,8 +10972,8 @@
       "version": "1e4ab49e429626cf6c6958d914248b78c9730803c2751b87627e171dc800e7bb",
       "locations": [
         "module-3/toolchain.lock.json",
-        "tools/ci/host-cli.lock.json",
-        "tools/ci/toolchain.lock.json"
+        "tools/ci/toolchain.lock.json",
+        "tools/ci/host-cli.lock.json"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",
@@ -11116,8 +11116,8 @@
       "name": "mikefarah/yq/yq_linux_amd64",
       "version": "v4.54.1",
       "locations": [
-        "tools/ci/host-cli.lock.json",
-        "tools/ci/toolchain.lock.json"
+        "tools/ci/toolchain.lock.json",
+        "tools/ci/host-cli.lock.json"
       ],
       "spdx": "MIT",
       "class": "allowed",
@@ -11271,8 +11271,8 @@
       "version": "v0.8.0",
       "locations": [
         "module-3/toolchain.lock.json",
-        "tools/ci/host-cli.lock.json",
-        "tools/ci/toolchain.lock.json"
+        "tools/ci/toolchain.lock.json",
+        "tools/ci/host-cli.lock.json"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",

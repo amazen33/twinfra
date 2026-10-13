@@ -190,8 +190,25 @@ def watch(root,tools,out,cache):
     for value in comparisons:
         a=value['current'];b=value['candidate'];old=[f for f in all_findings if f['target']==a['target']]
         new=[f for f in all_findings if b and f['target']==b['target']]
-        value.update(currentFindings=old,candidateFindings=new)
+        previous={(f['package'],f['vulnerability']) for f in old}
+        future={(f['package'],f['vulnerability']) for f in new}
+        added=[f for f in new if (f['package'],f['vulnerability']) not in previous]
+        resolved=[f for f in old if (f['package'],f['vulnerability']) not in future] if b else []
+        value.update(currentFindings=old,candidateFindings=new,newFindings=added,resolvedFindings=resolved)
         lines.append('| '+' | '.join(sc.safe(x) for x in (a['target'],b['target'] if b else 'Unavailable',
                       b['publishedAt'] if b else '',len(old),len(new) if b else '',value['unavailableReason'] or b['release']))+' |')
+    for value in comparisons:
+        if not value['candidate']:continue
+        lines.extend(['','## '+sc.safe(value['current']['target']),
+                      'Candidate: `'+sc.safe(value['candidate']['target'])+'`','',
+                      '| Change | Package/version | Vulnerability | Severity | Fix available |',
+                      '| --- | --- | --- | --- | --- |'])
+        for change,findings in [('New',value['newFindings']),('Resolved',value['resolvedFindings'])]:
+            for f in findings:
+                lines.append('| '+' | '.join(sc.safe(x) for x in (change,f['package']+' '+f['version'],f['vulnerability'],f['severity'],f['fixAvailable']))+' |')
+    lines.extend(['','## Unpublished build coverage'])
+    for item in plan['coverage']:
+        if item['mode']=='pinned-inputs-only':
+            lines.append('- `'+sc.safe(item['pinned'])+'`: inputs only ('+', '.join('`'+sc.safe(x)+'`' for x in item['scannedInputs'])+'); no complete built archive or independent published upstream release was available.')
     return dict(version=1,date=on.isoformat(),comparisons=comparisons,markdown='\n'.join(lines)+'\n',
                 status='reported',lockWrites=False,updatePRs=False,inventoryCoverage=plan['coverage'])

@@ -21,7 +21,9 @@ The first-seen clock is carried in a compressed JSON comment on the single
 are retained so reappearing risk doesn't get another grace period. Before that
 issue exists, pre-existing pins use the baseline date 2026-10-13; new PR
 introductions are immediate. A malformed existing issue state fails rather than
-resetting the clock. Package changes are compared with a scan of the base
+resetting the clock. When an existing issue has no record for a newly discovered finding, its
+first-seen date is the current scan date, not the initial baseline anchor.
+Package changes are compared with a scan of the base
 lockfile using the same current OSV data; an unchanged lockfile finding is not
 treated as newly introduced just because a tooling change scans everything.
 

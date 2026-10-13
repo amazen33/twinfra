@@ -14,8 +14,24 @@ licence baseline refresh changes only its CI tool-lock fingerprint: all old
 schema/tool pins, owner, reason, date and expiry remain unchanged.
 
 Offline gate, inventory, binary/cache integrity, workflow permission/pin and
-issue-idempotence fixtures pass. The first full hosted PR scan and its proposed
-exception list are required evidence before static implementation is complete.
+issue-idempotence fixtures pass. The first full hosted PR scan
+([run 38470489316](https://github.com/amazen33/twinfra/actions/runs/38470489316))
+completed 21 pinned image inputs and 10 lockfiles with 2,452 findings:
+103 Critical, 754 High, 924 Medium, 289 Low, 256 Negligible and 126 Unknown.
+No KEV alias matches were found. Its gate correctly blocked 99 Critical
+findings with fixes; all 99 proposals were copied from the generated artifact
+into the exception register, with pending-owner and expiry 2026-12-31.
+The other four Critical findings had no fix and remained report-only.
+The unpublished console/PostgreSQL builds used explicitly reported input
+fallbacks. This hosted scan does not claim complete built-image coverage.
+
+The candidate's first run also exposed two cumulative WO-31 receipt tests
+that compared today's growing licence register/tool lock with an older work
+order's result. Those original assertions now read frozen merged `3b6ec82`;
+WO-32 fixtures separately require every previous licence term/artifact to
+remain unchanged and allow only the three scanners, two actions and their
+scheduled-workflow locations. All six historical revisions already passed
+that initial run; their immutable pins remain untouched.
 No SBOM or vulnerability database is committed. Run links and full findings
 are reported in the PR; subsequent scanner data is expected to change over time.
 
