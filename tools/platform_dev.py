@@ -104,9 +104,21 @@ def controllers():
         result.append(o)
     return result
 
-def database():
+def postgres_image():
+    """CNPG needs a version tag; CRI still resolves the immutable digest (WO-31 §12)."""
     lock=json.loads((COMMON/'images.lock.json').read_text())['images']['postgres']
-    pg=obj('Cluster','twinfra-postgres',{'instances':1,'imageName':lock['canonical'],'imagePullPolicy':'IfNotPresent','postgresUID':26,'postgresGID':26,
+    receipt=json.loads((COMMON/'postgresql-image.lock.json').read_text())
+    tag=receipt['image'].rsplit('/',1)[-1].rsplit(':',1)[-1]
+    if not re.fullmatch(r'[0-9]+(?:\.[0-9]+)*-pgvector[0-9]+(?:\.[0-9]+)*',tag):
+        raise ValueError('PostgreSQL version tag required in build receipt')
+    match=re.fullmatch(r'(.+)@(sha256:[a-f0-9]{64})',lock['canonical'])
+    if not match or match[2]!=lock['digest'] or receipt['manifestDigest']!=lock['digest']:
+        raise ValueError('PostgreSQL image lock differs from build receipt')
+    repository=re.sub(r':[^/:]+$','',match[1])
+    return repository+':'+tag+'@'+lock['digest']
+
+def database():
+    pg=obj('Cluster','twinfra-postgres',{'instances':1,'imageName':postgres_image(),'imagePullPolicy':'IfNotPresent','postgresUID':26,'postgresGID':26,
         'inheritedMetadata':{'labels':labels('postgres')},
         'enableSuperuserAccess':False,'seccompProfile':{'type':'RuntimeDefault'},
         'managed':{'roles':[{'name':n,'ensure':'present','login':True,'superuser':False,'createdb':False,'createrole':False,'passwordSecret':{'name':'twinfra-'+n+'-db'}} for n in ('keycloak','openbao')]},

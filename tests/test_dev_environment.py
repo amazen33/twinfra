@@ -4,12 +4,14 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import struct
 import subprocess
 import sys
 import tempfile
 import unittest
 import zlib
+from unittest.mock import patch
 
 import yaml
 
@@ -22,6 +24,71 @@ from manifest_contract import podspec
 spec = importlib.util.spec_from_file_location('disk', ROOT / 'deploy/hyperv/qcow2_to_vhd.py')
 disk = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(disk)
+
+CNPG_TAG_BASE='9c33d0c3bdae2447173df3797ec2c8666116992d'
+
+
+class CNPGImage(unittest.TestCase):
+    def test_cluster_has_receipt_tag_major18_and_locked_repo_digest(self):
+        lock=json.loads((dev.COMMON/'images.lock.json').read_text())['images']['postgres']
+        receipt=json.loads((dev.COMMON/'postgresql-image.lock.json').read_text())
+        tag=receipt['image'].rsplit(':',1)[1]
+        self.assertEqual(tag,'18.6.0-pgvector0.8.2');self.assertEqual(tag.split('.')[0],'18')
+        cluster=next(o for o in dev.database() if o['kind']=='Cluster')
+        self.assertEqual(cluster['spec']['imageName'],lock['canonical'].split('@')[0]+':'+tag+'@'+lock['digest'])
+        self.assertEqual(cluster['spec']['imageName'].split('@')[1],receipt['manifestDigest'])
+
+    def test_every_cnpg_cluster_in_every_deployable_profile_has_tag_and_digest(self):
+        profiles=sorted((ROOT/'deploy/environments').glob('*/*/root.yaml'))
+        self.assertTrue(profiles,'No deployable environment profiles')
+        rendered=dev.outputs();clusters=[]
+        for profile in profiles:
+            for path in sorted(profile.parent.rglob('*.yaml')):
+                raw=rendered.get(path,path.read_text())
+                for obj in yaml.safe_load_all(raw):
+                    if isinstance(obj,dict) and obj.get('kind')=='Cluster' and obj.get('apiVersion')=='postgresql.cnpg.io/v1':
+                        clusters.append(obj)
+                        with self.subTest(profile=profile.parent,cluster=obj['metadata']['name']):
+                            self.assertEqual(obj['spec']['imageName'],dev.postgres_image())
+                            self.assertRegex(obj['spec']['imageName'],r':18\.[^@]+@sha256:[a-f0-9]{64}$')
+        self.assertTrue(clusters,'No CNPG Cluster found in deployable profiles')
+
+    def test_tag_comes_from_receipt_but_repository_and_digest_come_from_lock(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            common=Path(tmp);locked=json.loads((dev.COMMON/'images.lock.json').read_text())
+            receipt=json.loads((dev.COMMON/'postgresql-image.lock.json').read_text())
+            locked['images']['postgres']['canonical']='registry.twinfra.example.com:443/example/postgres@'+locked['images']['postgres']['digest']
+            receipt['image']='different.example.com/receipt-only:18.7.0-pgvector0.8.3'
+            for name,data in [('images.lock.json',locked),('postgresql-image.lock.json',receipt)]:
+                (common/name).write_text(json.dumps(data))
+            with patch.object(dev,'COMMON',common):
+                self.assertEqual(dev.postgres_image(),locked['images']['postgres']['canonical'].replace('@',':18.7.0-pgvector0.8.3@'))
+
+    def test_missing_version_tag_and_mismatched_receipt_digest_fail(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            common=Path(tmp);(common/'images.lock.json').write_bytes((dev.COMMON/'images.lock.json').read_bytes())
+            receipt=json.loads((dev.COMMON/'postgresql-image.lock.json').read_text())
+            for fault in ({'image':receipt['image'].split(':')[0]}, {'image':'example:latest'}, {'manifestDigest':'sha256:'+'a'*64}):
+                (common/'postgresql-image.lock.json').write_text(json.dumps(receipt|fault))
+                with self.subTest(fault=fault),patch.object(dev,'COMMON',common),self.assertRaises(ValueError):
+                    dev.postgres_image()
+
+    def test_render_diff_is_only_cluster_image_name_and_all_locks_production_unchanged(self):
+        def base(path):
+            return subprocess.check_output(['git','-C',str(ROOT),'show',CNPG_TAG_BASE+':'+Path(path).as_posix()])
+        for path,raw in dev.outputs().items():
+            relative=path.relative_to(ROOT).as_posix();before=base(relative)
+            if relative=='deploy/environments/dev/cairo-1/platform/workloads.yaml':
+                pattern=rb'(?m)^  imageName: [^\n]+$'
+                self.assertEqual(len(re.findall(pattern,before)),1)
+                self.assertEqual(len(re.findall(pattern,raw.encode())),1)
+                self.assertEqual(re.sub(pattern,b'  imageName: @@CNPG_IMAGE@@',raw.encode()),
+                                 re.sub(pattern,b'  imageName: @@CNPG_IMAGE@@',before))
+            else:self.assertEqual(raw.encode(),before,relative)
+        for path in ('deploy/common/images.lock.json','deploy/common/postgresql-image.lock.json',
+                     'deploy/common/bootstrap-images.lock.json','tools/ci/pr-baselines.json',
+                     '00-setup-ubuntu-host.sh','host.env.example','user-data.yaml','user-data-remote.yaml','user-data.yaml.gz'):
+            self.assertEqual((ROOT/path).read_bytes(),base(path),path)
 
 
 class Naming(unittest.TestCase):
