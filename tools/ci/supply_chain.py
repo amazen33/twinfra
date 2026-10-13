@@ -31,6 +31,7 @@ SHA=re.compile(r'sha256:[a-f0-9]{64}')
 LOCKS=('deploy/common/bootstrap-images.lock.json','deploy/common/images.lock.json')
 RECEIPTS=('console/image.lock.json','deploy/common/postgresql-image.lock.json')
 POLICY_INPUTS=('security/vulnerability-', 'security/licence-', 'tools/ci/', '.github/workflows/')
+EXCEPTION_DAYS={'Critical':30,'High':60}
 
 
 def today():return datetime.now(timezone.utc).date()
@@ -200,10 +201,11 @@ def identity(aliases):
     return next((x for x in aliases if x.startswith('CVE-')),aliases[0])
 
 
-def finding(target,package,version,ids,level,fixed,scanner,introduced=False):
+def finding(target,package,version,ids,level,fixed,scanner,introduced=False,fix_versions=()):
     if not ids or not all(isinstance(x,str) and x for x in ids):raise ValueError('Vulnerability ID missing')
     result=dict(target=target,package=package,version=version,vulnerability=identity(ids),aliases=sorted(set(ids)),
-                severity=level,fixAvailable=bool(fixed),scanner=scanner,introduced=bool(introduced))
+                severity=level,fixAvailable=bool(fixed),fixVersions=sorted(set(fix_versions)),
+                scanner=scanner,introduced=bool(introduced))
     result['key']=sha(json.dumps([target,package,version,result['vulnerability']],separators=(',',':')).encode())
     return result
 
@@ -217,7 +219,7 @@ def grype_findings(data,item):
         fix=vuln.get('fix',{})
         result.append(finding(item['target'],artifact['name'],artifact['version'],ids,
                               vuln['severity'].title(),fix.get('state')=='fixed' and bool(fix.get('versions')),
-                              'grype',item.get('introduced',False)))
+                              'grype',item.get('introduced',False),fix.get('versions',[]) if fix.get('state')=='fixed' else []))
     return result
 
 
@@ -233,12 +235,12 @@ def osv_findings(data,root,aliases=None):
             for vuln in package.get('vulnerabilities',[]):
                 group=next((g for g in groups if vuln['id'] in g.get('ids',[])),{})
                 ids=[vuln['id'],*vuln.get('aliases',[]),*group.get('ids',[])]
-                fixed=any(event.get('fixed') for affected in vuln.get('affected',[])
+                fixes=[event['fixed'] for affected in vuln.get('affected',[])
                           if affected.get('package',{}).get('name')==pkg['name'] and
                           affected.get('package',{}).get('ecosystem')==pkg.get('ecosystem')
-                          for span in affected.get('ranges',[]) for event in span.get('events',[]))
+                          for span in affected.get('ranges',[]) for event in span.get('events',[]) if event.get('fixed')]
                 result.append(finding('lockfile:'+path,pkg['name'],pkg.get('version',''),ids,
-                                      severity(vuln,group),fixed,'osv'))
+                                      severity(vuln,group),bool(fixes),'osv',fix_versions=fixes))
     return result
 
 
@@ -283,6 +285,7 @@ def scan(plan,tools,cache,out,root=ROOT):
         if value['key'] in merged:
             merged[value['key']]['aliases']=sorted(set(merged[value['key']]['aliases']+value['aliases']))
             merged[value['key']]['fixAvailable']|=value['fixAvailable']
+            merged[value['key']]['fixVersions']=sorted(set(merged[value['key']]['fixVersions']+value['fixVersions']))
         else:merged[value['key']]=value
     result=dict(version=1,date=today().isoformat(),inventory=plan,findings=list(merged.values()),
                 database=read(out/'database.json'))
@@ -344,7 +347,8 @@ def validate_exceptions(value,root=ROOT,on=None,bootstrap=False):
     seen=set()
     for entry in value['exceptions']:
         created=date.fromisoformat(entry['createdOn']);expires=date.fromisoformat(entry['expires'])
-        if created>on or expires<on or not 0<=(expires-created).days<=90:
+        maximum=EXCEPTION_DAYS.get(entry['severity'],90)
+        if created>on or expires<on or not 0<=(expires-created).days<=maximum:
             raise ValueError('Expired/invalid exception lifetime: '+entry['vulnerability'])
         if entry['approvedBy']=='pending-owner' and not bootstrap:
             raise ValueError('Pending-owner exceptions are valid only on the owner WO-32 PR branch')
@@ -379,6 +383,11 @@ def evaluate(result,exceptions,kev,state=None,on=None,bootstrap=False,root=ROOT)
             'High introduced by PR' if value['introduced'] else 'High with fix aged 14 days') if (
                 value['severity']=='High' and value['fixAvailable'] and (value['introduced'] or (on-first).days>=14)) else ''
         allowed=next((e for e in entries if all(e[k]==value[k] for k in ('target','package','version','vulnerability'))),None)
+        if allowed:
+            if allowed['severity']!=value['severity']:
+                raise ValueError('Exception severity differs from finding: '+value['vulnerability'])
+            if value['fixAvailable'] and not allowed.get('workOrder'):
+                raise ValueError('Fixable exception requires workOrder: '+value['vulnerability'])
         value['exception']=allowed;value['blocked']=bool(value['blockReason'] and not allowed)
         output.append(value)
     report=result|dict(findings=output,firstSeen=state,identityState=identities,kev=dict(catalogVersion=kev['catalogVersion'],sha256=sha(json.dumps(kev,sort_keys=True).encode())),
@@ -386,9 +395,16 @@ def evaluate(result,exceptions,kev,state=None,on=None,bootstrap=False,root=ROOT)
     proposed=[]
     for value in output:
         if not value['blockReason'] or value['exception']:continue
-        proposed.append({k:value[k] for k in ('target','package','version','vulnerability')}|dict(
-            reason='Pending owner review: '+value['blockReason']+'; record risk, mitigation and removal work order.',
-            approvedBy='pending-owner',createdOn=on.isoformat(),expires='2026-12-31'))
+        fixes=', '.join(value.get('fixVersions',[])) or 'not reported by scanner'
+        reason=(value['vulnerability']+' in '+value['package']+' '+value['version']+
+                ': fix version(s): '+fixes+'. Dev exposure: LAN-only APIs, tunnel-only UIs; '+
+                'remediated by WO-34. Pending owner risk review.')
+        entry={k:value[k] for k in ('target','package','version','vulnerability')}|dict(
+            severity=value['severity'],owner='amazen33',reason=reason,
+            approvedBy='pending-owner',createdOn=on.isoformat(),
+            expires=(on+timedelta(days=EXCEPTION_DAYS.get(value['severity'],90))).isoformat())
+        if value['fixAvailable']:entry['workOrder']='WO-34'
+        proposed.append(entry)
     report['proposedExceptions']=dict(version=1,exceptions=proposed)
     return report
 

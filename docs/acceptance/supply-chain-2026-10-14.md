@@ -20,10 +20,20 @@ completed 21 pinned image inputs and 10 lockfiles with 2,452 findings:
 103 Critical, 754 High, 924 Medium, 289 Low, 256 Negligible and 126 Unknown.
 No KEV alias matches were found. Its gate correctly blocked 99 Critical
 findings with fixes; all 99 proposals were copied from the generated artifact
-into the exception register, with pending-owner and expiry 2026-12-31.
+into the exception register. Following review, all 99 retain pending-owner and
+now record severity Critical, owner amazen33, work order WO-34 and expiry
+2026-11-12 (30 days from 2026-10-13). Individual reasons include the fix versions
+from the first run's saved Grype matches, LAN-only APIs, tunnel-only UIs and
+"remediated by WO-34". No vulnerability was approved by the agent.
 The other four Critical findings had no fix and remained report-only.
 The unpublished console/PostgreSQL builds used explicitly reported input
 fallbacks. This hosted scan does not claim complete built-image coverage.
+
+Offline regression coverage rejects Critical exceptions over 30 days, High
+over 60 and other severities over 90, anchored to creation. Grouped Critical
+entries, missing severity/owner and fixable exceptions without a work order
+are rejected. A finding cannot evade its expiry cap through a mismatched
+exception severity. Scanner fix versions survive Grype/OSV normalization.
 
 The candidate's first run also exposed two cumulative WO-31 receipt tests
 that compared today's growing licence register/tool lock with an older work
@@ -47,7 +57,7 @@ are reported in the PR; subsequent scanner data is expected to change over time.
 
 | Gate | Result | Required evidence |
 | --- | --- | --- |
-| First exception approvals | Pending | Owner reviews each proposed blocking finding, completes its mitigation/removal reason and replaces pending-owner before merge |
+| First exception approvals | Pending | Owner reviews each finding's fix version, dev exposure and WO-34 remediation reason and replaces pending-owner before merge |
 | First nightly reporting dispatch on main | Pending | Full scan report and link to the security-labelled open-findings issue |
 | Second nightly reporting dispatch on main | Pending | Same issue number edited in place, preserving first-seen state |
 | Weekly upstream watch dispatch on main | Pending | Current-versus-candidate report and the single upstream-updates issue; unavailable publication evidence recorded, no lock edits or update PRs |

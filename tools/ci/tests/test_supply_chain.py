@@ -30,15 +30,19 @@ KEV={'catalogVersion':'2026.10.13','vulnerabilities':[]}
 
 
 def value(severity='High',fix=True,introduced=False):
-    return sc.finding('docker.io/example/api@sha256:'+'a'*64,'example','1.0',['GHSA-fixture','CVE-2026-1234'],severity,fix,'fixture',introduced)
+    return sc.finding('docker.io/example/api@sha256:'+'a'*64,'example','1.0',['GHSA-fixture','CVE-2026-1234'],severity,fix,'fixture',introduced,
+                      ['2.0'] if fix else [])
 
 
 def result(*values):return dict(version=1,date=ON.isoformat(),findings=list(values),inventory=dict(images=[],coverage=[]))
 
 
 def exception(v,**overrides):
-    return {k:v[k] for k in ('target','package','version','vulnerability')}|dict(
-        reason='Owner-approved mitigation with a scheduled removal.',approvedBy='amazen33',createdOn='2026-10-13',expires='2026-12-31')|overrides
+    entry={k:v[k] for k in ('target','package','version','vulnerability','severity')}|dict(
+        owner='amazen33',reason='Owner-approved mitigation with a scheduled removal.',approvedBy='amazen33',createdOn=ON.isoformat(),
+        expires=(ON+timedelta(days=sc.EXCEPTION_DAYS.get(v['severity'],90))).isoformat())
+    if v['fixAvailable']:entry['workOrder']='WO-34'
+    return entry|overrides
 
 
 class Gate(unittest.TestCase):
@@ -85,6 +89,47 @@ class Gate(unittest.TestCase):
         self.assertEqual(self.evaluate(v,entries)['status'],'passed')
         v=v|{'version':'2.0'};self.assertEqual(self.evaluate(v,entries)['status'],'failed')
 
+    def test_critical_high_and_other_expiry_caps_from_created_on(self):
+        for level,days in [('Critical',30),('High',60),('Medium',90),('Unknown',90)]:
+            v=value(level)
+            with self.subTest(severity=level):
+                # Creation, not the evaluation date, anchors the maximum lifetime.
+                good=exception(v,expires=(ON+timedelta(days=days)).isoformat())
+                self.assertEqual(len(sc.validate_exceptions({'version':1,'exceptions':[good]},on=ON+timedelta(days=1))),1)
+                bad=good|{'expires':(ON+timedelta(days=days+1)).isoformat()}
+                with self.assertRaisesRegex(ValueError,'lifetime'):
+                    sc.validate_exceptions({'version':1,'exceptions':[bad]},on=ON+timedelta(days=1))
+
+    def test_grouped_critical_entries_are_rejected(self):
+        v=value('Critical');entry=exception(v)
+        for fault in ({'vulnerability':['CVE-2026-1234','CVE-2026-5678']},
+                      {'vulnerability':'CVE-2026-1234,CVE-2026-5678'},
+                      {'vulnerability':'CVE-2026-*'},
+                      {'vulnerabilities':['CVE-2026-1234','CVE-2026-5678']},
+                      {'target':[v['target'],'docker.io/other@sha256:'+'b'*64]}):
+            with self.subTest(fault=fault),self.assertRaisesRegex(ValueError,'Malformed'):
+                self.evaluate(v,{'version':1,'exceptions':[entry|fault]})
+
+    def test_fixable_exception_requires_work_order(self):
+        v=value('Critical');entry=exception(v);del entry['workOrder']
+        with self.assertRaisesRegex(ValueError,'requires workOrder'):
+            self.evaluate(v,{'version':1,'exceptions':[entry]})
+        for reference in ('', 'WO-34 and WO-35', 'future work'):
+            with self.subTest(reference=reference),self.assertRaisesRegex(ValueError,'Malformed'):
+                self.evaluate(v,{'version':1,'exceptions':[entry|{'workOrder':reference}]})
+        # A no-fix KEV exception can be risk-approved without inventing a patch WO.
+        no_fix=value('Low',False);kev=KEV|{'vulnerabilities':[{'cveID':'CVE-2026-1234'}]}
+        self.assertEqual(self.evaluate(no_fix,{'version':1,'exceptions':[exception(no_fix)]},kev=kev)['status'],'passed')
+
+    def test_severity_and_owner_required_and_severity_cannot_evade_expiry(self):
+        v=value('Critical');entry=exception(v)
+        for field in ('severity','owner'):
+            missing=dict(entry);del missing[field]
+            with self.subTest(field=field),self.assertRaisesRegex(ValueError,'Malformed'):
+                self.evaluate(v,{'version':1,'exceptions':[missing]})
+        with self.assertRaisesRegex(ValueError,'severity differs'):
+            self.evaluate(v,{'version':1,'exceptions':[exception(v,severity='High',expires='2026-12-12')]})
+
     def test_pending_owner_only_original_wo32_pr(self):
         v=value('Critical');entries={'version':1,'exceptions':[exception(v,approvedBy='pending-owner')]}
         with self.assertRaisesRegex(ValueError,'Pending-owner'):self.evaluate(v,entries)
@@ -102,17 +147,26 @@ class Gate(unittest.TestCase):
     def test_proposals_are_real_blockers_fixed_expiry_and_pending(self):
         report=sc.evaluate(result(value('Critical'),value('Low')),EMPTY,KEV,on=ON)
         entries=report['proposedExceptions']['exceptions'];self.assertEqual(len(entries),1)
-        self.assertEqual(entries[0]['expires'],'2026-12-31');self.assertEqual(entries[0]['approvedBy'],'pending-owner')
+        self.assertEqual(entries[0]['expires'],'2026-11-12');self.assertEqual(entries[0]['approvedBy'],'pending-owner')
+        self.assertEqual(entries[0]['severity'],'Critical');self.assertEqual(entries[0]['owner'],'amazen33')
+        self.assertEqual(entries[0]['workOrder'],'WO-34')
+        for text in ('fix version(s): 2.0','LAN-only','tunnel-only UIs','remediated by WO-34'):
+            self.assertIn(text,entries[0]['reason'])
+        sc.validate_exceptions(report['proposedExceptions'],on=ON,bootstrap=True)
+        high=self.evaluate(value(introduced=True))['proposedExceptions']['exceptions'][0]
+        self.assertEqual(high['expires'],'2026-12-12')
 
     def test_grype_alias_and_osv_cvss_fix_state_parsing(self):
         data={'matches':[{'vulnerability':{'id':'GHSA-fixture','severity':'Critical','fix':{'state':'fixed','versions':['2']}},
                          'relatedVulnerabilities':[{'id':'CVE-2026-1234'}],'artifact':{'name':'example','version':'1'}}]}
-        self.assertEqual(sc.grype_findings(data,{'target':value()['target']})[0]['vulnerability'],'CVE-2026-1234')
+        parsed=sc.grype_findings(data,{'target':value()['target']})[0]
+        self.assertEqual(parsed['vulnerability'],'CVE-2026-1234');self.assertEqual(parsed['fixVersions'],['2'])
         osv={'results':[{'source':{'path':'console/package-lock.json'},'packages':[{'package':{'name':'example','version':'1','ecosystem':'npm'},
             'vulnerabilities':[{'id':'GHSA-fixture','aliases':['CVE-2026-1234'],
                 'severity':[{'type':'CVSS_V3','score':'CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N'}],
                 'affected':[{'package':{'name':'example','ecosystem':'npm'},'ranges':[{'events':[{'introduced':'0'},{'fixed':'2'}]}]}]}]}]}]}
         parsed=sc.osv_findings(osv,ROOT)[0];self.assertEqual(parsed['severity'],'High');self.assertTrue(parsed['fixAvailable'])
+        self.assertEqual(parsed['fixVersions'],['2'])
 
 
 class InventoryAndIntegrity(unittest.TestCase):

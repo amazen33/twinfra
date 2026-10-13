@@ -14,7 +14,7 @@ to the Dell. No Aqua/Trivy action or image is used.
 | High with a fix, introduced by the PR | Block immediately |
 | Pre-existing High with a fix | Block 14 days after first seen |
 | No fix; Medium, Low or Negligible | Report only (KEV still blocks) |
-| Expired, malformed or over-90-day exception | Fail |
+| Expired, malformed or over-length exception (Critical 30 / High 60 / other 90 days) | Fail |
 
 The first-seen clock is carried in a compressed JSON comment on the single
 **Supply-chain scan: open findings** issue, labelled `security`. Resolved keys
@@ -101,18 +101,27 @@ edit locks or create PRs. Version changes require a later reviewed work order.
 
 Add a narrow entry to [vulnerability-exceptions.json](../security/vulnerability-exceptions.json)
 using its [schema](../security/vulnerability-exceptions.schema.json): vulnerability
-ID, exact artifact digest or lockfile, package/version, mitigation/removal
-reason, named `approvedBy`, `createdOn` and `expires`. Maximum lifetime is 90
-days from creation, without automatic extensions. A changed artifact/package
-version does not inherit the exception. Explain each approval in PR review.
+ID, exact artifact digest or lockfile, package/version, `severity`, named `owner`,
+mitigation/removal reason, named `approvedBy`, `createdOn` and `expires`.
+Maximum lifetime from `createdOn` is **30 days for Critical, 60 for High and
+90 for other severities**, without automatic extensions. The gate rejects a
+severity that differs from the matched finding. A fixable finding requires a
+named `workOrder` (for example `WO-34`); its reason states the scanner's fix
+version, dev exposure and remediation plan. This register uses individual
+entries; grouped or wildcard Critical waivers are rejected. A changed
+artifact/package version does not inherit the exception. Explain each approval
+in PR review.
 
 The first full PR scan produces `proposed-exceptions.json` for every blocking
-finding, with `approvedBy: pending-owner`, expiry **2026-12-31**, and a reason
-stub. Those proposals must be copied to the committed register and reviewed.
+finding, with `owner: amazen33`, `approvedBy: pending-owner`, and the severity's
+maximum expiry from creation. The initial 99 Critical entries expire
+**2026-11-12**. Each records its actual fix version from the saved Grype result,
+LAN-only APIs and tunnel-only UI exposure, and remediation by `WO-34`.
+Those proposals must be copied to the committed register and reviewed.
 Pending approval is valid only on the owner repository's
 `codex/wo-32-supply-chain-scanning` pull-request branch; forks, other branches,
 pushes, schedules and dispatches reject it. The owner must replace
-`pending-owner` and complete the reasons before merge. No blanket exception
+`pending-owner` after reviewing the reasons before merge. No blanket exception
 admits new vulnerabilities or new versions.
 
 ## Run locally
