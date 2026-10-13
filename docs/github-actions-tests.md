@@ -61,6 +61,7 @@ inputs, expired entries and invalid class conditions fail the required gate.
 | Roadmap automation, when present | Mocked pagination, exact-title reuse, milestone assignment, dry-run no-writes and closed-milestone rejection; no GitHub mutation |
 | Rebuilt dev environments, when present | Pure Hyper-V planner fixtures (including six Amendment 3 cases), generic image conversion guards, naming/source mutation tests, deterministic dev/seed generation, strict kubeconform, restricted Pod policy and unchanged node-agent mount/security projection; no provisioner entry-point execution |
 | WO-29 runnable dev profile, when present | 7.4 requirement/resource-bound fixtures; fake SSH/ctr staging, cache/mismatch/readonly checks; two-region rendered bootstrap-image inventory equality; in-memory dev CA SAN/key-usage and Git-boundary tests; HTTPS-only gateway/realm and saved production-render byte identity |
+| WO-31 image assembly, when present | Anonymous Docker Hub export against a local fake HTTP registry; corrupt root/manifest/config/layer refusal; hash-locked wheel checks; deterministic console fixture builds; both archive/lock checks with no repository writes; unchanged production and retained WSL bytes; receipt/source-drift guards |
 | CI controls | Historical revision selection, invalid input/commit rejection, checksum and archive safety, partial module rejection, no skipped or empty suites, immutable action/tool pins |
 | WO-06 emulator removal | Unconditional candidate code/lock/manifest search; only exact historical CI mapping/dispatch lines may name the removed emulator; aged MiniStack pin, fixed backend and mocked S3/EC2/DynamoDB reads; deleted runbook links in two unchanged historical records verified against frozen Git source |
 
@@ -148,6 +149,17 @@ A static rule rejects status-less early returns, including `|| return`,
 against merged main `24b8bdb` permit only the seven audited return-status lines
 and derived checksums/gzip. Existing staging and policy failures retain their
 explicit statuses; no live provisioner or cluster is executed.
+
+Amendments 9–9a add the optional `dev-image-build` bundle, detected by its new
+orchestrator, test suite or owner action. Old revisions with only the shared
+builders remain absent; incomplete new bundles fail closed. Its 13 offline tests
+use synthetic OCI graphs, wheels, frontend files and a loopback HTTP registry.
+They never download real images, run pip/npm, import images or connect to the
+Dell. The retained WSL renderer accepts Twinfra receipt metadata while returning
+the unchanged legacy digest reference; changed digests/source hashes fail.
+Production, retained WSL outputs and the six baseline pins are compared against
+merged main `3b6ec82`. The real pinned image reproduction is separate local
+static evidence in the [dated receipt](acceptance/dev-environment-2026-10-13.md).
 
 WO-31 adds an optional bare-metal bundle. Fixtures cover both read-only host-check
 modes and every required cluster/listener identity, key-only SSH/SCP, copied SHA-256

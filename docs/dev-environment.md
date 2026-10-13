@@ -186,13 +186,30 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
    Expected: explicit context; node `twinfra-dev-cairo-1` Ready, zone cairo-1a.
    Verify the existing context name before renaming; never print raw kubeconfig.
 
-8. **Owner: application images.** Prepare verified OCI archives with the existing
-   console builder and `tools/platform_pg_image.py` (see each tool's `--help`).
+8. **Owner: application images.** Build the frontend explicitly, then assemble
+   both digest-verified OCI archives on Windows or Linux without WSL or a
+   container runtime. `--download-inputs` opts into public, pinned registry
+   exports and hash-locked Linux amd64 CPython 3.14 wheel downloads; it installs
+   nothing. With cached inputs, omit the flag for an offline build.
 
    ```powershell
+   cd console
+   npm ci
+   npm test
+   npm run build
+   cd ..
+   python tools/platform_dev.py build-images --download-inputs
    python tools/platform_dev.py stage-images --context twinfra-dev-cairo-1 --archive-dir .build/dev-images
    python tools/platform_dev.py stage-images --context twinfra-dev-cairo-1 --check
    ```
+
+   Expected build: `status: passed`, `repositoryWrites: false`, `runtimeImport: false`.
+   Console: `sha256:385934466c5453902e4beda1d6ed7afb09eae6dd3419d0a7b0b219eece4cc4e2`.
+   PostgreSQL: `sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6`.
+   Any digest, wheel hash or source mismatch stops the build; the command never
+   updates repository locks or receipts. The existing image title remains
+   `vcloud-console` to preserve its digest. Cache directories are
+   `.build/console/` and `.build/dev-images/inputs/`; outputs are `.build/dev-images/`.
 
    Expected: ten application images, `problems: []`, canonical digest matches and
    CRI `pinned: true`. Archive names: `console.oci.tar`, `postgresql-pgvector.tar`.
@@ -209,9 +226,10 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
    pull/import or local archive. Tag-only names are unchanged; a digest mismatch
    on either record stops staging. `--check` only reads the cache and CRI.
 
-   **Live acceptance (Pending):** after merge, update `main` and rerun
-   `host-bootstrap` for the incomplete first run. Record the normalized CRI
-   digest/pin checks and the Cilium event evidence:
+   **Live acceptance (Pending):** Amendment 9 records owner-reported bootstrap
+   completion at main `3b6ec82`. After merge, update `E:\twinfra-live`, build and
+   stage the two archives above. Record the normalized CRI digest/pin checks and
+   the Cilium event evidence:
 
    ```powershell
    kubectl --context twinfra-dev-cairo-1 -n kube-system get events

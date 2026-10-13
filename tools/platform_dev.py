@@ -316,9 +316,17 @@ def outputs():
     return result
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','stage-images','host-check','host-bootstrap','host-ssh','host-firewall','host-storage'])
+    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','build-images','stage-images','host-check','host-bootstrap','host-ssh','host-firewall','host-storage'])
     parser.add_argument('--context');parser.add_argument('--ssh',default='twinfra-operator@192.168.1.3');parser.add_argument('--check',action='store_true');parser.add_argument('--apply',action='store_true');parser.add_argument('--archive-dir',type=Path)
+    parser.add_argument('--download-inputs',action='store_true',help='Owner-only pinned image/wheel download for build-images')
     args=parser.parse_args()
+    if args.download_inputs and args.action!='build-images':parser.error('--download-inputs is only for build-images')
+    if args.action=='build-images':
+        from platform_build_images import build_images
+        try:report=build_images(args.download_inputs)
+        except (ValueError,OSError) as error:
+            print('FAIL: '+str(error));return 1
+        print(json.dumps(report,indent=2));return 0
     if args.action.startswith('host-'):
         from platform_host import action
         return action(args.action,args.context,args.ssh,args.check,args.apply)

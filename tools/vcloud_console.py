@@ -23,12 +23,15 @@ def profile():
 
 def image():
     lock = json.loads((ROOT / 'console/image.lock.json').read_text())
-    if not re.fullmatch(r'sha256:[a-f0-9]{64}', lock['digest']) or lock['canonical'] != 'registry.vcloud.example.com/vcloud/vcloud-console@' + lock['digest']:
+    if not re.fullmatch(r'sha256:[a-f0-9]{64}', lock['digest']):
         raise ValueError('Immutable portal image required')
+    dev_lock = ROOT / 'deploy/common/images.lock.json'
+    if dev_lock.is_file() and lock['digest'] != json.loads(dev_lock.read_text())['images']['console']['digest']:
+        raise ValueError('Portal digest differs from the dev image lock')
     for path, expected in lock['filesSHA256'].items():
         if not (ROOT / path).resolve().is_relative_to(ROOT.resolve()): raise ValueError('Invalid build input')
         if hashlib.sha256((ROOT / path).read_bytes()).hexdigest() != expected: raise ValueError('Image source drift: ' + path)
-    return lock['canonical']
+    return 'registry.vcloud.example.com/vcloud/vcloud-console@' + lock['digest']
 
 
 def workloads():

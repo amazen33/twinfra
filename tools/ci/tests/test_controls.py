@@ -169,6 +169,36 @@ class Controls(unittest.TestCase):
             (source / 'tests/test_roadmap_issues.py').touch()
             self.assertEqual(checks.coverage(source)['roadmap-automation'], 'present')
 
+    def test_historical_shared_builders_do_not_require_future_build_action(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            self.baseline_fixture(source)
+            # Populate other bundles to avoid unrelated partial-bundle failures.
+            for name, files in checks.OPTIONAL.items():
+                if name == 'dev-image-build': continue
+                for file in files:
+                    path = source / file; path.parent.mkdir(parents=True, exist_ok=True); path.touch()
+            self.assertEqual(checks.coverage(source)['dev-image-build'], 'not_present_in_revision')
+            (source / 'tools/platform_build_images.py').touch()
+            with self.assertRaisesRegex(ValueError, 'Incomplete dev-image-build'):
+                checks.coverage(source)
+            for file in checks.OPTIONAL['dev-image-build']:
+                path = source / file; path.parent.mkdir(parents=True, exist_ok=True); path.touch()
+            self.assertEqual(checks.coverage(source)['dev-image-build'], 'present')
+
+    def test_build_action_cannot_omit_orchestrator_or_tests(self):
+        for missing in ('tools/platform_build_images.py','tests/test_build_images.py'):
+            with self.subTest(missing=missing), tempfile.TemporaryDirectory() as temp:
+                source = Path(temp)
+                self.baseline_fixture(source)
+                for files in checks.OPTIONAL.values():
+                    for file in files:
+                        if file == missing: continue
+                        path = source / file; path.parent.mkdir(parents=True, exist_ok=True); path.touch()
+                (source / 'tools/platform_dev.py').write_text("choices=['build-images']",encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, 'Incomplete dev-image-build'):
+                    checks.coverage(source)
+
     def test_old_wsl_profile_does_not_require_future_proxy_repair(self):
         with tempfile.TemporaryDirectory() as temp:
             source = Path(temp)

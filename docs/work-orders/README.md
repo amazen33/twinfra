@@ -16,7 +16,7 @@ Nothing in this pack has been written to the Twinfra repository. Codex adds it t
 | [WO-21](WO-21-twinfra-dev-environment.md) | Hyper-V dev environment and WSL retirement amendments; upstream names under ADR-0047 |
 | [WO-25](WO-25-redis-to-valkey.md) | Redis to digest-pinned Valkey cache replacement, including owner-approved Amendment 1 |
 | [WO-29](WO-29-make-dev-environment-runnable.md) | Runnable dev profile: 20 GiB sizing, two image-staging inventories and temporary dev CA/HTTPS; includes Amendment 1 |
-| [WO-31](WO-31-bare-metal-cairo-1.md) | Bare-metal Dell cairo-1, host guards/storage and shared dev pinning/log caps; includes Amendments 1–8 (systemd 255 bpffs, incomplete-run recovery, digest-only CRI names, real kubeadm preview, verified validation resume, HOME default, unambiguous exit codes, kubectl List input validation and explicit skip statuses) |
+| [WO-31](WO-31-bare-metal-cairo-1.md) | Bare-metal Dell cairo-1, host guards/storage and shared dev pinning/log caps; includes Amendments 1–9a (systemd 255 bpffs, incomplete-run recovery, digest-only CRI names, real kubeadm preview, verified validation resume, HOME default, unambiguous exit codes, kubectl List input validation, explicit skip statuses and digest-verified image builds without WSL) |
 | [WO-23](WO-23-dr-drill.md), [WO-24](WO-24-second-host-warm-dr.md), [WO-30](WO-30-dev-vm-disk-and-capacity-checks.md) | 2026-10-12 amendments: Dell primary; laptop cold standby; future DR, additional host and VM sizing work remain separate |
 
 ADR-0028 is reserved. The registry decision currently numbered ADR-0020 gets 0028 when WO-03
