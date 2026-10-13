@@ -2,18 +2,50 @@
   "version": 1,
   "components": [
     {
+      "id": "github-action|actions/cache|caa296126883cff596d87d8935842f9db880ef25",
+      "ecosystem": "github-action",
+      "name": "actions/cache",
+      "version": "caa296126883cff596d87d8935842f9db880ef25",
+      "locations": [
+        ".github/workflows/pr-tests.yaml",
+        ".github/workflows/supply-chain.yaml"
+      ],
+      "spdx": "MIT",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/actions/cache/caa296126883cff596d87d8935842f9db880ef25/LICENSE",
+      "verifiedOn": "2026-10-13",
+      "recordedOn": "2026-10-13",
+      "integrities": []
+    },
+    {
       "id": "github-action|actions/checkout|3d3c42e5aac5ba805825da76410c181273ba90b1",
       "ecosystem": "github-action",
       "name": "actions/checkout",
       "version": "3d3c42e5aac5ba805825da76410c181273ba90b1",
       "locations": [
-        ".github/workflows/pr-tests.yaml"
+        ".github/workflows/pr-tests.yaml",
+        ".github/workflows/supply-chain.yaml"
       ],
       "spdx": "MIT",
       "class": "allowed",
       "licenceSource": "https://raw.githubusercontent.com/actions/checkout/3d3c42e5aac5ba805825da76410c181273ba90b1/LICENSE",
       "verifiedOn": "2026-10-09",
       "recordedOn": "2026-10-09",
+      "integrities": []
+    },
+    {
+      "id": "github-action|actions/download-artifact|37930b1c2abaa49bbe596cd826c3c89aef350131",
+      "ecosystem": "github-action",
+      "name": "actions/download-artifact",
+      "version": "37930b1c2abaa49bbe596cd826c3c89aef350131",
+      "locations": [
+        ".github/workflows/supply-chain.yaml"
+      ],
+      "spdx": "MIT",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/actions/download-artifact/37930b1c2abaa49bbe596cd826c3c89aef350131/LICENSE",
+      "verifiedOn": "2026-10-13",
+      "recordedOn": "2026-10-13",
       "integrities": []
     },
     {
@@ -37,7 +69,8 @@
       "name": "actions/setup-python",
       "version": "5fda3b95a4ea91299a34e894583c3862153e4b97",
       "locations": [
-        ".github/workflows/pr-tests.yaml"
+        ".github/workflows/pr-tests.yaml",
+        ".github/workflows/supply-chain.yaml"
       ],
       "spdx": "MIT",
       "class": "allowed",
@@ -52,7 +85,8 @@
       "name": "actions/upload-artifact",
       "version": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a",
       "locations": [
-        ".github/workflows/pr-tests.yaml"
+        ".github/workflows/pr-tests.yaml",
+        ".github/workflows/supply-chain.yaml"
       ],
       "spdx": "MIT",
       "class": "allowed",
@@ -10826,6 +10860,44 @@
       ]
     },
     {
+      "id": "tool|anchore/grype/grype_0.119.0_linux_amd64.tar.gz|v0.119.0",
+      "ecosystem": "tool",
+      "name": "anchore/grype/grype_0.119.0_linux_amd64.tar.gz",
+      "version": "v0.119.0",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/anchore/grype/v0.119.0/LICENSE",
+      "verifiedOn": "2026-10-13",
+      "recordedOn": "2026-10-13",
+      "integrities": [
+        "sha256:3fa2dc4b924621ab65404cf08d0b8438d896d80ab949c9d5a4ca283c36004c9b"
+      ],
+      "unmodified": true,
+      "notes": "ADR-0049: CI-only scanner; verified official checksum file and extracted Linux amd64 binary."
+    },
+    {
+      "id": "tool|anchore/syft/syft_1.52.0_linux_amd64.tar.gz|v1.52.0",
+      "ecosystem": "tool",
+      "name": "anchore/syft/syft_1.52.0_linux_amd64.tar.gz",
+      "version": "v1.52.0",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/anchore/syft/v1.52.0/LICENSE",
+      "verifiedOn": "2026-10-13",
+      "recordedOn": "2026-10-13",
+      "integrities": [
+        "sha256:caeedb81fb0491615f1ebd1761e4145d41ee86dd2cc7bf80669f9f5ad9d6133d"
+      ],
+      "unmodified": true,
+      "notes": "ADR-0049: CI-only scanner; verified official checksum file and extracted Linux amd64 binary."
+    },
+    {
       "id": "tool|argoproj/argo-cd/argocd-linux-amd64|v3.5.3",
       "ecosystem": "tool",
       "name": "argoproj/argo-cd/argocd-linux-amd64",
@@ -10900,8 +10972,8 @@
       "version": "1e4ab49e429626cf6c6958d914248b78c9730803c2751b87627e171dc800e7bb",
       "locations": [
         "module-3/toolchain.lock.json",
-        "tools/ci/toolchain.lock.json",
-        "tools/ci/host-cli.lock.json"
+        "tools/ci/host-cli.lock.json",
+        "tools/ci/toolchain.lock.json"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",
@@ -10911,6 +10983,25 @@
       "integrities": [
         "sha256:1e4ab49e429626cf6c6958d914248b78c9730803c2751b87627e171dc800e7bb"
       ]
+    },
+    {
+      "id": "tool|google/osv-scanner/osv-scanner_linux_amd64|v2.6.0",
+      "ecosystem": "tool",
+      "name": "google/osv-scanner/osv-scanner_linux_amd64",
+      "version": "v2.6.0",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/google/osv-scanner/v2.6.0/LICENSE",
+      "verifiedOn": "2026-10-13",
+      "recordedOn": "2026-10-13",
+      "integrities": [
+        "sha256:ca69b3d3cd08f889a49dc0a383122f71cc528b83803671df5fd874d97485b108"
+      ],
+      "unmodified": true,
+      "notes": "ADR-0049: CI-only scanner; verified official checksum file and extracted Linux amd64 binary."
     },
     {
       "id": "tool|jqlang/jq/jq-linux-amd64|jq-1.8.2",
@@ -11025,8 +11116,8 @@
       "name": "mikefarah/yq/yq_linux_amd64",
       "version": "v4.54.1",
       "locations": [
-        "tools/ci/toolchain.lock.json",
-        "tools/ci/host-cli.lock.json"
+        "tools/ci/host-cli.lock.json",
+        "tools/ci/toolchain.lock.json"
       ],
       "spdx": "MIT",
       "class": "allowed",
@@ -11129,7 +11220,8 @@
       "name": "python",
       "version": "3.14.5",
       "locations": [
-        ".github/workflows/pr-tests.yaml"
+        ".github/workflows/pr-tests.yaml",
+        ".github/workflows/supply-chain.yaml"
       ],
       "spdx": "PSF-2.0",
       "class": "allowed",
@@ -11179,8 +11271,8 @@
       "version": "v0.8.0",
       "locations": [
         "module-3/toolchain.lock.json",
-        "tools/ci/toolchain.lock.json",
-        "tools/ci/host-cli.lock.json"
+        "tools/ci/host-cli.lock.json",
+        "tools/ci/toolchain.lock.json"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",

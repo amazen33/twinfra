@@ -51,10 +51,12 @@ def extract_runtime(archive, destination):
             target.chmod(0o755 if info.mode & 0o111 else 0o644)
 
 
-def stage(destination):
+def stage(destination, only=None):
     destination.mkdir(parents=True, exist_ok=True)
     lock = json.loads((ROOT / 'toolchain.lock.json').read_text())
+    if only and set(only)-set(lock['artifacts']):raise ValueError('Unknown tool selection')
     for name, artifact in lock['artifacts'].items():
+        if only and name not in only:continue
         relative = PurePosixPath(artifact['output'])
         if relative.is_absolute() or '..' in relative.parts:
             raise ValueError('Unsafe artifact output path')
@@ -74,7 +76,10 @@ def stage(destination):
             launcher=destination/'bin/pwsh';launcher.parent.mkdir(parents=True,exist_ok=True)
             launcher.write_text('#!/usr/bin/env bash\nset -Eeuo pipefail\nexec '+shlex.quote(str(output))+' "$@"\n',encoding='utf-8')
             launcher.chmod(0o755)
-        else:output.write_bytes(extract_member(cache, artifact['member']) if artifact.get('member') else data)
+        else:
+            binary=extract_member(cache, artifact['member']) if artifact.get('member') else data
+            if artifact.get('binarySHA256'):verified(binary,artifact['binarySHA256'])
+            output.write_bytes(binary)
         if relative.parts[0] == 'bin':
             output.chmod(0o755)
         print('Verified ' + name, flush=True)
@@ -98,6 +103,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--destination', type=Path, required=True)
     parser.add_argument('--source', type=Path, required=True)
+    parser.add_argument('--only', nargs='+', help='Stage only named pinned artifacts')
     args = parser.parse_args()
-    stage(args.destination.resolve())
-    wrapper(args.destination.resolve(), args.source.resolve())
+    stage(args.destination.resolve(),args.only)
+    if not args.only or 'kubeconform' in args.only:
+        wrapper(args.destination.resolve(), args.source.resolve())

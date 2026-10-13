@@ -1,3 +1,141 @@
+# Supply-chain vulnerability scanning
+
+[ADR-0049](adr/0049-supply-chain-vulnerability-scanning.md) and
+[WO-32](work-orders/WO-32-supply-chain-scanning.md) govern this static CI boundary.
+The scanners never deploy, execute an image, use repository secrets or connect
+to the Dell. No Aqua/Trivy action or image is used.
+
+## Policy
+
+| Finding | Gate |
+| --- | --- |
+| CISA KEV, matched by any CVE alias | Block, even without a fix |
+| Critical with a fix | Block |
+| High with a fix, introduced by the PR | Block immediately |
+| Pre-existing High with a fix | Block 14 days after first seen |
+| No fix; Medium, Low or Negligible | Report only (KEV still blocks) |
+| Expired, malformed or over-90-day exception | Fail |
+
+The first-seen clock is carried in a compressed JSON comment on the single
+**Supply-chain scan: open findings** issue, labelled `security`. Resolved keys
+are retained so reappearing risk doesn't get another grace period. Before that
+issue exists, pre-existing pins use the baseline date 2026-10-13; new PR
+introductions are immediate. A malformed existing issue state fails rather than
+resetting the clock. Package changes are compared with a scan of the base
+lockfile using the same current OSV data; an unchanged lockfile finding is not
+treated as newly introduced just because a tooling change scans everything.
+
+The issue shows artifact/package, vulnerability aliases, severity, fix state,
+KEV membership, first-seen date and exception/gate outcome. Follow its run link
+for full JSON/Markdown reports, per-image findings and CycloneDX SBOMs. Large
+issue tables are bounded; first-seen state remains intact. The full artifact
+retains the untruncated table. Database status and the downloaded KEV checksum
+are logged with the report; scanners fail on operational errors.
+
+## Inputs and integrity
+
+Every entry in the bootstrap and application image locks is covered by a
+Linux amd64 digest scan. Upstream registries are read directly; the placeholder
+mirror is not a CI dependency. When the two `.build/dev-images` archives exist,
+their pinned digest and complete OCI graph are verified before scanning.
+Otherwise the report explicitly marks unpublished builds as **pinned inputs
+only**: Python, CNPG PostgreSQL and pgvector. This fallback does not claim that
+the complete unpublished application image was scanned.
+
+OSV scans all tracked supported npm, pip, Go and other ecosystem lockfiles with
+`--no-resolve`; hash-locked `.txt` files explicitly use the requirements parser.
+Call analysis is off; no compiler or dependency build script executes.
+Custom OCI/tool lock JSON is handled by image/tool inventory, not passed to OSV
+as an unsupported ecosystem lockfile. Ignored caches and installed dependencies
+are excluded.
+
+Syft v1.52.0, Grype v0.119.0 and OSV-Scanner v2.6.0 are pinned in the CI tool
+lock by release SHA256 and extracted binary SHA256, verified against official
+checksum files. They are unmodified Apache-2.0 `build-tool` entries. Syft SBOMs
+are cached under the input digest, platform and scanner hash, with document
+integrity checks; a cache miss pulls the pinned image. Each scan attaches a
+CycloneDX copy. SBOMs and database files are never committed. Grype updates its
+database before matching; OSV uses current vulnerability responses.
+
+The existing schema-source licence baseline hashes the whole CI tool lock.
+WO-32 refreshes only that fingerprint for the added verified scanner entries;
+every old artifact, schema URL/hash, baseline owner, reason and original
+2027-01-07 deadline remain unchanged. Historical PR pins are untouched.
+
+## Pull requests and scheduled jobs
+
+The existing required **vCloud PR gate** includes `scan-pr`. Image lock,
+receipt or lockfile changes scan selected inputs; policy/tool/workflow changes
+scan the full inventory. No relevant change produces an explicit empty
+selection, while exception validity is still checked. PR base commits are
+immutable 40-hex SHAs. Scanner jobs have only `contents: read` and never run on
+`pull_request_target`. All actions use full commit SHAs.
+
+The scheduled workflow runs nightly at **02:30 UTC** and weekly on **Monday
+03:00 UTC**. Manual dispatch selects `scan-nightly` or `watch-weekly`.
+Issue-writing jobs have only `issues: write`, consume the artifact, and run a
+stdlib-only reporter with no scanner. They run only on trusted `main`; scanner
+errors cannot publish a fabricated success. The reporter creates or edits the
+existing exact-title issue, never one issue per run, and refuses duplicates.
+The automatic GitHub token is used only by the reporter; no repository secret
+is provided to scanners.
+
+The weekly job compares current image/CI-tool findings with the newest
+verifiable published stable release at least 14 days old. Candidate image
+tags are resolved to digests before scanning. Candidate binaries are verified
+data inputs, never executables. Missing publication evidence or an unavailable
+artifact is reported as unavailable, never guessed or silently replaced by
+`latest`. Twinfra-owned unpublished images have no independent upstream
+release; their pinned input coverage remains explicit. The watch does not
+edit locks or create PRs. Version changes require a later reviewed work order.
+
+## Exceptions
+
+Add a narrow entry to [vulnerability-exceptions.json](../security/vulnerability-exceptions.json)
+using its [schema](../security/vulnerability-exceptions.schema.json): vulnerability
+ID, exact artifact digest or lockfile, package/version, mitigation/removal
+reason, named `approvedBy`, `createdOn` and `expires`. Maximum lifetime is 90
+days from creation, without automatic extensions. A changed artifact/package
+version does not inherit the exception. Explain each approval in PR review.
+
+The first full PR scan produces `proposed-exceptions.json` for every blocking
+finding, with `approvedBy: pending-owner`, expiry **2026-12-31**, and a reason
+stub. Those proposals must be copied to the committed register and reviewed.
+Pending approval is valid only on the owner repository's
+`codex/wo-32-supply-chain-scanning` pull-request branch; forks, other branches,
+pushes, schedules and dispatches reject it. The owner must replace
+`pending-owner` and complete the reasons before merge. No blanket exception
+admits new vulnerabilities or new versions.
+
+## Run locally
+
+Use Linux or WSL for scanning. Syft's registry layer cache cannot pull images
+on Windows because of colon-containing filenames. Windows can run the offline
+fixtures. This is tooling validation, not a provisioner or live lab command.
+
+```bash
+python -m pip install -r tools/ci/requirements.txt
+python tools/ci/stage_tools.py --source . --destination .build/scan-tools --only syft grype osv-scanner
+python tools/ci/supply_chain.py inventory --full
+python tools/ci/supply_chain.py sbom --tools .build/scan-tools/bin
+python tools/ci/supply_chain.py scan --tools .build/scan-tools/bin
+python tools/ci/supply_chain.py evaluate
+python tools/ci/supply_chain.py report
+python -m unittest discover -s tools/ci/tests -p test_supply_chain.py -v
+```
+
+For changed-input coverage, use `inventory --base <full-base-SHA>` instead of
+`--full`. `watch --tools .build/scan-tools/bin` performs the weekly comparison
+without publishing. `report --publish` is reserved for the trusted main-only
+issue writer. Local pending-owner proposals do not bypass the gate.
+
+## After-merge acceptance (Pending)
+
+Dispatch `scan-nightly` on `main` twice. Record that both runs update the same
+open-findings issue number. Dispatch `watch-weekly` on `main` and record its
+single **Upstream updates available** issue. These GitHub issue mutations are
+after-merge acceptance; this static PR does not execute them or change settings.
+
 # Supply-chain image-reference validation
 
 [WO-31 Amendments 13–13b](work-orders/WO-31-bare-metal-cairo-1.md) govern the

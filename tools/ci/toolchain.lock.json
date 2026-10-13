@@ -98,6 +98,32 @@
       "url": "https://dl.k8s.io/release/v1.36.5/bin/linux/amd64/kubectl",
       "sha256": "33bc88a24c3b09cf55bfd59e6ca977881b61fc3f25ab65bc80c65b430248648e",
       "output": "bin/kubectl"
+    },
+    "grype": {
+      "url": "https://github.com/anchore/grype/releases/download/v0.119.0/grype_0.119.0_linux_amd64.tar.gz",
+      "sha256": "3fa2dc4b924621ab65404cf08d0b8438d896d80ab949c9d5a4ca283c36004c9b",
+      "output": "bin/grype",
+      "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e",
+      "checksumURL": "https://github.com/anchore/grype/releases/download/v0.119.0/grype_0.119.0_checksums.txt",
+      "checksumSHA256": "9cb7f68e8fa2b039e67f33d1fda29e7224946167f3b8abb43c51a6fff0c0de78",
+      "member": "grype"
+    },
+    "syft": {
+      "url": "https://github.com/anchore/syft/releases/download/v1.52.0/syft_1.52.0_linux_amd64.tar.gz",
+      "sha256": "caeedb81fb0491615f1ebd1761e4145d41ee86dd2cc7bf80669f9f5ad9d6133d",
+      "output": "bin/syft",
+      "binarySHA256": "15a52d0122953081d16e6695f48055216a4de293bb005948663bb739a63880f9",
+      "checksumURL": "https://github.com/anchore/syft/releases/download/v1.52.0/syft_1.52.0_checksums.txt",
+      "checksumSHA256": "21d9ee36c7c6fb43d6493718a387ecca021321791d1815c716e56c99b9c8d6b9",
+      "member": "syft"
+    },
+    "osv-scanner": {
+      "url": "https://github.com/google/osv-scanner/releases/download/v2.6.0/osv-scanner_linux_amd64",
+      "sha256": "ca69b3d3cd08f889a49dc0a383122f71cc528b83803671df5fd874d97485b108",
+      "output": "bin/osv-scanner",
+      "binarySHA256": "ca69b3d3cd08f889a49dc0a383122f71cc528b83803671df5fd874d97485b108",
+      "checksumURL": "https://github.com/google/osv-scanner/releases/download/v2.6.0/osv-scanner_SHA256SUMS",
+      "checksumSHA256": "29f6fbc8bdd02d977df4b0987705d046233c36b70469a7021c623e8c155c9ddc"
     }
   }
 }

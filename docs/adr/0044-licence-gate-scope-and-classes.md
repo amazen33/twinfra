@@ -1,5 +1,7 @@
 # ADR-0044: Licence gate scope, SPDX evaluation and the remaining classes (amends ADR-0030, ADR-0042, ADR-0043)
 
+Amended by ADR-0049 (supply-chain scanning replaces the "ADR-0014" reference).
+
 **Status:** Accepted (owner, 2026-10-09).
 **Author:** Claude (platform architecture). **Decider:** Ahmed Mazen, Owner and Product Owner.
 **Source:** Codex's consolidated audit, `E:/vCloud/.build/wo-02-audit/REPORT.md`. This record answers every finding in it.

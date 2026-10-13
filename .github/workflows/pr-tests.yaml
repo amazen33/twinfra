@@ -21,6 +21,53 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  scan-pr:
+    name: Supply-chain PR scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.14.5'
+      - name: Install pinned policy libraries
+        run: python -m pip install --disable-pip-version-check -r tools/ci/requirements.txt
+      - name: Stage and verify scanner archives and binary hashes
+        run: python tools/ci/stage_tools.py --source . --destination .build/scan-tools --only syft grype osv-scanner
+      - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
+        with:
+          path: .build/supply-chain-cache
+          key: syft-1.52.0-linux-amd64-${{ github.ref }}-${{ hashFiles('deploy/common/*images.lock.json', 'console/image.lock.json', 'deploy/common/postgresql-image.lock.json', 'tools/ci/toolchain.lock.json') }}
+          restore-keys: |
+            syft-1.52.0-linux-amd64-refs/heads/main-
+      - name: Inventory changed inputs, or all inputs for policy and tooling changes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          args=()
+          if [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && "$BASE_SHA" != 0000000000000000000000000000000000000000 ]]; then args=(--base "$BASE_SHA"); fi
+          python tools/ci/supply_chain.py inventory "${args[@]}"
+      - name: Scan pinned images and lockfiles with fresh vulnerability data
+        run: python tools/ci/supply_chain.py scan --tools .build/scan-tools/bin
+      - name: Evaluate ADR-0049 gate and propose first-run exceptions
+        run: python tools/ci/supply_chain.py evaluate
+      - name: Upload public scan reports and CycloneDX SBOMs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: supply-chain-pr-${{ github.run_attempt }}
+          path: |
+            .build/supply-chain/*.json
+            .build/supply-chain/*.md
+            .build/supply-chain/*.log
+            .build/supply-chain/sboms/
+          if-no-files-found: warn
+          retention-days: 14
   revisions:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -113,7 +160,7 @@ jobs:
   required:
     name: vCloud PR gate
     if: ${{ always() }}
-    needs: [revisions, test]
+    needs: [revisions, test, scan-pr]
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
@@ -121,6 +168,8 @@ jobs:
         env:
           REVISIONS_RESULT: ${{ needs.revisions.result }}
           TEST_RESULT: ${{ needs.test.result }}
+          SCAN_RESULT: ${{ needs.scan-pr.result }}
         run: |
           test "$REVISIONS_RESULT" = success
           test "$TEST_RESULT" = success
+          test "$SCAN_RESULT" = success
