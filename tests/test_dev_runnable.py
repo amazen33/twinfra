@@ -133,6 +133,20 @@ class BootstrapStaging(unittest.TestCase):
         for reference in (item['canonical'],locked()['canonical'],'registry.twinfra.example.com/repo:v1.2.3'):
             self.assertEqual(ssh_stage.cri_reference(reference),stager.cri_reference(reference))
 
+    def test_cnpg_tagged_image_resolves_existing_pinned_digest_record_without_restaging(self):
+        item=json.loads((dev.COMMON/'images.lock.json').read_text())['images']['postgres']
+        cluster=next(o for o in dev.database() if o['kind']=='Cluster')
+        reference=cluster['spec']['imageName']
+        self.assertIn(':18.6.0-pgvector0.8.2@',reference)
+        ctr=FakeCtr({item['canonical']:item['digest']})
+        before=(dict(ctr.state),set(ctr.pinned),set(ctr.managed))
+        # Use the independent fake's ParseDockerRef behavior, not the production normalizer.
+        resolved=json.loads(ctr(['crictl','inspecti',reference]))['status']
+        self.assertEqual(resolved,{'pinned':True,'repoDigests':[item['canonical']]})
+        self.assertEqual(stager.stage({'images':{'postgres':item}},check=True,runner=ctr),[])
+        self.assertEqual((ctr.state,ctr.pinned,ctr.managed),before)
+        self.assertTrue(all(c[0]=='crictl' or c[4]=='list' for c in ctr.commands))
+
     def test_digest_mismatch_stops_before_tag(self):
         ctr = FakeCtr(bad_pull=True)
         with self.assertRaisesRegex(ValueError, 'Upstream digest mismatch'):

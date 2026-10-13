@@ -512,6 +512,62 @@ It then failed at line **3429**, `run_smoke_tests`, the last step before `write_
 3. `python tools/platform_dev.py stage-images --context twinfra-dev-cairo-1 --archive-dir .build/dev-images`, then `--check`. Expected: `problems: []`.
 4. Then runbook steps 9–11.
 
+### Amendment 10 (2026-10-13, architect): the network boundary under Cilium's eBPF datapath
+
+**Pre-deployment exposure check (read-only, `main` `9c33d0c`):**
+- From the laptop, TCP 22 and 6443 answer, and 10250 and 2379 are dropped.
+- The rendered dev overlay (92 objects) has **no** NodePort or LoadBalancer Service, and no `hostNetwork` or `hostPort` workload. (The matches in `workloads.yaml` were CRD schema text.)
+- Live, only ClusterIP Services exist.
+- Cilium has `kube-proxy-replacement: true`, `enable-host-firewall: false`, `routing-mode: native`, `enable-bpf-masquerade: true` and `bpf-lb-external-clusterip: false`.
+
+**The gap.** With kube-proxy replacement and eBPF host routing, Cilium handles NodePort, hostPort and pod-bound traffic in its own **tc programs on `eno1`, before netfilter**.
+- The `inet twinfra_host` table therefore protects **host-bound ports only**.
+- It can't stop a NodePort, LoadBalancer or hostPort Service, or a LAN host that adds a static route to the pod network.
+
+The real pod boundary is (a) never exposing a Service on the node and (b) Cilium-enforced NetworkPolicies. This is static work only.
+
+1. **A CI contract rule.** No Service of type `NodePort` or `LoadBalancer`, no `externalIPs`, and no `hostNetwork: true` or `hostPort` in any Twinfra namespace. Exceptions: the vendored Cilium objects in `kube-system`, listed by name.
+2. **A check on default-deny.** Every Twinfra namespace must have an **ingress** default-deny policy. Admitted traffic comes only from explicit allow rules: from the gateway, Argo CD, CNPG and the control plane as required. Add a test.
+3. **Document it.** `docs/dev-environment.md` gets a "Network boundary" section with the table above. It states that the host firewall covers host ports only, and lists Cilium host firewall (`enable-host-firewall`) together with a `CiliumClusterwideNetworkPolicy` for the host as a later hardening step.
+4. **Optional, for the owner to decide:** narrow host TCP 6443 from `192.168.1.0/24` to the laptop's reserved address only. The API already requires client certificates.
+
+### Amendment 12 (2026-10-14, architect): CNPG 1.30 refuses a digest-only PostgreSQL image (blocks the deployment, so do it first)
+
+**Live evidence.** Argo CD application `twinfra-platform` at `9c33d0c` reports `Failed`. The CNPG operator 1.30.1 is running, and its webhook `vcluster.cnpg.io` denies `Cluster/twinfra-postgres` with: `spec.imageName: Invalid value: "registry.twinfra.example.com/docker.io/twinfra/twinfra-postgresql-pgvector@sha256:baea2bf7…": Can't use just the image sha as we can't detect upgrades`.
+
+The consequences:
+- the Cluster is never created, so there is no `twinfra-postgres-ca`;
+- Keycloak and OpenBao sit in `Init` with `secret "twinfra-postgres-ca" not found`;
+- `twinfra-services` reports `Degraded`.
+
+**Cause.** CNPG reads the PostgreSQL major version from the image **tag**. The generator renders the digest-only canonical name.
+
+**Fix (generator and tests; production render may change only in this field and derived checksums):**
+1. **Render tag plus digest.** Render `Cluster.spec.imageName` as `<canonical repository>:<tag>@<digest>`, with the tag from `deploy/common/postgresql-image.lock.json` (`18.6.0-pgvector0.8.2`) and the repository and digest from `deploy/common/images.lock.json` (`registry.twinfra.example.com/docker.io/twinfra/twinfra-postgresql-pgvector@sha256:baea2bf7…`). Don't change the digest or the lock.
+2. **No re-staging.** Kubelet's lookup normalises `repo:tag@digest` to `repo@digest`, which Amendment 3 already stages and pins.
+3. **Tests:**
+   - the rendered Cluster has tag plus digest, with a tag whose major version is 18;
+   - the digest equals the lock's;
+   - every CNPG `Cluster` in every profile passes the same rule;
+   - for kubelet resolution, use a fake-CRI test that normalises `repo:tag@digest` to `repo@digest` and finds the staged record.
+
+**Live (owner, after merge).** No manual step: Argo CD auto-syncs `main`. Expected, in order:
+1. `Cluster/twinfra-postgres` is created and the `twinfra-postgres-1` pod becomes Running;
+2. `twinfra-postgres-ca` exists;
+3. Keycloak and OpenBao start;
+4. `twinfra-platform` and `twinfra-services` become Synced and Healthy.
+
+Check with `kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services get applications,clusters.postgresql.cnpg.io,pods`.
+
+### Amendment 11 (2026-10-14, architect): runbook step 10 needs server-side apply
+
+**Live evidence.** In step 10, the first `kubectl apply -k deploy/environments/dev/cairo-1/platform` failed for three CRDs: `applicationsets.argoproj.io`, `clusters.postgresql.cnpg.io` and `poolers.postgresql.cnpg.io`. The error was `metadata.annotations: Too long: may not be more than 262144 bytes`. Client-side apply stores the whole object in `kubectl.kubernetes.io/last-applied-configuration`. The Argo CD Applications already use `ServerSideApply=true` (`root.yaml:52`, `apps/applications.yaml:29,60`); only the manual bootstrap in the runbook doesn't.
+
+**Fix (docs and tests only):**
+- **Runbook commands.** Step 10's `platform` and `services` commands become `kubectl --context twinfra-dev-cairo-1 apply --server-side --force-conflicts -k …`. Add a note that the first run may report "no matches for kind Cluster/Database" until the CRDs are established, and that the same command is simply repeated.
+- **Same-command test.** Add a documentation test: every `kubectl apply -k` in `docs/dev-environment.md` that targets an overlay containing CRDs uses `--server-side`.
+- **Argo CD test.** Add a manifest test: every Argo CD `Application` in the dev overlay keeps `ServerSideApply=true`.
+
 ### Amendment 9a (2026-10-13, architect): resolves Codex's two stops
 
 Codex found that the retained WSL portal renderer `tools/vcloud_console.py`, which CI still runs, blocks both allowed corrections:
