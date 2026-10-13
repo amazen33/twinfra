@@ -295,18 +295,39 @@ def previous_state(repository=REPOSITORY):
         values=json.loads(fetch(f'https://api.github.com/repos/{repository}/issues?state=all&per_page=100&page={page}'))
         match=next((x for x in values if x.get('title')==TITLE and 'pull_request' not in x),None)
         if match:
+            if match.get('user',{}).get('login','').lower() not in ('amazen33','github-actions[bot]') or not any(
+                    v.get('name')=='security' for v in match.get('labels',[])):
+                raise ValueError('Untrusted reserved tracking issue; owner review required')
             body=match.get('body') or ''
             marker=re.search(r'<!-- twinfra-supply-chain-state:([A-Za-z0-9+/=]+) -->',body)
             if not marker:raise ValueError('Tracking issue is missing first-seen state; refusing to reset its clock')
             payload=gzip.decompress(base64.b64decode(marker[1],validate=True))
             if len(payload)>4*1024**2:raise ValueError('Oversized issue state')
-            state=json.loads(payload)
+            wire=json.loads(payload)
+            identities={}
+            if isinstance(wire,dict) and wire.get('format')==1:
+                strings=wire['strings'];records=wire['records']
+                if not isinstance(strings,list) or not all(isinstance(v,str) for v in strings):raise ValueError('Invalid state string table')
+                state=dict(wire.get('legacy',{}))
+                for row in records:
+                    if not isinstance(row,list) or len(row)!=5 or any(type(i) is not int or i<0 or i>=len(strings) for i in row):
+                        raise ValueError('Invalid issue state record')
+                    fields=[strings[i] for i in row];key=sha(json.dumps(fields[:4],separators=(',',':')).encode())
+                    if key in state and state[key]!=fields[4]:raise ValueError('Conflicting first-seen records')
+                    state[key]=fields[4];identities[key]=fields[:4]
+            else:state=wire  # Read the earlier hash/date format without resetting it.
             if not isinstance(state,dict) or any(not re.fullmatch(r'[a-f0-9]{64}',k) for k in state):
                 raise ValueError('Invalid issue state')
             for value in state.values():date.fromisoformat(value)
-            return state,match['html_url']
+            result=FirstSeenState(state);result.identities=identities
+            return result,match['html_url']
         if len(values)<100:break
     return {},None
+
+
+class FirstSeenState(dict):
+    """Date lookup plus lossless identities retained for resolved findings."""
+    identities=None
 
 
 def bootstrap_context():
@@ -336,6 +357,7 @@ def validate_exceptions(value,root=ROOT,on=None,bootstrap=False):
 def evaluate(result,exceptions,kev,state=None,on=None,bootstrap=False,root=ROOT):
     on=on or today()
     fallback=min(INITIAL_DATE,on) if state is None else on
+    identities=dict(getattr(state,'identities',None) or {})
     state=dict(state or {})
     entries=validate_exceptions(exceptions,root,on,bootstrap)
     kev_ids={v['cveID'] for v in kev['vulnerabilities']}
@@ -349,6 +371,9 @@ def evaluate(result,exceptions,kev,state=None,on=None,bootstrap=False,root=ROOT)
         first=date.fromisoformat(state.get(value['key'],(on if value['introduced'] else fallback).isoformat()))
         if first>on:raise ValueError('Future first-seen date')
         state[value['key']]=first.isoformat();value['firstSeen']=first.isoformat()
+        fields=[value[k] for k in ('target','package','version','vulnerability')]
+        if value['key'] in identities and identities[value['key']]!=fields:raise ValueError('Finding identity collision')
+        identities[value['key']]=fields
         value['kev']=bool(set(value['aliases']) & kev_ids)
         value['blockReason']='KEV' if value['kev'] else 'Critical with fix' if value['severity']=='Critical' and value['fixAvailable'] else (
             'High introduced by PR' if value['introduced'] else 'High with fix aged 14 days') if (
@@ -356,7 +381,7 @@ def evaluate(result,exceptions,kev,state=None,on=None,bootstrap=False,root=ROOT)
         allowed=next((e for e in entries if all(e[k]==value[k] for k in ('target','package','version','vulnerability'))),None)
         value['exception']=allowed;value['blocked']=bool(value['blockReason'] and not allowed)
         output.append(value)
-    report=result|dict(findings=output,firstSeen=state,kev=dict(catalogVersion=kev['catalogVersion'],sha256=sha(json.dumps(kev,sort_keys=True).encode())),
+    report=result|dict(findings=output,firstSeen=state,identityState=identities,kev=dict(catalogVersion=kev['catalogVersion'],sha256=sha(json.dumps(kev,sort_keys=True).encode())),
                        status='failed' if any(v['blocked'] for v in output) else 'passed')
     proposed=[]
     for value in output:

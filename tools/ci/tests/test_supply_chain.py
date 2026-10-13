@@ -249,15 +249,40 @@ class ReportingAndWorkflow(unittest.TestCase):
             self.assertEqual(reporter.publish(report,sc.TITLE,url,'fixture'),'issue/1')
             self.assertEqual(api.call_args.args[3],'POST')
             body=api.call_args.args[2]['body']
-        with patch.object(reporter,'request',side_effect=[{'name':'security'},[{'title':sc.TITLE,'number':1}],{'html_url':'issue/1'}]) as api:
+        trusted={'title':sc.TITLE,'number':1,'user':{'login':'github-actions[bot]'},'labels':[{'name':'security'}]}
+        with patch.object(reporter,'request',side_effect=[{'name':'security'},[trusted],{'html_url':'issue/1'}]) as api:
             self.assertEqual(reporter.publish(report,sc.TITLE,url,'fixture'),'issue/1')
             self.assertTrue(api.call_args.args[0].endswith('/issues/1'));self.assertEqual(api.call_args.args[3],'PATCH')
-        with patch.object(sc,'fetch',return_value=json.dumps([{'title':sc.TITLE,'body':body,'html_url':'issue/1'}]).encode()):
+        with patch.object(sc,'fetch',return_value=json.dumps([trusted|{'body':body,'html_url':'issue/1'}]).encode()):
             self.assertEqual(sc.previous_state()[0],report['firstSeen'])
 
     def test_missing_issue_fallback_but_malformed_existing_state_fails(self):
         with patch.object(sc,'fetch',return_value=b'[]'):self.assertEqual(sc.previous_state(),({},None))
         with patch.object(sc,'fetch',return_value=json.dumps([{'title':sc.TITLE,'body':'broken'}]).encode()),self.assertRaises(ValueError):sc.previous_state()
+
+    def test_thousands_of_first_seen_records_fit_one_issue_losslessly(self):
+        findings=[sc.finding('docker.io/example/image'+str(i%21)+'@sha256:'+'a'*64,
+                  'package-'+str(i%200),str(i%5),['CVE-2026-'+str(10000+i%1000)],'High',True,'fixture') for i in range(2452)]
+        report=sc.evaluate(result(*findings),EMPTY,KEV,on=ON);report['markdown']=sc.markdown(report)
+        with patch.object(reporter,'request',side_effect=[{'name':'security'},[],{'html_url':'issue/1'}]) as api:
+            reporter.publish(report,sc.TITLE,'https://github.com/amazen33/twinfra/actions/runs/123','fixture')
+            body=api.call_args.args[2]['body'];self.assertLess(len(body),65000)
+        trusted={'title':sc.TITLE,'user':{'login':'github-actions[bot]'},'labels':[{'name':'security'}]}
+        with patch.object(sc,'fetch',return_value=json.dumps([trusted|{'body':body,'html_url':'issue/1'}]).encode()):
+            state,_=sc.previous_state()
+        self.assertEqual(state,report['firstSeen']);self.assertEqual(state.identities,report['identityState'])
+        # A resolved finding's complete identity and date survive the next report.
+        later=sc.evaluate(result(),EMPTY,KEV,state,on=ON+timedelta(days=1))
+        self.assertEqual(later['identityState'],report['identityState']);self.assertEqual(later['firstSeen'],report['firstSeen'])
+
+    def test_untrusted_public_issue_cannot_reset_first_seen_or_be_edited(self):
+        fake={'title':sc.TITLE,'number':1,'user':{'login':'untrusted'},'labels':[{'name':'security'}]}
+        with patch.object(sc,'fetch',return_value=json.dumps([fake]).encode()),self.assertRaisesRegex(ValueError,'Untrusted'):
+            sc.previous_state()
+        report=sc.evaluate(result(value('Low')),EMPTY,KEV,on=ON);report['markdown']=sc.markdown(report)
+        with patch.object(reporter,'request',side_effect=[{'name':'security'},[fake]]) as api,self.assertRaisesRegex(ValueError,'Untrusted'):
+            reporter.publish(report,sc.TITLE,'https://github.com/amazen33/twinfra/actions/runs/123','fixture')
+        self.assertEqual(api.call_count,2)
 
     def test_workflow_permissions_pins_secret_and_trigger_boundaries(self):
         for name in ('pr-tests.yaml','supply-chain.yaml'):

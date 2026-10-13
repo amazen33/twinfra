@@ -3,6 +3,7 @@
 import argparse
 import base64
 import gzip
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -30,12 +31,27 @@ def publish(report,title,url,token):
         state=report['firstSeen']
         if not isinstance(state,dict) or any(not re.fullmatch(r'[a-f0-9]{64}',key) for key in state):
             raise ValueError('Invalid first-seen state')
+        # Losslessly dictionary-code repeated artifact/package/version/CVE/date
+        # strings, rather than storing thousands of uncompressible SHA256 keys.
+        strings=[];lookup={};records=[];legacy={}
+        identities=report.get('identityState',{})
+        def index(value):
+            if value not in lookup:lookup[value]=len(strings);strings.append(value)
+            return lookup[value]
+        for key,first in sorted(state.items()):
+            fields=identities.get(key)
+            if fields is None:legacy[key]=first;continue
+            if len(fields)!=4 or not all(isinstance(v,str) for v in fields):raise ValueError('Invalid finding identity')
+            if hashlib.sha256(json.dumps(fields,separators=(',',':')).encode()).hexdigest()!=key:
+                raise ValueError('Finding identity hash mismatch')
+            records.append([index(v) for v in [*fields,first]])
+        wire=dict(format=1,strings=strings,records=records,legacy=legacy)
         tail='\n<!-- twinfra-supply-chain-state:'+base64.b64encode(gzip.compress(
-            json.dumps(state,sort_keys=True,separators=(',',':')).encode(),mtime=0)).decode()+' -->\n'
+            json.dumps(wire,sort_keys=True,separators=(',',':')).encode(),mtime=0)).decode()+' -->\n'
     else:tail=''
     budget=64000-len(tail)-len(url)-100
     if budget<1000:raise ValueError('Tracking state exceeds issue limit')
-    if len(body)>budget:body=body[:budget]+'\nFull findings are in the run artifact.\n'
+    if len(body)>budget:body=body[:budget].rsplit('\n',1)[0]+'\n\nFull findings are in the run artifact.\n'
     body=body+'\nRun: '+url+'\n'+tail
     # Labels are issue metadata. Creation is deferred to this main-only issues:write job.
     label_url=f'https://api.github.com/repos/{REPOSITORY}/labels'
@@ -49,6 +65,9 @@ def publish(report,title,url,token):
         matches.extend(v for v in values if v.get('title')==title and 'pull_request' not in v)
         if len(values)<100:break
     if len(matches)>1:raise ValueError('Duplicate tracking issues; owner must resolve')
+    if matches and (matches[0].get('user',{}).get('login','').lower() not in ('amazen33','github-actions[bot]') or
+                    not any(v.get('name')=='security' for v in matches[0].get('labels',[]))):
+        raise ValueError('Untrusted reserved tracking issue; owner review required')
     payload=dict(title=title,body=body,labels=['security'],state='open')
     value=request(endpoint+'/'+str(matches[0]['number']) if matches else endpoint,token,payload,
                   'PATCH' if matches else 'POST')

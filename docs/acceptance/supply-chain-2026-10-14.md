@@ -32,6 +32,14 @@ WO-32 fixtures separately require every previous licence term/artifact to
 remain unchanged and allow only the three scanners, two actions and their
 scheduled-workflow locations. All six historical revisions already passed
 that initial run; their immutable pins remain untouched.
+
+The real 2,452-record report was also passed through the stdlib issue writer
+with the HTTP transport mocked: its 63,800-character body fits the single-issue
+limit and all full SHA256 identities/dates round-trip losslessly. Resolved
+identities remain in subsequent state. No record or identifier is shortened.
+An untrusted public issue cannot seed or reset the first-seen clock; the reader
+and writer require the security-labelled owner/GitHub Actions tracking issue.
+No issue was created or edited during these fixtures.
 No SBOM or vulnerability database is committed. Run links and full findings
 are reported in the PR; subsequent scanner data is expected to change over time.
 

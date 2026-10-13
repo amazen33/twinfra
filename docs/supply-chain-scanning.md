@@ -18,11 +18,16 @@ to the Dell. No Aqua/Trivy action or image is used.
 
 The first-seen clock is carried in a compressed JSON comment on the single
 **Supply-chain scan: open findings** issue, labelled `security`. Resolved keys
-are retained so reappearing risk doesn't get another grace period. Before that
+are retained so reappearing risk doesn't get another grace period. Repeated
+identity strings are dictionary-coded losslessly so thousands of full SHA256
+finding identities fit GitHub's single-issue limit; no key is shortened or
+record dropped. Before that
 issue exists, pre-existing pins use the baseline date 2026-10-13; new PR
 introductions are immediate. A malformed existing issue state fails rather than
 resetting the clock. When an existing issue has no record for a newly discovered finding, its
 first-seen date is the current scan date, not the initial baseline anchor.
+Only the security-labelled tracking issue created by the owner or GitHub
+Actions is trusted; public issue impersonation fails instead of resetting dates.
 Package changes are compared with a scan of the base
 lockfile using the same current OSV data; an unchanged lockfile finding is not
 treated as newly introduced just because a tooling change scans everything.
@@ -79,6 +84,7 @@ Issue-writing jobs have only `issues: write`, consume the artifact, and run a
 stdlib-only reporter with no scanner. They run only on trusted `main`; scanner
 errors cannot publish a fabricated success. The reporter creates or edits the
 existing exact-title issue, never one issue per run, and refuses duplicates.
+The issue writer creates the `security` issue label if absent, after merge.
 The automatic GitHub token is used only by the reporter; no repository secret
 is provided to scanners.
 
