@@ -3,25 +3,25 @@
 
 Equivalent runtime payload to console/Dockerfile. No Docker daemon, socket,
 privileged build Pod, root execution in the image, or host mount
-is required. Execute after npm ci/test/build. --import is owned-WSL-only.
+is required. Execute after npm ci/test/build; input downloads require explicit opt-in.
 """
 import argparse
-import copy
 import gzip
 import hashlib
 import io
 import json
-import os
 from pathlib import Path, PurePosixPath
 import re
 import stat
 import subprocess
+import sys
 import tarfile
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-BASE = 'registry.vcloud.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e'
-TAG = 'registry.vcloud.example.com/vcloud/vcloud-console:1.0.0'
+BASE = 'registry.twinfra.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e'
+TAG = 'registry.twinfra.example.com/docker.io/twinfra/twinfra-console:1.0.0'
+DEFAULT_BASE = ROOT / '.build/console/python-base.oci.tar'
 
 
 def encoded(value): return json.dumps(value, sort_keys=True, separators=(',', ':')).encode()
@@ -69,6 +69,12 @@ def dependencies(wheels):
 def payload(wheels):
     dist = ROOT / 'console/dist'
     if not (dist / 'index.html').is_file(): raise ValueError('Run npm ci/test/build in console first')
+    # Verify local references without executing npm or any frontend code.
+    for reference in re.findall(r'(?:src|href)="(/console/assets/[^"]+)"',
+                                (dist / 'index.html').read_text(encoding='utf-8')):
+        relative=PurePosixPath(reference.removeprefix('/console/'))
+        if '..' in relative.parts or not (dist / relative).is_file():
+            raise ValueError('Missing/unsafe built frontend asset')
     files = {'app/server.py': ROOT / 'console/server.py', 'app/aws_views.py': ROOT / 'console/aws_views.py',
              'app/requirements.txt': ROOT / 'console/requirements.txt'}
     files.update({'app/public/' + str(p.relative_to(dist)).replace('\\', '/'): p for p in dist.rglob('*') if p.is_file()})
@@ -131,7 +137,8 @@ def build(base_path, target, wheels=ROOT / '.build/console/wheels'):
             add('oci-layout', encoded({'imageLayoutVersion': '1.0.0'}))
             add('index.json', encoded({'schemaVersion': 2, 'manifests': [result]}))
     inputs = [ROOT / p for p in ('console/package.json', 'console/package-lock.json', 'console/requirements.txt',
-                               'console/server.py', 'console/aws_views.py', 'tools/build_console_image.py')]
+                               'console/server.py', 'console/aws_views.py', 'tools/build_console_image.py',
+                               'tools/platform_oci.py')]
     inputs += sorted((ROOT / 'console/src').rglob('*'))
     inputs += [ROOT / 'console/index.html', ROOT / 'console/vite.config.ts', ROOT / 'console/tsconfig.json', ROOT / 'console/Dockerfile']
     receipt = {'base': BASE, 'tag': TAG, 'digest': result['digest'], 'canonical': TAG.split(':')[0] + '@' + result['digest'],
@@ -139,21 +146,55 @@ def build(base_path, target, wheels=ROOT / '.build/console/wheels'):
     return receipt
 
 
-if __name__ == '__main__':
+def download_inputs(base_path=DEFAULT_BASE, wheels=ROOT / '.build/console/wheels'):
+    """Owner-requested download only; no installations, container runtime or npm."""
+    from platform_oci import export_dockerhub
+    export_dockerhub(BASE.removeprefix('registry.twinfra.example.com/'),base_path)
+    wheels.mkdir(parents=True,exist_ok=True)
+    subprocess.run([sys.executable,'-m','pip','download','--require-hashes','--only-binary=:all:',
+        '--platform','manylinux_2_28_x86_64','--platform','manylinux2014_x86_64',
+        '--platform','manylinux_2_17_x86_64','--implementation','cp','--python-version','3.14',
+        '--abi','cp314','--abi','abi3','--abi','none','-r',str(ROOT/'console/requirements.txt'),
+        '--dest',str(wheels)],check=True)
+    dependencies(wheels)  # Refuse stale, additional or corrupt wheels as well.
+
+
+def verify_receipt(receipt, refresh=False):
+    """Amendment 9a: refresh tooling/names only AFTER reproducing the pinned image."""
+    expected=json.loads((ROOT/'console/image.lock.json').read_text())
+    images=json.loads((ROOT/'deploy/common/images.lock.json').read_text())['images']
+    if receipt['digest']!=expected['digest'] or receipt['digest']!=images['console']['digest']:
+        raise ValueError('Console digest did not reproduce: expected '+expected['digest']+'; built '+receipt['digest'])
+    if receipt['canonical']!=images['console']['canonical'] or receipt['base']!=images['python']['canonical']:
+        raise ValueError('Console receipt names differ from dev image lock')
+    if refresh:
+        tooling={'tools/build_console_image.py','tools/platform_oci.py'}
+        old={k:v for k,v in expected['filesSHA256'].items() if k not in tooling}
+        new={k:v for k,v in receipt['filesSHA256'].items() if k not in tooling}
+        if old!=new:raise ValueError('Console source hashes changed; receipt refresh refused')
+    elif receipt!=expected:
+        raise ValueError('Console build receipt differs')
+    return receipt
+
+
+def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--base', type=Path, default=Path('/tmp/vcloud-console-python-base.oci.tar'))
-    parser.add_argument('--output', type=Path, default=Path('/tmp/vcloud-console.oci.tar'))
+    parser.add_argument('--base', type=Path, default=DEFAULT_BASE)
+    parser.add_argument('--output', type=Path, default=ROOT / '.build/dev-images/console.oci.tar')
     parser.add_argument('--wheels', type=Path, default=ROOT / '.build/console/wheels')
-    parser.add_argument('--import', dest='import_image', action='store_true')
+    parser.add_argument('--download-inputs', action='store_true', help='Owner-only public pinned input download')
+    parser.add_argument('--check', action='store_true', help='Check the receipt; never rewrite it (default)')
+    parser.add_argument('--refresh-receipt', action='store_true', help='Approved tooling/name metadata refresh only after exact digest reproduction')
     args = parser.parse_args()
-    if args.import_image:
-        if os.geteuid() != 0 or 'microsoft' not in os.uname().release or not Path('/var/lib/vcloud-wsl/owner.json').is_file():
-            raise SystemExit('Owned root WSL lab required')
-        args.base.parent.mkdir(parents=True, exist_ok=True)
-        subprocess.run(['ctr', '-n', 'k8s.io', 'images', 'export', '--platform', 'linux/amd64', str(args.base), BASE], check=True, stdout=subprocess.DEVNULL)
-    lock = build(args.base, args.output, args.wheels)
-    if args.import_image:
-        subprocess.run(['ctr', '-n', 'k8s.io', 'images', 'import', '--digests', '--platform', 'linux/amd64', str(args.output)], check=True, stdout=subprocess.DEVNULL)
-        subprocess.run(['ctr', '-n', 'k8s.io', 'images', 'tag', '--force', TAG, lock['canonical']], check=True, stdout=subprocess.DEVNULL)
-    (ROOT / 'console/image.lock.json').write_text(json.dumps(lock, indent=2) + '\n')
+    if args.check and args.refresh_receipt:parser.error('--check and --refresh-receipt are mutually exclusive')
+    if args.download_inputs:download_inputs(args.base,args.wheels)
+    lock = verify_receipt(build(args.base, args.output, args.wheels),refresh=args.refresh_receipt)
+    from platform_image_staging import validate_archive
+    validate_archive(args.output,lock['digest'])
+    if args.refresh_receipt:
+        (ROOT / 'console/image.lock.json').write_text(json.dumps(lock, indent=2) + '\n',encoding='utf-8',newline='\n')
     print('PASS: deterministic OCI image ' + lock['canonical'])
+    return 0
+
+
+if __name__ == '__main__':raise SystemExit(main())

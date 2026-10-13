@@ -131,26 +131,28 @@ The deterministic builder composes the vetted Python base and verified Linux
 amd64 CPython 3.14 wheels without a Docker socket or privileged build Pod:
 
 ```bash
-python3 -m pip download --require-hashes --only-binary=:all: \
-  -r console/requirements.txt -d .build/console/wheels
-python3 -m pip install --require-hashes --only-binary=:all: -r console/requirements.txt
-python3 tools/build_console_image.py --base /path/to/verified-python-base.oci.tar \
-  --output .build/console/vcloud-console.oci.tar --wheels .build/console/wheels
-python3 tools/vcloud_console.py
-python3 -m unittest discover -s tests -p test_vcloud_console.py -v
+cd console
+npm ci && npm test && npm run build
+cd ..
+python tools/platform_dev.py build-images --download-inputs
+python tools/platform_dev.py build-images  # offline, with verified cached inputs
+python -m unittest discover -s tests -p test_build_images.py -v
 ```
 
 The static builder verifies every base blob and wheel hash; it never imports
-an image unless `--import` is explicitly supplied. Both build recipes include
+an image. Its explicit download step exports the digest-pinned Docker Hub base
+using anonymous authentication and downloads only the hash-locked Linux amd64
+CPython 3.14 wheels. It verifies the frontend output but never executes npm.
+Both archives appear in `.build/dev-images/`; the owner subsequently uses
+`stage-images --archive-dir .build/dev-images` in the
+[dev runbook](../docs/dev-environment.md). A digest mismatch stops the build
+without updating repository locks or receipts. Both build recipes include
 the same pinned runtime libraries. CI installs the candidate control checkout's
 hash-locked requirements only for revisions that contain this verification lock.
 
-Historical owned-WSL import and deployment commands:
+Retained WSL render checks (historical only; WSL is retired):
 
 ```bash
-cd /mnt/e/vCloud
-sudo python3 tools/build_console_image.py --import
-python3 tools/vcloud_console.py
 python3 tools/vcloud_console.py --check
 python3 -m unittest discover -s tests -p test_vcloud_console.py -v
 python3 tools/vcloud_console.py --validate \
@@ -159,11 +161,13 @@ python3 tools/vcloud_console.py --validate \
 ```
 
 `image.lock.json` pins the application digest and source hashes. Changed inputs
-require rebuild/import, manifest regeneration and retest. The OCI builder is
-Linux/amd64, verifies base blobs, stages archives on ext4 `/tmp`, and imports
-only into the owned external containerd. It does not push to the placeholder
-registry. The Dockerfile is an alternative recipe; executing that build is a
-separate gate.
+require an owner-approved rebuild and retest. Amendment 9a permits only build
+tooling hashes and outer Twinfra names to refresh after reproducing the pinned
+digest; console source hashes and image content stay unchanged. Retained WSL
+renders derive their legacy name from that digest and stay byte-identical.
+The OCI builder runs on Windows and Linux. It neither imports images nor pushes
+to the placeholder registry. The Dockerfile is an alternative recipe; executing
+that build is a separate gate.
 
 ## Controlled deployment and GitOps
 

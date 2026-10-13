@@ -18,6 +18,10 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'dev-image-build': ['tools/platform_build_images.py','tests/test_build_images.py',
+        'tools/platform_dev.py','tools/build_console_image.py','tools/platform_oci.py',
+        'tools/platform_pg_image.py','tools/platform_image_staging.py',
+        'console/image.lock.json','deploy/common/images.lock.json','deploy/common/postgresql-image.lock.json'],
     'bare-metal': ['tools/platform_host.py','deploy/common/host-admin.py','deploy/common/dev-log-caps.sh',
         'deploy/environments/dev/cairo-1/host.env','deploy/environments/dev/cairo-1/host/host-firewall.nft',
         'tests/test_bare_metal.py','docs/adr/0048-cairo-1-on-bare-metal-host.md','docs/work-orders/WO-31-bare-metal-cairo-1.md'],
@@ -104,6 +108,12 @@ def coverage(source):
         # This retained mapping validates complete original bundles in older revisions.
         present = (source / name).exists() if name == 'lab/wsl/localstack' else (
             (source / name).exists() or any((source / file).exists() for file in files))
+        if name == 'dev-image-build':
+            # Older revisions have the shared builders, but no owner build action.
+            # A partial new bundle or action must still fail closed.
+            dev = source / 'tools/platform_dev.py'
+            present = any((source / file).exists() for file in files[:2]) or (
+                dev.is_file() and 'build-images' in dev.read_text(encoding='utf-8'))
         if present and not all((source / file).is_file() for file in files):
             raise ValueError('Incomplete ' + name + ' implementation; refusing to omit its tests')
         result[name] = 'present' if present else 'not_present_in_revision'
@@ -276,6 +286,8 @@ def main():
         if report['modules']['bare-metal']=='present':
             run('bare-metal-tests',[python,'-m','unittest','discover','-s','tests','-p','test_bare_metal.py','-v'],unit=True)
             run('dev-log-caps-shellcheck',[binaries['shellcheck'],'deploy/common/dev-log-caps.sh'])
+        if report['modules']['dev-image-build']=='present':
+            run('dev-image-build-tests',[python,'-m','unittest','discover','-s','tests','-p','test_build_images.py','-v'],unit=True)
         if report['modules']['lab/wsl'] == 'present':
             # Offline renders must never overwrite an active lab's live evidence
             # or address-specific Helm values in .build/wsl-lab.

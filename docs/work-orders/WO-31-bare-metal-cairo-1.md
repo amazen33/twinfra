@@ -467,3 +467,69 @@ It then failed at line **3429**, `run_smoke_tests`, the last step before `write_
 `git pull` must show `00-setup-ubuntu-host.sh` changed. Then:
 1. Run `host-bootstrap`. Expected: `passed`.
 2. Run `host-check`. Expected: `post-bootstrap` / `passed`.
+
+**Result (2026-10-13, `main` `3b6ec82`):** `host-bootstrap` passed, and `host-check` reports `post-bootstrap` / `passed`.
+
+## Amendment 9 (2026-10-13, architect): Twinfra's own images can't be built for bare metal
+
+**Context.** With the host `ready`, runbook step 8 needs `.build/dev-images/console.oci.tar` and `.build/dev-images/postgresql-pgvector.tar` before `stage-images` can run. Steps 9–11 depend on those staged images.
+
+**Findings, read-only, at `main` `3b6ec82`:**
+- **PostgreSQL works.** `tools/platform_pg_image.py --download-inputs … --check` fetches its inputs from ghcr.io by digest (`platform_oci.export_ghcr`) and builds deterministically in Python. It needs no `ctr` and no WSL.
+- **The console doesn't.** `tools/build_console_image.py` was never moved to Twinfra or to bare metal:
+  - its constants are `BASE = registry.vcloud.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4…` and `TAG = registry.vcloud.example.com/vcloud/vcloud-console:1.0.0` (lines 23–24);
+  - the Python base can only come from `ctr images export` in a **WSL** guard: `'microsoft' in os.uname().release` and `/var/lib/vcloud-wsl/owner.json` (line 150). WSL is retired (ADR-0045).
+- **The receipt and the lock disagree on naming.** `console/image.lock.json` has `canonical: registry.vcloud.example.com/vcloud/vcloud-console@sha256:385934466c…`. `deploy/common/images.lock.json` expects `registry.twinfra.example.com/docker.io/twinfra/twinfra-console@sha256:385934466c…`. The **digest is the same**.
+- **The console content is unchanged since the pinned build.** All 15 files listed in `console/image.lock.json` `filesSHA256` match `main`; both were last changed in WO-06, `167e2c5`. So a correct build should reproduce `sha256:385934466c5453902e4beda1d6ed7afb09eae6dd3419d0a7b0b219eece4cc4e2`.
+
+### Fix
+
+1. **Console inputs without `ctr` or WSL.**
+   - Add a Docker Hub export to `tools/platform_oci.py`, alongside `export_ghcr`: anonymous token, then fetch by digest. Use it to obtain `docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4…` and verify the root digest.
+   - The wheels: an owner-only `--download-inputs` runs `pip download` with `--require-hashes --only-binary=:all:`, the console's Linux platform/ABI tags and `console/requirements.txt`, into `.build/console/wheels`.
+   - The frontend: the builder verifies, but never runs, the `npm ci && npm test && npm run build` output it already expects.
+2. **Remove the WSL code path** (`--import` and its guard). The Dell gets the image only through `stage-images --archive-dir .build/dev-images`.
+3. **Reproduce the pinned digest.**
+   - Don't change the image content or config. That includes the existing `vcloud-console` title label: renaming it changes the digest, and that belongs to a later console change.
+   - Correct only the names used **outside** the image: the base reference used for lookup, and the receipt's `tag` and `canonical`, which must equal `images.lock.json`.
+   - **If the rebuilt digest differs from `385934466c…`, stop and report the new digest and the cause.** Don't update the locks without owner approval.
+4. **One owner command: `python tools/platform_dev.py build-images [--download-inputs]`.**
+   - It builds both archives into `.build/dev-images/` (`console.oci.tar`, `postgresql-pgvector.tar`) with the existing builders.
+   - It checks each manifest digest against `images.lock.json`.
+   - It never rewrites a receipt or lock in the repository; use `--check` semantics.
+   - It runs on Windows and Linux.
+5. **Tests (offline):**
+   - the registry export, with a fake HTTP server and a digest mismatch (refused);
+   - the wheel set, with a hash mismatch (refused);
+   - the console build from fixtures, giving a stable digest across two runs;
+   - `build-images`, with a lock mismatch (refused) and no repository writes;
+   - no `vcloud-wsl` or `microsoft` guard remains in the console builder.
+
+### Live (owner, after merge, from `E:\twinfra-live`; the laptop has Node and npm)
+
+1. `cd console`, then `npm ci`, `npm test` and `npm run build`; then `cd ..`.
+2. `python tools/platform_dev.py build-images --download-inputs`. Expected: both digests equal the lock.
+3. `python tools/platform_dev.py stage-images --context twinfra-dev-cairo-1 --archive-dir .build/dev-images`, then `--check`. Expected: `problems: []`.
+4. Then runbook steps 9–11.
+
+### Amendment 9a (2026-10-13, architect): resolves Codex's two stops
+
+Codex found that the retained WSL portal renderer `tools/vcloud_console.py`, which CI still runs, blocks both allowed corrections:
+- line 30: **"Image source drift: tools/build_console_image.py"**, because the receipt records the builder's own SHA-256;
+- line 26: **"Immutable portal image required"**, because it requires `canonical == registry.vcloud.example.com/vcloud/vcloud-console@<digest>`.
+
+The evidence is in `.build/wo-31/amendment9-constraints.json`. All 15 inputs match `3b6ec82`.
+
+**Approved changes:**
+1. **Receipt metadata may be refreshed; the digest may not.** In `console/image.lock.json`, the builder may regenerate `filesSHA256` entries for the build tooling it changes (`tools/build_console_image.py`, plus `tools/platform_oci.py` if it is listed or added), and the `base`, `tag` and `canonical` names. The Twinfra names must equal `images.lock.json`.
+   - `digest` must stay `sha256:385934466c5453902e4beda1d6ed7afb09eae6dd3419d0a7b0b219eece4cc4e2`.
+   - Every console **source** hash (everything except the build tooling) must stay identical.
+   - Write the receipt only after the rebuild has reproduced that digest.
+2. **The retained WSL renderer derives its image reference from the digest.** `tools/vcloud_console.py` `image()` validates the digest format and the source hashes, then returns `registry.vcloud.example.com/vcloud/vcloud-console@` + digest. It no longer compares the receipt's `canonical`. Its rendered WSL output must stay **byte-identical**: no regenerated WSL files, and historical baselines unaffected.
+   - For the source-drift check, it uses the receipt's `filesSHA256` as written, so the refreshed builder hash passes.
+3. **Unchanged:** if the digest doesn't reproduce, stop and report. Don't update any lock or receipt.
+
+**Extra tests:**
+- WSL render output: byte-identical before and after;
+- `image()` accepts the Twinfra `canonical` with the pinned digest;
+- `image()` rejects a changed digest or a changed console source hash.
