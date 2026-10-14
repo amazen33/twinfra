@@ -10,7 +10,7 @@ import yaml
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools'))
 import platform_dev as dev
-BASE='d15edac21bd313eb971331fd86263c16746ebbb7'
+BASE='d63fca605f43bde3d40b5aba641ad30996930340'
 MINI='sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da'
 PAUSE='registry.twinfra.example.com/registry.k8s.io/pause:3.10.2'
 
