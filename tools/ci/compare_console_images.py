@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / 'tools'))
 import build_console_image as builder
 from registry_export import export_public
 from platform_image_staging import validate_archive
+from platform_pg_image import Export
 
 
 def git(*args):
@@ -62,10 +63,18 @@ def compare(base, tools, out, prepared=False):
     before_base = out/'before-base.oci.tar'
     if prepared:
         for path,pin in ((out/'before-console.oci.tar',old['digest']),
-                         (ROOT/'.build/dev-images/console.oci.tar',after['digest']),
-                         (before_base,old['base'].split('@')[1]),
-                         (builder.DEFAULT_BASE,after['base'].split('@')[1])):
+                         (ROOT/'.build/dev-images/console.oci.tar',after['digest'])):
             validate_archive(path,pin)
+        for path,pin in ((before_base,old['base'].split('@')[1]),(builder.DEFAULT_BASE,after['base'].split('@')[1])):
+            source=Export(path)
+            try:
+                if source.root_digest!=pin:raise ValueError('Base index differs from receipt')
+                config=json.loads(source.blob(source.manifest['config']))
+                if (config['os'],config['architecture'])!=('linux','amd64'):
+                    raise ValueError('Base platform differs')
+                for desc in source.manifest['layers']:
+                    if len(source.blob(desc))!=desc['size']:raise ValueError('Base layer size differs')
+            finally:source.archive.close()
     else:
         old, after, before_base = build_pair(base, out)
     rows = [('console-before', old['canonical'], out / 'before-console.oci.tar'),
