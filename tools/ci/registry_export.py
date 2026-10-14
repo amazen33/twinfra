@@ -15,6 +15,8 @@ def export_public(reference, destination):
     match=re.fullmatch(r'(docker\.io|quay\.io|registry\.k8s\.io|ghcr\.io)/([a-z0-9._/-]+)(?::[a-z0-9._-]+)?@(sha256:[a-f0-9]{64})',reference)
     if not match:raise ValueError('Unsupported public registry or unpinned reference')
     host,repo,pin=match.groups();token=None;blobs={}
+    if any(part in ('','.','..') for part in repo.split('/')):
+        raise ValueError('Invalid public registry repository path')
     if host=='docker.io':return export_dockerhub(reference,destination)
     accept='application/vnd.oci.image.index.v1+json,application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.oci.image.manifest.v1+json,application/vnd.docker.distribution.manifest.v2+json'
     def get(kind,expected,size=None):

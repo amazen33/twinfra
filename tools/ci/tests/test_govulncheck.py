@@ -10,8 +10,10 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import stage_govulncheck as stage
 import licence_inventory as inventory
+import registry_export
 
 
 class GovulncheckBuild(unittest.TestCase):
@@ -74,6 +76,17 @@ class GovulncheckBuild(unittest.TestCase):
                          ('golang.org/x/vuln', 'v1.1.4', 'golang/vuln'))
         self.assertEqual(inventory.source_identity('https://go.dev/dl/go1.27.1.linux-amd64.tar.gz'),
                          ('golang/go', 'go1.27.1', 'golang/go'))
+
+    def test_registry_authority_and_path_are_validated_before_network(self):
+        digest='sha256:'+'a'*64
+        with patch.object(registry_export.urllib.request,'urlopen',side_effect=AssertionError('Network called')):
+            for value in ('https://evil.example/docker.io/library/python@'+digest,
+                          'docker.io.evil.example/library/python@'+digest,
+                          'x/docker.io/library/python@'+digest,
+                          'quay.io/a/../b@'+digest,'quay.io/a//b@'+digest,
+                          'quay.io/argoproj/argocd:latest'):
+                with self.subTest(reference=value),self.assertRaises(ValueError):
+                    registry_export.export_public(value,Path('unused'))
 
 
 if __name__ == '__main__':
