@@ -5,19 +5,19 @@ Date: 2026-10-14. Static only; no image promotion, lock change, staging or live 
 
 ## Result
 
-Both components are blocked. The newest published patches on the supported pinned minors still contain affected symbols for [GO-2026-6612](https://pkg.go.dev/vuln/GO-2026-6612).
+Promotion is pending source-mode reachability and complete net-improvement evidence under owner-approved Amendment 2. The newest published patches on the supported pinned minors still contain affected symbols for [GO-2026-6612](https://pkg.go.dev/vuln/GO-2026-6612).
 No fixed later patch or eligibility date has been verified. The dates below show when the tested patches became eligible; age alone does not permit promotion of an affected image.
 
 | Component | Current | Latest tested patch | Published | Eligible | Promotion |
 | --- | --- | --- | --- | --- | --- |
-| CoreDNS | 1.14.2 | [1.14.7](https://github.com/coredns/coredns/releases/tag/v1.14.7) | 2026-08-19 | 2026-09-02 | Blocked: affected symbols |
-| etcd | 3.6.8-0 | [3.6.15-0](https://github.com/etcd-io/etcd/releases/tag/v3.6.15) | 2026-09-22 | 2026-10-06 | Blocked: affected symbols |
+| CoreDNS | 1.14.2 | [1.14.7](https://github.com/coredns/coredns/releases/tag/v1.14.7) | 2026-08-19 | 2026-09-02 | Pending source/scan gates |
+| etcd | 3.6.8-0 | [3.6.15-0](https://github.com/etcd-io/etcd/releases/tag/v3.6.15) | 2026-09-22 | 2026-10-06 | Pending source/scan gates |
 
 ## Evidence
 
 [All-binary CI run 38601213896](https://github.com/amazen33/twinfra/actions/runs/38601213896) inspected every Go ELF in the verified Linux amd64 graphs. Image code was never executed.
 govulncheck v1.1.4 binary SHA256: `f77f577722ac825bf649c24023c24af64e44c77152ab4e1778b2f8a27c2011fb`.
-Binary mode establishes affected symbol presence, not runtime calls. Symbols are conservatively treated as reachable under WO-34; no not-reachable exception is created or extended.
+Binary mode establishes affected symbol presence, not runtime calls. Affected symbols are present, which alone does not establish a source call path. No not-reachable exception is created or extended.
 
 Candidate pins (data only):
 
@@ -45,8 +45,10 @@ Candidate pins (data only):
 
 ## Compatibility and next action
 
-The checksum-verified kubeadm v1.36.5 constants remain `CoreDNSVersion=v1.14.2` and `DefaultEtcdVersion=3.6.8-0`, with minor 36 mapped to etcd 3.6.8-0. Candidate releases stay on CoreDNS 1.14 and etcd 3.6, but have not been promoted or declared accepted kubeadm overrides. A future fixed candidate requires both binary triage and verified kubeadm configuration/render validation before promotion.
+The checksum-verified kubeadm v1.36.5 constants remain `CoreDNSVersion=v1.14.2` and `DefaultEtcdVersion=3.6.8-0`, with minor 36 mapped to etcd 3.6.8-0. Candidate releases stay on CoreDNS 1.14 and etcd 3.6, but have not been promoted or declared accepted kubeadm overrides. A net-improving candidate requires source call-stack evidence and verified kubeadm configuration/render validation before promotion. A reachable finding stops that component for an owner decision.
 
-No changed images means no before/after promotion scan table applies to this evidence-only PR. Complete vulnerability scans and zero fixable Critical acceptance remain Pending for a future fixed patch. Existing exceptions and their expiry dates are unchanged.
+No pins change in this evidence-only revision. Complete before/after scans run as data in PR #55; no new Critical/High finding and a net improvement are required by Amendment 2. Source analysis uses the binary-matched Go SDK: CoreDNS go1.26.6, etcd/server/etcdctl/etcdutl go1.26.8. Actual source evidence and the scan table remain Pending until those runs complete. Existing exceptions and their expiry dates are unchanged.
 
-Live acceptance and tester sign-off: Pending for the owner on `twinfra-dev-cairo-1` after a separately reviewed fixed patch. Do not stage these candidate pins.
+Live acceptance and tester sign-off: Pending for the owner on `twinfra-dev-cairo-1` after a separately reviewed, eligible patch. Do not stage these candidate pins.
+
+Amendment 2 deadline watch: report any Critical exception with no fix or validated not-reachable evidence to the owner by **2026-11-05**, before its **2026-11-12** expiry. Current binary-only evidence cannot discharge that risk; no expiry is extended.

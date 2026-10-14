@@ -7,6 +7,11 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ## [Unreleased]
 
+### Security
+
+- Record CoreDNS and etcd patch candidates and binary triage, with source-mode
+  reachability and net-improvement promotion gates pending (WO-34 P2b).
+
 ### Added
 
 - Release streams (Dev, Candidate, Stable): `RELEASING.md`, this changelog, `VERSION`
