@@ -26,6 +26,7 @@ disk = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(disk)
 
 CNPG_TAG_BASE='9c33d0c3bdae2447173df3797ec2c8666116992d'
+CNPG_TAG_RECEIPT='a84169a63a941f98c989d4db4739e9470e803fe4'
 
 
 class CNPGImage(unittest.TestCase):
@@ -78,6 +79,9 @@ class CNPGImage(unittest.TestCase):
             return subprocess.check_output(['git','-C',str(ROOT),'show',CNPG_TAG_BASE+':'+Path(path).as_posix()])
         for path,raw in dev.outputs().items():
             relative=path.relative_to(ROOT).as_posix();before=base(relative)
+            # Preserve Amendment 12's original one-field receipt; Amendment 13
+            # independently bounds the current operator-env change.
+            raw=subprocess.check_output(['git','-C',str(ROOT),'show',CNPG_TAG_RECEIPT+':'+relative]).decode()
             if relative=='deploy/environments/dev/cairo-1/platform/workloads.yaml':
                 pattern=rb'(?m)^  imageName: [^\n]+$'
                 self.assertEqual(len(re.findall(pattern,before)),1)

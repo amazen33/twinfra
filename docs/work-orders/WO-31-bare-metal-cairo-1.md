@@ -531,6 +531,61 @@ The real pod boundary is (a) never exposing a Service on the node and (b) Cilium
 3. **Document it.** `docs/dev-environment.md` gets a "Network boundary" section with the table above. It states that the host firewall covers host ports only, and lists Cilium host firewall (`enable-host-firewall`) together with a `CiliumClusterwideNetworkPolicy` for the host as a later hardening step.
 4. **Optional, for the owner to decide:** narrow host TCP 6443 from `192.168.1.0/24` to the laptop's reserved address only. The API already requires client certificates.
 
+### Amendment 13 (2026-10-14, architect): the CNPG operator's `OPERATOR_IMAGE_NAME` points at an unstaged upstream tag (blocks PostgreSQL)
+
+**Live evidence, after PR #50 (`a84169a`).** `Cluster/twinfra-postgres` was created ("Setting up primary"). Its pod `twinfra-postgres-1-initdb-*` stays in `Init:ImagePullBackOff`:
+- the init container `bootstrap-controller` uses `ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1`, and kubelet logs `failed to resolve reference "ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1"`;
+- the operator Deployment's env has `OPERATOR_IMAGE_NAME=ghcr.io/cloudnative-pg/cloudnative-pg:1.30.1` (the vendored upstream default), while its **container image** is already the pinned `registry.twinfra.example.com/ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267e…`;
+- the Dell has the operator staged **only** by digest, under `registry.twinfra.example.com/ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c…` and `ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c…`;
+- the kubelet is mirror-only, by design.
+
+Keycloak and OpenBao now pass the `pg-ca` mount and crash-loop only because PostgreSQL isn't up.
+
+**Fix (generator and kustomize patch; never hand-edit the vendored manifest; production render may change only here and in derived checksums):**
+1. **The operator setting.** Set the CNPG operator's `OPERATOR_IMAGE_NAME` to the operator's own locked image as `<canonical repository>:1.30.1@sha256:923c…`. The repository and digest come from `images.lock.json`; the tag comes from the vendored manifest. CRI resolves it through the staged digest record (Amendment 3).
+2. **Check every image reference.** Add a test over all rendered dev **and** production manifests. Every image reference must resolve to a lock entry, as its canonical `repo@digest` or as `repo:tag@digest` with the same repository and digest. That covers:
+   - container, initContainer and ephemeralContainer `image` fields;
+   - CRD image fields such as CNPG `Cluster.spec.imageName`, `ImageCatalog` and `Pooler`;
+   - **env values named `*IMAGE*`**.
+
+   No plain tag (`:tag` without a digest) or upstream registry may remain. Vendored objects that the cluster never runs can be listed by name as exceptions.
+3. **Re-bootstrap.** CNPG may not recreate a failed bootstrap job by itself. Document in the runbook that, after the fix syncs, the owner deletes the stuck job: `kubectl -n twinfra-platform-services delete job -l cnpg.io/cluster=twinfra-postgres,cnpg.io/jobRole=initdb`. CNPG then recreates it with the corrected image. Dev data is empty, so this is safe.
+
+**Live (owner, after merge).**
+1. Wait for Argo CD to sync, or use a hard refresh. The operator rolls out with the new environment variable.
+2. Delete the stuck initdb job as in item 3.
+3. Expected: `twinfra-postgres-1` Running, `Cluster` healthy, Keycloak and OpenBao Running, and all applications Synced and Healthy.
+
+#### Amendment 13a (2026-10-14, architect): where the image-reference guard applies
+
+Codex stopped, correctly. A universal rule would fail on references that are handled differently on purpose, and on known production debt:
+- kubeadm static Pods (API server, controller-manager, scheduler, etcd) are rendered by kubeadm with **tags**;
+- the production NVIDIA device plugin `:v0.20.1` has no lock entry;
+- production Cilium still uses `registry.vcloud.example.com`, a Stage C rename (ADR-0036) that hasn't happened yet.
+
+The guard therefore has three scopes:
+
+| Scope | Objects | Rule | Failure |
+| --- | --- | --- | --- |
+| **A. Dev workloads** | Everything rendered under `deploy/environments/dev/*/platform` and `…/services`, for `cairo-1` and `cairo-2` | Every reference resolves to `deploy/common/images.lock.json`, as `repo@digest` or `repo:tag@digest` with the same repository and digest. That covers container, init and ephemeral images, CRD image fields, and env values named `*IMAGE*` | **Blocking** |
+| **B. Dev bootstrap and system images** | kubeadm static Pods, CoreDNS, pause, and the Cilium agent, operator and envoy installed by Module -1 | Each reference resolves to `deploy/common/bootstrap-images.lock.json`. **Tag-only is allowed for kubeadm-generated static Pods**, because kubeadm can't render digests. The tag must equal a canonical name that `stage_bootstrap_images` stages and digest-verifies before `kubeadm init` | **Blocking** |
+| **C. Production renders** | `user-data.yaml`, `user-data-remote.yaml` and the production profile | The same checks, **report-only**: a dated list in the test output and in `docs/supply-chain-scanning.md`, "Production image-reference debt". Don't change any production reference in this PR except the CNPG operator's `OPERATOR_IMAGE_NAME`, if production renders it | Warning |
+
+- **Production follow-up:** fixing scope C (Stage C registry names, an NVIDIA digest lock entry or an `operator-pulled` record under ADR-0044) is a separate work order. Note it in the PR; don't do it here.
+
+**Amendment 13b (2026-10-14): what scope B's tag allowance covers.**
+- **The principle:** a tag-only reference is allowed **only where the rendering tool can't express a digest**. That means **kubeadm** (its static Pods and its CoreDNS addon) and **containerd's CRI configuration** (`sandbox_image`).
+- **Every such reference must equal a canonical name in `bootstrap-images.lock.json`**, which `stage_bootstrap_images` stages and digest-verifies before `kubeadm init`.
+- **The allowed set is a closed list:**
+  - the kube-apiserver, kube-controller-manager and kube-scheduler static Pods;
+  - etcd;
+  - CoreDNS (`registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.2`);
+  - pause (`registry.twinfra.example.com/registry.k8s.io/pause:3.10.1` as the CRI sandbox, plus the pause image kubeadm uses).
+
+  Any other tag-only reference in scope B fails. That includes everything Module -1 installs through Helm, such as Cilium, which must stay `repo:tag@digest`.
+- **Test:** the list is a constant in the guard. Adding an entry needs an ADR or work-order amendment.
+- **Unchanged from Amendment 13:** the `OPERATOR_IMAGE_NAME` fix, the runbook step, and the rule that no lock or digest changes.
+
 ### Amendment 12 (2026-10-14, architect): CNPG 1.30 refuses a digest-only PostgreSQL image (blocks the deployment, so do it first)
 
 **Live evidence.** Argo CD application `twinfra-platform` at `9c33d0c` reports `Failed`. The CNPG operator 1.30.1 is running, and its webhook `vcluster.cnpg.io` denies `Cluster/twinfra-postgres` with: `spec.imageName: Invalid value: "registry.twinfra.example.com/docker.io/twinfra/twinfra-postgresql-pgvector@sha256:baea2bf7…": Can't use just the image sha as we can't detect upgrades`.

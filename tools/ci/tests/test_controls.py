@@ -360,6 +360,15 @@ class Controls(unittest.TestCase):
                      'lab/wsl/console/apply.sh', 'lab/wsl/console/verify.sh'):
             self.assertIn(path, files)
 
+    def test_image_reference_bundle_is_absent_historically_and_partial_fails(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source=Path(directory);self.baseline_fixture(source)
+            self.assertEqual(checks.coverage(source)['image-references'],'not_present_in_revision')
+            path=source/'tools/platform_image_references.py';path.parent.mkdir(parents=True,exist_ok=True);path.touch()
+            with self.assertRaisesRegex(ValueError,'Incomplete image-references'):checks.coverage(source)
+            tests=source/'tests/test_image_references.py';tests.parent.mkdir(parents=True,exist_ok=True);tests.touch()
+            self.assertEqual(checks.coverage(source)['image-references'],'present')
+
     def test_portal_bundle_requires_backend_rbac_and_frontend_tests(self):
         files=checks.OPTIONAL['console']
         for path in ('console/src/App.test.tsx','tests/test_vcloud_console.py','deploy/console/bootstrap.yaml',

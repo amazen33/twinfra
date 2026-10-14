@@ -13,7 +13,13 @@ from pathlib import Path
 import re
 import shlex
 import subprocess
+import sys
 import urllib.request
+
+import yaml
+
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from platform_image_references import require as require_images, audit as audit_images, production_report
 
 VERSION = 'v1.36.5'
 URL = 'https://dl.k8s.io/release/' + VERSION + '/bin/linux/amd64/kubeadm'
@@ -172,6 +178,12 @@ def run(source, assets, report):
             execute(artifact_owner_command(preview, os.getuid(), os.getgid()), directory / 'artifact-owner.log')
             execute(['bash', '-c', prefix + 'validate_etcd_cert_mount ' + shlex.quote(str(preview))],
                     directory / 'assert-etcd.log', env=env)
+            objects=[yaml.safe_load((preview/file).read_text()) for file in MANIFESTS]
+            image_lock=json.loads((source/'deploy/common/bootstrap-images.lock.json').read_text())
+            if name=='dev-cairo-1':require_images(objects,image_lock,'B','kubeadm')
+            else:
+                debt=audit_images(objects,image_lock,'B','kubeadm')
+                (directory/'production-image-reference-debt.txt').write_text(production_report(debt),encoding='utf-8')
             summary['profiles'].append(dict(name=name, status='passed', phases=2, etcdMount='read-only; unique; config-derived'))
             print(name + ': real kubeadm control-plane/etcd dry-run and etcd mount assertion passed', flush=True)
         summary['status'] = 'passed'

@@ -20,6 +20,15 @@ UPSTREAM_FIXED={'CustomResourceDefinition'}
 
 def image(key): return json.loads((COMMON/'images.lock.json').read_text())['images'][key]['canonical']
 
+def operator_image(upstream):
+    """Use the verified vendor's version tag with our staged repository/digest."""
+    lock=json.loads((COMMON/'images.lock.json').read_text())['images']['cnpg']
+    tag=re.fullmatch(r'[^@]+:([0-9]+\.[0-9]+\.[0-9]+)',upstream)
+    canonical=re.fullmatch(r'(.+)@(sha256:[a-f0-9]{64})',lock['canonical'])
+    if not tag or upstream!=lock['release'] or not canonical or canonical[2]!=lock['digest']:
+        raise ValueError('CNPG vendor version or locked operator image differs')
+    return re.sub(r':[^/:]+$','',canonical[1])+':'+tag[1]+'@'+lock['digest']
+
 def refresh_console_image(check=False):
     path=COMMON/'images.lock.json';data=json.loads(path.read_text())
     digest=json.loads((ROOT/'console/image.lock.json').read_text())['canonical'].split('@')[1]
@@ -77,6 +86,10 @@ def controllers():
         if o['kind'] not in cluster_kinds:m['namespace']=NS
         spec=podspec(o)
         if spec:
+            if 'cnpg' in m['name']:
+                settings=[env for c in spec.get('containers',[]) for env in c.get('env',[]) if env['name']=='OPERATOR_IMAGE_NAME']
+                if len(settings)!=1 or 'value' not in settings[0]:raise ValueError('One literal CNPG OPERATOR_IMAGE_NAME required')
+                settings[0]['value']=operator_image(settings[0]['value'])
             uid=10001 if 'cnpg' in m['name'] else 999
             o['spec']['replicas']=1
             spec['securityContext']={'runAsNonRoot':True,'runAsUser':uid,'runAsGroup':uid,'fsGroup':uid,'seccompProfile':{'type':'RuntimeDefault'}}
