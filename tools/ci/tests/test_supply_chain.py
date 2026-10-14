@@ -288,6 +288,14 @@ class InventoryAndIntegrity(unittest.TestCase):
             value['locations']=[p for p in value['locations'] if p!='.github/workflows/supply-chain.yaml']
             self.assertEqual(value,entry,name)
         extra=[v for k,v in current.items() if k not in old]
+        go_names={'golang/go','golang.org/x/mod','golang.org/x/sync','golang.org/x/sys',
+                  'golang.org/x/telemetry','golang.org/x/tools','golang.org/x/vuln'}
+        go=[v for v in extra if v['name'] in go_names]
+        self.assertEqual({v['name'] for v in go},go_names)
+        for entry in go:
+            self.assertEqual(entry['spdx'],'BSD-3-Clause');self.assertEqual(entry['class'],'build-tool')
+            self.assertEqual(entry['locations'],['tools/ci/toolchain.lock.json']);self.assertTrue(entry['unmodified'])
+        extra=[v for v in extra if v['name'] not in go_names]
         self.assertEqual(len(extra),5)
         self.assertEqual({v['name'] for v in extra if v['ecosystem']=='github-action'},{'actions/cache','actions/download-artifact'})
         scanners=[v for v in extra if v['ecosystem']=='tool'];self.assertEqual(len(scanners),3)

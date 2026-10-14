@@ -101,6 +101,7 @@ def stage(destination, discover=False, root=ROOT):
     if (goroot / 'VERSION').read_text().splitlines()[0] != lock['goVersion']:
         raise ValueError('Go SDK version differs')
     proxy = destination / 'proxy'
+    versions = {}
     for item in lock['inputs']:
         prefix = 'https://proxy.golang.org/'
         if not item['url'].startswith(prefix):
@@ -108,6 +109,15 @@ def stage(destination, discover=False, root=ROOT):
         path = safe_target(proxy, item['url'].removeprefix(prefix))
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(download(item, destination / 'downloads' / item['sha256']))
+        match = re.fullmatch(r'(.+)/@v/([^/]+)\.(?:mod|info|zip)', item['url'].removeprefix(prefix))
+        if not match:
+            raise ValueError('Invalid pinned Go proxy record')
+        versions.setdefault(match[1], set()).add(match[2])
+    # The Go install command checks module deprecation through the version list.
+    # Expose only reviewed versions, without requesting a floating remote latest.
+    for module, values in versions.items():
+        listing = safe_target(proxy, module + '/@v/list')
+        listing.write_text('\n'.join(sorted(values)) + '\n', encoding='utf-8')
     env = dict(os.environ, GOROOT=str(goroot), GOPATH=str(destination / 'gopath'),
                GOCACHE=str(destination / 'cache'), GOPROXY=proxy.as_uri(),
                GOSUMDB='off', GOTOOLCHAIN='local', CGO_ENABLED='0', GOOS='linux',
