@@ -31,7 +31,23 @@ def compare(tools,scanner,out):
   report['images'].append(dict(name=name,reference=ref,verifiedAmd64Digest=bindings[name],
                              coverage='complete-oci-archive-linux-amd64',counts=counts(found),findings=found))
  sc.write(out/'comparison.json',report)
- return int(any(v['name'].endswith('-after') and (v['counts']['CriticalWithFix'] or v['counts']['HighWithFix']) for v in report['images']))
+ # A stopped component is still fully scanned as data. Only the actual rendered
+ # pin can be promoted; no exception is transferred to an inactive candidate.
+ root=Path(__file__).resolve().parents[2]
+ app=sc.read(root/'deploy/common/images.lock.json')['images']['ministack']['digest']
+ pause=sc.read(root/'deploy/common/bootstrap-images.lock.json')['images']['pause']['digest']
+ pins={'ministack':app,'pause':pause};report['promotions']={};failed=False
+ for component,pin in pins.items():
+  before=next(v for v in report['images'] if v['name']==component+'-before')
+  after=next(v for v in report['images'] if v['name']==component+'-after')
+  if pin not in (before['reference'].split('@')[1],after['reference'].split('@')[1]):
+   raise ValueError('Unexpected P3 rendered pin')
+  selected=after['reference'].endswith('@'+pin)
+  blocked=bool(after['counts']['CriticalWithFix'] or after['counts']['HighWithFix'])
+  report['promotions'][component]=dict(promoted=selected,blockedCandidate=blocked)
+  failed|=selected and blocked
+ sc.write(out/'comparison.json',report)
+ return int(failed)
 
 
 if __name__=='__main__':

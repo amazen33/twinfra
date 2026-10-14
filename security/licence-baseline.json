@@ -1230,16 +1230,6 @@
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "component": "oci-image|docker.io/library/python|sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170"
-    },
-    {
-      "id": "image-sbom:oci-image|docker.io/ministackorg/ministack|sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da",
-      "kind": "image-sbom",
-      "reason": "MiniStack replaced with the newest aged release under WO-06; review the exact image SBOM and bundled notices. Original evidence deadline retained.",
-      "owner": "Ahmed Mazen (@amazen33)",
-      "requiredEvidence": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
-      "recordedOn": "2026-10-09",
-      "expires": "2027-01-07",
-      "component": "oci-image|docker.io/ministackorg/ministack|sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da"
     }
   ]
 }

@@ -4,12 +4,16 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 import yaml
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools'))
 import platform_dev as dev
+sys.path.insert(0,str(ROOT/'tools/ci'))
+import record_p3_scan as receipt
 BASE='d63fca605f43bde3d40b5aba641ad30996930340'
 MINI='sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da'
 PAUSE='registry.twinfra.example.com/registry.k8s.io/pause:3.10.2'
@@ -25,14 +29,9 @@ class PatchPins(unittest.TestCase):
                      'lab/wsl/console/artifacts.lock.json','lab/wsl/console/workloads.yaml'):
             self.assertEqual((ROOT/name).read_bytes().replace(b'\r\n',b'\n') if not name.endswith('.gz') else (ROOT/name).read_bytes(),old(name),name)
 
-    def test_only_ministack_app_pin_changes_with_exact_patch_provenance(self):
+    def test_blocked_ministack_pin_is_unchanged_and_no_app_pin_changes(self):
         name='deploy/common/images.lock.json';before=json.loads(old(name));current=json.loads((ROOT/name).read_text())
-        entry=current['images']['ministack'];self.assertEqual(entry['digest'],MINI)
-        self.assertEqual(entry['release'],'docker.io/ministackorg/ministack:1.5.18')
-        self.assertEqual(entry['publishedAt'],'2026-09-28T22:44:59.959202Z')
-        self.assertEqual(entry['releasePublishedAt'],'2026-09-28T22:29:28Z')
-        for field in ('source','canonical'):self.assertTrue(entry[field].endswith('@'+MINI))
-        current['images']['ministack']=before['images']['ministack'];self.assertEqual(current,before)
+        self.assertEqual(current,before)
 
     def test_pause_is_kubeadm_pin_and_old_alias_is_reference_only(self):
         name='deploy/common/bootstrap-images.lock.json';before=json.loads(old(name));current=json.loads((ROOT/name).read_text())
@@ -61,20 +60,34 @@ class PatchPins(unittest.TestCase):
                 file['content']=original['content']
         self.assertEqual(current,before)
 
-    def test_services_render_changes_only_the_ministack_image(self):
+    def test_services_render_is_unchanged_when_ministack_is_stopped(self):
         path='deploy/environments/dev/cairo-1/services/workloads.yaml'
         before=list(yaml.safe_load_all(old(path)));current=list(yaml.safe_load_all((ROOT/path).read_text()))
-        # Large List fields are compared as data; only the selected container image is permitted.
-        matched=0
-        for item in current:
-            if item.get('kind')=='Deployment' and item['metadata']['name']=='twinfra-ministack':
-                container=item['spec']['template']['spec']['containers'][0]
-                self.assertTrue(container['image'].endswith('@'+MINI))
-                matched+=1
-                original=next(v for v in before if v['metadata']['name']=='twinfra-ministack')
-                container['image']=original['spec']['template']['spec']['containers'][0]['image']
-        self.assertEqual(matched,1)
         self.assertEqual(current,before)
+
+    def test_receipt_retains_blocked_mini_exception_and_rejects_promoted_critical(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            for name in ('deploy/common','security','docs/acceptance'):(root/name).mkdir(parents=True)
+            mini_before='sha256:'+'a'*64;mini_after='sha256:'+'b'*64;pause='sha256:'+'c'*64
+            app=root/'deploy/common/images.lock.json'
+            app.write_text(json.dumps({'images':{'ministack':{'digest':mini_before}}}))
+            (root/'deploy/common/bootstrap-images.lock.json').write_text(json.dumps({'images':{'pause':{'digest':pause}}}))
+            original={'target':'docker.io/ministackorg/ministack@'+mini_before,'package':'python','version':'3.13.15','vulnerability':'CVE-one'}
+            (root/'security/vulnerability-exceptions.json').write_text(json.dumps({'exceptions':[original]}))
+            rows=[]
+            for name,pin in [('ministack-before',mini_before),('ministack-after',mini_after),('pause-before','sha256:'+'d'*64),('pause-after',pause)]:
+                rows.append(dict(name=name,reference=('docker.io/ministackorg/ministack' if name.startswith('ministack') else 'registry.k8s.io/pause')+'@'+pin,
+                    coverage='complete-oci-archive-linux-amd64',counts={'CriticalWithFix':1 if name.startswith('ministack') else 0,'HighWithFix':0},findings=[]))
+            with patch.object(receipt,'ROOT',root):
+                value=receipt.record(dict(images=rows,date='2026-10-14',database={}),
+                    'https://github.com/amazen33/twinfra/actions/runs/123')
+                self.assertEqual(value['promotedImages'],['pause-after']);self.assertEqual(value['closedExceptions'],[])
+                self.assertEqual(json.loads((root/'security/vulnerability-exceptions.json').read_text())['exceptions'],[original])
+                app.write_text(json.dumps({'images':{'ministack':{'digest':mini_after}}}))
+                with self.assertRaisesRegex(ValueError,'fixable Critical'):
+                    receipt.record(dict(images=rows,date='2026-10-14',database={}),
+                        'https://github.com/amazen33/twinfra/actions/runs/123')
 
 
 if __name__=='__main__':unittest.main()

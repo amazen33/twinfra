@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-14",
+  "scope": "Static complete P3 image comparison; no live changes",
+  "result": "Passed for promoted scope; blocked candidates retained as data",
+  "promotedImages": [
+    "pause-after"
+  ],
+  "liveAcceptance": "Pending",
+  "testerSignOff": "Pending",
+  "runURL": "https://github.com/amazen33/twinfra/actions/runs/38631598894",
+  "database": {
+    "built": "2026-10-14T06:30:34Z",
+    "from": "https://grype.anchore.io/databases/v6/vulnerability-db_v6.1.10_2026-10-14T00:28:57Z_1791959434.tar.zst?checksum=sha256%3A30d8bcd3c09e03c9f734c522e104c1387e285e3f6e33da2ee7b55f521daadb3f",
+    "path": "/home/runner/work/twinfra/twinfra/.build/wo34-p3/scan/database/6/vulnerability.db",
+    "schemaVersion": "v6.1.10",
+    "valid": true
+  },
+  "images": [
+    {
+      "counts": {
+        "CriticalWithFix": 1,
+        "CriticalWithoutFix": 0,
+        "HighWithFix": 3,
+        "HighWithoutFix": 12
+      },
+      "coverage": "complete-oci-archive-linux-amd64",
+      "name": "ministack-before",
+      "reference": "docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+      "verifiedAmd64Digest": "sha256:b64788bdf442e4e0461d0bd9725e82924efb19d1d759a30daeebbd9c0b935ea5"
+    },
+    {
+      "counts": {
+        "CriticalWithFix": 1,
+        "CriticalWithoutFix": 0,
+        "HighWithFix": 3,
+        "HighWithoutFix": 12
+      },
+      "coverage": "complete-oci-archive-linux-amd64",
+      "name": "ministack-after",
+      "reference": "docker.io/ministackorg/ministack@sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da",
+      "verifiedAmd64Digest": "sha256:8016b1d309e57ae8aa3126c94db0e3a700615f92a816ab0d7c6c34065f53231e"
+    },
+    {
+      "counts": {
+        "CriticalWithFix": 0,
+        "CriticalWithoutFix": 0,
+        "HighWithFix": 0,
+        "HighWithoutFix": 0
+      },
+      "coverage": "complete-oci-archive-linux-amd64",
+      "name": "pause-before",
+      "reference": "registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c",
+      "verifiedAmd64Digest": "sha256:e5b941ef8f71de54dc3a13398226c269ba217d06650a21bd3afcf9d890cf1f41"
+    },
+    {
+      "counts": {
+        "CriticalWithFix": 0,
+        "CriticalWithoutFix": 0,
+        "HighWithFix": 0,
+        "HighWithoutFix": 0
+      },
+      "coverage": "complete-oci-archive-linux-amd64",
+      "name": "pause-after",
+      "reference": "registry.k8s.io/pause@sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
+      "verifiedAmd64Digest": "sha256:412c4a7219cb8a299a37337f3d87810c5340095322e15594a1637785adad0f17"
+    }
+  ],
+  "closedExceptions": [],
+  "remainingExceptions": 76
+}

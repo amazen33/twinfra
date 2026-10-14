@@ -14,8 +14,12 @@ def record(comparison, run_url):
     rows = {v['name']: v for v in comparison['images']}
     app = json.loads((ROOT / 'deploy/common/images.lock.json').read_text())
     boot = json.loads((ROOT / 'deploy/common/bootstrap-images.lock.json').read_text())
-    for name, pin in (('ministack-after', app['images']['ministack']['digest']),
-                      ('pause-after', boot['images']['pause']['digest'])):
+    promoted=[]
+    mini=app['images']['ministack']['digest']
+    if rows['ministack-after']['reference'].endswith('@'+mini):promoted.append(('ministack-after',mini))
+    elif not rows['ministack-before']['reference'].endswith('@'+mini):raise ValueError('Unexpected rendered MiniStack pin')
+    promoted.append(('pause-after',boot['images']['pause']['digest']))
+    for name, pin in promoted:
         row = rows[name]
         if not row['reference'].endswith('@' + pin) or row['coverage'] != 'complete-oci-archive-linux-amd64':
             raise ValueError('Complete scan must match the promoted lock')
@@ -30,6 +34,9 @@ def record(comparison, run_url):
         if before is None:
             kept.append(entry)
             continue
+        if before['name']=='ministack-before' and not any(name=='ministack-after' for name,_ in promoted):
+            kept.append(entry)
+            continue
         if not any(v['package'] == entry['package'] and v['version'] == entry['version']
                    and entry['vulnerability'] in v['aliases'] for v in before['findings']):
             raise ValueError('Exception lacks exact before-scan evidence')
@@ -40,7 +47,8 @@ def record(comparison, run_url):
     ledger['exceptions'] = kept
     path.write_text(json.dumps(ledger, indent=2) + '\n', encoding='utf-8', newline='\n')
     receipt = dict(date=comparison['date'], scope='Static complete P3 image comparison; no live changes',
-                   result='Passed', liveAcceptance='Pending', testerSignOff='Pending', runURL=run_url,
+                   result='Passed for promoted scope; blocked candidates retained as data',
+                   promotedImages=[name for name,_ in promoted], liveAcceptance='Pending', testerSignOff='Pending', runURL=run_url,
                    database=comparison['database'], images=[{k: v for k, v in row.items() if k != 'findings'}
                    for row in comparison['images']], closedExceptions=removed, remainingExceptions=len(kept))
     (ROOT / 'docs/acceptance/wo34-p3-2026-10-14.json').write_text(json.dumps(receipt, indent=2) + '\n',

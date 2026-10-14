@@ -259,9 +259,6 @@ class ImageBuildTests(unittest.TestCase):
         for key in ('console','python'):
             for field in ('source','canonical','digest'):
                 old_lock['images'][key][field]=current_lock['images'][key][field]
-        if current_lock['images']['ministack'].get('release')=='docker.io/ministackorg/ministack:1.5.18':
-            self.assertEqual(current_lock['images']['ministack']['digest'],'sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da')
-            current_lock['images']['ministack']=old_lock['images']['ministack']
         self.assertEqual(current_lock,old_lock,'Only the WO-34 console/Python pins may change')
         old_console=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':console/image.lock.json']))
         current_console=json.loads((ROOT/'console/image.lock.json').read_text())

@@ -786,9 +786,7 @@ class PinsAndProfiles(unittest.TestCase):
         # regression tests bound its one additive replacement-base finding.
         prior_ids={f['id'] for f in baseline['findings']}
         extras=[f for f in current['findings'] if f['id'] not in prior_ids]
-        allowed={'image-sbom:oci-image|docker.io/library/python|sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170',
-                 'image-sbom:oci-image|docker.io/ministackorg/ministack|sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da'}
-        self.assertTrue(all(f['id'] in allowed for f in extras))
+        self.assertTrue(all(f['id']=='image-sbom:oci-image|docker.io/library/python|sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170' for f in extras))
         current['findings']=[f for f in current['findings'] if f['id'] in prior_ids]
         self.assertEqual(current,baseline)
         for frozen in ('security/licence-policy.json','tools/ci/pr-baselines.json'):
