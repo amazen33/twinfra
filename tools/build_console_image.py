@@ -19,8 +19,12 @@ import tarfile
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-BASE = 'registry.twinfra.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e'
+BASE = 'registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170'
 TAG = 'registry.twinfra.example.com/docker.io/twinfra/twinfra-console:1.0.0'
+RELEASE_EVIDENCE = {'softwareVersion': '3.14.8', 'softwareReleasedOn': '2026-09-30',
+                    'officialDigestPublishedOn': '2026-10-09',
+                    'ageBasis': 'upstream-software-release',
+                    'decision': 'WO-34 Amendment 1'}
 DEFAULT_BASE = ROOT / '.build/console/python-base.oci.tar'
 
 
@@ -116,10 +120,10 @@ def build(base_path, target, wheels=ROOT / '.build/console/wheels'):
         layer_desc = descriptor(compressed, 'application/vnd.oci.image.layer.v1.tar+gzip')
         config['rootfs']['diff_ids'].append(digest(plain))
         config['created'] = '2026-10-08T00:00:00Z'
-        config.setdefault('history', []).append({'created': config['created'], 'created_by': 'vcloud-console deterministic application layer'})
+        config.setdefault('history', []).append({'created': config['created'], 'created_by': 'twinfra-console deterministic application layer'})
         c = config['config']
         c.update(User='65532:65532', WorkingDir='/app', Entrypoint=['python', '-B', '/app/server.py'], Cmd=None,
-                 ExposedPorts={'3000/tcp': {}}, Labels={'org.opencontainers.image.title': 'vcloud-console', 'org.opencontainers.image.version': '1.0.0'})
+                 ExposedPorts={'3000/tcp': {}}, Labels={'org.opencontainers.image.title': 'twinfra-console', 'org.opencontainers.image.version': '1.0.0'})
         c['Env'] = [e for e in c.get('Env', []) if e.split('=')[0] not in ('PORT', 'PYTHONDONTWRITEBYTECODE', 'PYTHONUNBUFFERED', 'PYTHONPATH')]
         c['Env'] += ['PORT=3000', 'PYTHONDONTWRITEBYTECODE=1', 'PYTHONUNBUFFERED=1', 'PYTHONPATH=/app/vendor']
         cfg = encoded(config); cfg_desc = descriptor(cfg, 'application/vnd.oci.image.config.v1+json')
@@ -143,6 +147,7 @@ def build(base_path, target, wheels=ROOT / '.build/console/wheels'):
     inputs += [ROOT / 'console/index.html', ROOT / 'console/vite.config.ts', ROOT / 'console/tsconfig.json', ROOT / 'console/Dockerfile']
     receipt = {'base': BASE, 'tag': TAG, 'digest': result['digest'], 'canonical': TAG.split(':')[0] + '@' + result['digest'],
                'filesSHA256': {str(p.relative_to(ROOT)).replace('\\', '/'): hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs if p.is_file()}}
+    receipt['releaseEvidence'] = dict(RELEASE_EVIDENCE)
     return receipt
 
 
@@ -174,6 +179,23 @@ def verify_receipt(receipt, refresh=False):
         if old!=new:raise ValueError('Console source hashes changed; receipt refresh refused')
     elif receipt!=expected:
         raise ValueError('Console build receipt differs')
+    return receipt
+
+
+def verify_patch_refresh(receipt):
+    """WO-34: permit a new base/metadata digest while preserving application bytes."""
+    expected = json.loads((ROOT / 'console/image.lock.json').read_text())
+    allowed = {'tools/build_console_image.py', 'tools/platform_oci.py', 'console/Dockerfile'}
+    old = {k: v for k, v in expected['filesSHA256'].items() if k not in allowed}
+    new = {k: v for k, v in receipt['filesSHA256'].items() if k not in allowed}
+    if old != new:
+        raise ValueError('Console patch refresh changed application sources')
+    before = re.search(r'python:(\d+)\.(\d+)\.(\d+)-slim-trixie@', expected['base'])
+    after = re.search(r'python:(\d+)\.(\d+)\.(\d+)-slim-trixie@', receipt['base'])
+    if not before or not after or before.groups()[:2] != after.groups()[:2] or int(after[3]) < int(before[3]):
+        raise ValueError('Console refresh must remain on the same Python minor')
+    if receipt['base'] != BASE or receipt['tag'] != TAG:
+        raise ValueError('Console patch refresh differs from the reviewed builder pins')
     return receipt
 
 

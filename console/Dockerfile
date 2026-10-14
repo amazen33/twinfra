@@ -9,7 +9,7 @@ COPY --chown=node:node console/src/ ./src/
 COPY --chown=node:node console/index.html console/tsconfig.json console/vite.config.ts ./
 RUN npm run build
 
-FROM python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e
+FROM python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170
 WORKDIR /app
 COPY console/requirements.txt /app/requirements.txt
 RUN python -m pip install --require-hashes --only-binary=:all: --no-compile --no-cache-dir --target /app/vendor -r /app/requirements.txt

@@ -276,7 +276,13 @@ class InventoryAndIntegrity(unittest.TestCase):
             if a['id']=='schema-source:tools/ci/toolchain.lock.json':
                 b=copy.deepcopy(b);b['fingerprint']=a['fingerprint']
             self.assertEqual(a,b)
-        self.assertEqual(len(old['findings']),len(new['findings']))
+        added=[v for v in new['findings'] if v['id'] not in {f['id'] for f in old['findings']}]
+        for entry in added:
+            self.assertEqual(entry['id'],'image-sbom:oci-image|docker.io/library/python|sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170')
+            before=next(v for v in old['findings'] if v['id'].startswith('image-sbom:oci-image|docker.io/library/python|'))
+            masked=copy.deepcopy(entry);masked['id']=before['id'];masked['component']=before['component']
+            self.assertEqual(masked,before,'Original distribution evidence deadline/owner remain unchanged')
+        self.assertLessEqual(len(added),1)
         self.assertEqual((ROOT/'tools/ci/pr-baselines.json').read_bytes(),subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':tools/ci/pr-baselines.json']))
 
     def test_licence_register_preserves_existing_terms_and_only_adds_scanners_actions(self):
@@ -286,8 +292,21 @@ class InventoryAndIntegrity(unittest.TestCase):
         for name,entry in old.items():
             value=copy.deepcopy(current[name])
             value['locations']=[p for p in value['locations'] if p!='.github/workflows/supply-chain.yaml']
+            if entry['name']=='docker.io/library/python':
+                # WO-34 moves only the console builder/dev consumers to 3.14.8.
+                moved={'console/Dockerfile','console/image.lock.json','tools/build_console_image.py','deploy/common/images.lock.json',
+                       'deploy/environments/dev/cairo-1/services/workloads.yaml'}
+                self.assertEqual(set(value['locations'])-moved,set(entry['locations'])-moved)
+                value['locations']=entry['locations']
             self.assertEqual(value,entry,name)
         extra=[v for k,v in current.items() if k not in old]
+        python=[v for v in extra if v['name']=='docker.io/library/python']
+        for entry in python:
+            self.assertEqual(entry['version'],'sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170')
+            self.assertEqual(entry['class'],'base-os');self.assertEqual(entry['spdx'],'PSF-2.0')
+            self.assertEqual(entry['licenceSource'],'https://raw.githubusercontent.com/python/cpython/v3.14.8/LICENSE')
+        self.assertLessEqual(len(python),1)
+        extra=[v for v in extra if v not in python]
         go_names={'golang/go','golang.org/x/mod','golang.org/x/sync','golang.org/x/sys',
                   'golang.org/x/telemetry','golang.org/x/tools','golang.org/x/vuln'}
         go=[v for v in extra if v['name'] in go_names]

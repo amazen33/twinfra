@@ -1220,6 +1220,16 @@
       "requiredEvidence": "Reviewed SBOM, distribution package licences and image notices for this exact digest",
       "recordedOn": "2026-10-10",
       "expires": "2027-01-07"
+    },
+    {
+      "id": "image-sbom:oci-image|docker.io/library/python|sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "kind": "image-sbom",
+      "reason": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
+      "owner": "Ahmed Mazen (@amazen33)",
+      "requiredEvidence": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
+      "recordedOn": "2026-10-09",
+      "expires": "2027-01-07",
+      "component": "oci-image|docker.io/library/python|sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170"
     }
   ]
 }
