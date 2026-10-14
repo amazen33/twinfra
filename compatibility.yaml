@@ -1,0 +1,10 @@
+# What this Twinfra release requires and provides (release-streams standard, section 5).
+product: twinfra
+version_source: VERSION
+requires:
+  kubernetes: "1.36.x"   # kubeadm on cairo-1 (ADR-0048)
+  cilium: "1.20.x"
+provides:
+  # The AWS-compatible API (ADR-0029, decision D1). 0.x: a development operation set, emulated
+  # services marked Emulated in the console; real S3/EC2 arrive with WO-22.
+  twinfra-aws-api: "v0 (dev)"

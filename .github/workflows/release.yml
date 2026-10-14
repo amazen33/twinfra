@@ -1,0 +1,64 @@
+name: release
+
+# A pushed v* tag creates a GitHub Release with the pinned image locks and the licence register
+# attached: a pre-release for -alpha/-beta/-rc tags, a draft for stable tags (the owner
+# publishes it). Product branch rules: alpha/beta from main or release/X.Y, rc and stable from
+# release/X.Y only. A manual run only validates.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name to validate against the current main (dry run, creates nothing), e.g. v0.1.0-alpha.1"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+      BRANCH_RULE: product
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate tag, version, changelog and branch
+        id: check
+        run: python3 .github/scripts/release_check.py tag "$TAG" --branch "$BRANCH_RULE" --notes "$RUNNER_TEMP/notes.md" --github-output "$GITHUB_OUTPUT"
+      - name: Collect release records
+        run: |
+          mkdir -p "$RUNNER_TEMP/assets"
+          cp deploy/common/images.lock.json "$RUNNER_TEMP/assets/platform-images.lock.json"
+          cp console/image.lock.json "$RUNNER_TEMP/assets/console-image.lock.json"
+          cp security/licence-register.json "$RUNNER_TEMP/assets/licence-register.json"
+          cp compatibility.yaml "$RUNNER_TEMP/assets/compatibility.yaml"
+          (cd "$RUNNER_TEMP/assets" && sha256sum * | tee SHA256SUMS)
+      - name: Show the release payload
+        env:
+          PRERELEASE: ${{ steps.check.outputs.prerelease }}
+        run: |
+          echo "tag=$TAG prerelease=$PRERELEASE event=$GITHUB_EVENT_NAME"
+          cat "$RUNNER_TEMP/notes.md"
+      - name: Create the GitHub Release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ steps.check.outputs.prerelease }}
+        run: |
+          kind="--draft"
+          if [ "$PRERELEASE" = "true" ]; then kind="--prerelease"; fi
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag $kind --title "$TAG" \
+            --notes-file "$RUNNER_TEMP/notes.md" "$RUNNER_TEMP"/assets/*
