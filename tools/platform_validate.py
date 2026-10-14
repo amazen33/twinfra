@@ -14,6 +14,7 @@ from platform_dev import database
 from manifest_contract import audit_objects, podspec
 from check_upstream_names import renders, source_objects, validate
 from platform_sources import check_argocd_api
+from platform_network_boundary import audit_boundary
 
 
 def run(command):
@@ -45,7 +46,8 @@ def main():
     if report['violations']:raise ValueError(str(report['violations']))
     env=dict(os.environ,PLATFORM_PROFILE='dev-cairo-1',NODE_IP='192.168.1.3',POD_CIDR='10.110.0.0/16',
              CLUSTER_DNS_NAME='twinfra-dev-cairo-1',IMAGE_REGISTRY='registry.twinfra.example.com')
-    command=['source "$1"; render_cilium_values','source "$1"; render_exception_policy']
+    command=['source "$1"; render_cilium_values','source "$1"; render_exception_policy',
+             'source "$1"; render_foundation']
     rendered=[]
     for code in command:
         rendered.append(subprocess.check_output([args.bash,'-c',code,'_',(ROOT/'00-setup-ubuntu-host.sh').as_posix()],env=env,text=True,encoding='utf-8'))
@@ -61,6 +63,14 @@ def main():
     result=audit_objects(nodes,node_policy)
     if result['violations']:raise ValueError(str(result['violations']))
     nodefile=args.build/'cilium.yaml';nodefile.write_text(raw,encoding='utf-8')
+    foundation=[o for o in yaml.safe_load_all(rendered[2]) if o]
+    namespaces=yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())['environments']['dev']['namespaces'].values()
+    boundary=audit_boundary(objects+nodes+foundation,namespaces)
+    (args.build/'network-boundary.json').write_text(json.dumps(boundary,indent=2)+'\n',encoding='utf-8')
+    if boundary['violations']:raise ValueError(str(boundary['violations']))
+    print('Network boundary: passed; ingress default-deny in '+', '.join(boundary['namespaces']))
+    foundationfile=args.build/'foundation.yaml'
+    foundationfile.write_text(rendered[2],encoding='utf-8')
     for name,entry in json.loads((ROOT/'deploy/common/schema.lock.json').read_text()).items():
         if hashlib.sha256((ROOT/'deploy/common/schemas'/name).read_bytes()).hexdigest()!=entry['sha256']:raise ValueError('Schema differs: '+name)
     templates=[ROOT/'deploy/common/schemas/{{.ResourceKind}}.json',args.schemas/'{{.ResourceKind}}.json',ROOT/'module-2/schemas/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json',
@@ -77,7 +87,7 @@ def main():
     # paths keep the exact locked schemas usable on both Windows and Linux.
     flags=[part for template in templates for part in
            ('-schema-location',Path(os.path.relpath(template)).as_posix() if os.name=='nt' else template.as_posix())]
-    print(run([args.kubeconform,'-strict','-summary','-kubernetes-version','1.36.5',*flags,output,nodefile]))
+    print(run([args.kubeconform,'-strict','-summary','-kubernetes-version','1.36.5',*flags,output,nodefile,foundationfile]))
     (args.build/'summary.json').write_text(json.dumps({'status':'passed','scope':'static only; live acceptance Pending','resources':len(objects),'ciliumResources':len(nodes),'nodePolicySourceSHA256':node_policy['sourcePolicySHA256']},indent=2)+'\n',encoding='utf-8')
 
 

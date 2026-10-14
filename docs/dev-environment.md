@@ -38,6 +38,46 @@ Planning allowances total **20 GiB**, not measured use:
 | HugePages: 128 × 2 MiB + 1 × 1 GiB | 1.25 GiB |
 | Budget headroom | **4.25 GiB** |
 
+## Network boundary
+
+[WO-31 Amendment 10](work-orders/WO-31-bare-metal-cairo-1.md) records the
+owner's read-only exposure check at main `9c33d0c`. The rendered overlay had no
+NodePort/LoadBalancer Service, external IP, host-network or host-port workload;
+CRD schema text is not a deployed workload. Live Services were ClusterIP.
+The Cilium check reported:
+
+| Setting | Observed value |
+| --- | --- |
+| `kube-proxy-replacement` | `true` |
+| `enable-host-firewall` | `false` |
+| `routing-mode` | `native` |
+| `enable-bpf-masquerade` | `true` |
+| `bpf-lb-external-clusterip` | `false` |
+
+The `inet twinfra_host` nftables table protects **host-bound ports only**.
+Cilium's tc programs on `eno1` can handle node-exposed or pod-bound traffic
+**before netfilter**. The table cannot enforce the pod boundary against
+NodePort, LoadBalancer, hostPort or a LAN client with a route to the pod CIDR.
+The existing prerouting rule is additional filtering, not proof of pod isolation.
+
+The CI contract in [platform_network_boundary.py](../tools/platform_network_boundary.py)
+therefore rejects NodePort/LoadBalancer Services, nonempty `externalIPs`,
+explicit `nodePort`, `hostNetwork: true` and any `hostPort` in Twinfra namespaces.
+The only named node exceptions are `kube-system` DaemonSets `cilium` and
+`cilium-envoy`, and Deployment `cilium-operator`; their pinned-source identity
+and approved node projection are also checked. Each Twinfra namespace requires
+a namespace-wide ingress default-deny NetworkPolicy. Separate explicit Cilium
+allows admit the gateway, Argo CD, CNPG, DNS and control-plane edges. The check
+includes all three SSoT dev namespaces and the shared bootstrap foundation.
+
+Cilium host firewall (`enable-host-firewall`) with a host-scoped
+`CiliumClusterwideNetworkPolicy` is a **later hardening step**, requiring its own
+review and acceptance. This change enables neither. Narrowing host TCP 6443
+from `192.168.1.0/24` to the laptop's reserved address is an optional owner
+decision; the current LAN rule stays unchanged, and API access requires client
+certificates. Owner-reported LAN checks and GitHub egress are recorded in the
+[Pending acceptance receipt](acceptance/dev-environment-2026-10-13.md).
+
 ### Numbered owner runbook
 
 These commands are for the **owner after review/merge**, not executed by Codex.
@@ -110,9 +150,11 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
    atomically replaces only `inet twinfra_host`, filtering `eno1` host ingress.
    It allows established/related, ICMP, DHCP replies, and LAN TCP 22/6443;
    other host ingress on that interface drops. There is no forward chain.
-   One prerouting rule, after conntrack and before DNAT, drops **new** traffic
+   One prerouting rule, after conntrack and before DNAT, matches **new** traffic
    from `eno1` addressed to the SSoT dev pod/service CIDRs (`10.110.0.0/16`,
-   `10.111.0.0/16`). GitHub responses to pod-initiated connections remain allowed.
+   `10.111.0.0/16`). Cilium's earlier tc processing can bypass this rule; the
+   Network boundary contract above supplies pod isolation. The owner reported
+   Argo CD fetching GitHub through the confirmed firewall in the dated receipt.
    Other interfaces use accept policy.
    A 120-second rollback is armed before load and cancelled only after a fresh
    SSH connection succeeds. On connection failure, leave the timer armed and
@@ -258,14 +300,17 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
     ```powershell
     python tools/platform_dev.py check
     python deploy/common/prepare-secrets.py --context twinfra-dev-cairo-1 --apply
-    kubectl --context twinfra-dev-cairo-1 apply -k deploy/environments/dev/cairo-1/platform
-    kubectl --context twinfra-dev-cairo-1 apply -k deploy/environments/dev/cairo-1/services
+    kubectl --context twinfra-dev-cairo-1 apply --server-side --force-conflicts -k deploy/environments/dev/cairo-1/platform
+    kubectl --context twinfra-dev-cairo-1 apply --server-side --force-conflicts -k deploy/environments/dev/cairo-1/services
     kubectl --context twinfra-dev-cairo-1 apply -f deploy/environments/dev/cairo-1/root.yaml
     ```
 
     Expected: create-only credential Secrets; CNPG/PostgreSQL, identity/gateway/
-    console services Ready; Argo reconciles protected `main`. Wait for CRDs and
-    repeat apply if needed. Verify the finite LV is mounted before applying the
+    console services Ready; Argo reconciles protected `main`. Server-side apply
+    avoids the 262144-byte last-applied annotation limit on large CRDs. The first
+    run can report `no matches for kind Cluster/Database` before the CRDs are
+    established; wait for establishment, then repeat the **same commands**.
+    Verify the finite LV is mounted before applying the
     platform; never create a plain root-filesystem PV directory instead.
 
     **CNPG initdb recovery after WO-31 Amendments 13–13b (owner, after merge).**
@@ -301,8 +346,98 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
     actual synced revision and Synced/Healthy status in the acceptance receipt.
     Cached manifests alone do not pass this gate.
 
-11. **Owner: loopback forwards, tunnels and browser checks.** On the Dell, in
-    separate foreground sessions, run each forward:
+    **Dev reconciliation after Amendment 14:** all three generated Applications
+    keep `ServerSideApply=true` and set
+    `argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true`.
+    The shared Application factory applies both options to `twinfra-root`,
+    `twinfra-platform` and `twinfra-services` for both dev regions. Cairo-2 remains
+    a cold seed; its workload deployment/recovery belongs to WO-23. Do not rely
+    on the global controller setting alone: mutation-webhook comparison is a
+    per-Application option. Server-side dry-run comparison includes CNPG webhook
+    defaults without hiding actual drift with `ignoreDifferences`.
+    **Server-Side Diff is not performed on initial creation**; it compares
+    resources after they exist. See the pinned
+    [Argo CD v3.5.3 diff documentation](https://github.com/argoproj/argo-cd/blob/v3.5.3/docs/user-guide/diff-strategies.md).
+    The dev runtime generator omits the unsupported OpenBao
+    `disable_mlock` field. After the amended profile syncs, record
+    `twinfra-platform` **Synced/Healthy** and absence of that warning in OpenBao
+    logs. The existing Healthy/OutOfSync observation remains in the receipt.
+
+    For an existing installation, apply the updated `root.yaml` with the step
+    10 command so the root Application also gets both comparison options;
+    Argo CD reconciles the child Applications. Once the services ConfigMap is
+    synced, the owner restarts only OpenBao to regenerate its tmpfs HCL through
+    the init container. Updating a ConfigMap does not re-run that init container:
+
+    ```powershell
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services rollout restart deployment/twinfra-openbao
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services rollout status deployment/twinfra-openbao --timeout=180s
+    ```
+
+    This is an owner action after merge, not a CI action. It performs no
+    initialization or unseal ceremony; those remain under WO-08.
+
+11. **Owner: laptop loopback forwards and browser checks.** The primary method
+    runs kubectl **on the laptop** through the API on 6443. Keep each forward in
+    its own foreground PowerShell terminal:
+
+    ```powershell
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services port-forward --address 127.0.0.1 svc/twinfra-gateway 18444:9443
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services port-forward --address 127.0.0.1 svc/twinfra-keycloak 18443:443
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services port-forward --address 127.0.0.1 svc/argocd-server 18081:443
+    ```
+
+    Add these browser names to the laptop hosts file, then trust only the public
+    dev `ca.crt` in the browser/OS trust store:
+
+    ```text
+    127.0.0.1 console.dev.cairo-1.twinfra.example.com auth.dev.cairo-1.twinfra.example.com gitops.dev.cairo-1.twinfra.example.com
+    ```
+
+    Expected: trusted HTTPS console on 18444, Keycloak on 18443, Argo CD on 18081;
+    `/console/callback` uses HTTPS. Start a fresh browser session at
+    <https://console.dev.cairo-1.twinfra.example.com:18444/console/>. Keep the
+    forwards open; Ctrl-C stops each session. Every local listener binds only
+    to `127.0.0.1`, and no admin service is exposed on the LAN.
+
+    **Sign-in (owner only):** copy the Keycloak bootstrap admin password directly
+    from its Secret to the clipboard. The username is `twinfra-admin`; open
+    <https://auth.dev.cairo-1.twinfra.example.com:18443/admin/master/console/>.
+    The command prints no password and writes no credential file:
+
+    ```powershell
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services get secret twinfra-keycloak-admin -o jsonpath='{.data.password}' |
+      ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) } |
+      Set-Clipboard
+    ```
+
+    Copy Argo CD's initial admin password to the clipboard immediately before
+    opening <https://gitops.dev.cairo-1.twinfra.example.com:18081/> as `admin`:
+
+    ```powershell
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' |
+      ForEach-Object { [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($_)) } |
+      Set-Clipboard
+    ```
+
+    Initial credentials apply only until rotated; use the owner's existing
+    credential after rotation. `argocd-secret` contains a password hash, not the
+    cleartext login password. Do not print credentials or place them in shell
+    transcripts, screenshots, Git or evidence. Clear the clipboard when finished
+    with `Set-Clipboard -Value ''`.
+
+    **First console user:** the realm import has no users. In Keycloak's admin
+    console select realm `twinfra`, add the owner's dedicated console username,
+    enable it and set a temporary password using the owner's password manager.
+    In that user's Role mapping, filter client roles and assign
+    `twinfra-console` / `console.admin`. This is a console role, not master-realm
+    administration. Leave the configured TOTP enrollment action enabled and
+    complete password change and TOTP enrollment from a fresh console sign-in.
+    Keep passwords and OTP seeds out of Git, logs and receipts.
+
+    **Alternative:** retain the Dell-side loopback forwards plus an SSH tunnel.
+    Use this instead of the laptop forwards, so the same laptop ports are free.
+    On the Dell, in separate foreground sessions:
 
     ```bash
     sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n twinfra-platform-services port-forward --address 127.0.0.1 svc/twinfra-gateway 18444:9443
@@ -316,17 +451,9 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
     ssh -N -o BatchMode=yes -o StrictHostKeyChecking=yes -o ExitOnForwardFailure=yes -L 127.0.0.1:18444:127.0.0.1:18444 -L 127.0.0.1:18443:127.0.0.1:18443 -L 127.0.0.1:18081:127.0.0.1:18081 twinfra-operator@192.168.1.3
     ```
 
-    Add these browser names to the laptop hosts file, then trust only the public
-    dev `ca.crt` in the browser/OS trust store:
-
-    ```text
-    127.0.0.1 console.dev.cairo-1.twinfra.example.com auth.dev.cairo-1.twinfra.example.com gitops.dev.cairo-1.twinfra.example.com
-    ```
-
-    Expected: HTTPS console on 18444, Keycloak on 18443, Argo CD on 18081;
-    `/console/callback` uses HTTPS. Test with a fresh browser session from
-    [service access](service-access.md). Keep forwards/tunnel open; Ctrl-C stops
-    each session. No admin service binds publicly on the LAN.
+    Use the same browser authorities and name-constrained CA trust above.
+    Keep the forwards/tunnel open; Ctrl-C stops each session. See
+    [service access](service-access.md) for the configured UI paths.
 
 ### Runtime pin evidence and render boundary
 

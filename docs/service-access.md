@@ -3,7 +3,7 @@
 The current target is **twinfra-dev-cairo-1**, namespace
 `twinfra-platform-services`, under [ADR-0046](adr/0046-naming-dev-environment-and-regions.md).
 Follow the [dev environment runbook](dev-environment.md) for provisioning,
-image staging, dev CA trust, DNS and loopback SSH tunnels. These addresses are
+image staging, dev CA trust, DNS and laptop loopback forwards (SSH alternative). These addresses are
 configured targets; live acceptance is **Pending**. Earlier WSL results remain
 in the unchanged [acceptance receipts](acceptance/README.md).
 
@@ -28,8 +28,10 @@ and public evidence. See the [portal reference](../console/README.md).
 
 ## Start, check and stop access
 
-Use steps 13–15 of the [dev runbook](dev-environment.md) for gateway/identity
-tunnels and name-constrained CA trust. After owner authorization, a separate
+Use step 11 of the [dev runbook](dev-environment.md) for gateway/identity
+forwards, sign-in and name-constrained CA trust. Owner-reported HTTPS/TOTP
+results are recorded in the [Pending receipt](acceptance/dev-environment-2026-10-13.md).
+After owner authorization, a separate
 MiniStack API forward can verify that port 4566 reaches MiniStack.
 
 On the Dell, with its verified local kubeadm configuration:

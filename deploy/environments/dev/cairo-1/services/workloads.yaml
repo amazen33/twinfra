@@ -17,7 +17,7 @@ data:
     \ credential format')\n    host=os.environ.get('POSTGRES_HOST','twinfra-postgres-rw.twinfra-platform-services.svc.cluster.local')\n\
     \    if mode=='openbao':\n        url=f'postgresql://openbao:{quote(password,safe=\"\
     \")}@{host}:5432/openbao?sslmode=verify-full&sslrootcert=/pg-ca/ca.crt'\n    \
-    \    text=('ui = true\\ndisable_mlock = true\\napi_addr = \"https://twinfra-openbao.twinfra-platform-services.svc.cluster.local:8200\"\
+    \    text=('ui = true\\napi_addr = \"https://twinfra-openbao.twinfra-platform-services.svc.cluster.local:8200\"\
     \\n'\n              'storage \"postgresql\" {\\n connection_url = '+json.dumps(url)+'\\\
     n max_parallel = \"4\"\\n}\\n'\n              'listener \"tcp\" {\\n address =\
     \ \"0.0.0.0:8200\"\\n cluster_address = \"127.0.0.1:8202\"\\n tls_cert_file =\

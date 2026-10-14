@@ -160,6 +160,10 @@ class OperatorAndRenders(unittest.TestCase):
         def base(path):return subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+path])
         for path,raw in dev.outputs().items():
             relative=path.relative_to(ROOT).as_posix();before=base(relative)
+            # Preserve Amendment 13's original one-field receipt. Amendments
+            # 10/11/14 independently bound today's outputs in test_platform_hygiene.
+            raw=subprocess.check_output(['git','-C',str(ROOT),'show',
+                '9404906da34175f9175822edf9b5be2cf10e7330:'+relative]).decode()
             if relative.endswith('/platform/workloads.yaml'):
                 pattern=rb'(?m)(^        - name: OPERATOR_IMAGE_NAME\n          value: )[^\n]+'
                 self.assertEqual(len(re.findall(pattern,before)),1)
