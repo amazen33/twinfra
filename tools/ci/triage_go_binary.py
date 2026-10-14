@@ -11,7 +11,7 @@ import tarfile
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'tools'))
-from platform_oci import export_public
+from registry_export import export_public
 from platform_pg_image import Export
 
 
