@@ -1,6 +1,6 @@
 # Twinfra platform bootstrap and architecture
 
-Twinfra (formerly vCloud) — *your AWS twin, on your own infrastructure.*
+Twinfra (pronounced *twin-infra*; formerly vCloud) — *your AWS twin, on your own infrastructure.*
 
 [ADR-0036](docs/adr/0036-product-name-twinfra.md) and
 [WO-20](docs/work-orders/WO-20-rename-to-twinfra.md) define the staged rename.
