@@ -39,9 +39,3 @@
 - Old identifiers coexist with the new name until Stage C. Docs say so explicitly, so nobody mistakes a
   `vcloud` realm or label for a stray leftover.
 - CI must keep validating historical baselines that use the old names.
-
-## Addendum: pronunciation (owner, 2026-10-14)
-
-- **Say it:** **Twinfra** is pronounced **"twin-infra"** (IPA /ˈtwɪnˌɪnfrə/). It joins *twin* and *infra*structure: an AWS twin, running on your own infrastructure.
-- **Write it:** **Twinfra**, one word, capital T only. The hyphenated form is used only as the pronunciation guide, for example "Twinfra (pronounced *twin-infra*)". Never write "TwInfra", "Twin-Infra" or "TWINFRA" in prose. The console's all-caps eyebrow and label styling is a visual style, not a spelling.
-- **Where it appears:** the first mention in the README, the docs landing page, the console (a brand tooltip and its footer or "About"), and the public portfolio.

@@ -1,14 +1,6 @@
 # Twinfra platform bootstrap and architecture
 
-Twinfra (pronounced *twin-infra*; formerly vCloud) — *your AWS twin, on your own infrastructure.*
-
-[ADR-0036](docs/adr/0036-product-name-twinfra.md) and
-[WO-20](docs/work-orders/WO-20-rename-to-twinfra.md) define the staged rename.
-Stage A introduced the branding. The owner renamed the repository to
-[`amazen33/twinfra`](https://github.com/amazen33/twinfra); Stage B updates its references.
-The `vcloud` realm, client IDs,
-labels, resource names, domains and SSoT identity stay unchanged until Stage C's
-separate work order and Ubuntu VM rebuild. Historical records retain their original names.
+Twinfra (pronounced *twin-infra*) — *your AWS twin, on your own infrastructure.*
 
 [The ADR log](docs/adr/README.md) contains 39 records, including 17 Module 1 component ADRs,
 the [complete Mermaid/ASCII topology](docs/module-1-topology.md), and a
