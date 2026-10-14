@@ -90,6 +90,9 @@ if canonical:
         expected_orders.append('WO-32')
         assert 49 in numbers, 'missing WO-32 ADR-0049'
         assert (root/'docs/supply-chain-scanning.md').is_file(), 'missing supply-chain runbook'
+    if (root/'docs/work-orders/WO-34-image-patch-refresh.md').is_file():
+        expected_orders.append('WO-34')
+        assert 49 in numbers, 'missing WO-34 ADR-0049'
     assert [file.name[:5] for file in orders] == sorted(expected_orders), orders
     assert (root / 'docs/work-orders/README.md').is_file()
     assert not (root / 'docs/work-orders/CODEX-PROMPTS.md').exists()

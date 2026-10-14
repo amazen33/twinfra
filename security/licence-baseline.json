@@ -1184,7 +1184,7 @@
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "tools/ci/toolchain.lock.json",
-      "fingerprint": "e7b9f10392dfc669c94d0aa1c55c6c7f3df0f478c5bc32d2182b02f84ea1e331"
+      "fingerprint": "e2d010cc541c3b7c137b9037628ae07b497ff0e1f360eee5d4b1dce8e240eb70"
     },
     {
       "id": "schema-source:deploy/common/schema.lock.json",
