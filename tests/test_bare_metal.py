@@ -826,7 +826,10 @@ class PinsAndProfiles(unittest.TestCase):
                      'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
                      'deploy/environments/dev/cairo-2/seed/meta-data','deploy/environments/dev/cairo-2/seed/network-config',
                      'security/licence-policy.json','tools/ci/pr-baselines.json'):
-            self.assertEqual((ROOT/name).read_bytes().replace(b'\r\n',b'\n'),base(name),name)
+            # Historical receipt stays exact; WO-34 has its own bounded pin test.
+            actual=(subprocess.check_output(['git','-C',str(ROOT),'show','3b6ec829105ebc1511b067d53c24d0766b701fb6:'+name])
+                    if name=='deploy/common/images.lock.json' else (ROOT/name).read_bytes())
+            self.assertEqual(actual.replace(b'\r\n',b'\n'),base(name),name)
 
     def test_amendment_4_licence_evidence_changes_only_kubeadm_artifact(self):
         before=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_4_BASE+':security/licence-register.json']))
@@ -945,7 +948,8 @@ class PinsAndProfiles(unittest.TestCase):
             # Preserve both original receipts: WO-32 registry additions and
             # Amendment 13's CI-helper hook are independently bounded by their
             # respective supply-chain and image-reference regression suites.
-            receipt=(AMENDMENT_13_BASE if name=='tools/ci/kubeadm_dry_run.py' else
+            receipt=('3b6ec829105ebc1511b067d53c24d0766b701fb6' if name=='deploy/common/images.lock.json' else
+                AMENDMENT_13_BASE if name=='tools/ci/kubeadm_dry_run.py' else
                 '3b6ec829105ebc1511b067d53c24d0766b701fb6' if name in (
                     'security/licence-register.json','tools/ci/toolchain.lock.json') else None)
             actual=(subprocess.check_output(['git','-C',str(ROOT),'show',receipt+':'+name])

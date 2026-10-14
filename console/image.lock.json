@@ -9,7 +9,7 @@
     "console/requirements.txt": "634db323a0f824f418b7a9506720fe2374aca3329dbbe7488c3f1880364066ce",
     "console/server.py": "ec35543681f8ebdc381c5ae794af3c63e7a9832afb8bf0d6dcd9e931ea85e6be",
     "console/aws_views.py": "b2d6b3ff4c938b74cc67deab649b700634061ea994abe1283d81a5f0d8050b71",
-    "tools/build_console_image.py": "352255f2df7f593a6487839bdbe7ec3ab0c9a553fb2b1a09620d6ed4e6c2be32",
+    "tools/build_console_image.py": "a1ee0eaf0f89d792e11c50fb27e900889233217ff1de85930430b4e0724d42a4",
     "tools/platform_oci.py": "efbc1a12b9fcaec88ff6af1271562b676c945f045c49170807876c2b89659d6e",
     "console/src/api.ts": "1101bddebe57bdf436e32b2b7c36168351cd4e519aa52a39de608aa23c66f018",
     "console/src/App.test.tsx": "11b9f2221652b13644e7e74a1e5a1c27ddf3f929f03fa1e304aa12e31c564ca4",

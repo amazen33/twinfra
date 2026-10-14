@@ -21,33 +21,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  console-images:
-    runs-on: windows-2025
-    timeout-minutes: 15
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
-        with:
-          python-version: '3.14.5'
-      - run: python tools/ci/compare_console_images.py --base b55c0ea3a7805e80c218dcc13a5bfbea7e259a24 --build-only
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: wo34-console-archives
-          path: |
-            .build/wo34-console/*.oci.tar
-            .build/dev-images/console.oci.tar
-            .build/console/python-base.oci.tar
-          retention-days: 3
   scan-pr:
     name: Supply-chain PR scan
     runs-on: ubuntu-24.04
-    needs: console-images
-    if: ${{ always() && !cancelled() && (needs.console-images.result == 'success' || needs.console-images.result == 'skipped') }}
     timeout-minutes: 60
     permissions:
       contents: read
@@ -76,15 +52,10 @@ jobs:
           args=()
           if [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && "$BASE_SHA" != 0000000000000000000000000000000000000000 ]]; then args=(--base "$BASE_SHA"); fi
           python tools/ci/supply_chain.py inventory "${args[@]}"
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
-        if: ${{ needs.console-images.result == 'success' }}
-        with:
-          name: wo34-console-archives
-          path: .build
       - name: Reproduce and fully compare the WO-34 console images
         run: |
           if [[ -f tools/ci/compare_console_images.py ]]; then
-            python tools/ci/compare_console_images.py --prepared --base b55c0ea3a7805e80c218dcc13a5bfbea7e259a24 --tools .build/scan-tools/bin
+            python tools/ci/compare_console_images.py --base b55c0ea3a7805e80c218dcc13a5bfbea7e259a24 --tools .build/scan-tools/bin
             python tools/ci/supply_chain.py inventory --full
           fi
       - name: Scan pinned images and lockfiles with fresh vulnerability data

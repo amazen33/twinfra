@@ -287,6 +287,18 @@ class ImageBuildTests(unittest.TestCase):
                 sha.return_value.hexdigest.return_value='invalid'
                 with self.assertRaisesRegex(ValueError,'checksum'):console.stage_frontend()
 
+    def test_pinned_compression_layer_is_verified_against_fresh_payload(self):
+        lock=json.loads((ROOT/'console/application-layer.lock.json').read_text())
+        raw=(ROOT/'console/application-layer.tar.gz').read_bytes()
+        import gzip
+        self.assertEqual(hashlib.sha256(raw).hexdigest(),lock['archiveSHA256'])
+        self.assertEqual(hashlib.sha256(gzip.decompress(raw)).hexdigest(),lock['uncompressedSHA256'])
+        with self.fixture() as (root,wheels,base):
+            (root/'console/application-layer.lock.json').write_text(json.dumps(lock))
+            (root/'console/application-layer.tar.gz').write_bytes(raw)
+            with self.assertRaisesRegex(ValueError,'freshly assembled payload'):
+                console.build(base,root/'refused.tar',wheels)
+
     def test_explicit_refresh_updates_only_receipt_and_two_image_pins(self):
         with self.fixture() as (root,wheels,base):
             before=json.loads((root/'deploy/common/images.lock.json').read_text())

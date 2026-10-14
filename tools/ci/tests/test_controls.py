@@ -335,15 +335,8 @@ class Controls(unittest.TestCase):
         workflow = yaml.safe_load(path.read_text())
         self.assertEqual(workflow['permissions'], {'contents': 'read', 'pull-requests': 'read'})
         self.assertNotIn('pull_request_target', path.read_text())
-        for name,job in workflow['jobs'].items():
-            if name=='console-images':
-                self.assertEqual(job['runs-on'],'windows-2025')
-                self.assertEqual(job['permissions'],{'contents':'read'})
-                commands=[s['run'] for s in job['steps'] if 'run' in s]
-                self.assertEqual(commands,['python tools/ci/compare_console_images.py --base b55c0ea3a7805e80c218dcc13a5bfbea7e259a24 --build-only'])
-                self.assertNotIn('secrets.',json.dumps(job))
-            else:
-                self.assertEqual(job['runs-on'], 'ubuntu-24.04')
+        for job in workflow['jobs'].values():
+            self.assertEqual(job['runs-on'], 'ubuntu-24.04')
             for step in job.get('steps', []):
                 if 'uses' in step:
                     self.assertRegex(step['uses'], r'^[a-z-]+/[a-z-]+@[0-9a-f]{40}$')

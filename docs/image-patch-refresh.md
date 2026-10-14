@@ -1,104 +1,37 @@
 # WO-34 image patch refresh
 
-The [approved work order](work-orders/WO-34-image-patch-refresh.md) controls
-release selection, digest pinning, exception closure and owner live acceptance.
-No staging, upgrade or rollout is authorized by this static PR.
+## Priority 1: console static acceptance (2026-10-14)
 
-## Static preparation and current stop (2026-10-14)
+[PR #55](https://github.com/amazen33/twinfra/pull/55) implements [WO-34 Amendment 1](work-orders/WO-34-image-patch-refresh.md). Live acceptance is Pending.
 
-Main was updated to `b55c0ea`; WO-32 was merged as `140c04d`.
-The first priority remains in progress. [PR #55](https://github.com/amazen33/twinfra/pull/55)
-is a draft and must not be merged or deployed as a completed refresh.
+The console digest changes from `sha256:385934466c5453902e4beda1d6ed7afb09eae6dd3419d0a7b0b219eece4cc4e2` to `sha256:ec1eebc9b51a1e7e019b501039f8c822eee5751b6322b205ec0b5eea9f30cd54`. Application source bytes stay unchanged. Python remains on 3.14 and Debian trixie. OCI title/history and builder names use Twinfra. PostgreSQL stays unchanged.
 
-The pinned BSD-3-Clause govulncheck v1.1.4 build uses Go 1.27.1 and SHA256-locked
-SDK/module inputs. Its Linux binary SHA256 is
-`f77f577722ac825bf649c24023c24af64e44c77152ab4e1778b2f8a27c2011fb`.
-Windows Application Control blocked the local Go linker; laptop policy was not
-changed. The disposable Linux runner reproduced the binary. Discovery never ran
-the scanner; the recorded hash is verified before binary analysis.
+CPython 3.14.8 released **2026-09-30**; its official Docker digest published **2026-10-09**. Software release age qualifies under Amendment 1; no expedite waiver is used. Both dates are generated into the image receipt.
 
-[Run 38592818563](https://github.com/amazen33/twinfra/actions/runs/38592818563)
-extracted `/usr/local/bin/argocd` from the pinned Argo CD image
-`quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa`.
-The extracted binary SHA256 is
-`e557da422ff52a729989e3d631bcc171b3f6e925631c157306c1724228e8f8f9`.
-It was read as data, never executed. govulncheck ran with `-mode=binary -json`.
+Complete Linux amd64 OCI archives, including the app and hash-locked wheels, were compared against one fresh Grype database. The archives reproduced both locked console digests. [Scan run 38602665963](https://github.com/amazen33/twinfra/actions/runs/38602665963).
 
-For [GO-2026-6612 / CVE-2026-78663](https://pkg.go.dev/vuln/GO-2026-6612),
-the output contains affected `golang.org/x/net/http2` symbols (for example
-`Framer.WriteSettingsAck`) at x/net v0.56.0, fixed in v0.60.0; it also contains
-affected `net/http` symbols at stdlib v1.26.4, fixed in v1.26.9.
-Binary analysis establishes symbol presence, not a runtime call graph. Under
-WO-34 these potential paths are conservatively blocking; they are not recorded
-as "not reachable" or accepted under another exception.
+| Image | Critical with fix | Critical without fix | High with fix | High without fix |
+| --- | ---: | ---: | ---: | ---: |
+| console-before | 23 | 0 | 118 | 55 |
+| console-after | 0 | 0 | 0 | 55 |
+| python-before | 23 | 0 | 118 | 55 |
+| python-after | 0 | 0 | 0 | 55 |
 
-The other Argo CD image executables (`helm`, `kustomize`, `git-lfs`, `pebble`) and
-other images have not yet received complete binary triage. Absence from the one
-inspected binary is not evidence that a vulnerability is absent from the image.
+**23 replaced console-base exceptions closed; 76 unrelated exceptions retain their original records and expiry dates.** The 55 High findings without fixes remain report-only. The old immutable image itself is not declared patched; retained inactive/reference Dockerfiles are unchanged.
 
-| Argo CD patch | Upstream publication | 14-day status on 2026-10-14 |
-| --- | --- | --- |
-| [3.5.3](https://github.com/argoproj/argo-cd/releases/tag/v3.5.3) | 2026-09-14 | Eligible; currently pinned; affected symbols found |
-| [3.5.4](https://github.com/argoproj/argo-cd/releases/tag/v3.5.4) | 2026-10-06 | Ineligible until 2026-10-20; patch coverage still requires verification |
-| [3.5.5](https://github.com/argoproj/argo-cd/releases/tag/v3.5.5) | 2026-10-12 | Ineligible until 2026-10-26; patch coverage still requires verification |
+Evidence: [static acceptance receipt](acceptance/wo34-p1-2026-10-14.json). The generated frontend archive binds the preserved compiled bytes to source hashes. The generated compressed application layer binds gzip bytes to a freshly assembled tar payload and uncompressed digest; this removes platform zlib variation while preserving image content. Corruption or changed payload fails closed. Both generators retain notices from the hash-locked wheels. They introduce no additional runtime libraries.
 
-The current CISA KEV catalog `2026.10.13` contains no match for this CVE. A Critical
-rating alone does not meet the work order's expedite condition. No qualifying
-vendor statement of active exploitation has been established. No waiver is used.
-Argo CD 3.5.4 also documents changed `helmGlobals.configHome` handling and a 4 MiB
-OCI-manifest limit; those changes require compatibility review before selection.
+## Go binary tooling and independent component stops
 
-**Stop:** the newest age-eligible Argo CD patch is the affected current pin.
-Reachable/potentially reachable findings cannot retain an exception under WO-34.
-Proceed only when an eligible compatible patch is verified, or when the owner
-records an expedite waiver backed by the required KEV/vendor evidence. The
-vulnerability exception register has not been changed or extended.
+govulncheck v1.1.4 is BSD-3-Clause, built from SHA256-pinned Go 1.27.1 SDK/module inputs. Linux binary SHA256: `f77f577722ac825bf649c24023c24af64e44c77152ab4e1778b2f8a27c2011fb`. Every Go ELF in the selected current and candidate graphs was inspected as data, never executed. [Successful all-binary run](https://github.com/amazen33/twinfra/actions/runs/38601213896). Binary mode establishes symbol presence, not runtime calls; affected symbols are conservatively reachable under WO-34.
 
-## Priority 1 candidate (not promoted)
+Argo CD **3.5.5 does not clear GO-2026-6612**. The main binary still carries x/net v0.59.0 (fix v0.60.0); pebble, git-lfs, helm and kustomize also contain affected symbols. Its release is age-eligible on **2026-10-26**, but it must not be promoted then with these findings. No 3.6 move, expedite, new exception or expiry extension is made. See [Argo CD data-only report](image-patch-refresh-argocd.md).
 
-The owner delegated the age-rule recommendation. Python selection uses the
-[CPython 3.14.8 release date](https://www.python.org/downloads/release/python-3148/),
-2026-09-30, which is 14 days old. The selected Docker digest was published
-2026-10-09. Both dates must remain in the final receipt; this is not an expedite
-waiver. The base remains on Python 3.14 and Debian trixie.
+CoreDNS 1.14.7 and etcd 3.6.15 also retain affected symbols. Their independent stop evidence is in [PR #56](https://github.com/amazen33/twinfra/pull/56); no later fixed patch eligibility date is verified. P3 proceeds independently.
 
-An uncommitted local console candidate rebuilt as
-`sha256:ec1eebc9b51a1e7e019b501039f8c822eee5751b6322b205ec0b5eea9f30cd54`.
-Its base is
-`python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170`.
-The title label and application history say `twinfra-console`; builder names use
-`registry.twinfra.example.com`. Application source hashes are unchanged.
-The PostgreSQL image digest remains
-`sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6`.
+## Owner actions after review
 
-The candidate receipts/renders are preserved locally for continuation. Full
-Linux before/after scans, zero fixable Critical acceptance, exception closures,
-schema/render checks and owner digest approval remain Pending. Native Windows
-OCI scans cannot supply the acceptance evidence because Syft's layer cache uses
-colon-containing names. Preliminary regular-file inventory is not promoted as a
-complete image scan or legal SBOM review.
-
-| Changed-image candidate | Before: Critical with/without fix | After: Critical with/without fix | Before/after: High with/without fix |
-| --- | --- | --- | --- |
-| Twinfra console | Pending complete image scan | Pending | Pending |
-| Shared Python base | Pending comparable complete scan | Pending | Pending |
-
-## Owner live actions after static acceptance
-
-Keep the [dev runbook](dev-environment.md) as the execution procedure. After
-all priorities pass CI, Claude reviews and the owner approves the new digests:
-
-1. Fetch the reviewed main revision, build both locked archives with
-   `python tools/platform_dev.py build-images --download-inputs`, and verify the
-   returned digests against the committed receipts and image locks.
-2. Stage through the existing owner-only `stage-images` procedure in the dev
-   runbook; check the staged canonical digest records before any rollout.
-3. If the refreshed Kubernetes 1.36 patch differs from the host version, follow
-   the upstream `kubeadm upgrade plan`, reviewed `kubeadm upgrade apply` and
-   matching kubelet/kubectl package upgrade procedure. Never re-run init/reset,
-   skip a minor version, or upgrade when the reviewed patch is unchanged.
-4. Verify Running/Ready pods, Argo CD Synced/Healthy, PostgreSQL persistence,
-   trusted HTTPS endpoints and the next nightly vulnerability report. The tester
-   records dated acceptance in the dev receipt.
-
-All of these live steps remain Pending. Do not stage the local candidate above.
+1. Claude reviews; owner approves the new console digest and merges P1 after the PR gate passes.
+2. Follow [the dev runbook](dev-environment.md): fetch reviewed main, run `python tools/platform_dev.py build-images --download-inputs`, verify both receipts, then stage the reviewed archives. Default builds reuse only the source/payload-verified generated inputs and write no tracked files.
+3. Verify console login, trusted HTTPS, Running/Ready pods, GitOps health and the nightly supply-chain scan. Live acceptance/tester sign-off remain Pending.
+4. Kubernetes upgrade remains an owner-only `kubeadm upgrade plan`/reviewed `kubeadm upgrade apply` procedure if a future eligible 1.36 patch is promoted. Never re-run init/reset or skip a minor. Current Kubernetes remains 1.36.5.

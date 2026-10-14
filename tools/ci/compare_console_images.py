@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import io
+import gzip
 import json
 from pathlib import Path
 import re
@@ -40,6 +41,15 @@ def build_pair(base, out):
                  historical.__file__, 'exec'), historical.__dict__)
     historical.ROOT = ROOT
     builder.stage_frontend()
+    compressed=(ROOT/'console/application-layer.tar.gz').read_bytes()
+    evidence=json.loads((ROOT/'console/application-layer.lock.json').read_text())
+    if hashlib.sha256(compressed).hexdigest()!=evidence['archiveSHA256']:
+        raise ValueError('Preserved application compression input differs')
+    def preserve_compression(plain,mtime):
+        if mtime!=0 or gzip.decompress(compressed)!=plain:
+            raise ValueError('Historical application payload differs from preserved layer')
+        return compressed
+    historical.gzip=types.SimpleNamespace(compress=preserve_compression)
     builder.download_inputs()
     before_base = out / 'before-base.oci.tar'
     export_public(old['base'].removeprefix('registry.twinfra.example.com/'), before_base)

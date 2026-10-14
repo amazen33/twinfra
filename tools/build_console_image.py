@@ -115,6 +115,7 @@ def payload(wheels):
 
 
 def build(base_path, target, wheels=ROOT / '.build/console/wheels'):
+    if (ROOT / 'console/frontend.lock.json').is_file():stage_frontend()
     with tarfile.open(base_path) as archive:
         members = {m.name: m for m in archive.getmembers() if m.isfile() and m.name.startswith('blobs/sha256/')}
         def blob(desc):
@@ -142,7 +143,16 @@ def build(base_path, target, wheels=ROOT / '.build/console/wheels'):
                 item.uid = item.gid = 65532; item.mtime = 0
                 layer.addfile(item, io.BytesIO(raw))
         plain = application.getvalue()
-        compressed = gzip.compress(plain, mtime=0)
+        layer_lock=ROOT/'console/application-layer.lock.json'
+        if layer_lock.is_file():
+            evidence=json.loads(layer_lock.read_text())
+            compressed=(ROOT/'console/application-layer.tar.gz').read_bytes()
+            if (hashlib.sha256(compressed).hexdigest()!=evidence['archiveSHA256'] or
+                    hashlib.sha256(plain).hexdigest()!=evidence['uncompressedSHA256'] or
+                    gzip.decompress(compressed)!=plain):
+                raise ValueError('Pinned application layer differs from freshly assembled payload')
+        else:
+            compressed = gzip.compress(plain, mtime=0)
         layer_desc = descriptor(compressed, 'application/vnd.oci.image.layer.v1.tar+gzip')
         config['rootfs']['diff_ids'].append(digest(plain))
         config['created'] = '2026-10-08T00:00:00Z'
