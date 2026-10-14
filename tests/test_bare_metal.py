@@ -774,6 +774,12 @@ class PinsAndProfiles(unittest.TestCase):
         old_tool=next(f for f in baseline['findings'] if f['id']=='schema-source:tools/ci/toolchain.lock.json')
         new_tool=next(f for f in current['findings'] if f['id']==old_tool['id'])
         old_tool['fingerprint']=new_tool['fingerprint']
+        # Original receipt terms remain exact. WO-34's independent licence
+        # regression tests bound its one additive replacement-base finding.
+        prior_ids={f['id'] for f in baseline['findings']}
+        extras=[f for f in current['findings'] if f['id'] not in prior_ids]
+        self.assertTrue(all(f['id']=='image-sbom:oci-image|docker.io/library/python|sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170' for f in extras))
+        current['findings']=[f for f in current['findings'] if f['id'] in prior_ids]
         self.assertEqual(current,baseline)
         for frozen in ('security/licence-policy.json','tools/ci/pr-baselines.json'):
             self.assertEqual((ROOT/frozen).read_bytes().replace(b'\r\n',b'\n'),subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_2_BASE+':'+frozen]))
