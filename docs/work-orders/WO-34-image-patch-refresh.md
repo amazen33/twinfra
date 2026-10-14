@@ -104,3 +104,32 @@ Minor or major version upgrades (for example Kubernetes 1.37 or Argo CD 3.6), th
      - keep branch protection on the synced branch;
      - keep Argo CD reachable only through the tunnel.
    - The existing WO-32 exception for the Go finding stays in force until its own expiry. It is not extended.
+
+## Amendment 2 (2026-10-14, architect): ruling on Codex's status report of 2026-10-14
+
+**Status:** still Approved; due **2026-11-12**.
+- **P1 (console) met its acceptance:** 23 → 0 Critical and 118 → 0 High with fixes.
+- **Correction to Amendment 1:** Argo CD **3.5.5 still contains GO-2026-6612.** Its Go 1.26.9 update did not clear the finding.
+
+1. **New repository rules apply** (twinfra PR #57, merged 2026-10-14):
+   - every PR must add an entry under `## [Unreleased]` in `CHANGELOG.md`, or carry the label `changelog:skip` with a reason;
+   - `release-checks` is a required check on `main`.
+
+   Rebase PRs #55 and #56, and the coming P3 PR, onto the new `main`, and add their changelog entries.
+2. **P1 (PR #55):** push the local fix for the historical hygiene assertion. Once CI is green, mark it ready for review.
+3. **P2a, Argo CD: net improvement beats waiting.**
+   - Staying on 3.5.3 keeps **both** GO-2026-6612 **and** the four CRITICAL Argo CD advisories that 3.5.4 fixed.
+   - **Promote 3.5.5 on or after 2026-10-26**, provided it introduces no new Critical or High finding compared with 3.5.3, and the static compatibility checks from Amendment 1 hold.
+   - GO-2026-6612 stays an **open, tracked finding**. It is not a reason to keep the worse version.
+4. **Precise reachability for GO-2026-6612** (Argo CD, and CoreDNS and etcd as well).
+   - Binary mode shows only that the affected symbols are present. Run `govulncheck` in **source mode** on each project's source at the pinned tag, with the Go toolchain recorded in the binary's build info (`GOTOOLCHAIN`), and record the call stacks.
+   - Report which module still carries the finding in 3.5.5: the stdlib or `golang.org/x/net`.
+   - **Not reachable:** keep it under an evidence-backed exception, at most 30 days if Critical, as WO-34's rules allow.
+   - **Reachable:** stop and report. The owner chooses between a time-boxed risk acceptance, with the compensating controls already in place (Argo CD reachable only through the tunnel, owner repositories only), and waiting for a fixed patch.
+   - **Never** build Argo CD, CoreDNS or etcd ourselves, and no minor upgrade (Argo CD 3.6) within WO-34.
+5. **P2b (PR #56, CoreDNS and etcd):** apply the same rule. Promote a candidate only if it is a net improvement, and only at versions kubeadm v1.36 supports; otherwise keep the current pins. Attach the source-mode evidence.
+6. **P3 (MiniStack 1.5.18, pause 3.10.2):**
+   - finish the full scans and the regression run;
+   - the reviewer's usage limit only stopped the final test command; it did not reject it, so re-run it;
+   - then commit and open the PR.
+7. **Deadline watch.** If any Critical exception would expire on 2026-11-12 with no fix and no not-reachable evidence, report it **by 2026-11-05**. The owner then decides on an extension, with evidence, before it expires.
