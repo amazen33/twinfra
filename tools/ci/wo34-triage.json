@@ -1,0 +1,78 @@
+[
+  {
+    "name": "openbao",
+    "reference": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf"
+  },
+  {
+    "name": "apisix",
+    "reference": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141"
+  },
+  {
+    "name": "ministack",
+    "reference": "docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c"
+  },
+  {
+    "name": "argocd",
+    "reference": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa"
+  },
+  {
+    "name": "valkey",
+    "reference": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507"
+  },
+  {
+    "name": "cnpg",
+    "reference": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07"
+  },
+  {
+    "name": "apiserver",
+    "reference": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48"
+  },
+  {
+    "name": "controller",
+    "reference": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d"
+  },
+  {
+    "name": "scheduler",
+    "reference": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f"
+  },
+  {
+    "name": "etcd",
+    "reference": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5"
+  },
+  {
+    "name": "coredns",
+    "reference": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9"
+  },
+  {
+    "name": "cilium",
+    "reference": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01"
+  },
+  {
+    "name": "envoy",
+    "reference": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463"
+  },
+  {
+    "name": "operator",
+    "reference": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc"
+  },
+  {
+    "name": "argocd-3.5.5",
+    "reference": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518"
+  },
+  {
+    "name": "coredns-1.14.7",
+    "reference": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286"
+  },
+  {
+    "name": "etcd-3.6.15",
+    "reference": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1"
+  },
+  {
+    "name": "ministack-1.5.19",
+    "reference": "docker.io/ministackorg/ministack@sha256:923bd31cd797dd9021f85c19c447342607eede21895f54ab7924483443f517e7"
+  },
+  {
+    "name": "openbao-2.6.4",
+    "reference": "docker.io/openbao/openbao@sha256:cf2340fc9a22cb9358ca0defd1f39b65673836bd23fe2bb8984a07e11fe13ef4"
+  }
+]

@@ -5,6 +5,8 @@ on:
     paths:
       - tools/ci/stage_govulncheck.py
       - tools/ci/toolchain.lock.json
+      - tools/ci/triage_go_image.py
+      - tools/ci/wo34-triage.json
       - .github/workflows/wo34-tool-build.yaml
 permissions:
   contents: read
@@ -12,12 +14,16 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Reproduce govulncheck from pinned SDK and module data
         run: python3 tools/ci/stage_govulncheck.py --destination .build/go-tools
+      - id: matrix
+        run: python3 -c 'import json,os; v=json.load(open("tools/ci/wo34-triage.json")); open(os.environ["GITHUB_OUTPUT"],"a").write("value="+json.dumps({"include":v})+"\n")'
       - name: Inspect the pinned Argo CD binary before accepting Go exceptions
         run: >-
           python3 tools/ci/triage_go_binary.py --scanner .build/go-tools/govulncheck
@@ -33,4 +39,36 @@ jobs:
             .build/go-triage/**/*.json
             .build/go-triage/**/*.jsonl
             .build/go-triage/**/*.log
+          retention-days: 14
+  images:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix: ${{ fromJSON(needs.build.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: wo34-govulncheck-build
+          path: .build/triage-tools
+      - name: Inspect every Go ELF as data (including ineligible candidates)
+        env:
+          PINNED_IMAGE: ${{ matrix.reference }}
+          IMAGE_NAME: ${{ matrix.name }}
+        run: |
+          chmod 500 .build/triage-tools/go-tools/govulncheck
+          python3 tools/ci/triage_go_image.py --scanner .build/triage-tools/go-tools/govulncheck --image "$PINNED_IMAGE" --out ".build/image-triage/$IMAGE_NAME"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() }}
+        with:
+          name: wo34-triage-${{ matrix.name }}
+          path: |
+            .build/image-triage/**/*.json
+            .build/image-triage/**/*.gz
+            .build/image-triage/**/*.log
           retention-days: 14
