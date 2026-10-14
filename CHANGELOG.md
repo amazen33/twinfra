@@ -15,6 +15,8 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 - Align the dev CRI sandbox with kubeadm’s already pinned pause 3.10.2,
   preserving production and retained WSL bytes; report MiniStack 1.5.18 as blocked
   by its unchanged Critical/High findings after complete comparison (WO-34 P3).
+  Run P3 comparisons and their artifacts in the paths-filtered WO-34 workflow;
+  keep the required PR gate targeting main without image rebuild steps.
 
 - Refresh the console to CPython 3.14.8 and a reproducible Twinfra image; eliminate
   23 fixable Critical and 118 fixable High findings, close 23 superseded exceptions,

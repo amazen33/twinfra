@@ -23,6 +23,10 @@ class WorkflowScope(unittest.TestCase):
         raw = json.dumps(self.required)
         self.assertNotIn('compare_console_images.py', raw)
         self.assertNotIn('.build/wo34-console', raw)
+        self.assertNotIn('compare_p3_images.py', raw)
+        self.assertNotIn('.build/wo34-p3', raw)
+        triggers = self.required.get('on', self.required.get(True))
+        self.assertEqual(triggers['pull_request']['branches'], ['main'])
         self.assertNotIn('inventory --full', raw)
         self.assertIn('supply_chain.py inventory', raw)
         self.assertIn('supply_chain.py evaluate', raw)
@@ -41,13 +45,25 @@ class WorkflowScope(unittest.TestCase):
         self.assertNotIn('secrets.', json.dumps(job))
         self.assertNotIn('pull_request_target', (ROOT / '.github/workflows/wo34-tool-build.yaml').read_text())
 
+    def test_p3_comparison_keeps_scanners_and_complete_artifacts(self):
+        job = self.wo34['jobs']['p3-comparison']
+        commands = '\n'.join(step.get('run', '') for step in job['steps'])
+        self.assertIn('stage_govulncheck.py --destination .build/p3-go-tools', commands)
+        self.assertIn('compare_p3_images.py --tools .build/scan-tools/bin --scanner .build/p3-go-tools/govulncheck', commands)
+        upload = next(s for s in job['steps'] if s.get('name') == 'Upload complete P3 comparison and CycloneDX SBOMs')
+        for path in ('comparison.json', 'scan/*.json', 'scan/sboms/', '**/*.json.gz', '**/summary.json'):
+            self.assertIn('.build/wo34-p3/' + path, upload['with']['path'])
+        self.assertNotIn('secrets.', json.dumps(job))
+
     def test_filter_matches_console_builder_wo34_tools_and_excludes_unrelated_paths(self):
         triggers = self.wo34.get('on', self.wo34.get(True))
         paths = triggers['pull_request']['paths']
         matches = lambda path: any(fnmatch.fnmatchcase(path, pattern) for pattern in paths)
         for path in ('console/server.py', 'console/src/App.tsx', 'console/image.lock.json',
                      'tools/build_console_image.py', 'tools/ci/compare_console_images.py',
-                     'tools/ci/triage_go_source.py', '.github/workflows/wo34-tool-build.yaml'):
+                     'tools/ci/compare_p3_images.py', 'tools/ci/record_p3_scan.py',
+                     'tools/refresh_p3_pins.py', 'deploy/common/bootstrap-images.lock.json',
+                     'deploy/common/images.lock.json', 'tools/ci/triage_go_source.py', '.github/workflows/wo34-tool-build.yaml'):
             self.assertTrue(matches(path), path)
         for path in ('README.md', 'docs/work-orders/WO-07-perses-replaces-grafana.md',
                      'CHANGELOG.md', 'deploy/environments/dev/cairo-1/services/workloads.yaml'):

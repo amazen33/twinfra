@@ -20,10 +20,12 @@ Every normal run tests the candidate revision and six immutable merged revisions
 The reviewed [baseline inventory](../tools/ci/pr-baselines.json) controls those
 historical commits. Add future baseline PRs to that inventory through review.
 
-WO-34 console reproduction and complete before/after comparisons run in the
+WO-34 console reproduction and complete console/P3 before/after comparisons run in the
 paths-filtered [WO-34 workflow](../.github/workflows/wo34-tool-build.yaml), with
 their comparison reports and CycloneDX SBOMs uploaded there. Console sources,
-the builder, the listed WO-34 tools and that workflow trigger the expensive job.
+the builder, the listed WO-34 tools, the common image inventories and that workflow
+trigger the comparison jobs. The P3 job stages the pinned Go scanner and uploads
+its complete comparisons, SBOMs and binary-triage evidence.
 The general PR gate contains no console rebuild or forced `inventory --full`.
 Unrelated documentation changes select no images or dependency locks; the
 existing ADR-0049 full scan for policy/scanner-tooling changes is preserved.
