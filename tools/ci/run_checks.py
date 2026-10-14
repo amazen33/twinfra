@@ -18,6 +18,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'image-references': ['tools/platform_image_references.py','tests/test_image_references.py'],
     'dev-image-build': ['tools/platform_build_images.py','tests/test_build_images.py',
         'tools/platform_dev.py','tools/build_console_image.py','tools/platform_oci.py',
         'tools/platform_pg_image.py','tools/platform_image_staging.py',
@@ -283,6 +284,11 @@ def main():
         if report['modules']['dev-runnable'] == 'present':
             run('dev-runnable-tests',[python,'-m','unittest','discover','-s','tests','-p','test_dev_runnable.py','-v'],unit=True)
             run('dev-bootstrap-image-inventory',[python,'tools/platform_bootstrap_inventory.py','--bash',binaries['bash'],'--helm',binaries['helm']])
+        if report['modules']['image-references']=='present':
+            run('image-reference-tests',[python,'-m','unittest','discover','-s','tests','-p','test_image_references.py','-v'],unit=True)
+            run('image-reference-renders',[python,'tools/platform_image_references.py','--bash',binaries['bash'],
+                '--helm',binaries['helm'],'--kustomize',binaries['kustomize'],
+                '--nvidia-chart',assets/'nvidia-device-plugin-0.20.1.tgz','--out',report_dir/'image-references'])
         if report['modules']['bare-metal']=='present':
             run('bare-metal-tests',[python,'-m','unittest','discover','-s','tests','-p','test_bare_metal.py','-v'],unit=True)
             run('dev-log-caps-shellcheck',[binaries['shellcheck'],'deploy/common/dev-log-caps.sh'])

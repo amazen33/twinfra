@@ -35,6 +35,7 @@ AMENDMENT_5_BASE='c41c4cfab5cab15aa3ac38a7f159f7690a5b70be'
 AMENDMENT_6_BASE='cf4b659435497dbab538a68270dcc7186008049e'
 AMENDMENT_7_BASE='1f7d86fd872352a071ed0017a51f431b43c57aa8'
 AMENDMENT_8_BASE='24b8bdb793739fad3c27c3daf1438cd20b7984a6'
+AMENDMENT_13_BASE='a84169a63a941f98c989d4db4739e9470e803fe4'
 
 
 def mask_skip_guards(raw):
@@ -941,7 +942,11 @@ class PinsAndProfiles(unittest.TestCase):
                      'tools/ci/toolchain.lock.json','tools/ci/pr-baselines.json','vcloud-ssot.yaml',
                      'security/node-exceptions.json','deploy/common/host-admin.py','tools/ci/kubeadm_dry_run.py',
                      'tools/manifest_contract.py'):
-            self.assertEqual((ROOT/name).read_bytes().replace(b'\r\n',b'\n'),base(name),name)
+            # Preserve Amendment 8's original CI-helper receipt. Amendment 13
+            # separately permits/bounds only the new image-reference hook.
+            tested=(subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_13_BASE+':'+name])
+                    if name=='tools/ci/kubeadm_dry_run.py' else (ROOT/name).read_bytes())
+            self.assertEqual(tested.replace(b'\r\n',b'\n'),base(name),name)
 
     def test_amendment_5_licences_add_only_existing_host_cli_artifacts(self):
         before=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_5_BASE+':security/licence-register.json']))

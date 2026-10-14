@@ -268,6 +268,27 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
     repeat apply if needed. Verify the finite LV is mounted before applying the
     platform; never create a plain root-filesystem PV directory instead.
 
+    **CNPG initdb recovery after WO-31 Amendments 13–13b (owner, after merge).**
+    Wait for Argo CD to sync the corrected operator Deployment, then verify its
+    rollout and `OPERATOR_IMAGE_NAME`. The generator preserves the vendor's
+    `1.30.1` tag and pins the staged canonical operator repository/digest, so
+    the init container resolves to the existing CRI image without re-staging.
+
+    ```powershell
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services rollout status deployment/cnpg-controller-manager --timeout=180s
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services get deployment cnpg-controller-manager -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="OPERATOR_IMAGE_NAME")].value}'
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services delete job -l cnpg.io/cluster=twinfra-postgres,cnpg.io/jobRole=initdb
+    kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services get clusters.postgresql.cnpg.io,pods,applications
+    ```
+
+    Delete only the stuck initdb Job for this empty dev bootstrap, after the
+    fixed operator is available. Keep the Cluster, PVC and PV. CNPG recreates
+    the Job with the corrected bootstrap-controller image. Expected: the
+    primary `twinfra-postgres-1` is Running, the Cluster is healthy, Keycloak and
+    OpenBao are Running, and all applications are Synced and Healthy. Record
+    this live acceptance with tester sign-off **Pending**; no recovery action
+    is run by the static CI guard.
+
     **Live firewall acceptance (Pending):** with the owned firewall confirmed
     and enabled, request a fresh GitHub fetch and wait for the automated sync:
 
