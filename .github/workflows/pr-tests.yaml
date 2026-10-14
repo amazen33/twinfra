@@ -52,12 +52,6 @@ jobs:
           args=()
           if [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && "$BASE_SHA" != 0000000000000000000000000000000000000000 ]]; then args=(--base "$BASE_SHA"); fi
           python tools/ci/supply_chain.py inventory "${args[@]}"
-      - name: Reproduce and fully compare the WO-34 console images
-        run: |
-          if [[ -f tools/ci/compare_console_images.py ]]; then
-            python tools/ci/compare_console_images.py --base b55c0ea3a7805e80c218dcc13a5bfbea7e259a24 --tools .build/scan-tools/bin
-            python tools/ci/supply_chain.py inventory --full
-          fi
       - name: Scan pinned images and lockfiles with fresh vulnerability data
         run: python tools/ci/supply_chain.py scan --tools .build/scan-tools/bin
       - name: Evaluate ADR-0049 gate and propose first-run exceptions
@@ -72,11 +66,6 @@ jobs:
             .build/supply-chain/*.md
             .build/supply-chain/*.log
             .build/supply-chain/sboms/
-            .build/wo34-console/comparison.json
-            .build/wo34-console/scan/*.json
-            .build/wo34-console/scan/*.log
-            .build/wo34-console/scan/sboms/
-            .build/wo34-console/cache/*.error.log
           if-no-files-found: warn
           retention-days: 14
   revisions:

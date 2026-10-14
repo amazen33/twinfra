@@ -9,6 +9,9 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Security
 
+- Run WO-34 console reproduction and complete image comparisons only in the
+  paths-filtered WO-34 workflow; unrelated PRs retain changed-input supply-chain
+  validation without rebuilding the console or forcing an image inventory rescan.
 - Refresh the console to CPython 3.14.8 and a reproducible Twinfra image; eliminate
   23 fixable Critical and 118 fixable High findings, close 23 superseded exceptions,
   and add pinned Go binary triage with complete before/after image evidence (WO-34 P1).
