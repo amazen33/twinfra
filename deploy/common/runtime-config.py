@@ -15,7 +15,7 @@ def configure(mode, root=Path('/')):
     host=os.environ.get('POSTGRES_HOST','twinfra-postgres-rw.twinfra-platform-services.svc.cluster.local')
     if mode=='openbao':
         url=f'postgresql://openbao:{quote(password,safe="")}@{host}:5432/openbao?sslmode=verify-full&sslrootcert=/pg-ca/ca.crt'
-        text=('ui = true\ndisable_mlock = true\napi_addr = "https://twinfra-openbao.twinfra-platform-services.svc.cluster.local:8200"\n'
+        text=('ui = true\napi_addr = "https://twinfra-openbao.twinfra-platform-services.svc.cluster.local:8200"\n'
               'storage "postgresql" {\n connection_url = '+json.dumps(url)+'\n max_parallel = "4"\n}\n'
               'listener "tcp" {\n address = "0.0.0.0:8200"\n cluster_address = "127.0.0.1:8202"\n tls_cert_file = "/tls/tls.crt"\n tls_key_file = "/tls/tls.key"\n}\n'
               '# This listener is reachable only inside the Pod network namespace.\n'

@@ -252,15 +252,21 @@ def network():
         policies.append(obj('CiliumNetworkPolicy','twinfra-'+name.removeprefix('twinfra-')+'-network',{'endpointSelector':select(name),'ingress':ingress,'egress':egress},'cilium.io/v2'))
     return policies
 
-def applications():
+def applications(region='cairo-1'):
+    regions={r['region'] for r in yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())['addressPlan'] if r['environment']=='dev'}
+    if region not in regions:raise ValueError('Unknown dev Application region: '+region)
+    prefix='deploy/environments/dev/'+region+'/'
     project=obj('AppProject','twinfra-dev',{'sourceRepos':['https://github.com/amazen33/twinfra.git'],'destinations':[{'server':'https://kubernetes.default.svc','namespace':NS}],
         'clusterResourceWhitelist':[{'group':'*','kind':'*'}],'namespaceResourceWhitelist':[{'group':'*','kind':'*'}]},'argoproj.io/v1alpha1')
+    project['metadata']['labels']['twinfra.io/region']=region
     def app(name,path,wave):
         a=obj('Application',name,{'project':'twinfra-dev','destination':{'server':'https://kubernetes.default.svc','namespace':NS},
             'source':{'repoURL':'https://github.com/amazen33/twinfra.git','targetRevision':'main','path':path},
             'syncPolicy':{'automated':{'enabled':True,'prune':False,'selfHeal':True,'allowEmpty':False},'syncOptions':['ServerSideApply=true','CreateNamespace=false']}},'argoproj.io/v1alpha1')
-        a['metadata']['annotations']={'argocd.argoproj.io/sync-wave':str(wave)};return a
-    return [project,app('twinfra-root','deploy/environments/dev/cairo-1/apps',0)], [app('twinfra-platform','deploy/environments/dev/cairo-1/platform',0),app('twinfra-services','deploy/environments/dev/cairo-1/services',10)]
+        a['metadata']['labels']['twinfra.io/region']=region
+        a['metadata']['annotations']={'argocd.argoproj.io/sync-wave':str(wave),
+            'argocd.argoproj.io/compare-options':'ServerSideDiff=true,IncludeMutationWebhook=true'};return a
+    return [project,app('twinfra-root',prefix+'apps',0)], [app('twinfra-platform',prefix+'platform',0),app('twinfra-services',prefix+'services',10)]
 
 def host_environment(row):
     """Only delivery inputs differ; Module -1 remains the single bootstrap."""

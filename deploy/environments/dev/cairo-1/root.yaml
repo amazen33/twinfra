@@ -33,6 +33,7 @@ metadata:
     app.kubernetes.io/part-of: twinfra
   annotations:
     argocd.argoproj.io/sync-wave: '0'
+    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
 spec:
   project: twinfra-dev
   destination:

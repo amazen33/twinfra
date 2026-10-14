@@ -531,6 +531,31 @@ The real pod boundary is (a) never exposing a Service on the node and (b) Cilium
 3. **Document it.** `docs/dev-environment.md` gets a "Network boundary" section with the table above. It states that the host firewall covers host ports only, and lists Cilium host firewall (`enable-host-firewall`) together with a `CiliumClusterwideNetworkPolicy` for the host as a later hardening step.
 4. **Optional, for the owner to decide:** narrow host TCP 6443 from `192.168.1.0/24` to the laptop's reserved address only. The API already requires client certificates.
 
+### Amendment 14 (2026-10-14, architect): hygiene after the first full platform sync (not blocking)
+
+**Live evidence, after PR #51 (`9404906`):**
+- `Cluster/twinfra-postgres` is healthy, `twinfra-postgres-1` is Running, and both `Database` objects show `APPLIED true`.
+- Keycloak imported the `twinfra` realm and is Ready.
+- Argo CD's last sync **succeeded**, yet `twinfra-platform` stays **OutOfSync** on `Cluster/twinfra-postgres` alone. Its managed fields show `argocd-controller Apply` plus the CNPG `manager Update`: the CNPG mutating webhook fills in defaults that the desired manifest doesn't declare.
+- OpenBao logs `unknown or unsupported field disable_mlock found in configuration at /runtime/openbao.hcl:2:1`.
+
+**Fix:**
+1. **Server-Side Diff.** Enable it for the dev Applications (`argocd.argoproj.io/compare-options: ServerSideDiff=true`), or globally with `controller.diff.server.side: "true"` in `argocd-cmd-params-cm`. Argo CD then compares through a server-side dry run that includes webhook defaults. Don't use `ignoreDifferences`, which hides real drift.
+1a. **Correction (2026-10-14, Amendment 14a; Codex's stop was correct).** In Argo CD v3.5.3, Server-Side Diff **excludes mutation-webhook changes by default**, and the webhook option works only as a per-Application annotation (`docs/user-guide/diff-strategies.md#mutation-webhooks`).
+   - **Use** `argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true` on **every** dev Application: `twinfra-root`, `twinfra-platform` and `twinfra-services`, in both regions.
+   - **Don't** rely on the global `controller.diff.server.side` setting alone.
+   - **Test:** each dev Application carries both options.
+   - **Note for the runbook:** Server-Side Diff isn't performed while a resource is first created.
+2. **OpenBao configuration.** Remove `disable_mlock` from the generated `openbao.hcl`; the pinned OpenBao doesn't support it.
+2a. **Runbook step 11.** Make laptop-side forwards the primary method: `kubectl --context twinfra-dev-cairo-1 -n twinfra-platform-services port-forward --address 127.0.0.1 svc/<name> <port>:<port>`, which runs through the API on 6443 and binds to the laptop's loopback only. Keep the Dell-side forward plus SSH tunnel as the alternative.
+   - **Sign-in:** document reading the Keycloak and Argo CD admin passwords straight to the clipboard (`Set-Clipboard`, never printed).
+   - **Console user:** document creating the first console user in realm `twinfra` with the client role `twinfra-console` / `console.admin`. The realm import has no users.
+3. **Tests:**
+   - every dev Application has Server-Side Diff, or the global setting is present;
+   - the rendered OpenBao configuration contains no `disable_mlock`.
+
+**Live (owner, after merge):** `twinfra-platform` reaches **Synced/Healthy**, and the warning is gone from OpenBao's log.
+
 ### Amendment 13 (2026-10-14, architect): the CNPG operator's `OPERATOR_IMAGE_NAME` points at an unstaged upstream tag (blocks PostgreSQL)
 
 **Live evidence, after PR #50 (`a84169a`).** `Cluster/twinfra-postgres` was created ("Setting up primary"). Its pod `twinfra-postgres-1-initdb-*` stays in `Init:ImagePullBackOff`:

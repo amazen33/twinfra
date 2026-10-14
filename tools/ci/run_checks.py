@@ -18,6 +18,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'platform-hygiene': ['tools/platform_network_boundary.py','tests/test_platform_hygiene.py'],
     'image-references': ['tools/platform_image_references.py','tests/test_image_references.py'],
     'dev-image-build': ['tools/platform_build_images.py','tests/test_build_images.py',
         'tools/platform_dev.py','tools/build_console_image.py','tools/platform_oci.py',
@@ -284,6 +285,8 @@ def main():
         if report['modules']['dev-runnable'] == 'present':
             run('dev-runnable-tests',[python,'-m','unittest','discover','-s','tests','-p','test_dev_runnable.py','-v'],unit=True)
             run('dev-bootstrap-image-inventory',[python,'tools/platform_bootstrap_inventory.py','--bash',binaries['bash'],'--helm',binaries['helm']])
+        if report['modules']['platform-hygiene']=='present':
+            run('platform-hygiene-tests',[python,'-m','unittest','discover','-s','tests','-p','test_platform_hygiene.py','-v'],unit=True)
         if report['modules']['image-references']=='present':
             run('image-reference-tests',[python,'-m','unittest','discover','-s','tests','-p','test_image_references.py','-v'],unit=True)
             run('image-reference-renders',[python,'tools/platform_image_references.py','--bash',binaries['bash'],

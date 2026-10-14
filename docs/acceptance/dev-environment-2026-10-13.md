@@ -1,7 +1,7 @@
-# WO-31 Amendments 7–9a acceptance · 2026-10-13
+# WO-31 dev environment evidence · 2026-10-13–14
 
 Environment: `twinfra-dev-cairo-1` on the Dell.
-Work order: [WO-31 Amendments 7–9a](../work-orders/WO-31-bare-metal-cairo-1.md).
+Work order: [WO-31 Amendments 7–14](../work-orders/WO-31-bare-metal-cairo-1.md).
 Decision: [ADR-0048](../adr/0048-cairo-1-on-bare-metal-host.md).
 
 ## Static scope
@@ -52,6 +52,14 @@ tracked/untracked source snapshot remained unchanged across both builds.
 Production renders, common image pins and historical baseline inventory remain
 byte-identical to merged main `3b6ec82`. No new third-party tools or libraries.
 
+The Amendments 10/11/14–14a hygiene follow-up adds a static node-exposure/default-
+deny contract, server-side apply in the owner runbook, per-Application
+`ServerSideDiff=true,IncludeMutationWebhook=true` and removal of the unsupported
+OpenBao configuration field. Both dev-region Application factory outputs and
+all persisted dev Applications are tested; cairo-2 remains a cold seed until
+WO-23. Production/bootstrap/firewall/image bytes are unchanged. The laptop
+loopback/clipboard/TOTP procedures are documentation, not live actions here.
+
 ## Owner-reported context
 
 The approved amendment records that main `1f7d86f` passed version validation and
@@ -67,19 +75,68 @@ Amendment 9 records that main `3b6ec82` completed host-bootstrap and reported
 post-bootstrap/passed in host-check. These are owner-reported facts; this task
 neither connects to the Dell nor changes the tester's Pending sign-off.
 
+## Owner-reported live evidence
+
+Source: Ahmed Mazen's task report, recorded 2026-10-14. These are sanitized
+owner-provided observations, not commands executed or independently re-run by
+Codex. Recording them does not sign acceptance or conclude the soak.
+
+### 2026-10-13 · main `3b6ec82`
+
+| Check | Owner-reported observation |
+| --- | --- |
+| Shared host bootstrap | `host-bootstrap` passed |
+| Read-only host check | `host-check`: `post-bootstrap` / `passed` |
+| Node | Ready; zone `cairo-1a` |
+| Bootstrap image cache | 11/11 bootstrap images pinned |
+| Cilium image resolution | 0 Cilium `Pulling` events |
+| PostgreSQL storage | 20 GiB PG LV mounted with `nosuid,nodev,noexec,noatime` |
+| Log caps | Applied |
+| Kernel lockdown | `[integrity]` |
+| etcd WAL fsync | p99 <= 4 ms; mean approximately 1 ms; approximately 92k samples; target < 10 ms |
+| Laptop-to-Dell firewall test | TCP 22/6443 open; 10250/2379 dropped |
+| Hardware | Dell ePSA Thorough memory test passed, performed by the owner |
+
+24-hour soak start: `2026-10-13T14:43:38Z`. The earliest 24-hour endpoint is
+`2026-10-14T14:43:38Z`; no completion or clean kernel-log verdict was supplied.
+Soak verdict: Pending. Machine-check/hung-task log acceptance remains Pending.
+
+### 2026-10-14 · application staging and platform continuation
+
+| Check | Owner-reported observation |
+| --- | --- |
+| `build-images` console | Reproduced `sha256:385934466c5453902e4beda1d6ed7afb09eae6dd3419d0a7b0b219eece4cc4e2` |
+| `build-images` PostgreSQL | Reproduced `sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6` |
+| Application staging | `stage-images`: PASS |
+| Dev PKI | Dev CA and four TLS-bearing Secrets applied: `twinfra-keycloak-tls`, `twinfra-openbao-tls`, `argocd-secret`, `twinfra-gateway-tls` |
+| Platform after PRs #50 and #51 | All 11 platform pods Running; CNPG Cluster healthy; Databases applied |
+| GitHub egress through host firewall | Argo CD fetched revisions `9c33d0c`, then `9404906` |
+| `twinfra-services` | Synced/Healthy |
+| `twinfra-platform` | Healthy/OutOfSync; Amendment 14 addresses CNPG-default diff noise |
+| Browser access | Console, Keycloak and Argo CD reachable over trusted HTTPS via laptop loopback port-forwards |
+| Console identity | Keycloak sign-in with TOTP succeeded for a user with `console.admin` |
+
+OpenBao Running/transport observations do not establish initialization or
+unseal; WO-08's ceremony remains separate. No credential, token, OTP seed,
+private key or full authorization URL is recorded here.
+
 ## Live acceptance
 
-From updated merged main in `E:\twinfra-live`, the owner runs `host-bootstrap`,
-then `host-check` and records sanitized output. No reboot is requested by this fix.
+Observed outcomes below remain subject to tester sign-off. No additional live
+command is executed for this hygiene PR, and no bootstrap rerun or reboot is
+required by Amendments 10/11/14. After merge, the owner verifies the new dev
+Application comparison and OpenBao configuration through normal GitOps sync.
 
 | Gate | Result | Evidence to record |
 | --- | --- | --- |
 | Direct kubectl List passes the installed checker | Pending | Cilium controller input reports passed / 0 findings; no traceback |
-| Module -1 and host-bootstrap complete | Pending | Result ready, host-bootstrap passed, dev log caps applied with one kubelet restart, labels and complete.json |
+| Module -1 and host-bootstrap complete | Owner reported passed; sign-off Pending | 2026-10-13, main `3b6ec82`: host-bootstrap passed, log caps applied, node Ready in cairo-1a |
 | Disabled smoke step is successful | Pending | Updated main changes 00-setup-ubuntu-host.sh; RUN_SMOKE_TESTS=false reaches ready/complete without smoke calls or an ERR-trap failure |
-| Final host-check | Pending | post-bootstrap / passed with matching cluster, node, listener and result identities |
-| Rebuilt archives staged on the Dell | Pending | From merged main in E:\twinfra-live, build-images --download-inputs passes both pins; stage-images --archive-dir .build/dev-images then --check reports problems: [] and CRI pinned true |
-| Platform and browser continuation | Pending | Runbook steps 9–11 after staging: dev CA/TLS, secrets/platform/Argo CD and HTTPS browser checks |
+| Final host-check | Owner reported passed; sign-off Pending | 2026-10-13: post-bootstrap / passed |
+| Rebuilt archives staged on the Dell | Owner reported PASS; sign-off Pending | 2026-10-14: both locked digests reproduced; stage-images PASS |
+| Platform and browser continuation | Owner observations recorded; sign-off Pending | 11 pods Running, CNPG healthy, Databases applied, trusted HTTPS and Keycloak/TOTP console.admin sign-in; platform remains Healthy/OutOfSync |
+| Amendment 14 reconciliation | Pending | twinfra-platform Synced/Healthy after Server-Side Diff; unsupported-field warning absent from OpenBao logs |
+| 24-hour hardware/platform soak | Pending | Start 2026-10-13T14:43:38Z; completion and kernel-log verdict not supplied |
 
 ## Tester sign-off
 
