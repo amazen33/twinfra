@@ -105,6 +105,7 @@ jobs:
             .build/wo34-console/scan/*.json
             .build/wo34-console/scan/*.log
             .build/wo34-console/scan/sboms/
+            .build/wo34-console/cache/*.error.log
           if-no-files-found: warn
           retention-days: 14
   revisions:

@@ -2,12 +2,14 @@
 """WO-34 complete OCI before/after comparison; never execute image contents."""
 import argparse
 import hashlib
+import io
 import json
 from pathlib import Path
 import re
 import subprocess
 import sys
 import types
+import tarfile
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools'))
@@ -15,6 +17,7 @@ import build_console_image as builder
 from registry_export import export_public
 from platform_image_staging import validate_archive
 from platform_pg_image import Export
+from platform_oci import encoded
 
 
 def git(*args):
@@ -56,6 +59,30 @@ def counts(findings):
             for level in ('Critical', 'High') for fixed in (True, False)}
 
 
+def scan_projection(path,target,pin):
+    """Complete verified amd64 graph; omit references to unfetched architectures."""
+    source=Export(path)
+    try:
+        if source.root_digest!=pin:raise ValueError('Scan archive root differs from reviewed pin')
+        desc=dict(source.descriptor,platform={'os':'linux','architecture':'amd64'})
+        desc['annotations']={'org.opencontainers.image.ref.name':pin}
+        blobs={}
+        for value in [source.descriptor,source.manifest['config'],*source.manifest['layers']]:
+            raw=source.blob(value)
+            if len(raw)!=value['size']:raise ValueError('Scan projection blob size differs')
+            blobs['blobs/sha256/'+value['digest'].split(':')[1]]=raw
+        config=json.loads(source.blob(source.manifest['config']))
+        if (config['os'],config['architecture'])!=('linux','amd64'):raise ValueError('Scan projection platform differs')
+        blobs['oci-layout']=encoded({'imageLayoutVersion':'1.0.0'})
+        blobs['index.json']=encoded({'schemaVersion':2,'manifests':[desc]})
+        with tarfile.open(target,'w') as archive:
+            for name,raw in sorted(blobs.items()):
+                entry=tarfile.TarInfo(name);entry.size=len(raw);entry.mtime=0
+                archive.addfile(entry,io.BytesIO(raw))
+        return source.descriptor['digest']
+    finally:source.archive.close()
+
+
 def compare(base, tools, out, prepared=False):
     import supply_chain as sc
     old = json.loads(git('show',base+':console/image.lock.json'))
@@ -81,15 +108,22 @@ def compare(base, tools, out, prepared=False):
             ('console-after', after['canonical'], ROOT / '.build/dev-images/console.oci.tar'),
             ('python-before', old['base'], before_base),
             ('python-after', after['base'], builder.DEFAULT_BASE)]
+    bindings={}
+    projected=[]
+    for name,ref,path in rows:
+        target=out/(name+'.scan.oci.tar')
+        bindings[name]=scan_projection(path,target,ref.split('@')[1])
+        projected.append((name,ref,target))
     plan = dict(version=1, full=True, base=None, lockfiles=[], coverage=[], images=[
         dict(target=ref, source='oci-archive:' + str(path.resolve()), digest=ref.split('@')[1],
-             platform='linux/amd64', origins=[name], introduced=False) for name, ref, path in rows])
+             platform='linux/amd64', origins=[name], introduced=False) for name, ref, path in projected])
     result = sc.scan(plan, sc.verify_tools(tools), out / 'cache', out / 'scan')
     report = dict(baseCommit=base, date=sc.today().isoformat(), imageCodeExecuted=False,
                   releaseEvidence=after['releaseEvidence'], database=result['database'], images=[])
     for name, ref, path in rows:
         found = [f for f in result['findings'] if f['target'] == ref]
         report['images'].append(dict(name=name, reference=ref, counts=counts(found), findings=found,
+                                     verifiedAmd64Digest=bindings[name],
                                      coverage='complete-oci-archive-linux-amd64'))
     sc.write(out / 'comparison.json', report)
     return int(next(row for row in report['images'] if row['name'] == 'console-after')['counts']['CriticalWithFix'] != 0)
