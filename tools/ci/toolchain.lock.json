@@ -131,7 +131,7 @@
       "module": "golang.org/x/vuln/cmd/govulncheck",
       "version": "v1.1.4",
       "goVersion": "go1.27.1",
-      "binarySHA256": null,
+      "binarySHA256": "f77f577722ac825bf649c24023c24af64e44c77152ab4e1778b2f8a27c2011fb",
       "sdks": {
         "linux-amd64": {
           "url": "https://go.dev/dl/go1.27.1.linux-amd64.tar.gz",

@@ -17,11 +17,20 @@ jobs:
         with:
           persist-credentials: false
       - name: Reproduce govulncheck from pinned SDK and module data
-        run: python3 tools/ci/stage_govulncheck.py --destination .build/go-tools --discover
+        run: python3 tools/ci/stage_govulncheck.py --destination .build/go-tools
+      - name: Inspect the pinned Argo CD binary before accepting Go exceptions
+        run: >-
+          python3 tools/ci/triage_go_binary.py --scanner .build/go-tools/govulncheck
+          --image quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa
+          --path /usr/local/bin/argocd --out .build/go-triage/argocd
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
         with:
           name: wo34-govulncheck-build
           path: |
             .build/go-tools/govulncheck
             .build/go-tools/govulncheck-build.json
+            .build/go-triage/**/*.json
+            .build/go-triage/**/*.jsonl
+            .build/go-triage/**/*.log
           retention-days: 14

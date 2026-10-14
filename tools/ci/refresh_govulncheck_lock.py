@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Generate WO-34 Go tool pins/licences from SumDB-verified inputs; no scanner execution."""
-import hashlib,json,re,sys,urllib.request
+import argparse,hashlib,json,re,sys,urllib.request
 from pathlib import Path
 root=Path(__file__).resolve().parents[2];work=root/'.build/wo-34';cache=work/'gopath/pkg/mod/cache/download'
 sys.path.insert(0,str(root/'tools/ci'))
@@ -8,6 +8,9 @@ from licence_inventory import enumerate_inputs,source_identity
 def read(p):return json.loads((root/p).read_text(encoding='utf-8'))
 def write(p,v):(root/p).write_text(json.dumps(v,indent=2)+'\n',encoding='utf-8',newline='\n')
 data=read('tools/ci/toolchain.lock.json');sdk=json.loads((work/'go-sdk-release.json').read_text())
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--record-binary',type=Path,help='Verified public CI build receipt; sibling binary SHA256 must match')
+args=parser.parse_args()
 inputs=[]
 for path in sorted(cache.rglob('*')):
     if not path.is_file() or path.suffix not in ('.zip','.mod','.info'):continue
@@ -17,6 +20,13 @@ for path in sorted(cache.rglob('*')):
     inputs.append({'url':'https://proxy.golang.org/'+name,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'goBuildInput':True})
 data['builds']={'govulncheck':{'module':'golang.org/x/vuln/cmd/govulncheck','version':'v1.1.4','goVersion':sdk['version'],'binarySHA256':None,
     'sdks':{x['os']+'-'+x['arch']:{'url':'https://go.dev/dl/'+x['filename'],'sha256':x['sha256'],'goBuildInput':True} for x in sdk['files']},'inputs':inputs}}
+if args.record_binary:
+    receipt=json.loads(args.record_binary.read_text())
+    assert receipt['version']=='v1.1.4' and receipt['goVersion']==sdk['version'] and receipt['sourceInputs']==len(inputs)
+    assert receipt['scannerExecuted'] is False
+    binary=args.record_binary.parent/'govulncheck'
+    assert hashlib.sha256(binary.read_bytes()).hexdigest()==receipt['binarySHA256']
+    data['builds']['govulncheck']['binarySHA256']=receipt['binarySHA256']
 write('tools/ci/toolchain.lock.json',data)
 observed,_=enumerate_inputs(root)
 register=read('security/licence-register.json')
@@ -24,6 +34,7 @@ register['components']=[e for e in register['components'] if e['id']!='tool|gola
 old={e['id'] for e in register['components']}
 for key,c in observed.items():
     if key in old:continue
+    if c['ecosystem']!='tool':continue
     assert c['ecosystem']=='tool' and c['locations']==['tools/ci/toolchain.lock.json'],c
     repo=next(o['repo'] for o in c['observations'] if o.get('repo'))
     version=c['version'];ref=version
