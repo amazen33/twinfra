@@ -162,7 +162,8 @@ class ImageBuildTests(unittest.TestCase):
                 desc=json.load(archive.extractfile('index.json'))['manifests'][0]
                 manifest=json.load(archive.extractfile('blobs/sha256/'+desc['digest'].split(':')[1]))
                 config=json.load(archive.extractfile('blobs/sha256/'+manifest['config']['digest'].split(':')[1]))
-                self.assertEqual(config['config']['Labels']['org.opencontainers.image.title'],'vcloud-console')
+                self.assertEqual(config['config']['Labels']['org.opencontainers.image.title'],'twinfra-console')
+                self.assertEqual(config['history'][-1]['created_by'],'twinfra-console deterministic application layer')
                 self.assertEqual(config['config']['User'],'65532:65532')
 
     def test_wheel_hash_and_built_frontend_asset_drift_refused(self):
@@ -238,23 +239,77 @@ class ImageBuildTests(unittest.TestCase):
 
     def test_production_wsl_and_pin_bytes_unchanged_against_main(self):
         for name in ('00-setup-ubuntu-host.sh','user-data.yaml','user-data-remote.yaml','user-data.yaml.gz',
-                     'deploy/common/images.lock.json','deploy/common/postgresql-image.lock.json',
+                     'deploy/common/postgresql-image.lock.json',
                      'tools/ci/pr-baselines.json','security/licence-policy.json'):
             old=subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':'+name])
             raw=(ROOT/name).read_bytes()
             self.assertEqual(raw if name.endswith('.gz') else raw.replace(b'\r\n',b'\n'),old,name)
+        old_lock=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':deploy/common/images.lock.json']))
+        current_lock=json.loads((ROOT/'deploy/common/images.lock.json').read_text())
+        for key in ('console','python'):
+            for field in ('source','canonical','digest'):
+                old_lock['images'][key][field]=current_lock['images'][key][field]
+        self.assertEqual(current_lock,old_lock,'Only the WO-34 console/Python pins may change')
+        old_console=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':console/image.lock.json']))
+        current_console=json.loads((ROOT/'console/image.lock.json').read_text())
         for name,raw in retained.outputs().items():
             old=subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':deploy/console/'+name])
-            self.assertEqual(raw.encode(),old,name)
-            self.assertEqual((ROOT/'deploy/console'/name).read_bytes().replace(b'\r\n',b'\n'),old,name)
+            self.assertEqual(raw.replace(current_console['digest'],old_console['digest']).encode(),old,name)
+            actual=(ROOT/'deploy/console'/name).read_bytes().replace(b'\r\n',b'\n')
+            self.assertEqual(actual,raw.encode(),name)
 
     def test_receipt_refresh_changes_only_allowed_metadata_and_tooling(self):
         old=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':console/image.lock.json']))
         current=json.loads((ROOT/'console/image.lock.json').read_text())
-        self.assertEqual(old['digest'],current['digest'])
+        self.assertNotEqual(old['digest'],current['digest'])
+        self.assertEqual(current['base'],console.BASE)
         for name,sha in old['filesSHA256'].items():
-            if name!='tools/build_console_image.py':self.assertEqual(current['filesSHA256'][name],sha,name)
+            if name not in ('tools/build_console_image.py','tools/platform_oci.py','console/Dockerfile'):
+                self.assertEqual(current['filesSHA256'][name],sha,name)
         self.assertEqual(current['canonical'],json.loads((ROOT/'deploy/common/images.lock.json').read_text())['images']['console']['canonical'])
+
+    def test_console_refresh_refuses_minor_jump_and_application_source_drift(self):
+        with self.fixture() as (root,wheels,base):
+            receipt=console.build(base,root/'a.tar',wheels)
+            self.assertEqual(console.verify_patch_refresh(receipt),receipt)
+            changed=copy.deepcopy(receipt);changed['base']=changed['base'].replace('3.14.8','3.15.0')
+            with self.assertRaisesRegex(ValueError,'same Python minor'):console.verify_patch_refresh(changed)
+            changed=copy.deepcopy(receipt);changed['filesSHA256']['console/server.py']='a'*64
+            with self.assertRaisesRegex(ValueError,'application sources'):console.verify_patch_refresh(changed)
+
+    def test_source_bound_frontend_archive_matches_preserved_candidate(self):
+        lock=json.loads((ROOT/'console/frontend.lock.json').read_text())
+        self.assertEqual(hashlib.sha256((ROOT/'console/frontend.tar.gz').read_bytes()).hexdigest(),lock['archiveSHA256'])
+        for name,sha in lock['sourcesSHA256'].items():
+            self.assertEqual(hashlib.sha256((ROOT/name).read_bytes()).hexdigest(),sha,name)
+        with patch.object(console,'ROOT',ROOT),patch.object(console.tarfile,'open',side_effect=AssertionError('Archive opened')):
+            with patch.object(console.hashlib,'sha256') as sha:
+                sha.return_value.hexdigest.return_value='invalid'
+                with self.assertRaisesRegex(ValueError,'checksum'):console.stage_frontend()
+
+    def test_pinned_compression_layer_is_verified_against_fresh_payload(self):
+        lock=json.loads((ROOT/'console/application-layer.lock.json').read_text())
+        raw=(ROOT/'console/application-layer.tar.gz').read_bytes()
+        import gzip
+        self.assertEqual(hashlib.sha256(raw).hexdigest(),lock['archiveSHA256'])
+        self.assertEqual(hashlib.sha256(gzip.decompress(raw)).hexdigest(),lock['uncompressedSHA256'])
+        with self.fixture() as (root,wheels,base):
+            (root/'console/application-layer.lock.json').write_text(json.dumps(lock))
+            (root/'console/application-layer.tar.gz').write_bytes(raw)
+            with self.assertRaisesRegex(ValueError,'freshly assembled payload'):
+                console.build(base,root/'refused.tar',wheels)
+
+    def test_explicit_refresh_updates_only_receipt_and_two_image_pins(self):
+        with self.fixture() as (root,wheels,base):
+            before=json.loads((root/'deploy/common/images.lock.json').read_text())
+            pg_before=(root/'deploy/common/postgresql-image.lock.json').read_bytes()
+            result=builds.build_images(refresh_console=True)
+            self.assertTrue(result['repositoryWrites']);self.assertFalse(result['runtimeImport'])
+            after=json.loads((root/'deploy/common/images.lock.json').read_text())
+            self.assertEqual(before['images']['postgres'],after['images']['postgres'])
+            self.assertEqual(pg_before,(root/'deploy/common/postgresql-image.lock.json').read_bytes())
+            self.assertEqual(after['images']['console']['digest'],result['digests']['console'])
+            builds.build_images()  # The ordinary offline path reproduces the newly generated receipt.
 
 
 if __name__=='__main__':unittest.main()

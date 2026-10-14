@@ -125,5 +125,243 @@
       "checksumURL": "https://github.com/google/osv-scanner/releases/download/v2.6.0/osv-scanner_SHA256SUMS",
       "checksumSHA256": "29f6fbc8bdd02d977df4b0987705d046233c36b70469a7021c623e8c155c9ddc"
     }
+  },
+  "builds": {
+    "govulncheck": {
+      "module": "golang.org/x/vuln/cmd/govulncheck",
+      "version": "v1.1.4",
+      "goVersion": "go1.27.1",
+      "binarySHA256": "f77f577722ac825bf649c24023c24af64e44c77152ab4e1778b2f8a27c2011fb",
+      "sdks": {
+        "linux-amd64": {
+          "url": "https://go.dev/dl/go1.27.1.linux-amd64.tar.gz",
+          "sha256": "63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445",
+          "goBuildInput": true
+        },
+        "windows-amd64": {
+          "url": "https://go.dev/dl/go1.27.1.windows-amd64.zip",
+          "sha256": "a3911b5e0e1b1053f25ed0675f4c1c6aad1e2bfcf253df2b9be4caabd2edd95d",
+          "goBuildInput": true
+        }
+      },
+      "inputs": [
+        {
+          "url": "https://proxy.golang.org/golang.org/x/mod/@v/v0.22.0.info",
+          "sha256": "ba0d4a3db529b70b894536ab9775af040fe8e5d5953b69c926bfa292b59f76d0",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/mod/@v/v0.22.0.mod",
+          "sha256": "ebe81917441154299f732b8aa09f299529752df29855ca4d7026946d1bbecd82",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/mod/@v/v0.22.0.zip",
+          "sha256": "0d0a96054b32dfa40cec2a2868bf87cdda31e3bb2dac0a5e2218efe3ef3ef3cc",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/sync/@v/v0.10.0.info",
+          "sha256": "42f427df2946e9e1738a389cfbb0916e2e074d8b3c937ff8187b0a5246178890",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/sync/@v/v0.10.0.mod",
+          "sha256": "700e5db00dd26aa19a17dce5fc552436d60f68c5606c85b821f24c3d6072a151",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/sync/@v/v0.10.0.zip",
+          "sha256": "94ea75ea625ecb8d81ab473a2d7e03433e63083768cd27d48a03f8c1c9da3d8d",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/sys/@v/v0.29.0.info",
+          "sha256": "10b07aabdf2aea556f31b7b84410bdaa22d62f5dfdd9df01b133da41b3abdf80",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/sys/@v/v0.29.0.mod",
+          "sha256": "d227b325f621f4ebe28d39ba773ea99b870f393b7c09c34592c365b16dd560de",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/sys/@v/v0.29.0.zip",
+          "sha256": "1d759c017d09328a4dacdd4a1a0170cf21641995c6e3ca1f96213369d73c6846",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/telemetry/@v/v0.0.0-20240522233618-39ace7a40ae7.info",
+          "sha256": "31681682628819e914871c3d148c63b46fcfa2979939502844a1c5f5920f1ba9",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/telemetry/@v/v0.0.0-20240522233618-39ace7a40ae7.mod",
+          "sha256": "b71288c1d03a434f8ea16eda80e4ddb0733cbdd4ed996f4ab6616fd5dbf76ab3",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/telemetry/@v/v0.0.0-20240522233618-39ace7a40ae7.zip",
+          "sha256": "c6aa5f63d8a7779a142bc9f8930d65c0f8026d08fcf26285670b54259e040cc4",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/tools/@v/v0.29.0.info",
+          "sha256": "18e537462bae520101aac41e656ed67578e7f07ca8790c4f8e4a35cfe948d53b",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/tools/@v/v0.29.0.mod",
+          "sha256": "2bee4b4727199f2b13f6aa38ec92e8d3bb0f4e7d50a243c763046bc05941b137",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/tools/@v/v0.29.0.zip",
+          "sha256": "49e981b231e35f3d9940bcd3ba0e2b26c3b3719702ac734e04d66200ff7a5fe7",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/vuln/@v/v1.1.4.info",
+          "sha256": "ee186522123f2c15ffca6bb43a98749bb64b2305bfa8175edd5931640bd72106",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/vuln/@v/v1.1.4.mod",
+          "sha256": "40e5fa329adbfd7dad2476465ba340d2531b4d33640b82c81c34ac90f36cbd2a",
+          "goBuildInput": true
+        },
+        {
+          "url": "https://proxy.golang.org/golang.org/x/vuln/@v/v1.1.4.zip",
+          "sha256": "115ff76fba8f73b27106eb2e59e3f30696f4f7faaeed55471b5b65c3994b503d",
+          "goBuildInput": true
+        }
+      ]
+    }
+  },
+  "sourceAnalysis": {
+    "projects": [
+      {
+        "name": "argocd",
+        "repo": "argoproj/argo-cd",
+        "tag": "v3.5.5",
+        "sourceURL": "https://codeload.github.com/argoproj/argo-cd/tar.gz/refs/tags/v3.5.5",
+        "sourceSHA256": "db1fbdbb8ae32b4a24dcc8f16b2bfc19bd263042c65211b00ceb87bd777a2b2b",
+        "candidateReference": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+        "analyses": [
+          {
+            "binaryPath": "usr/local/bin/argocd",
+            "binarySHA256": "9a81e13d1c603cd6306ea4d722555ea2665933af2878ba734e9010143904b975",
+            "goVersion": "go1.26.9",
+            "moduleDirectory": ".",
+            "patterns": [
+              "./cmd"
+            ],
+            "affectedModules": [
+              {
+                "path": "golang.org/x/net",
+                "version": "v0.59.0"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "coredns",
+        "repo": "coredns/coredns",
+        "tag": "v1.14.7",
+        "sourceURL": "https://codeload.github.com/coredns/coredns/tar.gz/refs/tags/v1.14.7",
+        "sourceSHA256": "c3ecdf3ebaba0c453e3dc62643548dbece09999d589513f25ca00ca4eca89423",
+        "candidateReference": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+        "analyses": [
+          {
+            "binaryPath": "coredns",
+            "binarySHA256": "67d7387acb5d58df2c884cd2f0a4a4815f6a6bb29b865a6ea5efa4e782d76faa",
+            "goVersion": "go1.26.6",
+            "moduleDirectory": ".",
+            "patterns": [
+              "."
+            ],
+            "affectedModules": [
+              {
+                "path": "golang.org/x/net",
+                "version": "v0.57.0"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "etcd",
+        "repo": "etcd-io/etcd",
+        "tag": "v3.6.15",
+        "sourceURL": "https://codeload.github.com/etcd-io/etcd/tar.gz/refs/tags/v3.6.15",
+        "sourceSHA256": "ea260a238dce73b7c4b06d03aeed64d841ec59041fa3d83935e257784e6c8f78",
+        "candidateReference": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+        "analyses": [
+          {
+            "binaryPath": "usr/local/bin/etcd",
+            "binarySHA256": "75fb09e834e9f14aaf2d06bfefdb94c5a31c1e2418a26612973f66e318da46c5",
+            "goVersion": "go1.26.8",
+            "moduleDirectory": "server",
+            "patterns": [
+              "."
+            ],
+            "affectedModules": [
+              {
+                "path": "golang.org/x/net",
+                "version": "v0.58.0"
+              }
+            ]
+          },
+          {
+            "binaryPath": "usr/local/bin/etcdctl",
+            "binarySHA256": "d7fc8ff6dc45c4714e6ffc824534f41d0cc246061fe5fca65a4c44a95122ae94",
+            "goVersion": "go1.26.8",
+            "moduleDirectory": "etcdctl",
+            "patterns": [
+              "."
+            ],
+            "affectedModules": [
+              {
+                "path": "golang.org/x/net",
+                "version": "v0.58.0"
+              }
+            ]
+          },
+          {
+            "binaryPath": "usr/local/bin/etcdutl",
+            "binarySHA256": "d2af31ddf719803eacb72b5cb3191e8d1a470a523041d618be4159b1569331ec",
+            "goVersion": "go1.26.8",
+            "moduleDirectory": "etcdutl",
+            "patterns": [
+              "."
+            ],
+            "affectedModules": [
+              {
+                "path": "golang.org/x/net",
+                "version": "v0.58.0"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "sdks": {
+      "go1.26.6": {
+        "url": "https://go.dev/dl/go1.26.6.linux-amd64.tar.gz",
+        "sha256": "708effb774be8237570d0add163225abbdfaf4fca28b2611df167beba4feef89",
+        "goBuildInput": true
+      },
+      "go1.26.8": {
+        "url": "https://go.dev/dl/go1.26.8.linux-amd64.tar.gz",
+        "sha256": "d0f743b33e8d8945e6b1f432edd15785c70507121d6e2a723b21285eddf8b57b",
+        "goBuildInput": true
+      },
+      "go1.26.9": {
+        "url": "https://go.dev/dl/go1.26.9.linux-amd64.tar.gz",
+        "sha256": "42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d",
+        "goBuildInput": true
+      }
+    }
   }
 }

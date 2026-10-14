@@ -180,6 +180,10 @@ class Hygiene(unittest.TestCase):
         for path,raw in dev.outputs().items():
             relative=path.relative_to(ROOT).as_posix()
             original=subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+relative])
+            # Keep the original WO-31 receipt exact; WO-34 separately bounds
+            # current image pins, services images and the dev bootstrap seed.
+            if relative.endswith(('services/workloads.yaml','seed/user-data')):
+                raw=subprocess.check_output(['git','-C',str(ROOT),'show','b55c0ea3a7805e80c218dcc13a5bfbea7e259a24:'+relative]).decode()
             if relative.endswith(('root.yaml','apps/applications.yaml','services/workloads.yaml')):
                 objects=list(yaml.safe_load_all(raw))
                 for obj in objects:
@@ -195,7 +199,8 @@ class Hygiene(unittest.TestCase):
                      'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json','tools/ci/pr-baselines.json',
                      'vcloud-ssot.yaml','deploy/common/host-admin.py','tools/platform_host.py'):
             original=subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+path])
-            current=(ROOT/path).read_bytes()
+            current=(subprocess.check_output(['git','-C',str(ROOT),'show','b55c0ea3a7805e80c218dcc13a5bfbea7e259a24:'+path])
+                     if path in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json') else (ROOT/path).read_bytes())
             if not path.endswith('.gz'):current=current.replace(b'\r\n',b'\n')
             self.assertEqual(current,original,path)
 

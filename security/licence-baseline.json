@@ -1184,7 +1184,7 @@
       "recordedOn": "2026-10-09",
       "expires": "2027-01-07",
       "path": "tools/ci/toolchain.lock.json",
-      "fingerprint": "e7b9f10392dfc669c94d0aa1c55c6c7f3df0f478c5bc32d2182b02f84ea1e331"
+      "fingerprint": "544e101855fc10758d7d4e3a69458a184b8f825b1a86b638e33336d715e683fa"
     },
     {
       "id": "schema-source:deploy/common/schema.lock.json",
@@ -1220,6 +1220,16 @@
       "requiredEvidence": "Reviewed SBOM, distribution package licences and image notices for this exact digest",
       "recordedOn": "2026-10-10",
       "expires": "2027-01-07"
+    },
+    {
+      "id": "image-sbom:oci-image|docker.io/library/python|sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "kind": "image-sbom",
+      "reason": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
+      "owner": "Ahmed Mazen (@amazen33)",
+      "requiredEvidence": "Obtain and review an SBOM and bundled licence notices for this exact image (ADR-0014).",
+      "recordedOn": "2026-10-09",
+      "expires": "2027-01-07",
+      "component": "oci-image|docker.io/library/python|sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170"
     }
   ]
 }

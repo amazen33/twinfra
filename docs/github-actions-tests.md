@@ -20,6 +20,14 @@ Every normal run tests the candidate revision and six immutable merged revisions
 The reviewed [baseline inventory](../tools/ci/pr-baselines.json) controls those
 historical commits. Add future baseline PRs to that inventory through review.
 
+WO-34 console reproduction and complete before/after comparisons run in the
+paths-filtered [WO-34 workflow](../.github/workflows/wo34-tool-build.yaml), with
+their comparison reports and CycloneDX SBOMs uploaded there. Console sources,
+the builder, the listed WO-34 tools and that workflow trigger the expensive job.
+The general PR gate contains no console rebuild or forced `inventory --full`.
+Unrelated documentation changes select no images or dependency locks; the
+existing ADR-0049 full scan for policy/scanner-tooling changes is preserved.
+
 Once this workflow is merged into `main`, select **Actions → vCloud tests →
 Run workflow**, and enter a PR number to retest another prior PR. Alternatively:
 

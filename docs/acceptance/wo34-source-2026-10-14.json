@@ -1,0 +1,2416 @@
+{
+  "date": "2026-10-14",
+  "scope": "Static tagged-source analysis and complete image comparisons",
+  "liveAcceptance": "Pending",
+  "testerSignOff": "Pending",
+  "runURL": "https://github.com/amazen33/twinfra/actions/runs/38630364025",
+  "applicationBinaryBuilt": false,
+  "applicationCodeExecuted": false,
+  "projects": [
+    {
+      "project": "argocd",
+      "tag": "v3.5.5",
+      "image": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "sourceSHA256": "db1fbdbb8ae32b4a24dcc8f16b2bfc19bd263042c65211b00ceb87bd777a2b2b",
+      "summarySHA256": "0b62a96f220c470391de7dbe96a4aed50d4737d9dcc4cb624b11c0f1bb92a8ea",
+      "analyses": [
+        {
+          "binaryPath": "usr/local/bin/argocd",
+          "goVersion": "go1.26.9",
+          "binarySHA256": "9a81e13d1c603cd6306ea4d722555ea2665933af2878ba734e9010143904b975",
+          "SDK": {
+            "url": "https://go.dev/dl/go1.26.9.linux-amd64.tar.gz",
+            "sha256": "42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d",
+            "goBuildInput": true
+          },
+          "classification": "reachable",
+          "target": "GO-2026-6612",
+          "sourceFindingCount": 44,
+          "representativeCallStacks": [
+            {
+              "module": "golang.org/x/net",
+              "version": "v0.59.0",
+              "fixedVersion": "v0.60.0",
+              "reachable": true,
+              "callStack": [
+                {
+                  "module": "golang.org/x/net",
+                  "version": "v0.59.0",
+                  "package": "golang.org/x/net/http2",
+                  "function": "ReadFrame",
+                  "receiver": "*Framer",
+                  "position": {
+                    "filename": "http2/frame.go",
+                    "offset": 16747,
+                    "line": 571,
+                    "column": 19
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.84.0",
+                  "package": "google.golang.org/grpc/internal/transport",
+                  "function": "NewServerTransport",
+                  "position": {
+                    "filename": "internal/transport/http2_server.go",
+                    "offset": 11694,
+                    "line": 334,
+                    "column": 37
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.84.0",
+                  "package": "google.golang.org/grpc",
+                  "function": "newHTTP2Transport",
+                  "receiver": "*Server",
+                  "position": {
+                    "filename": "server.go",
+                    "offset": 35734,
+                    "line": 1051,
+                    "column": 41
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.84.0",
+                  "package": "google.golang.org/grpc",
+                  "function": "handleRawConn",
+                  "receiver": "*Server",
+                  "position": {
+                    "filename": "server.go",
+                    "offset": 34303,
+                    "line": 1008,
+                    "column": 27
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.84.0",
+                  "package": "google.golang.org/grpc",
+                  "function": "Serve$3",
+                  "position": {
+                    "filename": "server.go",
+                    "offset": 33877,
+                    "line": 992,
+                    "column": 19
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.84.0",
+                  "package": "google.golang.org/grpc",
+                  "function": "Serve",
+                  "receiver": "*Server",
+                  "position": {
+                    "filename": "server.go",
+                    "offset": 33847,
+                    "line": 991,
+                    "column": 3
+                  }
+                },
+                {
+                  "module": "github.com/argoproj/argo-cd/v3",
+                  "package": "github.com/argoproj/argo-cd/v3/cmd/argocd-commit-server/commands",
+                  "function": "NewCommand$1",
+                  "position": {
+                    "filename": "cmd/argocd-commit-server/commands/argocd_commit_server.go",
+                    "offset": 3386,
+                    "line": 102,
+                    "column": 20
+                  }
+                },
+                {
+                  "module": "github.com/spf13/cobra",
+                  "version": "v1.10.2",
+                  "package": "github.com/spf13/cobra",
+                  "function": "execute",
+                  "receiver": "*Command",
+                  "position": {
+                    "filename": "command.go",
+                    "offset": 29829,
+                    "line": 1015,
+                    "column": 19
+                  }
+                },
+                {
+                  "module": "github.com/spf13/cobra",
+                  "version": "v1.10.2",
+                  "package": "github.com/spf13/cobra",
+                  "function": "ExecuteC",
+                  "receiver": "*Command",
+                  "position": {
+                    "filename": "command.go",
+                    "offset": 32968,
+                    "line": 1148,
+                    "column": 19
+                  }
+                },
+                {
+                  "module": "github.com/spf13/cobra",
+                  "version": "v1.10.2",
+                  "package": "github.com/spf13/cobra",
+                  "function": "Execute",
+                  "receiver": "*Command",
+                  "position": {
+                    "filename": "command.go",
+                    "offset": 31057,
+                    "line": 1071,
+                    "column": 22
+                  }
+                },
+                {
+                  "module": "github.com/argoproj/argo-cd/v3",
+                  "package": "github.com/argoproj/argo-cd/v3/cmd",
+                  "function": "main",
+                  "position": {
+                    "filename": "cmd/main.go",
+                    "offset": 2739,
+                    "line": 87,
+                    "column": 24
+                  }
+                }
+              ]
+            }
+          ],
+          "databaseLastModified": "2026-10-08T22:31:09Z"
+        }
+      ],
+      "promotion": "Stopped: reachable source finding requires owner decision"
+    },
+    {
+      "project": "coredns",
+      "tag": "v1.14.7",
+      "image": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "sourceSHA256": "c3ecdf3ebaba0c453e3dc62643548dbece09999d589513f25ca00ca4eca89423",
+      "summarySHA256": "e83c50e908cbb4e55128c6ffee42d14b561ce2298b0273f5b363d5e89892ecd4",
+      "analyses": [
+        {
+          "binaryPath": "coredns",
+          "goVersion": "go1.26.6",
+          "binarySHA256": "67d7387acb5d58df2c884cd2f0a4a4815f6a6bb29b865a6ea5efa4e782d76faa",
+          "SDK": {
+            "url": "https://go.dev/dl/go1.26.6.linux-amd64.tar.gz",
+            "sha256": "708effb774be8237570d0add163225abbdfaf4fca28b2611df167beba4feef89",
+            "goBuildInput": true
+          },
+          "classification": "reachable",
+          "target": "GO-2026-6612",
+          "sourceFindingCount": 235,
+          "representativeCallStacks": [
+            {
+              "module": "golang.org/x/net",
+              "version": "v0.57.0",
+              "fixedVersion": "v0.60.0",
+              "reachable": true,
+              "callStack": [
+                {
+                  "module": "golang.org/x/net",
+                  "version": "v0.57.0",
+                  "package": "golang.org/x/net/http2",
+                  "function": "ReadFrame",
+                  "receiver": "*Framer",
+                  "position": {
+                    "filename": "http2/frame.go",
+                    "offset": 16747,
+                    "line": 571,
+                    "column": 19
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.0",
+                  "package": "google.golang.org/grpc/internal/transport",
+                  "function": "NewServerTransport",
+                  "position": {
+                    "filename": "internal/transport/http2_server.go",
+                    "offset": 11694,
+                    "line": 334,
+                    "column": 37
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.0",
+                  "package": "google.golang.org/grpc",
+                  "function": "newHTTP2Transport",
+                  "receiver": "*Server",
+                  "position": {
+                    "filename": "server.go",
+                    "offset": 34959,
+                    "line": 1033,
+                    "column": 41
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.0",
+                  "package": "google.golang.org/grpc",
+                  "function": "handleRawConn",
+                  "receiver": "*Server",
+                  "position": {
+                    "filename": "server.go",
+                    "offset": 33528,
+                    "line": 990,
+                    "column": 27
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.0",
+                  "package": "google.golang.org/grpc",
+                  "function": "Serve$3",
+                  "position": {
+                    "filename": "server.go",
+                    "offset": 33102,
+                    "line": 974,
+                    "column": 19
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.0",
+                  "package": "google.golang.org/grpc",
+                  "function": "Serve",
+                  "receiver": "*Server",
+                  "position": {
+                    "filename": "server.go",
+                    "offset": 33072,
+                    "line": 973,
+                    "column": 3
+                  }
+                },
+                {
+                  "module": "github.com/coredns/coredns",
+                  "package": "github.com/coredns/coredns/core/dnsserver",
+                  "function": "Serve",
+                  "receiver": "*ServergRPC",
+                  "position": {
+                    "filename": "core/dnsserver/server_grpc.go",
+                    "offset": 3786,
+                    "line": 129,
+                    "column": 27
+                  }
+                },
+                {
+                  "module": "github.com/coredns/caddy",
+                  "version": "v1.1.4-0.20250930002214-15135a999495",
+                  "package": "github.com/coredns/caddy",
+                  "function": "startServers$1$1",
+                  "position": {
+                    "filename": "caddy.go",
+                    "offset": 23907,
+                    "line": 808,
+                    "column": 23
+                  }
+                },
+                {
+                  "module": "github.com/coredns/caddy",
+                  "version": "v1.1.4-0.20250930002214-15135a999495",
+                  "package": "github.com/coredns/caddy",
+                  "function": "startServers$1",
+                  "position": {
+                    "filename": "caddy.go",
+                    "offset": 23807,
+                    "line": 803,
+                    "column": 4
+                  }
+                },
+                {
+                  "module": "github.com/coredns/caddy",
+                  "version": "v1.1.4-0.20250930002214-15135a999495",
+                  "package": "github.com/coredns/caddy",
+                  "function": "startServers",
+                  "position": {
+                    "filename": "caddy.go",
+                    "offset": 24044,
+                    "line": 818,
+                    "column": 4
+                  }
+                },
+                {
+                  "module": "github.com/coredns/caddy",
+                  "version": "v1.1.4-0.20250930002214-15135a999495",
+                  "package": "github.com/coredns/caddy",
+                  "function": "startWithListenerFds",
+                  "position": {
+                    "filename": "caddy.go",
+                    "offset": 16397,
+                    "line": 544,
+                    "column": 20
+                  }
+                },
+                {
+                  "module": "github.com/coredns/caddy",
+                  "version": "v1.1.4-0.20250930002214-15135a999495",
+                  "package": "github.com/coredns/caddy",
+                  "function": "Start",
+                  "position": {
+                    "filename": "caddy.go",
+                    "offset": 14821,
+                    "line": 474,
+                    "column": 29
+                  }
+                },
+                {
+                  "module": "github.com/coredns/coredns",
+                  "package": "github.com/coredns/coredns/coremain",
+                  "function": "Run",
+                  "position": {
+                    "filename": "coremain/run.go",
+                    "offset": 1819,
+                    "line": 73,
+                    "column": 30
+                  }
+                },
+                {
+                  "module": "github.com/coredns/coredns",
+                  "package": "github.com/coredns/coredns",
+                  "function": "main",
+                  "position": {
+                    "filename": "coredns.go",
+                    "offset": 241,
+                    "line": 12,
+                    "column": 14
+                  }
+                }
+              ]
+            },
+            {
+              "module": "stdlib",
+              "version": "v1.26.6",
+              "fixedVersion": "v1.26.9",
+              "reachable": true,
+              "callStack": [
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.6",
+                  "package": "net/http",
+                  "function": "Write",
+                  "receiver": "*response",
+                  "position": {
+                    "filename": "src/net/http/server.go",
+                    "offset": 51128,
+                    "line": 1610,
+                    "column": 20
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.6",
+                  "package": "fmt",
+                  "function": "Fprintln",
+                  "position": {
+                    "filename": "src/fmt/print.go",
+                    "offset": 9227,
+                    "line": 306,
+                    "column": 18
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.6",
+                  "package": "fmt",
+                  "function": "Println",
+                  "position": {
+                    "filename": "src/fmt/print.go",
+                    "offset": 9555,
+                    "line": 315,
+                    "column": 17
+                  }
+                },
+                {
+                  "module": "github.com/coredns/coredns",
+                  "package": "github.com/coredns/coredns/coremain",
+                  "function": "Run",
+                  "position": {
+                    "filename": "coremain/run.go",
+                    "offset": 1478,
+                    "line": 57,
+                    "column": 14
+                  }
+                },
+                {
+                  "module": "github.com/coredns/coredns",
+                  "package": "github.com/coredns/coredns",
+                  "function": "main",
+                  "position": {
+                    "filename": "coredns.go",
+                    "offset": 241,
+                    "line": 12,
+                    "column": 14
+                  }
+                }
+              ]
+            }
+          ],
+          "databaseLastModified": "2026-10-08T22:31:09Z"
+        }
+      ],
+      "promotion": "Stopped: reachable source finding requires owner decision"
+    },
+    {
+      "project": "etcd",
+      "tag": "v3.6.15",
+      "image": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "sourceSHA256": "ea260a238dce73b7c4b06d03aeed64d841ec59041fa3d83935e257784e6c8f78",
+      "summarySHA256": "bb8b9c7d399ef10843e00d4e2f9e2a3357ab1981fffa052e46293e8bfd623bcc",
+      "analyses": [
+        {
+          "binaryPath": "usr/local/bin/etcd",
+          "goVersion": "go1.26.8",
+          "binarySHA256": "75fb09e834e9f14aaf2d06bfefdb94c5a31c1e2418a26612973f66e318da46c5",
+          "SDK": {
+            "url": "https://go.dev/dl/go1.26.8.linux-amd64.tar.gz",
+            "sha256": "d0f743b33e8d8945e6b1f432edd15785c70507121d6e2a723b21285eddf8b57b",
+            "goBuildInput": true
+          },
+          "classification": "reachable",
+          "target": "GO-2026-6612",
+          "sourceFindingCount": 214,
+          "representativeCallStacks": [
+            {
+              "module": "golang.org/x/net",
+              "version": "v0.58.0",
+              "fixedVersion": "v0.60.0",
+              "reachable": true,
+              "callStack": [
+                {
+                  "module": "golang.org/x/net",
+                  "version": "v0.58.0",
+                  "package": "golang.org/x/net/http2",
+                  "function": "ReadFrame",
+                  "receiver": "*Framer",
+                  "position": {
+                    "filename": "http2/frame.go",
+                    "offset": 16747,
+                    "line": 571,
+                    "column": 19
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/internal/transport",
+                  "function": "NewServerTransport",
+                  "position": {
+                    "filename": "internal/transport/http2_server.go",
+                    "offset": 11694,
+                    "line": 334,
+                    "column": 37
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "newHTTP2Transport",
+                  "receiver": "*Server",
+                  "position": {
+                    "filename": "server.go",
+                    "offset": 34959,
+                    "line": 1033,
+                    "column": 41
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "handleRawConn",
+                  "receiver": "*Server",
+                  "position": {
+                    "filename": "server.go",
+                    "offset": 33528,
+                    "line": 990,
+                    "column": 27
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "Serve$3",
+                  "position": {
+                    "filename": "server.go",
+                    "offset": 33102,
+                    "line": 974,
+                    "column": 19
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "Serve",
+                  "receiver": "*Server",
+                  "position": {
+                    "filename": "server.go",
+                    "offset": 33072,
+                    "line": 973,
+                    "column": 3
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/server/v3",
+                  "package": "go.etcd.io/etcd/server/v3/etcdmain",
+                  "function": "startGRPCProxy$2",
+                  "position": {
+                    "filename": "etcdmain/grpc_proxy.go",
+                    "offset": 12341,
+                    "line": 268,
+                    "column": 57
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/server/v3",
+                  "package": "go.etcd.io/etcd/server/v3/etcdmain",
+                  "function": "startServe$1",
+                  "position": {
+                    "filename": "etcdmain/grpc_proxy.go",
+                    "offset": 24191,
+                    "line": 628,
+                    "column": 27
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/server/v3",
+                  "package": "go.etcd.io/etcd/server/v3/etcdmain",
+                  "function": "startServe",
+                  "position": {
+                    "filename": "etcdmain/grpc_proxy.go",
+                    "offset": 24166,
+                    "line": 628,
+                    "column": 2
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/server/v3",
+                  "package": "go.etcd.io/etcd/server/v3/etcdmain",
+                  "function": "startGRPCProxy",
+                  "position": {
+                    "filename": "etcdmain/grpc_proxy.go",
+                    "offset": 12296,
+                    "line": 268,
+                    "column": 12
+                  }
+                },
+                {
+                  "module": "github.com/spf13/cobra",
+                  "version": "v1.10.2",
+                  "package": "github.com/spf13/cobra",
+                  "function": "execute",
+                  "receiver": "*Command",
+                  "position": {
+                    "filename": "command.go",
+                    "offset": 29894,
+                    "line": 1019,
+                    "column": 8
+                  }
+                },
+                {
+                  "module": "github.com/spf13/cobra",
+                  "version": "v1.10.2",
+                  "package": "github.com/spf13/cobra",
+                  "function": "ExecuteC",
+                  "receiver": "*Command",
+                  "position": {
+                    "filename": "command.go",
+                    "offset": 32968,
+                    "line": 1148,
+                    "column": 19
+                  }
+                },
+                {
+                  "module": "github.com/spf13/cobra",
+                  "version": "v1.10.2",
+                  "package": "github.com/spf13/cobra",
+                  "function": "Execute",
+                  "receiver": "*Command",
+                  "position": {
+                    "filename": "command.go",
+                    "offset": 31057,
+                    "line": 1071,
+                    "column": 22
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/server/v3",
+                  "package": "go.etcd.io/etcd/server/v3/etcdmain",
+                  "function": "Main",
+                  "position": {
+                    "filename": "etcdmain/main.go",
+                    "offset": 860,
+                    "line": 32,
+                    "column": 29
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/server/v3",
+                  "package": "go.etcd.io/etcd/server/v3",
+                  "function": "main",
+                  "position": {
+                    "filename": "main.go",
+                    "offset": 1082,
+                    "line": 31,
+                    "column": 15
+                  }
+                }
+              ]
+            },
+            {
+              "module": "stdlib",
+              "version": "v1.26.8",
+              "fixedVersion": "v1.26.9",
+              "reachable": true,
+              "callStack": [
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "net/http",
+                  "function": "Error",
+                  "receiver": "http2StreamError",
+                  "position": {
+                    "filename": "src/net/http/h2_bundle.go",
+                    "offset": 62247,
+                    "line": 1410,
+                    "column": 27
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/server/v3",
+                  "package": "go.etcd.io/etcd/server/v3/etcdmain",
+                  "function": "startEtcdOrProxyV2",
+                  "position": {
+                    "filename": "etcdmain/etcd.go",
+                    "offset": 4643,
+                    "line": 170,
+                    "column": 32
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/server/v3",
+                  "package": "go.etcd.io/etcd/server/v3/etcdmain",
+                  "function": "Main",
+                  "position": {
+                    "filename": "etcdmain/main.go",
+                    "offset": 965,
+                    "line": 40,
+                    "column": 20
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/server/v3",
+                  "package": "go.etcd.io/etcd/server/v3",
+                  "function": "main",
+                  "position": {
+                    "filename": "main.go",
+                    "offset": 1082,
+                    "line": 31,
+                    "column": 15
+                  }
+                }
+              ]
+            }
+          ],
+          "databaseLastModified": "2026-10-08T22:31:09Z"
+        },
+        {
+          "binaryPath": "usr/local/bin/etcdctl",
+          "goVersion": "go1.26.8",
+          "binarySHA256": "d7fc8ff6dc45c4714e6ffc824534f41d0cc246061fe5fca65a4c44a95122ae94",
+          "SDK": {
+            "url": "https://go.dev/dl/go1.26.8.linux-amd64.tar.gz",
+            "sha256": "d0f743b33e8d8945e6b1f432edd15785c70507121d6e2a723b21285eddf8b57b",
+            "goBuildInput": true
+          },
+          "classification": "reachable",
+          "target": "GO-2026-6612",
+          "sourceFindingCount": 135,
+          "representativeCallStacks": [
+            {
+              "module": "golang.org/x/net",
+              "version": "v0.58.0",
+              "fixedVersion": "v0.60.0",
+              "reachable": true,
+              "callStack": [
+                {
+                  "module": "golang.org/x/net",
+                  "version": "v0.58.0",
+                  "package": "golang.org/x/net/http2",
+                  "function": "ReadFrameHeader",
+                  "receiver": "*Framer",
+                  "position": {
+                    "filename": "http2/frame.go",
+                    "offset": 14694,
+                    "line": 511,
+                    "column": 19
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/internal/transport",
+                  "function": "readFrame",
+                  "receiver": "*framer",
+                  "position": {
+                    "filename": "internal/transport/http_util.go",
+                    "offset": 12459,
+                    "line": 493,
+                    "column": 33
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/internal/transport",
+                  "function": "reader",
+                  "receiver": "*http2Client",
+                  "position": {
+                    "filename": "internal/transport/http2_client.go",
+                    "offset": 57619,
+                    "line": 1707,
+                    "column": 35
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/internal/transport",
+                  "function": "NewHTTP2Client",
+                  "position": {
+                    "filename": "internal/transport/http2_client.go",
+                    "offset": 14946,
+                    "line": 420,
+                    "column": 2
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "createTransport",
+                  "receiver": "*addrConn",
+                  "position": {
+                    "filename": "clientconn.go",
+                    "offset": 53887,
+                    "line": 1525,
+                    "column": 40
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "tryAllAddrs",
+                  "receiver": "*addrConn",
+                  "position": {
+                    "filename": "clientconn.go",
+                    "offset": 52068,
+                    "line": 1471,
+                    "column": 28
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "resetTransportAndUnlock",
+                  "receiver": "*addrConn",
+                  "position": {
+                    "filename": "clientconn.go",
+                    "offset": 48205,
+                    "line": 1354,
+                    "column": 26
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "connect",
+                  "receiver": "*addrConn",
+                  "position": {
+                    "filename": "clientconn.go",
+                    "offset": 36532,
+                    "line": 997,
+                    "column": 28
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "Connect",
+                  "receiver": "*acBalancerWrapper",
+                  "position": {
+                    "filename": "balancer_wrapper.go",
+                    "offset": 11995,
+                    "line": 350,
+                    "column": 2
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/balancer/pickfirst",
+                  "function": "requestConnectionLocked",
+                  "receiver": "*pickfirstBalancer",
+                  "position": {
+                    "filename": "balancer/pickfirst/pickfirst.go",
+                    "offset": 20132,
+                    "line": 563,
+                    "column": 22
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/balancer/pickfirst",
+                  "function": "startFirstPassLocked",
+                  "receiver": "*pickfirstBalancer",
+                  "position": {
+                    "filename": "balancer/pickfirst/pickfirst.go",
+                    "offset": 14594,
+                    "line": 405,
+                    "column": 27
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/balancer/pickfirst",
+                  "function": "ExitIdle",
+                  "receiver": "*pickfirstBalancer",
+                  "position": {
+                    "filename": "balancer/pickfirst/pickfirst.go",
+                    "offset": 14327,
+                    "line": 394,
+                    "column": 25
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "sync",
+                  "function": "OnceFunc$1$1",
+                  "position": {
+                    "filename": "src/sync/oncefunc.go",
+                    "offset": 842,
+                    "line": 33,
+                    "column": 7
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "sync",
+                  "function": "doSlow",
+                  "receiver": "*Once",
+                  "position": {
+                    "filename": "src/sync/once.go",
+                    "offset": 2517,
+                    "line": 78,
+                    "column": 4
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "sync",
+                  "function": "Do",
+                  "receiver": "*Once",
+                  "position": {
+                    "filename": "src/sync/once.go",
+                    "offset": 2390,
+                    "line": 69,
+                    "column": 11
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "internal/godebug",
+                  "function": "IncNonDefault",
+                  "receiver": "*Setting",
+                  "position": {
+                    "filename": "src/internal/godebug/godebug.go",
+                    "offset": 4272,
+                    "line": 122,
+                    "column": 21
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "net/http",
+                  "function": "init#2",
+                  "position": {
+                    "filename": "src/net/http/servemux121.go",
+                    "offset": 1017,
+                    "line": 34,
+                    "column": 29
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "net/http",
+                  "function": "init",
+                  "position": {
+                    "filename": "src/net/http/client.go",
+                    "offset": 303,
+                    "line": 10,
+                    "column": 1
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/etcdctl/v3",
+                  "package": "go.etcd.io/etcd/etcdctl/v3/ctlv3/command",
+                  "function": "init",
+                  "position": {
+                    "filename": "ctlv3/command/util.go",
+                    "offset": 675,
+                    "line": 23,
+                    "column": 2
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/etcdctl/v3",
+                  "package": "go.etcd.io/etcd/etcdctl/v3/ctlv3",
+                  "function": "init",
+                  "position": {
+                    "filename": "ctlv3/ctl.go",
+                    "offset": 770,
+                    "line": 25,
+                    "column": 2
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/etcdctl/v3",
+                  "package": "go.etcd.io/etcd/etcdctl/v3",
+                  "function": "init",
+                  "position": {
+                    "filename": "main.go",
+                    "offset": 679,
+                    "line": 19,
+                    "column": 2
+                  }
+                }
+              ]
+            },
+            {
+              "module": "stdlib",
+              "version": "v1.26.8",
+              "fixedVersion": "v1.26.9",
+              "reachable": true,
+              "callStack": [
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "net/http",
+                  "function": "Error",
+                  "receiver": "transportReadFromServerError",
+                  "position": {
+                    "filename": "src/net/http/transport.go",
+                    "offset": 36096,
+                    "line": 1040,
+                    "column": 39
+                  }
+                },
+                {
+                  "module": "github.com/spf13/cobra",
+                  "version": "v1.10.2",
+                  "package": "github.com/spf13/cobra",
+                  "function": "ExecuteC",
+                  "receiver": "*Command",
+                  "position": {
+                    "filename": "command.go",
+                    "offset": 33333,
+                    "line": 1160,
+                    "column": 43
+                  }
+                },
+                {
+                  "module": "github.com/spf13/cobra",
+                  "version": "v1.10.2",
+                  "package": "github.com/spf13/cobra",
+                  "function": "Execute",
+                  "receiver": "*Command",
+                  "position": {
+                    "filename": "command.go",
+                    "offset": 31057,
+                    "line": 1071,
+                    "column": 22
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/etcdctl/v3",
+                  "package": "go.etcd.io/etcd/etcdctl/v3/ctlv3",
+                  "function": "Start",
+                  "position": {
+                    "filename": "ctlv3/ctl.go",
+                    "offset": 5639,
+                    "line": 112,
+                    "column": 24
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/etcdctl/v3",
+                  "package": "go.etcd.io/etcd/etcdctl/v3/ctlv3",
+                  "function": "MustStart",
+                  "position": {
+                    "filename": "ctlv3/ctl.go",
+                    "offset": 5680,
+                    "line": 116,
+                    "column": 17
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/etcdctl/v3",
+                  "package": "go.etcd.io/etcd/etcdctl/v3",
+                  "function": "main",
+                  "position": {
+                    "filename": "main.go",
+                    "offset": 747,
+                    "line": 23,
+                    "column": 17
+                  }
+                }
+              ]
+            }
+          ],
+          "databaseLastModified": "2026-10-08T22:31:09Z"
+        },
+        {
+          "binaryPath": "usr/local/bin/etcdutl",
+          "goVersion": "go1.26.8",
+          "binarySHA256": "d2af31ddf719803eacb72b5cb3191e8d1a470a523041d618be4159b1569331ec",
+          "SDK": {
+            "url": "https://go.dev/dl/go1.26.8.linux-amd64.tar.gz",
+            "sha256": "d0f743b33e8d8945e6b1f432edd15785c70507121d6e2a723b21285eddf8b57b",
+            "goBuildInput": true
+          },
+          "classification": "reachable",
+          "target": "GO-2026-6612",
+          "sourceFindingCount": 99,
+          "representativeCallStacks": [
+            {
+              "module": "golang.org/x/net",
+              "version": "v0.58.0",
+              "fixedVersion": "v0.60.0",
+              "reachable": true,
+              "callStack": [
+                {
+                  "module": "golang.org/x/net",
+                  "version": "v0.58.0",
+                  "package": "golang.org/x/net/http2",
+                  "function": "ReadFrame",
+                  "receiver": "*Framer",
+                  "position": {
+                    "filename": "http2/frame.go",
+                    "offset": 16747,
+                    "line": 571,
+                    "column": 19
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/internal/transport",
+                  "function": "readServerPreface",
+                  "receiver": "*http2Client",
+                  "position": {
+                    "filename": "internal/transport/http2_client.go",
+                    "offset": 56632,
+                    "line": 1671,
+                    "column": 37
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/internal/transport",
+                  "function": "reader",
+                  "receiver": "*http2Client",
+                  "position": {
+                    "filename": "internal/transport/http2_client.go",
+                    "offset": 57347,
+                    "line": 1695,
+                    "column": 31
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/internal/transport",
+                  "function": "NewHTTP2Client",
+                  "position": {
+                    "filename": "internal/transport/http2_client.go",
+                    "offset": 14946,
+                    "line": 420,
+                    "column": 2
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "createTransport",
+                  "receiver": "*addrConn",
+                  "position": {
+                    "filename": "clientconn.go",
+                    "offset": 53887,
+                    "line": 1525,
+                    "column": 40
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "tryAllAddrs",
+                  "receiver": "*addrConn",
+                  "position": {
+                    "filename": "clientconn.go",
+                    "offset": 52068,
+                    "line": 1471,
+                    "column": 28
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "resetTransportAndUnlock",
+                  "receiver": "*addrConn",
+                  "position": {
+                    "filename": "clientconn.go",
+                    "offset": 48205,
+                    "line": 1354,
+                    "column": 26
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "connect",
+                  "receiver": "*addrConn",
+                  "position": {
+                    "filename": "clientconn.go",
+                    "offset": 36532,
+                    "line": 997,
+                    "column": 28
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc",
+                  "function": "Connect",
+                  "receiver": "*acBalancerWrapper",
+                  "position": {
+                    "filename": "balancer_wrapper.go",
+                    "offset": 11995,
+                    "line": 350,
+                    "column": 2
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/balancer/pickfirst",
+                  "function": "requestConnectionLocked",
+                  "receiver": "*pickfirstBalancer",
+                  "position": {
+                    "filename": "balancer/pickfirst/pickfirst.go",
+                    "offset": 20132,
+                    "line": 563,
+                    "column": 22
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/balancer/pickfirst",
+                  "function": "startFirstPassLocked",
+                  "receiver": "*pickfirstBalancer",
+                  "position": {
+                    "filename": "balancer/pickfirst/pickfirst.go",
+                    "offset": 14594,
+                    "line": 405,
+                    "column": 27
+                  }
+                },
+                {
+                  "module": "google.golang.org/grpc",
+                  "version": "v1.83.2",
+                  "package": "google.golang.org/grpc/balancer/pickfirst",
+                  "function": "ExitIdle",
+                  "receiver": "*pickfirstBalancer",
+                  "position": {
+                    "filename": "balancer/pickfirst/pickfirst.go",
+                    "offset": 14327,
+                    "line": 394,
+                    "column": 25
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "sync",
+                  "function": "OnceFunc$1$1",
+                  "position": {
+                    "filename": "src/sync/oncefunc.go",
+                    "offset": 842,
+                    "line": 33,
+                    "column": 7
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "sync",
+                  "function": "doSlow",
+                  "receiver": "*Once",
+                  "position": {
+                    "filename": "src/sync/once.go",
+                    "offset": 2517,
+                    "line": 78,
+                    "column": 4
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "sync",
+                  "function": "Do",
+                  "receiver": "*Once",
+                  "position": {
+                    "filename": "src/sync/once.go",
+                    "offset": 2390,
+                    "line": 69,
+                    "column": 11
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "sync",
+                  "function": "OnceFunc$1",
+                  "position": {
+                    "filename": "src/sync/oncefunc.go",
+                    "offset": 574,
+                    "line": 22,
+                    "column": 12
+                  }
+                },
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "hash/crc32",
+                  "function": "MakeTable",
+                  "position": {
+                    "filename": "src/hash/crc32/crc32.go",
+                    "offset": 4093,
+                    "line": 125,
+                    "column": 15
+                  }
+                },
+                {
+                  "module": "../server",
+                  "package": "go.etcd.io/etcd/server/v3/etcdserver/api/snap",
+                  "function": "init",
+                  "position": {
+                    "filename": "etcdserver/api/snap/snapshotter.go",
+                    "offset": 1240,
+                    "line": 45,
+                    "column": 36
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/etcdutl/v3",
+                  "package": "go.etcd.io/etcd/etcdutl/v3/etcdutl",
+                  "function": "init",
+                  "position": {
+                    "filename": "etcdutl/common.go",
+                    "offset": 761,
+                    "line": 26,
+                    "column": 2
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/etcdutl/v3",
+                  "package": "go.etcd.io/etcd/etcdutl/v3",
+                  "function": "init",
+                  "position": {
+                    "filename": "ctl.go",
+                    "offset": 711,
+                    "line": 21,
+                    "column": 2
+                  }
+                }
+              ]
+            },
+            {
+              "module": "stdlib",
+              "version": "v1.26.8",
+              "fixedVersion": "v1.26.9",
+              "reachable": true,
+              "callStack": [
+                {
+                  "module": "stdlib",
+                  "version": "v1.26.8",
+                  "package": "net/http",
+                  "function": "Error",
+                  "receiver": "http2duplicatePseudoHeaderError",
+                  "position": {
+                    "filename": "src/net/http/h2_bundle.go",
+                    "offset": 63726,
+                    "line": 1450,
+                    "column": 42
+                  }
+                },
+                {
+                  "module": "github.com/spf13/cobra",
+                  "version": "v1.10.2",
+                  "package": "github.com/spf13/cobra",
+                  "function": "ExecuteC",
+                  "receiver": "*Command",
+                  "position": {
+                    "filename": "command.go",
+                    "offset": 33333,
+                    "line": 1160,
+                    "column": 43
+                  }
+                },
+                {
+                  "module": "github.com/spf13/cobra",
+                  "version": "v1.10.2",
+                  "package": "github.com/spf13/cobra",
+                  "function": "Execute",
+                  "receiver": "*Command",
+                  "position": {
+                    "filename": "command.go",
+                    "offset": 31057,
+                    "line": 1071,
+                    "column": 22
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/etcdutl/v3",
+                  "package": "go.etcd.io/etcd/etcdutl/v3",
+                  "function": "Start",
+                  "position": {
+                    "filename": "ctl.go",
+                    "offset": 1719,
+                    "line": 54,
+                    "column": 24
+                  }
+                },
+                {
+                  "module": "go.etcd.io/etcd/etcdutl/v3",
+                  "package": "go.etcd.io/etcd/etcdutl/v3",
+                  "function": "main",
+                  "position": {
+                    "filename": "main.go",
+                    "offset": 755,
+                    "line": 23,
+                    "column": 17
+                  }
+                }
+              ]
+            }
+          ],
+          "databaseLastModified": "2026-10-08T22:31:09Z"
+        }
+      ],
+      "promotion": "Stopped: reachable source finding requires owner decision"
+    }
+  ],
+  "comparison": {
+    "applicationCodeExecuted": false,
+    "components": {
+      "argocd": {
+        "introduced": [],
+        "netImprovement": true,
+        "noNewCriticalHigh": true,
+        "removed": [
+          [
+            "github.com/argoproj/argo-cd/v3",
+            "CVE-2026-55797",
+            "High"
+          ],
+          [
+            "github.com/go-git/go-git/v5",
+            "CVE-2026-71556",
+            "High"
+          ],
+          [
+            "google.golang.org/grpc",
+            "CVE-2026-84304",
+            "High"
+          ],
+          [
+            "google.golang.org/grpc",
+            "CVE-2026-84445",
+            "High"
+          ],
+          [
+            "google.golang.org/grpc",
+            "GHSA-hrxh-6v49-42gf",
+            "High"
+          ],
+          [
+            "libssl3t64",
+            "CVE-2026-84782",
+            "High"
+          ],
+          [
+            "openssl",
+            "CVE-2026-84782",
+            "High"
+          ],
+          [
+            "openssl-provider-legacy",
+            "CVE-2026-84782",
+            "High"
+          ]
+        ]
+      },
+      "coredns": {
+        "introduced": [],
+        "netImprovement": true,
+        "noNewCriticalHigh": true,
+        "removed": [
+          [
+            "github.com/DataDog/dd-trace-go/v2",
+            "CVE-2026-50274",
+            "High"
+          ],
+          [
+            "go.opentelemetry.io/otel",
+            "CVE-2026-29181",
+            "High"
+          ],
+          [
+            "go.opentelemetry.io/otel/sdk",
+            "CVE-2026-39883",
+            "High"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39829",
+            "High"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39830",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39831",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39832",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39833",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39834",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-42508",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-46595",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-46597",
+            "High"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-33814",
+            "High"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-39821",
+            "High"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-46600",
+            "High"
+          ],
+          [
+            "golang.org/x/text",
+            "CVE-2026-56852",
+            "High"
+          ],
+          [
+            "google.golang.org/grpc",
+            "CVE-2026-33186",
+            "Critical"
+          ],
+          [
+            "google.golang.org/grpc",
+            "GHSA-hrxh-6v49-42gf",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-27145",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-32280",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-32281",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-32283",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-33810",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-33811",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-33814",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-33818",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-39820",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-39821",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-39822",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-39836",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-42499",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-42504",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-46600",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-56853",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-56859",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-56862",
+            "High"
+          ]
+        ]
+      },
+      "etcd": {
+        "introduced": [],
+        "netImprovement": true,
+        "noNewCriticalHigh": true,
+        "removed": [
+          [
+            "go.opentelemetry.io/otel/sdk",
+            "CVE-2026-24051",
+            "High"
+          ],
+          [
+            "go.opentelemetry.io/otel/sdk",
+            "CVE-2026-39883",
+            "High"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39829",
+            "High"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39830",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39831",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39832",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39833",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39834",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-42508",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-46595",
+            "Critical"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-46597",
+            "High"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-56854",
+            "High"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-33814",
+            "High"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-39821",
+            "High"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-46600",
+            "High"
+          ],
+          [
+            "golang.org/x/text",
+            "CVE-2026-56851",
+            "High"
+          ],
+          [
+            "golang.org/x/text",
+            "CVE-2026-56852",
+            "High"
+          ],
+          [
+            "google.golang.org/grpc",
+            "CVE-2026-33186",
+            "Critical"
+          ],
+          [
+            "google.golang.org/grpc",
+            "CVE-2026-84304",
+            "High"
+          ],
+          [
+            "google.golang.org/grpc",
+            "CVE-2026-84445",
+            "High"
+          ],
+          [
+            "google.golang.org/grpc",
+            "GHSA-hrxh-6v49-42gf",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-25679",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-27145",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-32280",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-32281",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-32283",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-33811",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-33814",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-33818",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-39820",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-39821",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-39822",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-39836",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-42499",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-42504",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-56853",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-56859",
+            "High"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-56862",
+            "High"
+          ]
+        ]
+      }
+    },
+    "database": {
+      "built": "2026-10-14T06:30:34Z",
+      "from": "https://grype.anchore.io/databases/v6/vulnerability-db_v6.1.10_2026-10-14T00:28:57Z_1791959434.tar.zst?checksum=sha256%3A30d8bcd3c09e03c9f734c522e104c1387e285e3f6e33da2ee7b55f521daadb3f",
+      "path": "/home/runner/work/twinfra/twinfra/.build/p2-comparison/scan/database/6/vulnerability.db",
+      "schemaVersion": "v6.1.10",
+      "valid": true
+    },
+    "date": "2026-10-14",
+    "promotionPerformed": false,
+    "images": [
+      {
+        "counts": {
+          "CriticalWithFix": 22,
+          "CriticalWithoutFix": 0,
+          "HighWithFix": 141,
+          "HighWithoutFix": 0
+        },
+        "coverage": "complete-oci-archive-linux-amd64",
+        "name": "argocd-before",
+        "reference": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "verifiedAmd64Digest": "sha256:5a7367b15ab5c9fcce917954ec74527c8e401671756611654a9d998d9fff0662"
+      },
+      {
+        "counts": {
+          "CriticalWithFix": 22,
+          "CriticalWithoutFix": 0,
+          "HighWithFix": 133,
+          "HighWithoutFix": 0
+        },
+        "coverage": "complete-oci-archive-linux-amd64",
+        "name": "argocd-after",
+        "reference": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+        "verifiedAmd64Digest": "sha256:f055c9fc40b04cbfb68010505f3f6f3a57fe656c919b9b9a6dd45feba836e521"
+      },
+      {
+        "counts": {
+          "CriticalWithFix": 11,
+          "CriticalWithoutFix": 0,
+          "HighWithFix": 48,
+          "HighWithoutFix": 0
+        },
+        "coverage": "complete-oci-archive-linux-amd64",
+        "name": "coredns-before",
+        "reference": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "verifiedAmd64Digest": "sha256:fd5079792b93909db3adefa91e41c3995455013394f0197c7346786ae19079fc"
+      },
+      {
+        "counts": {
+          "CriticalWithFix": 3,
+          "CriticalWithoutFix": 0,
+          "HighWithFix": 20,
+          "HighWithoutFix": 0
+        },
+        "coverage": "complete-oci-archive-linux-amd64",
+        "name": "coredns-after",
+        "reference": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+        "verifiedAmd64Digest": "sha256:2329f5f0e7e79fbe56dcdf11ecc4337ee2476bb251095bc275fe9461cb88a55b"
+      },
+      {
+        "counts": {
+          "CriticalWithFix": 11,
+          "CriticalWithoutFix": 0,
+          "HighWithFix": 43,
+          "HighWithoutFix": 0
+        },
+        "coverage": "complete-oci-archive-linux-amd64",
+        "name": "etcd-before",
+        "reference": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "verifiedAmd64Digest": "sha256:aa2b41e3f99c9a337b82f687875a63c5119e6d39bc43fc76b6c40a96f55cf391"
+      },
+      {
+        "counts": {
+          "CriticalWithFix": 3,
+          "CriticalWithoutFix": 0,
+          "HighWithFix": 13,
+          "HighWithoutFix": 0
+        },
+        "coverage": "complete-oci-archive-linux-amd64",
+        "name": "etcd-after",
+        "reference": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+        "verifiedAmd64Digest": "sha256:70a702786a28fef490a71c2ce873c48efa35770d1c3fe76ea4f05f0045b326b7"
+      }
+    ]
+  },
+  "deadlineWatch": {
+    "reportBy": "2026-11-05",
+    "expires": "2026-11-12",
+    "currentlyOpenCritical": 76,
+    "exceptionIdentities": [
+      {
+        "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+        "package": "golang.org/x/net",
+        "version": "v0.56.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+        "package": "stdlib",
+        "version": "go1.26.8",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+        "package": "stdlib",
+        "version": "go1.26.8",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+        "package": "golang.org/x/net",
+        "version": "v0.56.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+        "package": "stdlib",
+        "version": "go1.26.8",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+        "package": "stdlib",
+        "version": "go1.26.8",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+        "package": "golang.org/x/net",
+        "version": "v0.56.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+        "package": "stdlib",
+        "version": "go1.26.8",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+        "package": "stdlib",
+        "version": "go1.26.8",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "package": "google.golang.org/grpc",
+        "version": "v1.71.1",
+        "vulnerability": "CVE-2026-33186"
+      },
+      {
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "package": "golang.org/x/crypto",
+        "version": "v0.45.0",
+        "vulnerability": "CVE-2026-39832"
+      },
+      {
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "package": "golang.org/x/crypto",
+        "version": "v0.45.0",
+        "vulnerability": "CVE-2026-42508"
+      },
+      {
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "package": "golang.org/x/crypto",
+        "version": "v0.45.0",
+        "vulnerability": "CVE-2026-39834"
+      },
+      {
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "package": "golang.org/x/crypto",
+        "version": "v0.45.0",
+        "vulnerability": "CVE-2026-39830"
+      },
+      {
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "package": "golang.org/x/net",
+        "version": "v0.47.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "package": "stdlib",
+        "version": "go1.24.13",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "package": "golang.org/x/crypto",
+        "version": "v0.45.0",
+        "vulnerability": "CVE-2026-46595"
+      },
+      {
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "package": "stdlib",
+        "version": "go1.24.13",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "package": "golang.org/x/crypto",
+        "version": "v0.45.0",
+        "vulnerability": "CVE-2026-39831"
+      },
+      {
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "package": "golang.org/x/crypto",
+        "version": "v0.45.0",
+        "vulnerability": "CVE-2026-39833"
+      },
+      {
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "package": "google.golang.org/grpc",
+        "version": "v1.79.1",
+        "vulnerability": "CVE-2026-33186"
+      },
+      {
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "package": "golang.org/x/crypto",
+        "version": "v0.48.0",
+        "vulnerability": "CVE-2026-39832"
+      },
+      {
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "package": "golang.org/x/crypto",
+        "version": "v0.48.0",
+        "vulnerability": "CVE-2026-42508"
+      },
+      {
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "package": "golang.org/x/crypto",
+        "version": "v0.48.0",
+        "vulnerability": "CVE-2026-39834"
+      },
+      {
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "package": "golang.org/x/crypto",
+        "version": "v0.48.0",
+        "vulnerability": "CVE-2026-39830"
+      },
+      {
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "package": "golang.org/x/net",
+        "version": "v0.51.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "package": "stdlib",
+        "version": "go1.26.1",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "package": "golang.org/x/crypto",
+        "version": "v0.48.0",
+        "vulnerability": "CVE-2026-46595"
+      },
+      {
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "package": "stdlib",
+        "version": "go1.26.1",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "package": "golang.org/x/crypto",
+        "version": "v0.48.0",
+        "vulnerability": "CVE-2026-39831"
+      },
+      {
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "package": "golang.org/x/crypto",
+        "version": "v0.48.0",
+        "vulnerability": "CVE-2026-39833"
+      },
+      {
+        "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+        "package": "golang.org/x/net",
+        "version": "v0.56.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+        "package": "stdlib",
+        "version": "go1.26.5",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+        "package": "stdlib",
+        "version": "go1.26.8",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+        "package": "stdlib",
+        "version": "go1.26.5",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+        "package": "stdlib",
+        "version": "go1.26.8",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+        "package": "golang.org/x/net",
+        "version": "v0.58.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+        "package": "stdlib",
+        "version": "go1.27.1",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+        "package": "stdlib",
+        "version": "go1.27.1",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+        "package": "golang.org/x/net",
+        "version": "v0.56.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+        "package": "stdlib",
+        "version": "go1.26.8",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+        "package": "stdlib",
+        "version": "go1.26.8",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+        "package": "golang.org/x/net",
+        "version": "v0.58.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+        "package": "stdlib",
+        "version": "go1.27.1",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+        "package": "stdlib",
+        "version": "go1.27.1",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+        "package": "perl-base",
+        "version": "5.36.0-7+deb12u3",
+        "vulnerability": "CVE-2026-8376"
+      },
+      {
+        "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+        "package": "perl-base",
+        "version": "5.36.0-7+deb12u3",
+        "vulnerability": "CVE-2026-13221"
+      },
+      {
+        "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+        "package": "perl-base",
+        "version": "5.36.0-7+deb12u3",
+        "vulnerability": "CVE-2026-42496"
+      },
+      {
+        "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+        "package": "perl-base",
+        "version": "5.36.0-7+deb12u3",
+        "vulnerability": "CVE-2026-12087"
+      },
+      {
+        "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+        "package": "perl-base",
+        "version": "5.36.0-7+deb12u3",
+        "vulnerability": "CVE-2026-57433"
+      },
+      {
+        "target": "docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+        "package": "python",
+        "version": "3.13.15",
+        "vulnerability": "CVE-2026-19445"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "stdlib",
+        "version": "go1.24.0",
+        "vulnerability": "CVE-2025-68121"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "stdlib",
+        "version": "go1.25.3",
+        "vulnerability": "CVE-2025-68121"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "stdlib",
+        "version": "go1.24.0",
+        "vulnerability": "CVE-2025-22871"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "golang.org/x/crypto",
+        "version": "v0.36.0",
+        "vulnerability": "CVE-2026-39832"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "golang.org/x/crypto",
+        "version": "v0.36.0",
+        "vulnerability": "CVE-2026-42508"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "golang.org/x/crypto",
+        "version": "v0.36.0",
+        "vulnerability": "CVE-2026-39834"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "golang.org/x/crypto",
+        "version": "v0.36.0",
+        "vulnerability": "CVE-2026-39830"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "golang.org/x/net",
+        "version": "v0.38.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "golang.org/x/net",
+        "version": "v0.40.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "golang.org/x/net",
+        "version": "v0.55.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "golang.org/x/net",
+        "version": "v0.56.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "stdlib",
+        "version": "go1.24.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "stdlib",
+        "version": "go1.25.3",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "stdlib",
+        "version": "go1.26.2",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "stdlib",
+        "version": "go1.26.4",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "golang.org/x/crypto",
+        "version": "v0.36.0",
+        "vulnerability": "CVE-2026-46595"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "stdlib",
+        "version": "go1.24.0",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "stdlib",
+        "version": "go1.25.3",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "stdlib",
+        "version": "go1.26.2",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "stdlib",
+        "version": "go1.26.4",
+        "vulnerability": "CVE-2026-56857"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "golang.org/x/crypto",
+        "version": "v0.36.0",
+        "vulnerability": "CVE-2026-39831"
+      },
+      {
+        "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+        "package": "golang.org/x/crypto",
+        "version": "v0.36.0",
+        "vulnerability": "CVE-2026-39833"
+      },
+      {
+        "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+        "package": "golang.org/x/net",
+        "version": "v0.58.0",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+        "package": "stdlib",
+        "version": "go1.27.1",
+        "vulnerability": "CVE-2026-78663"
+      },
+      {
+        "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+        "package": "stdlib",
+        "version": "go1.27.1",
+        "vulnerability": "CVE-2026-56857"
+      }
+    ],
+    "extensionApproved": false,
+    "note": "No validated not-reachable/vendor clearance recorded by this work; owner notified early."
+  }
+}

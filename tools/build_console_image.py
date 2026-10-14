@@ -19,9 +19,39 @@ import tarfile
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
-BASE = 'registry.twinfra.example.com/docker.io/library/python:3.14.1-slim-trixie@sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e'
+BASE = 'registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170'
 TAG = 'registry.twinfra.example.com/docker.io/twinfra/twinfra-console:1.0.0'
+RELEASE_EVIDENCE = {'softwareVersion': '3.14.8', 'softwareReleasedOn': '2026-09-30',
+                    'officialDigestPublishedOn': '2026-10-09',
+                    'ageBasis': 'upstream-software-release',
+                    'decision': 'WO-34 Amendment 1'}
 DEFAULT_BASE = ROOT / '.build/console/python-base.oci.tar'
+
+
+def stage_frontend():
+    """Verified source-bound build input; image code is never run."""
+    lock = json.loads((ROOT / 'console/frontend.lock.json').read_text())
+    archive = ROOT / 'console/frontend.tar.gz'
+    if hashlib.sha256(archive.read_bytes()).hexdigest() != lock['archiveSHA256']:
+        raise ValueError('Frontend archive checksum differs')
+    for name, expected in lock['sourcesSHA256'].items():
+        if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != expected:
+            raise ValueError('Frontend source changed: ' + name)
+    with tarfile.open(archive) as stream:
+        files = {}
+        for member in stream:
+            path = PurePosixPath(member.name)
+            if not member.isfile() or path.is_absolute() or '..' in path.parts or '\\' in member.name or member.name in files:
+                raise ValueError('Unsafe frontend archive member')
+            files[member.name] = stream.extractfile(member).read()
+    if {name: hashlib.sha256(raw).hexdigest() for name, raw in files.items()} != lock['filesSHA256']:
+        raise ValueError('Frontend archive content differs')
+    dist = ROOT / 'console/dist'
+    existing = {p.relative_to(dist).as_posix() for p in dist.rglob('*') if p.is_file()}
+    for name in existing - files.keys():
+        (dist / name).unlink()
+    for name, raw in files.items():
+        path = dist / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(raw)
 
 
 def encoded(value): return json.dumps(value, sort_keys=True, separators=(',', ':')).encode()
@@ -85,6 +115,7 @@ def payload(wheels):
 
 
 def build(base_path, target, wheels=ROOT / '.build/console/wheels'):
+    if (ROOT / 'console/frontend.lock.json').is_file():stage_frontend()
     with tarfile.open(base_path) as archive:
         members = {m.name: m for m in archive.getmembers() if m.isfile() and m.name.startswith('blobs/sha256/')}
         def blob(desc):
@@ -112,14 +143,23 @@ def build(base_path, target, wheels=ROOT / '.build/console/wheels'):
                 item.uid = item.gid = 65532; item.mtime = 0
                 layer.addfile(item, io.BytesIO(raw))
         plain = application.getvalue()
-        compressed = gzip.compress(plain, mtime=0)
+        layer_lock=ROOT/'console/application-layer.lock.json'
+        if layer_lock.is_file():
+            evidence=json.loads(layer_lock.read_text())
+            compressed=(ROOT/'console/application-layer.tar.gz').read_bytes()
+            if (hashlib.sha256(compressed).hexdigest()!=evidence['archiveSHA256'] or
+                    hashlib.sha256(plain).hexdigest()!=evidence['uncompressedSHA256'] or
+                    gzip.decompress(compressed)!=plain):
+                raise ValueError('Pinned application layer differs from freshly assembled payload')
+        else:
+            compressed = gzip.compress(plain, mtime=0)
         layer_desc = descriptor(compressed, 'application/vnd.oci.image.layer.v1.tar+gzip')
         config['rootfs']['diff_ids'].append(digest(plain))
         config['created'] = '2026-10-08T00:00:00Z'
-        config.setdefault('history', []).append({'created': config['created'], 'created_by': 'vcloud-console deterministic application layer'})
+        config.setdefault('history', []).append({'created': config['created'], 'created_by': 'twinfra-console deterministic application layer'})
         c = config['config']
         c.update(User='65532:65532', WorkingDir='/app', Entrypoint=['python', '-B', '/app/server.py'], Cmd=None,
-                 ExposedPorts={'3000/tcp': {}}, Labels={'org.opencontainers.image.title': 'vcloud-console', 'org.opencontainers.image.version': '1.0.0'})
+                 ExposedPorts={'3000/tcp': {}}, Labels={'org.opencontainers.image.title': 'twinfra-console', 'org.opencontainers.image.version': '1.0.0'})
         c['Env'] = [e for e in c.get('Env', []) if e.split('=')[0] not in ('PORT', 'PYTHONDONTWRITEBYTECODE', 'PYTHONUNBUFFERED', 'PYTHONPATH')]
         c['Env'] += ['PORT=3000', 'PYTHONDONTWRITEBYTECODE=1', 'PYTHONUNBUFFERED=1', 'PYTHONPATH=/app/vendor']
         cfg = encoded(config); cfg_desc = descriptor(cfg, 'application/vnd.oci.image.config.v1+json')
@@ -143,6 +183,7 @@ def build(base_path, target, wheels=ROOT / '.build/console/wheels'):
     inputs += [ROOT / 'console/index.html', ROOT / 'console/vite.config.ts', ROOT / 'console/tsconfig.json', ROOT / 'console/Dockerfile']
     receipt = {'base': BASE, 'tag': TAG, 'digest': result['digest'], 'canonical': TAG.split(':')[0] + '@' + result['digest'],
                'filesSHA256': {str(p.relative_to(ROOT)).replace('\\', '/'): hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs if p.is_file()}}
+    receipt['releaseEvidence'] = dict(RELEASE_EVIDENCE)
     return receipt
 
 
@@ -177,6 +218,23 @@ def verify_receipt(receipt, refresh=False):
     return receipt
 
 
+def verify_patch_refresh(receipt):
+    """WO-34: permit a new base/metadata digest while preserving application bytes."""
+    expected = json.loads((ROOT / 'console/image.lock.json').read_text())
+    allowed = {'tools/build_console_image.py', 'tools/platform_oci.py', 'console/Dockerfile'}
+    old = {k: v for k, v in expected['filesSHA256'].items() if k not in allowed}
+    new = {k: v for k, v in receipt['filesSHA256'].items() if k not in allowed}
+    if old != new:
+        raise ValueError('Console patch refresh changed application sources')
+    before = re.search(r'python:(\d+)\.(\d+)\.(\d+)-slim-trixie@', expected['base'])
+    after = re.search(r'python:(\d+)\.(\d+)\.(\d+)-slim-trixie@', receipt['base'])
+    if not before or not after or before.groups()[:2] != after.groups()[:2] or int(after[3]) < int(before[3]):
+        raise ValueError('Console refresh must remain on the same Python minor')
+    if receipt['base'] != BASE or receipt['tag'] != TAG:
+        raise ValueError('Console patch refresh differs from the reviewed builder pins')
+    return receipt
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--base', type=Path, default=DEFAULT_BASE)
@@ -184,10 +242,12 @@ def main():
     parser.add_argument('--wheels', type=Path, default=ROOT / '.build/console/wheels')
     parser.add_argument('--download-inputs', action='store_true', help='Owner-only public pinned input download')
     parser.add_argument('--check', action='store_true', help='Check the receipt; never rewrite it (default)')
+    parser.add_argument('--stage-frontend', action='store_true', help='Use the source/hash-verified frontend input archive')
     parser.add_argument('--refresh-receipt', action='store_true', help='Approved tooling/name metadata refresh only after exact digest reproduction')
     args = parser.parse_args()
     if args.check and args.refresh_receipt:parser.error('--check and --refresh-receipt are mutually exclusive')
     if args.download_inputs:download_inputs(args.base,args.wheels)
+    if args.stage_frontend:stage_frontend()
     lock = verify_receipt(build(args.base, args.output, args.wheels),refresh=args.refresh_receipt)
     from platform_image_staging import validate_archive
     validate_archive(args.output,lock['digest'])

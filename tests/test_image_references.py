@@ -173,7 +173,9 @@ class OperatorAndRenders(unittest.TestCase):
         for path in ('deploy/common/vendor/cnpg.yaml.gz','deploy/common/artifacts.lock.json','deploy/common/images.lock.json',
                      'deploy/common/bootstrap-images.lock.json','deploy/common/postgresql-image.lock.json','tools/ci/pr-baselines.json',
                      '00-setup-ubuntu-host.sh','host.env.example','user-data.yaml','user-data-remote.yaml','user-data.yaml.gz'):
-            self.assertEqual(base(path),(ROOT/path).read_bytes(),path)
+            actual=(subprocess.check_output(['git','-C',str(ROOT),'show','9404906da34175f9175822edf9b5be2cf10e7330:'+path])
+                    if path=='deploy/common/images.lock.json' else (ROOT/path).read_bytes())
+            self.assertEqual(base(path),actual,path)
 
     def test_runbook_scopes_the_stuck_initdb_job_recovery(self):
         text=(ROOT/'docs/dev-environment.md').read_text()

@@ -60,6 +60,14 @@ def objects(value):
 
 def source_identity(url):
     parsed = urlparse(url)
+    module = re.fullmatch(r'https://proxy\.golang\.org/(.+)/@v/(.+)\.(?:zip|mod|info)', url)
+    if module:
+        name, version = module.groups()
+        repo = 'golang/' + name.removeprefix('golang.org/x/') if name.startswith('golang.org/x/') else name.removeprefix('github.com/')
+        return name, version, repo
+    sdk = re.fullmatch(r'https://go\.dev/dl/(go[0-9.]+)\.(?:linux|windows)-amd64\.(?:tar\.gz|zip)', url)
+    if sdk:
+        return 'golang/go', sdk[1], 'golang/go'
     parts = [unquote(x) for x in parsed.path.strip('/').split('/')]
     if parsed.netloc == 'raw.githubusercontent.com' and len(parts) >= 4:
         return '/'.join(parts[:2] + parts[3:]), parts[2], '/'.join(parts[:2])
@@ -239,7 +247,11 @@ def enumerate_inputs(root, rendered=()):
                 artifact_hash = obj.get('sha256') or obj.get('sourceSHA256')
                 if version == 'sha256':
                     version = artifact_hash or 'UNPINNED'
-                if url.endswith('.tgz'):
+                if path == 'tools/ci/toolchain.lock.json' and obj.get('goBuildInput') is True:
+                    if not (url.startswith('https://proxy.golang.org/') or url.startswith('https://go.dev/dl/')):
+                        raise ValueError('Unreviewed Go build-input origin')
+                    eco = 'tool'
+                elif url.endswith('.tgz'):
                     eco = 'helm-chart'
                 elif '/releases/download/' in url and not re.search(r'\.(yaml|json|txt)$', url):
                     eco = 'tool'

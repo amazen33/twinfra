@@ -7231,15 +7231,33 @@
       "adr": "0044"
     },
     {
+      "id": "oci-image|docker.io/library/python|sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "ecosystem": "oci-image",
+      "name": "docker.io/library/python",
+      "version": "sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "locations": [
+        "console/Dockerfile",
+        "console/image.lock.json",
+        "deploy/common/images.lock.json",
+        "deploy/environments/dev/cairo-1/services/workloads.yaml"
+      ],
+      "spdx": "PSF-2.0",
+      "class": "base-os",
+      "licenceSource": "https://raw.githubusercontent.com/python/cpython/v3.14.8/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170"
+      ],
+      "unmodified": true,
+      "adr": "0044"
+    },
+    {
       "id": "oci-image|docker.io/library/python|sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e",
       "ecosystem": "oci-image",
       "name": "docker.io/library/python",
       "version": "sha256:b823ded4377ebb5ff1af5926702df2284e53cecbc6e3549e93a19d8632a1897e",
       "locations": [
-        "console/Dockerfile",
-        "console/image.lock.json",
-        "deploy/common/images.lock.json",
-        "deploy/environments/dev/cairo-1/services/workloads.yaml",
         "lab/wsl/console/gitops/workloads.yaml",
         "lab/wsl/console/workloads.yaml",
         "lab/wsl/endpoints/gitops/workloads.yaml",
@@ -10983,6 +11001,209 @@
       "integrities": [
         "sha256:1e4ab49e429626cf6c6958d914248b78c9730803c2751b87627e171dc800e7bb"
       ]
+    },
+    {
+      "id": "tool|golang.org/x/mod|v0.22.0",
+      "ecosystem": "tool",
+      "name": "golang.org/x/mod",
+      "version": "v0.22.0",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/mod/v0.22.0/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:0d0a96054b32dfa40cec2a2868bf87cdda31e3bb2dac0a5e2218efe3ef3ef3cc",
+        "sha256:ba0d4a3db529b70b894536ab9775af040fe8e5d5953b69c926bfa292b59f76d0",
+        "sha256:ebe81917441154299f732b8aa09f299529752df29855ca4d7026946d1bbecd82"
+      ],
+      "unmodified": true,
+      "notes": "WO-34: pinned source/SDK inputs for CI-only govulncheck; never copied into a runtime image."
+    },
+    {
+      "id": "tool|golang.org/x/sync|v0.10.0",
+      "ecosystem": "tool",
+      "name": "golang.org/x/sync",
+      "version": "v0.10.0",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/sync/v0.10.0/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:42f427df2946e9e1738a389cfbb0916e2e074d8b3c937ff8187b0a5246178890",
+        "sha256:700e5db00dd26aa19a17dce5fc552436d60f68c5606c85b821f24c3d6072a151",
+        "sha256:94ea75ea625ecb8d81ab473a2d7e03433e63083768cd27d48a03f8c1c9da3d8d"
+      ],
+      "unmodified": true,
+      "notes": "WO-34: pinned source/SDK inputs for CI-only govulncheck; never copied into a runtime image."
+    },
+    {
+      "id": "tool|golang.org/x/sys|v0.29.0",
+      "ecosystem": "tool",
+      "name": "golang.org/x/sys",
+      "version": "v0.29.0",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/sys/v0.29.0/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:10b07aabdf2aea556f31b7b84410bdaa22d62f5dfdd9df01b133da41b3abdf80",
+        "sha256:1d759c017d09328a4dacdd4a1a0170cf21641995c6e3ca1f96213369d73c6846",
+        "sha256:d227b325f621f4ebe28d39ba773ea99b870f393b7c09c34592c365b16dd560de"
+      ],
+      "unmodified": true,
+      "notes": "WO-34: pinned source/SDK inputs for CI-only govulncheck; never copied into a runtime image."
+    },
+    {
+      "id": "tool|golang.org/x/telemetry|v0.0.0-20240522233618-39ace7a40ae7",
+      "ecosystem": "tool",
+      "name": "golang.org/x/telemetry",
+      "version": "v0.0.0-20240522233618-39ace7a40ae7",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/telemetry/39ace7a40ae7/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:31681682628819e914871c3d148c63b46fcfa2979939502844a1c5f5920f1ba9",
+        "sha256:b71288c1d03a434f8ea16eda80e4ddb0733cbdd4ed996f4ab6616fd5dbf76ab3",
+        "sha256:c6aa5f63d8a7779a142bc9f8930d65c0f8026d08fcf26285670b54259e040cc4"
+      ],
+      "unmodified": true,
+      "notes": "WO-34: pinned source/SDK inputs for CI-only govulncheck; never copied into a runtime image."
+    },
+    {
+      "id": "tool|golang.org/x/tools|v0.29.0",
+      "ecosystem": "tool",
+      "name": "golang.org/x/tools",
+      "version": "v0.29.0",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/tools/v0.29.0/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:18e537462bae520101aac41e656ed67578e7f07ca8790c4f8e4a35cfe948d53b",
+        "sha256:2bee4b4727199f2b13f6aa38ec92e8d3bb0f4e7d50a243c763046bc05941b137",
+        "sha256:49e981b231e35f3d9940bcd3ba0e2b26c3b3719702ac734e04d66200ff7a5fe7"
+      ],
+      "unmodified": true,
+      "notes": "WO-34: pinned source/SDK inputs for CI-only govulncheck; never copied into a runtime image."
+    },
+    {
+      "id": "tool|golang.org/x/vuln|v1.1.4",
+      "ecosystem": "tool",
+      "name": "golang.org/x/vuln",
+      "version": "v1.1.4",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/vuln/v1.1.4/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:115ff76fba8f73b27106eb2e59e3f30696f4f7faaeed55471b5b65c3994b503d",
+        "sha256:40e5fa329adbfd7dad2476465ba340d2531b4d33640b82c81c34ac90f36cbd2a",
+        "sha256:ee186522123f2c15ffca6bb43a98749bb64b2305bfa8175edd5931640bd72106"
+      ],
+      "unmodified": true,
+      "notes": "WO-34: pinned source/SDK inputs for CI-only govulncheck; never copied into a runtime image."
+    },
+    {
+      "id": "tool|golang/go|go1.26.6",
+      "ecosystem": "tool",
+      "name": "golang/go",
+      "version": "go1.26.6",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/go/go1.26.6/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:708effb774be8237570d0add163225abbdfaf4fca28b2611df167beba4feef89"
+      ],
+      "unmodified": true,
+      "notes": "WO-34 Amendment 2: analysis-only SDK matching published application binary build info; no application binary built."
+    },
+    {
+      "id": "tool|golang/go|go1.26.8",
+      "ecosystem": "tool",
+      "name": "golang/go",
+      "version": "go1.26.8",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/go/go1.26.8/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:d0f743b33e8d8945e6b1f432edd15785c70507121d6e2a723b21285eddf8b57b"
+      ],
+      "unmodified": true,
+      "notes": "WO-34 Amendment 2: analysis-only SDK matching published application binary build info; no application binary built."
+    },
+    {
+      "id": "tool|golang/go|go1.26.9",
+      "ecosystem": "tool",
+      "name": "golang/go",
+      "version": "go1.26.9",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/go/go1.26.9/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d"
+      ],
+      "unmodified": true,
+      "notes": "WO-34 Amendment 2: analysis-only SDK matching published application binary build info; no application binary built."
+    },
+    {
+      "id": "tool|golang/go|go1.27.1",
+      "ecosystem": "tool",
+      "name": "golang/go",
+      "version": "go1.27.1",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/go/go1.27.1/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445",
+        "sha256:a3911b5e0e1b1053f25ed0675f4c1c6aad1e2bfcf253df2b9be4caabd2edd95d"
+      ],
+      "unmodified": true,
+      "notes": "WO-34: pinned source/SDK inputs for CI-only govulncheck; never copied into a runtime image."
     },
     {
       "id": "tool|google/osv-scanner/osv-scanner_linux_amd64|v2.6.0",

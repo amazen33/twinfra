@@ -11,7 +11,7 @@ from platform_oci import export_ghcr
 from platform_image_staging import validate_archive
 
 
-def build_images(download_inputs=False):
+def build_images(download_inputs=False, refresh_console=False):
     directory=ROOT/'.build/dev-images';inputs=directory/'inputs'
     base=ROOT/'.build/console/python-base.oci.tar';wheels=ROOT/'.build/console/wheels'
     postgres=inputs/'postgres-base.oci.tar';extension=inputs/'pgvector.oci.tar'
@@ -27,7 +27,9 @@ def build_images(download_inputs=False):
     directory.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='build-',dir=directory) as tmp,ExitStack() as stack:
         work=Path(tmp);console_path=work/'console.oci.tar';postgres_path=work/'postgresql-pgvector.tar'
-        console_receipt=console.verify_receipt(console.build(base,console_path,wheels))
+        built_console=console.build(base,console_path,wheels)
+        console_receipt=(console.verify_patch_refresh(built_console) if refresh_console
+                         else console.verify_receipt(built_console))
         exports=[]
         for path,pin in ((postgres,pg.BASE),(extension,pg.EXTENSION)):
             item=pg.Export(path);stack.callback(item.archive.close)
@@ -36,15 +38,26 @@ def build_images(download_inputs=False):
         postgres_receipt=pg.build(*exports,postgres_path)
         expected=json.loads((ROOT/'deploy/common/postgresql-image.lock.json').read_text())
         if postgres_receipt!=expected:raise ValueError('PostgreSQL receipt differs; locks were not updated')
+        if refresh_console:
+            # Build/verify both archives before changing either receipt or lock.
+            images['console'].update(source='docker.io/twinfra/twinfra-console@'+console_receipt['digest'],
+                canonical=console_receipt['canonical'],digest=console_receipt['digest'])
+            images['python'].update(source=console.BASE.removeprefix('registry.twinfra.example.com/'),
+                canonical=console.BASE,digest=console.BASE.split('@')[1])
         for name,path,actual in (('console',console_path,console_receipt['digest']),
                                   ('postgres',postgres_path,postgres_receipt['manifestDigest'])):
             if actual!=images[name]['digest']:raise ValueError(name+' built digest differs from image lock')
             validate_archive(path,images[name]['digest'])
         # Close all input archives before replacement/TemporaryDirectory cleanup on Windows.
         stack.close()
+        if refresh_console:
+            (ROOT/'console/image.lock.json').write_text(json.dumps(console_receipt,indent=2)+'\n',encoding='utf-8',newline='\n')
+            lock=ROOT/'deploy/common/images.lock.json'
+            value=json.loads(lock.read_text());value['images']=images
+            lock.write_text(json.dumps(value,indent=2)+'\n',encoding='utf-8',newline='\n')
         console_path.replace(directory/'console.oci.tar')
         postgres_path.replace(directory/'postgresql-pgvector.tar')
     return {'status':'passed','archives':{'console':str(directory/'console.oci.tar'),
             'postgres':str(directory/'postgresql-pgvector.tar')},
             'digests':{name:images[name]['digest'] for name in ('console','postgres')},
-            'repositoryWrites':False,'runtimeImport':False}
+            'repositoryWrites':refresh_console,'runtimeImport':False}

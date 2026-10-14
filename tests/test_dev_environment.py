@@ -92,7 +92,11 @@ class CNPGImage(unittest.TestCase):
         for path in ('deploy/common/images.lock.json','deploy/common/postgresql-image.lock.json',
                      'deploy/common/bootstrap-images.lock.json','tools/ci/pr-baselines.json',
                      '00-setup-ubuntu-host.sh','host.env.example','user-data.yaml','user-data-remote.yaml','user-data.yaml.gz'):
-            self.assertEqual((ROOT/path).read_bytes(),base(path),path)
+            # Preserve Amendment 12's original lock receipt; WO-34 bounds the
+            # current two-pin refresh in test_build_images instead.
+            actual=(subprocess.check_output(['git','-C',str(ROOT),'show',CNPG_TAG_RECEIPT+':'+path])
+                    if path=='deploy/common/images.lock.json' else (ROOT/path).read_bytes())
+            self.assertEqual(actual,base(path),path)
 
 
 class Naming(unittest.TestCase):
