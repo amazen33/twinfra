@@ -177,5 +177,23 @@ class OperatorAndRenders(unittest.TestCase):
         self.assertIn('Keep the Cluster, PVC and PV',text)
         self.assertIn('Pending',text)
 
+    def test_ci_preview_changes_only_imports_and_the_scoped_image_reference_hook(self):
+        path='tools/ci/kubeadm_dry_run.py'
+        original=subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+path]).decode()
+        current=(ROOT/path).read_text()
+        additions=['import sys\n',
+            'import yaml\n\nsys.path.insert(0,str(Path(__file__).resolve().parents[1]))\n'
+            'from platform_image_references import require as require_images, audit as audit_images, production_report\n\n',
+            '            objects=[yaml.safe_load((preview/file).read_text()) for file in MANIFESTS]\n'
+            "            image_lock=json.loads((source/'deploy/common/bootstrap-images.lock.json').read_text())\n"
+            "            if name=='dev-cairo-1':require_images(objects,image_lock,'B','kubeadm')\n"
+            '            else:\n'
+            "                debt=audit_images(objects,image_lock,'B','kubeadm')\n"
+            "                (directory/'production-image-reference-debt.txt').write_text(production_report(debt),encoding='utf-8')\n"]
+        for block in additions:
+            self.assertEqual(current.count(block),1)
+            current=current.replace(block,'',1)
+        self.assertEqual(current,original)
+
 
 if __name__=='__main__':unittest.main()
