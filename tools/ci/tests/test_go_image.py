@@ -39,9 +39,9 @@ class GoImages(unittest.TestCase):
               {'finding':{'osv':'GO-example','fixed_version':'v2','trace':[{'module':'stdlib','version':'v1'}]}},
               {'finding':{'osv':'GO-example','trace':[{'module':'stdlib','version':'v1','package':'net/http','function':'Serve'}]}}]
         result=triage.classify('\n'.join(json.dumps(v,indent=2) for v in data))
-        self.assertEqual(result[0]['classification'],'reachable')
+        self.assertEqual(result[0]['classification'],'affected-symbols-present')
         self.assertEqual(result[0]['aliases'],['CVE-example'])
-        self.assertEqual(triage.classify(json.dumps(data[1]))[0]['classification'],'not-reachable-in-binary')
+        self.assertEqual(triage.classify(json.dumps(data[1]))[0]['classification'],'module-only-binary-finding')
 
     def test_no_trace_or_truncated_output_is_not_a_clean_scan(self):
         with self.assertRaises(ValueError):triage.classify('{"finding":{"osv":"GO-example"}}')

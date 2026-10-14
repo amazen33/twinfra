@@ -70,7 +70,7 @@ def classify(raw):
     for entry in findings.values():
         entry['aliases']=vulnerabilities.get(entry['osv'],[])
         entry['symbols']=sorted(entry['symbols'])
-        entry['classification']='reachable' if entry['symbols'] else 'not-reachable-in-binary'
+        entry['classification']='affected-symbols-present' if entry['symbols'] else 'module-only-binary-finding'
         result.append(entry)
     return sorted(result,key=lambda x:(x['osv'],x['module'] or '',x['version'] or ''))
 
@@ -84,7 +84,7 @@ def triage(image,scanner,out):
     try:files=go_files(source)
     finally:source.archive.close()
     report=dict(image=image,scannerSHA256=pin,imageCodeExecuted=False,
-                interpretation='Affected symbol presence is conservatively reachable; binary mode is not a runtime call graph.',binaries=[])
+                interpretation='Affected symbols are present; source mode is required for call stacks and reachability.',binaries=[])
     seen={}
     for path,raw in sorted(files.items()):
         digest=hashlib.sha256(raw).hexdigest()

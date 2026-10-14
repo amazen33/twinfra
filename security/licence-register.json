@@ -11129,6 +11129,63 @@
       "notes": "WO-34: pinned source/SDK inputs for CI-only govulncheck; never copied into a runtime image."
     },
     {
+      "id": "tool|golang/go|go1.26.6",
+      "ecosystem": "tool",
+      "name": "golang/go",
+      "version": "go1.26.6",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/go/go1.26.6/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:708effb774be8237570d0add163225abbdfaf4fca28b2611df167beba4feef89"
+      ],
+      "unmodified": true,
+      "notes": "WO-34 Amendment 2: analysis-only SDK matching published application binary build info; no application binary built."
+    },
+    {
+      "id": "tool|golang/go|go1.26.8",
+      "ecosystem": "tool",
+      "name": "golang/go",
+      "version": "go1.26.8",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/go/go1.26.8/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:d0f743b33e8d8945e6b1f432edd15785c70507121d6e2a723b21285eddf8b57b"
+      ],
+      "unmodified": true,
+      "notes": "WO-34 Amendment 2: analysis-only SDK matching published application binary build info; no application binary built."
+    },
+    {
+      "id": "tool|golang/go|go1.26.9",
+      "ecosystem": "tool",
+      "name": "golang/go",
+      "version": "go1.26.9",
+      "locations": [
+        "tools/ci/toolchain.lock.json"
+      ],
+      "spdx": "BSD-3-Clause",
+      "class": "build-tool",
+      "licenceSource": "https://raw.githubusercontent.com/golang/go/go1.26.9/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d"
+      ],
+      "unmodified": true,
+      "notes": "WO-34 Amendment 2: analysis-only SDK matching published application binary build info; no application binary built."
+    },
+    {
       "id": "tool|golang/go|go1.27.1",
       "ecosystem": "tool",
       "name": "golang/go",

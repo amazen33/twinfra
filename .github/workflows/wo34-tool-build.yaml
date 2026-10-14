@@ -7,6 +7,9 @@ on:
       - tools/ci/toolchain.lock.json
       - tools/ci/triage_go_image.py
       - tools/ci/wo34-triage.json
+      - tools/ci/triage_go_source.py
+      - tools/ci/refresh_source_analysis_lock.py
+      - tools/ci/compare_go_candidates.py
       - .github/workflows/wo34-tool-build.yaml
 permissions:
   contents: read
@@ -74,4 +77,59 @@ jobs:
             .build/image-triage/**/*.json
             .build/image-triage/**/*.gz
             .build/image-triage/**/*.log
+          retention-days: 14
+  source:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [argocd, coredns, etcd]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131
+        with:
+          name: wo34-govulncheck-build
+          path: .build/triage-tools
+      - name: Analyze tagged source with the published binary toolchain
+        env:
+          PROJECT: ${{ matrix.project }}
+        run: |
+          chmod 500 .build/triage-tools/go-tools/govulncheck
+          python3 tools/ci/triage_go_source.py --project "$PROJECT" --scanner .build/triage-tools/go-tools/govulncheck --out ".build/source-triage/$PROJECT"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() }}
+        with:
+          name: wo34-source-${{ matrix.project }}
+          path: |
+            .build/source-triage/*/summary.json
+            .build/source-triage/*/analysis-*.json.gz
+            .build/source-triage/*/analysis-*.log
+          retention-days: 14
+  comparison:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.14.5'
+      - run: python -m pip install --disable-pip-version-check -r tools/ci/requirements.txt
+      - run: python tools/ci/stage_tools.py --source . --destination .build/p2-tools --only syft grype osv-scanner
+      - name: Compare complete pinned P2 archives against one fresh database
+        run: python tools/ci/compare_go_candidates.py --tools .build/p2-tools/bin --out .build/p2-comparison
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() }}
+        with:
+          name: wo34-p2-comparison
+          path: |
+            .build/p2-comparison/comparison.json
+            .build/p2-comparison/scan/*.json
+            .build/p2-comparison/scan/sboms/
+            .build/p2-comparison/cache/*.error.log
           retention-days: 14
