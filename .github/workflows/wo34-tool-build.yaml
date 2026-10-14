@@ -10,6 +10,9 @@ on:
       - .github/workflows/wo34-tool-build.yaml
 permissions:
   contents: read
+concurrency:
+  group: wo34-triage-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build:
     runs-on: ubuntu-24.04

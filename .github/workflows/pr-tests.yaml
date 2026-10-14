@@ -22,7 +22,6 @@ concurrency:
 
 jobs:
   console-images:
-    if: ${{ hashFiles('tools/ci/compare_console_images.py') != '' }}
     runs-on: windows-2025
     timeout-minutes: 15
     permissions:
