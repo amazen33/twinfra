@@ -7291,8 +7291,6 @@
       "name": "docker.io/ministackorg/ministack",
       "version": "sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
       "locations": [
-        "deploy/common/images.lock.json",
-        "deploy/environments/dev/cairo-1/services/workloads.yaml",
         "lab/wsl/console/artifacts.lock.json",
         "lab/wsl/console/gitops/workloads.yaml",
         "lab/wsl/console/workloads.yaml"
@@ -7304,6 +7302,24 @@
       "recordedOn": "2026-10-10",
       "integrities": [
         "sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c"
+      ]
+    },
+    {
+      "id": "oci-image|docker.io/ministackorg/ministack|sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da",
+      "ecosystem": "oci-image",
+      "name": "docker.io/ministackorg/ministack",
+      "version": "sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da",
+      "locations": [
+        "deploy/common/images.lock.json",
+        "deploy/environments/dev/cairo-1/services/workloads.yaml"
+      ],
+      "spdx": "MIT",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/ministackorg/ministack/v1.5.18/LICENSE",
+      "verifiedOn": "2026-10-14",
+      "recordedOn": "2026-10-14",
+      "integrities": [
+        "sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da"
       ]
     },
     {
@@ -7955,8 +7971,7 @@
       "name": "registry.k8s.io/pause",
       "version": "sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c",
       "locations": [
-        "00-setup-ubuntu-host.sh",
-        "deploy/common/bootstrap-images.lock.json"
+        "00-setup-ubuntu-host.sh"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",

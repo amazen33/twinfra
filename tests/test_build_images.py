@@ -244,11 +244,24 @@ class ImageBuildTests(unittest.TestCase):
             old=subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':'+name])
             raw=(ROOT/name).read_bytes()
             self.assertEqual(raw if name.endswith('.gz') else raw.replace(b'\r\n',b'\n'),old,name)
+        name='deploy/common/bootstrap-images.lock.json'
+        before=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':'+name]))
+        current=json.loads((ROOT/name).read_text())
+        if 'referenceOnlyImages' in current:
+            references=current.pop('referenceOnlyImages')
+            self.assertEqual(len(references),1);references[0].pop('purpose')
+            self.assertEqual(references[0],before['images']['pause'])
+            self.assertEqual(current['images']['pause'],current['images']['kubeadm-pause'])
+            current['images']['pause']=before['images']['pause']
+        self.assertEqual(current,before)
         old_lock=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':deploy/common/images.lock.json']))
         current_lock=json.loads((ROOT/'deploy/common/images.lock.json').read_text())
         for key in ('console','python'):
             for field in ('source','canonical','digest'):
                 old_lock['images'][key][field]=current_lock['images'][key][field]
+        if current_lock['images']['ministack'].get('release')=='docker.io/ministackorg/ministack:1.5.18':
+            self.assertEqual(current_lock['images']['ministack']['digest'],'sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da')
+            current_lock['images']['ministack']=old_lock['images']['ministack']
         self.assertEqual(current_lock,old_lock,'Only the WO-34 console/Python pins may change')
         old_console=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':console/image.lock.json']))
         current_console=json.loads((ROOT/'console/image.lock.json').read_text())

@@ -278,11 +278,14 @@ class InventoryAndIntegrity(unittest.TestCase):
             self.assertEqual(a,b)
         added=[v for v in new['findings'] if v['id'] not in {f['id'] for f in old['findings']}]
         for entry in added:
-            self.assertEqual(entry['id'],'image-sbom:oci-image|docker.io/library/python|sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170')
-            before=next(v for v in old['findings'] if v['id'].startswith('image-sbom:oci-image|docker.io/library/python|'))
+            prefix=('docker.io/ministackorg/ministack' if 'ministackorg' in entry['id'] else 'docker.io/library/python')
+            pins={'docker.io/library/python':'sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170',
+                  'docker.io/ministackorg/ministack':'sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da'}
+            self.assertEqual(entry['id'],'image-sbom:oci-image|'+prefix+'|'+pins[prefix])
+            before=next(v for v in old['findings'] if v['id'].startswith('image-sbom:oci-image|'+prefix+'|'))
             masked=copy.deepcopy(entry);masked['id']=before['id'];masked['component']=before['component']
             self.assertEqual(masked,before,'Original distribution evidence deadline/owner remain unchanged')
-        self.assertLessEqual(len(added),1)
+        self.assertLessEqual(len(added),2)
         self.assertEqual((ROOT/'tools/ci/pr-baselines.json').read_bytes(),subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':tools/ci/pr-baselines.json']))
 
     def test_licence_register_preserves_existing_terms_and_only_adds_scanners_actions(self):
@@ -298,8 +301,19 @@ class InventoryAndIntegrity(unittest.TestCase):
                        'deploy/environments/dev/cairo-1/services/workloads.yaml'}
                 self.assertEqual(set(value['locations'])-moved,set(entry['locations'])-moved)
                 value['locations']=entry['locations']
+            if entry['name'] in ('docker.io/ministackorg/ministack','registry.k8s.io/pause'):
+                moved={'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json','deploy/environments/dev/cairo-1/services/workloads.yaml'}
+                self.assertEqual(set(value['locations'])-moved,set(entry['locations'])-moved)
+                value['locations']=entry['locations']
             self.assertEqual(value,entry,name)
         extra=[v for k,v in current.items() if k not in old]
+        mini=[v for v in extra if v['name']=='docker.io/ministackorg/ministack']
+        for entry in mini:
+            self.assertEqual(entry['version'],'sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da')
+            self.assertEqual(entry['class'],'allowed');self.assertEqual(entry['spdx'],'MIT')
+            self.assertEqual(entry['licenceSource'],'https://raw.githubusercontent.com/ministackorg/ministack/v1.5.18/LICENSE')
+        self.assertLessEqual(len(mini),1)
+        extra=[v for v in extra if v not in mini]
         python=[v for v in extra if v['name']=='docker.io/library/python']
         for entry in python:
             self.assertEqual(entry['version'],'sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170')

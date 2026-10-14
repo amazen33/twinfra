@@ -95,7 +95,7 @@ class CNPGImage(unittest.TestCase):
             # Preserve Amendment 12's original lock receipt; WO-34 bounds the
             # current two-pin refresh in test_build_images instead.
             actual=(subprocess.check_output(['git','-C',str(ROOT),'show',CNPG_TAG_RECEIPT+':'+path])
-                    if path=='deploy/common/images.lock.json' else (ROOT/path).read_bytes())
+                    if path in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json') else (ROOT/path).read_bytes())
             self.assertEqual(actual,base(path),path)
 
 

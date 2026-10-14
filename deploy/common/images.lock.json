@@ -16,16 +16,16 @@
       "digest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141"
     },
     "ministack": {
-      "release": "docker.io/ministackorg/ministack:1.5.17",
-      "source": "docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
-      "canonical": "registry.twinfra.example.com/docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
-      "digest": "sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
-      "digestSource": "https://registry-1.docker.io/v2/ministackorg/ministack/manifests/1.5.17",
-      "publicationSource": "https://hub.docker.com/v2/repositories/ministackorg/ministack/tags/1.5.17",
-      "publishedAt": "2026-09-25T17:23:08.811415Z",
-      "releasePublishedAt": "2026-09-25T17:08:49Z",
-      "releaseSource": "https://github.com/ministackorg/ministack/releases/tag/v1.5.17",
-      "verifiedOn": "2026-10-10"
+      "release": "docker.io/ministackorg/ministack:1.5.18",
+      "source": "docker.io/ministackorg/ministack@sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da",
+      "canonical": "registry.twinfra.example.com/docker.io/ministackorg/ministack@sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da",
+      "digest": "sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da",
+      "digestSource": "https://registry-1.docker.io/v2/ministackorg/ministack/manifests/1.5.18",
+      "publicationSource": "https://hub.docker.com/v2/repositories/ministackorg/ministack/tags/1.5.18",
+      "publishedAt": "2026-09-28T22:44:59.959202Z",
+      "releasePublishedAt": "2026-09-28T22:29:28Z",
+      "releaseSource": "https://github.com/ministackorg/ministack/releases/tag/v1.5.18",
+      "verifiedOn": "2026-10-14"
     },
     "argocd": {
       "source": "quay.io/argoproj/argocd:v3.5.3",
