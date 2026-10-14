@@ -6,10 +6,12 @@ import sys
 import tarfile
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path[:0] = [str(Path(__file__).resolve().parents[1]), str(Path(__file__).resolve().parents[2])]
 import triage_go_source as source
 import compare_go_candidates as compare
+import record_source_evidence as evidence
 
 
 class SourceMode(unittest.TestCase):
@@ -67,6 +69,32 @@ class SourceMode(unittest.TestCase):
         self.assertFalse(compare.improvement(before, after)['noNewCriticalHigh'])
         worse = [before[1] | {'severity': 'Critical'}]
         self.assertFalse(compare.improvement(before, worse)['netImprovement'])
+
+    def test_evidence_generator_binds_pins_and_records_deadline_without_id_field(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name in ('tools/ci', 'security', 'docs/acceptance', 'inputs/argocd'):
+                (root / name).mkdir(parents=True)
+            project = dict(name='argocd', tag='v3.5.5', candidateReference='fixture@sha256:' + 'a' * 64,
+                           sourceSHA256='b' * 64, analyses=[])
+            (root / 'tools/ci/toolchain.lock.json').write_text(json.dumps(dict(sourceAnalysis=dict(projects=[project], sdks={}))))
+            entry = dict(target='fixture', package='stdlib', version='v1', vulnerability='CVE-one',
+                         severity='Critical', expires='2026-11-12')
+            (root / 'security/vulnerability-exceptions.json').write_text(json.dumps(dict(exceptions=[entry])))
+            summary = dict(project='argocd', tag='v3.5.5', image=project['candidateReference'],
+                           sourceSHA256='b' * 64, applicationBinaryBuilt=False, applicationCodeExecuted=False, analyses=[])
+            path = root / 'inputs/argocd/summary.json'
+            path.write_text(json.dumps(summary))
+            with patch.object(evidence, 'ROOT', root):
+                result = evidence.record(root / 'inputs', dict(images=[]),
+                    'https://github.com/amazen33/twinfra/actions/runs/123')
+                self.assertEqual(result['deadlineWatch']['currentlyOpenCritical'], 1)
+                self.assertEqual(result['deadlineWatch']['reportBy'], '2026-11-05')
+                summary['sourceSHA256'] = 'c' * 64
+                path.write_text(json.dumps(summary))
+                with self.assertRaisesRegex(ValueError, 'locked tag'):
+                    evidence.record(root / 'inputs', dict(images=[]),
+                        'https://github.com/amazen33/twinfra/actions/runs/123')
 
 
 if __name__ == '__main__':

@@ -43,3 +43,7 @@ All eight declared projects restrict sources to owner repositories; one producti
 - Reviewed [3.5.4 notes](https://github.com/argoproj/argo-cd/releases/tag/v3.5.4) and [3.5.5 notes](https://github.com/argoproj/argo-cd/releases/tag/v3.5.5) do not document a change to `ServerSideDiff` or `IncludeMutationWebhook`. The three generated dev Applications retain both compare options for each region; existing tests verify all six instances. This is static compatibility evidence, not live behavioral acceptance.
 
 Owner interim controls from Amendment 1 remain: add no third-party repo/Application, protect the synced branch, and expose Argo only through the tunnel until a clearing release is live. Live acceptance stays Pending; no promotion occurs before age eligibility or without the amended gates.
+
+## Amendment 2 completed evidence
+
+[Source-mode call stacks and full before/after scans](image-patch-refresh-source.md) confirm x/net v0.59.0 remains reachable from the Argo command graph, while stdlib Go 1.26.9 no longer carries this finding. Critical with-fix findings stay 22; High with-fix findings drop 141 → 133; no new Critical/High identity is introduced. Promotion remains stopped for an explicit owner decision and cannot occur before 2026-10-26. No existing exception is transferred, extended or closed while the pin stays at 3.5.3.

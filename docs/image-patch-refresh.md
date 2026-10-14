@@ -43,3 +43,5 @@ The hash-locked source runner reads the official tagged archives and published b
 Source mode follows the [official govulncheck documentation](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck@v1.1.4). It analyzes a selected build configuration; reflection/unsafe limits prevent treating its result as universal runtime proof. Source failures are unresolved evidence, never a not-reachable classification.
 
 Any Critical record still lacking a fix or validated not-reachable evidence must be escalated to the owner **by 2026-11-05**, ahead of its **2026-11-12** expiry. Expiry dates are unchanged. Current binary-only records remain at risk pending source/vendor evidence; no automatic extension or risk acceptance is made.
+
+Completed Amendment 2 [source call stacks and complete P2 comparison](image-patch-refresh-source.md): all three candidates improve with no new Critical/High findings, but GO-2026-6612 is source-reachable in Argo CD, CoreDNS and etcd. Promotion stops for the owner’s risk/wait decision; 76 current Critical records are flagged now before the November 5 deadline.
