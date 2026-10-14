@@ -28,6 +28,32 @@ RELEASE_EVIDENCE = {'softwareVersion': '3.14.8', 'softwareReleasedOn': '2026-09-
 DEFAULT_BASE = ROOT / '.build/console/python-base.oci.tar'
 
 
+def stage_frontend():
+    """Verified source-bound build input; image code is never run."""
+    lock = json.loads((ROOT / 'console/frontend.lock.json').read_text())
+    archive = ROOT / 'console/frontend.tar.gz'
+    if hashlib.sha256(archive.read_bytes()).hexdigest() != lock['archiveSHA256']:
+        raise ValueError('Frontend archive checksum differs')
+    for name, expected in lock['sourcesSHA256'].items():
+        if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != expected:
+            raise ValueError('Frontend source changed: ' + name)
+    with tarfile.open(archive) as stream:
+        files = {}
+        for member in stream:
+            path = PurePosixPath(member.name)
+            if not member.isfile() or path.is_absolute() or '..' in path.parts or '\\' in member.name or member.name in files:
+                raise ValueError('Unsafe frontend archive member')
+            files[member.name] = stream.extractfile(member).read()
+    if {name: hashlib.sha256(raw).hexdigest() for name, raw in files.items()} != lock['filesSHA256']:
+        raise ValueError('Frontend archive content differs')
+    dist = ROOT / 'console/dist'
+    existing = {p.relative_to(dist).as_posix() for p in dist.rglob('*') if p.is_file()}
+    for name in existing - files.keys():
+        (dist / name).unlink()
+    for name, raw in files.items():
+        path = dist / name; path.parent.mkdir(parents=True, exist_ok=True); path.write_bytes(raw)
+
+
 def encoded(value): return json.dumps(value, sort_keys=True, separators=(',', ':')).encode()
 def digest(raw): return 'sha256:' + hashlib.sha256(raw).hexdigest()
 def descriptor(raw, kind): return {'mediaType': kind, 'digest': digest(raw), 'size': len(raw)}
@@ -206,10 +232,12 @@ def main():
     parser.add_argument('--wheels', type=Path, default=ROOT / '.build/console/wheels')
     parser.add_argument('--download-inputs', action='store_true', help='Owner-only public pinned input download')
     parser.add_argument('--check', action='store_true', help='Check the receipt; never rewrite it (default)')
+    parser.add_argument('--stage-frontend', action='store_true', help='Use the source/hash-verified frontend input archive')
     parser.add_argument('--refresh-receipt', action='store_true', help='Approved tooling/name metadata refresh only after exact digest reproduction')
     args = parser.parse_args()
     if args.check and args.refresh_receipt:parser.error('--check and --refresh-receipt are mutually exclusive')
     if args.download_inputs:download_inputs(args.base,args.wheels)
+    if args.stage_frontend:stage_frontend()
     lock = verify_receipt(build(args.base, args.output, args.wheels),refresh=args.refresh_receipt)
     from platform_image_staging import validate_archive
     validate_archive(args.output,lock['digest'])

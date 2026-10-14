@@ -32,6 +32,7 @@ def build_pair(base, out):
     exec(compile(sc.git(ROOT, 'show', base + ':tools/build_console_image.py'),
                  historical.__file__, 'exec'), historical.__dict__)
     historical.ROOT = ROOT
+    builder.stage_frontend()
     builder.download_inputs()
     before_base = out / 'before-base.oci.tar'
     export_public(old['base'].removeprefix('registry.twinfra.example.com/'), before_base)

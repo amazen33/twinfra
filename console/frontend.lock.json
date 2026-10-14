@@ -1,0 +1,20 @@
+{
+  "archiveSHA256": "6f43b7cce03b8fc941072e1766665d7d2fcd808d829001d11021ce4d39b0ce1c",
+  "filesSHA256": {
+    "index.html": "89bbaef86f7b8a55985494ad4f1e06f5e1968f18ff94763287cabcad3a4cd3de",
+    "assets/index-D18352UN.js": "083ec7fc41314092eb09384e624a4537367c08e79621ce57cda00cb14093a08b",
+    "assets/index-DAEFg_SI.css": "0f3bacab1f0ca093c0cedb7d233877f584881735bef43f086234b603cdd228f4"
+  },
+  "sourcesSHA256": {
+    "console/package.json": "83e42db89265740bef9c272a747e9c3fa96b4f40402a48b9578fafd3c6c8b32c",
+    "console/package-lock.json": "42187f9384f2d16a1b5daaef1512d41ad0903daf8cd37f010a729688457f879c",
+    "console/index.html": "f9e7d65989c9ef50ce8f4fa9927b53c986ab9dc9642d95c33e885bbca9fb8ebc",
+    "console/vite.config.ts": "d412b1e7230c243cf789705d92165695d1614938f64add9d62166c1e7c88959a",
+    "console/tsconfig.json": "57bf33164c13756d82c148024d9502ceeecb80a329b88dfee5194aa3ca1729e8",
+    "console/src/api.ts": "1101bddebe57bdf436e32b2b7c36168351cd4e519aa52a39de608aa23c66f018",
+    "console/src/App.test.tsx": "11b9f2221652b13644e7e74a1e5a1c27ddf3f929f03fa1e304aa12e31c564ca4",
+    "console/src/App.tsx": "ec2db39be46abec1aae46757792b23d13879c37ea622a235fbd4cf7a7c6b910a",
+    "console/src/main.tsx": "eb9dea8e87646ab7e84535d3ac3ef6746115237df2295bc182ce1fe5995c4ff5",
+    "console/src/styles.css": "71f430958cce8806b6272f3d63386ab5bd29ec04511f47d077c4c3f25dcc37a6"
+  }
+}

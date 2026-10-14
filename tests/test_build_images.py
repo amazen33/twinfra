@@ -277,6 +277,16 @@ class ImageBuildTests(unittest.TestCase):
             changed=copy.deepcopy(receipt);changed['filesSHA256']['console/server.py']='a'*64
             with self.assertRaisesRegex(ValueError,'application sources'):console.verify_patch_refresh(changed)
 
+    def test_source_bound_frontend_archive_matches_preserved_candidate(self):
+        lock=json.loads((ROOT/'console/frontend.lock.json').read_text())
+        self.assertEqual(hashlib.sha256((ROOT/'console/frontend.tar.gz').read_bytes()).hexdigest(),lock['archiveSHA256'])
+        for name,sha in lock['sourcesSHA256'].items():
+            self.assertEqual(hashlib.sha256((ROOT/name).read_bytes()).hexdigest(),sha,name)
+        with patch.object(console,'ROOT',ROOT),patch.object(console.tarfile,'open',side_effect=AssertionError('Archive opened')):
+            with patch.object(console.hashlib,'sha256') as sha:
+                sha.return_value.hexdigest.return_value='invalid'
+                with self.assertRaisesRegex(ValueError,'checksum'):console.stage_frontend()
+
     def test_explicit_refresh_updates_only_receipt_and_two_image_pins(self):
         with self.fixture() as (root,wheels,base):
             before=json.loads((root/'deploy/common/images.lock.json').read_text())
