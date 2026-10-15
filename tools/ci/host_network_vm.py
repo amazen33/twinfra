@@ -113,7 +113,8 @@ def prove(report):
     legacy=data['config'].replace('      accept-ra: false\n      link-local: []\n','').encode()
     if hashlib.sha256(legacy).hexdigest()!=net.LEGACY_SHA256:raise ValueError('Legacy fixture digest differs')
     saved={};server=sshd=None;monitor_stop=threading.Event();samples=[];units=[];cases=[]
-    route_installed=rule_installed=nic_created=False
+    nic_created=False
+    protection=Path('/etc/netplan/06-ci-protect.yaml')
     def monitor():
         while not monitor_stop.is_set():
             try:
@@ -136,8 +137,14 @@ def prove(report):
         default=json.loads(run(['ip','-j','-4','route','show','default']))
         if len(default)!=1 or 'gateway' not in default[0]:raise ValueError('Unsupported CI primary route')
         route=default[0]
-        run(['ip','route','add','table',TABLE,'default','via',route['gateway'],'dev',route['dev'],'onlink']);route_installed=True
-        run(['ip','rule','add','priority',TABLE,'lookup',TABLE]);rule_installed=True
+        if protection.exists():raise ValueError('Primary route protection collision')
+        # Declare protection in netplan too: networkd can garbage-collect a
+        # policy rule added with ip alone when it reloads the primary NIC.
+        import yaml
+        protect={'network':{'version':2,'ethernets':{route['dev']:{
+            'routes':[{'to':'default','via':route['gateway'],'table':int(TABLE),'on-link':True}],
+            'routing-policy':[{'from':'0.0.0.0/0','table':int(TABLE),'priority':int(TABLE)}]}}}}
+        protection.write_text(yaml.safe_dump(protect));protection.chmod(0o600)
         run(['ip','link','add','eno1','address',data['mac'],'type','dummy']);nic_created=True
         run(['ip','link','set','eno1','up'])
         net.write(net.STATIC,legacy);net.write(net.CLOUD,b'network: {config: disabled}\n')
@@ -190,6 +197,18 @@ def prove(report):
                 'adoption':adopted,'cases':cases,'samples':samples,
                 'scope':'Real VM dummy NIC/networkd/netplan/SSH/TLS; synthetic Node API; no Dell or AMT'}
         (report/'result.json').write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result|{'samples':len(samples)}),flush=True)
+    except Exception:
+        diagnostics={}
+        for name,args in {
+            'addresses':['ip','-j','-4','address'], 'routes':['ip','-j','-4','route','show','table','all'],
+            'rules':['ip','-j','rule'], 'dns':['resolvectl','dns','eno1'],
+            'api':['kubectl','--kubeconfig','/etc/kubernetes/admin.conf','--request-timeout=5s','get','--raw=/api/v1/nodes'],
+        }.items():
+            found=subprocess.run(args,capture_output=True,text=True,timeout=10,check=False)
+            diagnostics[name]={'exit':found.returncode,'stdout':found.stdout,'stderr':found.stderr}
+        (report/'failure.json').write_text(json.dumps({'diagnostics':diagnostics,'cases':cases,'samples':samples},indent=2)+'\n')
+        print(json.dumps(diagnostics),flush=True)
+        raise
     finally:
         monitor_stop.set()
         for unit in units:
@@ -202,8 +221,9 @@ def prove(report):
             raw,mode=saved[net.DHCP];Path(net.DHCP).write_bytes(raw);Path(net.DHCP).chmod(mode)
             Path('/etc/netplan/05-ci-primary.yaml').unlink()
         if nic_created:run(['ip','link','delete','eno1'])
-        if rule_installed:run(['ip','rule','del','priority',TABLE,'lookup',TABLE])
-        if route_installed:run(['ip','route','del','table',TABLE,'default'])
+        protection.unlink(missing_ok=True)
+        subprocess.run(['ip','rule','del','priority',TABLE,'lookup',TABLE],capture_output=True,check=False)
+        subprocess.run(['ip','route','del','table',TABLE,'default'],capture_output=True,check=False)
         subprocess.run(['netplan','apply'],capture_output=True,check=False,timeout=60)
         if WORK.exists():shutil.rmtree(WORK) # constant, owned disposable tmpfs only
 
