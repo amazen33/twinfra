@@ -9,6 +9,11 @@ on:
       - tools/platform_build_images.py
       - tools/refresh_console_*.py
       - tools/ci/compare_console_images.py
+      - tools/ci/compare_p3_images.py
+      - tools/ci/record_p3_scan.py
+      - tools/refresh_p3_pins.py
+      - deploy/common/bootstrap-images.lock.json
+      - deploy/common/images.lock.json
       - tools/ci/close_console_exceptions.py
       - tools/ci/refresh_govulncheck_lock.py
       - tools/ci/record_source_evidence.py
@@ -59,6 +64,40 @@ jobs:
             .build/wo34-console/scan/*.log
             .build/wo34-console/scan/sboms/
             .build/wo34-console/cache/*.error.log
+          if-no-files-found: warn
+          retention-days: 14
+  p3-comparison:
+    name: WO-34 P3 image comparison
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.14.5'
+      - name: Install pinned policy libraries
+        run: python -m pip install --disable-pip-version-check -r tools/ci/requirements.txt
+      - name: Stage and verify scanners
+        run: |
+          python tools/ci/stage_tools.py --source . --destination .build/scan-tools --only syft grype osv-scanner
+          python tools/ci/stage_govulncheck.py --destination .build/p3-go-tools
+      - name: Compare complete P3 archives and inspect every Go binary
+        run: python tools/ci/compare_p3_images.py --tools .build/scan-tools/bin --scanner .build/p3-go-tools/govulncheck
+      - name: Upload complete P3 comparison and CycloneDX SBOMs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: wo34-p3-comparison-${{ github.run_attempt }}
+          path: |
+            .build/wo34-p3/comparison.json
+            .build/wo34-p3/scan/*.json
+            .build/wo34-p3/scan/*.log
+            .build/wo34-p3/scan/sboms/
+            .build/wo34-p3/**/*.json.gz
+            .build/wo34-p3/**/summary.json
           if-no-files-found: warn
           retention-days: 14
   build:

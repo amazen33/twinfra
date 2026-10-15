@@ -82,7 +82,7 @@ class Resolution(unittest.TestCase):
                   for name,tag in [('kube-apiserver','v1.36.5'),('kube-controller-manager','v1.36.5'),
                                    ('kube-scheduler','v1.36.5'),('etcd','3.6.8-0')]}
         expected.update({('kubeadm','Deployment','coredns'):'registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.2',
-            ('containerd','ContainerRuntimeConfiguration','containerd'):'registry.twinfra.example.com/registry.k8s.io/pause:3.10.1',
+            ('containerd','ContainerRuntimeConfiguration','containerd'):'registry.twinfra.example.com/registry.k8s.io/pause:3.10.2',
             ('kubeadm','RuntimeImage','pause'):'registry.twinfra.example.com/registry.k8s.io/pause:3.10.2'})
         self.assertEqual(guard.BOOTSTRAP_TAG_ALLOWLIST,expected)
         for (producer,kind,name),ref in expected.items():
@@ -174,7 +174,7 @@ class OperatorAndRenders(unittest.TestCase):
                      'deploy/common/bootstrap-images.lock.json','deploy/common/postgresql-image.lock.json','tools/ci/pr-baselines.json',
                      '00-setup-ubuntu-host.sh','host.env.example','user-data.yaml','user-data-remote.yaml','user-data.yaml.gz'):
             actual=(subprocess.check_output(['git','-C',str(ROOT),'show','9404906da34175f9175822edf9b5be2cf10e7330:'+path])
-                    if path=='deploy/common/images.lock.json' else (ROOT/path).read_bytes())
+                    if path in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json') else (ROOT/path).read_bytes())
             self.assertEqual(base(path),actual,path)
 
     def test_runbook_scopes_the_stuck_initdb_job_recovery(self):

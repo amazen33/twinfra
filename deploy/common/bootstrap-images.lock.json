@@ -65,14 +65,14 @@
       "verifiedOn": "2026-10-10"
     },
     "pause": {
-      "release": "registry.k8s.io/pause:3.10.1",
-      "source": "registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c",
-      "canonical": "registry.twinfra.example.com/registry.k8s.io/pause:3.10.1",
-      "digest": "sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c",
+      "release": "registry.k8s.io/pause:3.10.2",
+      "source": "registry.k8s.io/pause@sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
+      "canonical": "registry.twinfra.example.com/registry.k8s.io/pause:3.10.2",
+      "digest": "sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4",
       "platform": "linux/amd64",
-      "amd64Digest": "sha256:e5b941ef8f71de54dc3a13398226c269ba217d06650a21bd3afcf9d890cf1f41",
-      "configDigest": "sha256:cd073f4c5f6a8e9dc6f3125ba00cf60819cae95c1ec84a1f146ee4a9cf9e803f",
-      "digestSource": "https://registry.k8s.io/v2/pause/manifests/3.10.1",
+      "amd64Digest": "sha256:412c4a7219cb8a299a37337f3d87810c5340095322e15594a1637785adad0f17",
+      "configDigest": "sha256:4a83b15d3ecfe0d916b2d0a7991bc2854a629b8097017c2ee1ff65b30ae4c07c",
+      "digestSource": "https://registry.k8s.io/v2/pause/manifests/3.10.2",
       "verifiedOn": "2026-10-10"
     },
     "kubeadm-pause": {
@@ -130,5 +130,19 @@
       "digestSource": "https://quay.io/v2/cilium/operator-generic/manifests/sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
       "verifiedOn": "2026-10-10"
     }
-  }
+  },
+  "referenceOnlyImages": [
+    {
+      "release": "registry.k8s.io/pause:3.10.1",
+      "source": "registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c",
+      "canonical": "registry.twinfra.example.com/registry.k8s.io/pause:3.10.1",
+      "digest": "sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c",
+      "platform": "linux/amd64",
+      "amd64Digest": "sha256:e5b941ef8f71de54dc3a13398226c269ba217d06650a21bd3afcf9d890cf1f41",
+      "configDigest": "sha256:cd073f4c5f6a8e9dc6f3125ba00cf60819cae95c1ec84a1f146ee4a9cf9e803f",
+      "digestSource": "https://registry.k8s.io/v2/pause/manifests/3.10.1",
+      "verifiedOn": "2026-10-10",
+      "purpose": "Unchanged production/default profile alias; excluded from dev staging."
+    }
+  ]
 }

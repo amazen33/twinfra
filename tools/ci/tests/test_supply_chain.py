@@ -298,6 +298,9 @@ class InventoryAndIntegrity(unittest.TestCase):
                        'deploy/environments/dev/cairo-1/services/workloads.yaml'}
                 self.assertEqual(set(value['locations'])-moved,set(entry['locations'])-moved)
                 value['locations']=entry['locations']
+            if entry['id']=='oci-image|registry.k8s.io/pause|sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c':
+                self.assertEqual(value['locations'],[p for p in entry['locations'] if p!='deploy/common/bootstrap-images.lock.json'])
+                value['locations']=entry['locations']
             self.assertEqual(value,entry,name)
         extra=[v for k,v in current.items() if k not in old]
         python=[v for v in extra if v['name']=='docker.io/library/python']

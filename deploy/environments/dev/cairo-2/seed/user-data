@@ -87,6 +87,8 @@ write_files:
 
     IMAGE_STAGING=true
 
+    PAUSE_IMAGE=registry.twinfra.example.com/registry.k8s.io/pause:3.10.2
+
     '
 - path: /usr/local/sbin/00-setup-ubuntu-host.sh
   owner: root:root
@@ -1830,12 +1832,12 @@ write_files:
     ,\n      \"configDigest\": \"sha256:38667dd9be96c17227adde456e33ad701bdbdc5c6db0272a1d33a929bd8e62d6\"\
     ,\n      \"digestSource\": \"https://registry.k8s.io/v2/coredns/coredns/manifests/v1.14.2\"\
     ,\n      \"verifiedOn\": \"2026-10-10\"\n    },\n    \"pause\": {\n      \"release\"\
-    : \"registry.k8s.io/pause:3.10.1\",\n      \"source\": \"registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c\"\
-    ,\n      \"canonical\": \"registry.twinfra.example.com/registry.k8s.io/pause:3.10.1\"\
-    ,\n      \"digest\": \"sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c\"\
-    ,\n      \"platform\": \"linux/amd64\",\n      \"amd64Digest\": \"sha256:e5b941ef8f71de54dc3a13398226c269ba217d06650a21bd3afcf9d890cf1f41\"\
-    ,\n      \"configDigest\": \"sha256:cd073f4c5f6a8e9dc6f3125ba00cf60819cae95c1ec84a1f146ee4a9cf9e803f\"\
-    ,\n      \"digestSource\": \"https://registry.k8s.io/v2/pause/manifests/3.10.1\"\
+    : \"registry.k8s.io/pause:3.10.2\",\n      \"source\": \"registry.k8s.io/pause@sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4\"\
+    ,\n      \"canonical\": \"registry.twinfra.example.com/registry.k8s.io/pause:3.10.2\"\
+    ,\n      \"digest\": \"sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4\"\
+    ,\n      \"platform\": \"linux/amd64\",\n      \"amd64Digest\": \"sha256:412c4a7219cb8a299a37337f3d87810c5340095322e15594a1637785adad0f17\"\
+    ,\n      \"configDigest\": \"sha256:4a83b15d3ecfe0d916b2d0a7991bc2854a629b8097017c2ee1ff65b30ae4c07c\"\
+    ,\n      \"digestSource\": \"https://registry.k8s.io/v2/pause/manifests/3.10.2\"\
     ,\n      \"verifiedOn\": \"2026-10-10\"\n    },\n    \"kubeadm-pause\": {\n  \
     \    \"release\": \"registry.k8s.io/pause:3.10.2\",\n      \"source\": \"registry.k8s.io/pause@sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4\"\
     ,\n      \"canonical\": \"registry.twinfra.example.com/registry.k8s.io/pause:3.10.2\"\
@@ -1874,7 +1876,16 @@ write_files:
     ,\n      \"platform\": \"linux/amd64\",\n      \"amd64Digest\": \"sha256:5bb0f9d871dd7b80461f8e3056896daa51e7d9b70ffe51c3e2126b4c35c02b5e\"\
     ,\n      \"configDigest\": \"sha256:26de0949099773e9f066583baa07804c9d00c99e4c7730c569fe39e452815dd9\"\
     ,\n      \"digestSource\": \"https://quay.io/v2/cilium/operator-generic/manifests/sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc\"\
-    ,\n      \"verifiedOn\": \"2026-10-10\"\n    }\n  }\n}\n"
+    ,\n      \"verifiedOn\": \"2026-10-10\"\n    }\n  },\n  \"referenceOnlyImages\"\
+    : [\n    {\n      \"release\": \"registry.k8s.io/pause:3.10.1\",\n      \"source\"\
+    : \"registry.k8s.io/pause@sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c\"\
+    ,\n      \"canonical\": \"registry.twinfra.example.com/registry.k8s.io/pause:3.10.1\"\
+    ,\n      \"digest\": \"sha256:278fb9dbcca9518083ad1e11276933a2e96f23de604a3a08cc3c80002767d24c\"\
+    ,\n      \"platform\": \"linux/amd64\",\n      \"amd64Digest\": \"sha256:e5b941ef8f71de54dc3a13398226c269ba217d06650a21bd3afcf9d890cf1f41\"\
+    ,\n      \"configDigest\": \"sha256:cd073f4c5f6a8e9dc6f3125ba00cf60819cae95c1ec84a1f146ee4a9cf9e803f\"\
+    ,\n      \"digestSource\": \"https://registry.k8s.io/v2/pause/manifests/3.10.1\"\
+    ,\n      \"verifiedOn\": \"2026-10-10\",\n      \"purpose\": \"Unchanged production/default\
+    \ profile alias; excluded from dev staging.\"\n    }\n  ]\n}\n"
 - path: /usr/local/lib/twinfra/stage-images.py
   permissions: '0644'
   content: "#!/usr/bin/env python3\n# SPDX-License-Identifier: MIT\n\"\"\"Owner/VM\

@@ -38,6 +38,14 @@ AMENDMENT_8_BASE='24b8bdb793739fad3c27c3daf1438cd20b7984a6'
 AMENDMENT_13_BASE='a84169a63a941f98c989d4db4739e9470e803fe4'
 
 
+def historical_delivery_bytes(name):
+    """Freeze original WO-31 delivery receipts; WO-34 bounds current dev diffs."""
+    if name in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
+                'deploy/environments/dev/cairo-2/seed/user-data','deploy/environments/dev/cairo-1/host.env'):
+        return subprocess.check_output(['git','-C',str(ROOT),'show','b55c0ea3a7805e80c218dcc13a5bfbea7e259a24:'+name])
+    return (ROOT/name).read_bytes()
+
+
 def mask_skip_guards(raw):
     """Exactly seven approved return-status lines; no broader function masking."""
     raw=raw.replace('\r\n','\n')
@@ -746,7 +754,7 @@ class PinsAndProfiles(unittest.TestCase):
                 raw=re.sub(rb'(?ms)^- path: '+re.escape(name)+rb'\n.*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',b'',raw)
             raw=raw.replace(b'- - systemctl\n  - enable\n  - --now\n  - twinfra-dev-log-caps.service\n',b'')
             return raw
-        self.assertEqual(mask((ROOT/path).read_bytes()),mask(base(path)))
+        self.assertEqual(mask(historical_delivery_bytes(path)),mask(base(path)))
         for name in ('meta-data','network-config'):
             path='deploy/environments/dev/cairo-2/seed/'+name
             self.assertEqual((ROOT/path).read_bytes().replace(b'\r\n',b'\n'),base(path))
@@ -758,7 +766,7 @@ class PinsAndProfiles(unittest.TestCase):
         self.assertNotEqual(current,base('00-setup-ubuntu-host.sh'))
         for name in ('host.env.example','deploy/environments/dev/cairo-1/host.env',
                      'deploy/environments/dev/cairo-2/seed/network-config','deploy/environments/dev/cairo-2/seed/meta-data'):
-            self.assertEqual((ROOT/name).read_text(),base(name))
+            self.assertEqual(historical_delivery_bytes(name).decode().replace('\r\n','\n'),base(name))
 
     def test_amendment_2_licence_evidence_preserves_policy_and_expiry(self):
         name='security/licence-baseline.json'
@@ -827,14 +835,14 @@ class PinsAndProfiles(unittest.TestCase):
             raw,count=re.subn(rb'(?ms)(^- path: /usr/local/sbin/00-setup-ubuntu-host.sh\n  owner: root:root\n  permissions: [^\n]+\n  content: ).*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',rb'\1@@AMENDMENT_4_ETCD_SCRIPT@@\n',raw)
             self.assertEqual(count,1)
             return raw
-        self.assertEqual(mask_seed((ROOT/path).read_bytes()),mask_seed(base(path)))
+        self.assertEqual(mask_seed(historical_delivery_bytes(path)),mask_seed(base(path)))
         for name in ('host.env.example','deploy/environments/dev/cairo-1/host.env',
                      'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
                      'deploy/environments/dev/cairo-2/seed/meta-data','deploy/environments/dev/cairo-2/seed/network-config',
                      'security/licence-policy.json','tools/ci/pr-baselines.json'):
             # Historical receipt stays exact; WO-34 has its own bounded pin test.
             actual=(subprocess.check_output(['git','-C',str(ROOT),'show','3b6ec829105ebc1511b067d53c24d0766b701fb6:'+name])
-                    if name=='deploy/common/images.lock.json' else (ROOT/name).read_bytes())
+                    if name=='deploy/common/images.lock.json' else historical_delivery_bytes(name))
             self.assertEqual(actual.replace(b'\r\n',b'\n'),base(name),name)
 
     def test_amendment_4_licence_evidence_changes_only_kubeadm_artifact(self):
@@ -943,7 +951,7 @@ class PinsAndProfiles(unittest.TestCase):
             self.assertEqual(mask_skip_guards(embedded),mask_skip_guards(base('00-setup-ubuntu-host.sh').decode()))
             raw,count=re.subn(rb'(?ms)(^- path: /usr/local/sbin/00-setup-ubuntu-host.sh\n  owner: root:root\n  permissions: [^\n]+\n  content: ).*?(?=^- path:|^[A-Za-z_][A-Za-z_]*:)',rb'\1@@SKIP_GUARDS_SCRIPT@@\n',raw)
             self.assertEqual(count,1);return raw
-        self.assertEqual(seed_mask((ROOT/path).read_bytes()),seed_mask(base(path)))
+        self.assertEqual(seed_mask(historical_delivery_bytes(path)),seed_mask(base(path)))
         for name in ('host.env.example','deploy/environments/dev/cairo-1/host.env',
                      'deploy/environments/dev/cairo-2/seed/meta-data','deploy/environments/dev/cairo-2/seed/network-config',
                      'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
@@ -959,7 +967,7 @@ class PinsAndProfiles(unittest.TestCase):
                 '3b6ec829105ebc1511b067d53c24d0766b701fb6' if name in (
                     'security/licence-register.json','tools/ci/toolchain.lock.json') else None)
             actual=(subprocess.check_output(['git','-C',str(ROOT),'show',receipt+':'+name])
-                    if receipt else (ROOT/name).read_bytes())
+                    if receipt else historical_delivery_bytes(name))
             self.assertEqual(actual.replace(b'\r\n',b'\n'),base(name),name)
 
     def test_amendment_5_licences_add_only_existing_host_cli_artifacts(self):

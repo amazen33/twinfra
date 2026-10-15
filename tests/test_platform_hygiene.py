@@ -182,7 +182,7 @@ class Hygiene(unittest.TestCase):
             original=subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+relative])
             # Keep the original WO-31 receipt exact; WO-34 separately bounds
             # current image pins, services images and the dev bootstrap seed.
-            if relative.endswith(('services/workloads.yaml','seed/user-data')):
+            if relative.endswith(('services/workloads.yaml','seed/user-data','host.env')):
                 raw=subprocess.check_output(['git','-C',str(ROOT),'show','b55c0ea3a7805e80c218dcc13a5bfbea7e259a24:'+relative]).decode()
             if relative.endswith(('root.yaml','apps/applications.yaml','services/workloads.yaml')):
                 objects=list(yaml.safe_load_all(raw))

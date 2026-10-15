@@ -244,6 +244,16 @@ class ImageBuildTests(unittest.TestCase):
             old=subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':'+name])
             raw=(ROOT/name).read_bytes()
             self.assertEqual(raw if name.endswith('.gz') else raw.replace(b'\r\n',b'\n'),old,name)
+        name='deploy/common/bootstrap-images.lock.json'
+        before=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':'+name]))
+        current=json.loads((ROOT/name).read_text())
+        if 'referenceOnlyImages' in current:
+            references=current.pop('referenceOnlyImages')
+            self.assertEqual(len(references),1);references[0].pop('purpose')
+            self.assertEqual(references[0],before['images']['pause'])
+            self.assertEqual(current['images']['pause'],current['images']['kubeadm-pause'])
+            current['images']['pause']=before['images']['pause']
+        self.assertEqual(current,before)
         old_lock=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':deploy/common/images.lock.json']))
         current_lock=json.loads((ROOT/'deploy/common/images.lock.json').read_text())
         for key in ('console','python'):
