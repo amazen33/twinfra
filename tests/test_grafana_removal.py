@@ -113,6 +113,15 @@ class ExactChanges(unittest.TestCase):
         for key in ('versions','imageSources','images'):self.assertIsNotNone(before[key].pop('grafana'))
         self.assertEqual(json.loads((ROOT/path).read_text()),before)
 
+    def test_pending_removal_policy_is_empty_and_no_other_policy_field_changed(self):
+        path='security/licence-policy.json'
+        before=json.loads(original(path))
+        self.assertEqual(before['pendingRemoval'],['docker.io/grafana/grafana'])
+        current=json.loads((ROOT/path).read_text())
+        self.assertEqual(current['pendingRemoval'],[])
+        before['pendingRemoval']=[]
+        self.assertEqual(current,before)
+
     def test_generated_manifests_remove_only_grafana_objects(self):
         for path in ('module-3/manifests/observability.yaml','lab/wsl/endpoints/gitops/workloads.yaml'):
             before=list(yaml.safe_load_all(original(path)))
@@ -124,7 +133,7 @@ class ExactChanges(unittest.TestCase):
             lock=json.loads((ROOT/path).read_text())
             self.assertEqual(set(lock['images']),set(json.loads(original(path))['images']))
             self.assertNotIn('perses',json.dumps(lock['images']).lower())
-        for path in ('tools/ci/pr-baselines.json','security/licence-policy.json','security/node-exceptions.json','vcloud-ssot.yaml'):
+        for path in ('tools/ci/pr-baselines.json','security/node-exceptions.json','vcloud-ssot.yaml'):
             self.assertEqual((ROOT/path).read_bytes().replace(b'\r\n',b'\n'),original(path),path)
 
 

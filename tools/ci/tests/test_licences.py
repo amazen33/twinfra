@@ -192,12 +192,16 @@ class Licences(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'distribution images'):self.check()
 
     def test_pending_removal_expiry_and_completed_removal_cannot_return(self):
-        self.entry.update(name='docker.io/grafana/grafana', spdx='AGPL-3.0-only',
+        self.assertEqual(self.policy['pendingRemoval'],[])
+        # Preserve generic expiry coverage using an explicit fixture approval;
+        # the real policy no longer grants a completed removal an exception.
+        self.policy['pendingRemoval']=['fixture-approved-pending-image']
+        self.entry.update(name='fixture-approved-pending-image', spdx='AGPL-3.0-only',
                           **{'class': 'pending-removal'}, expires='2026-12-08')
         self.check()
         with self.assertRaises(ValueError):
             gate.check_component(self.entry, self.component, self.policy, self.root, date(2026, 12, 8), {})
-        for name in ('new-agpl-image', 'public.ecr.aws/docker/library/redis'):
+        for name in ('new-agpl-image', 'public.ecr.aws/docker/library/redis','docker.io/grafana/grafana'):
             self.entry['name'] = name
             with self.subTest(name=name), self.assertRaises(ValueError):
                 self.check()
