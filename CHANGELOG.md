@@ -41,6 +41,10 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Added
 
+- Publish the evidence-first capability statement and ADR-0050–0053; downgrade
+  retired WSL acceptance, defer AI/HPC/event references and enforce Accepted
+  tester receipts for live capability claims in CI (WO-37).
+
 - Release streams (Dev, Candidate, Stable): `RELEASING.md`, this changelog, `VERSION`
   (next release: 0.1.0), `compatibility.yaml`, the `release-checks` and `release` workflows
   (releases attach the image locks and the licence register), and the rulesets in

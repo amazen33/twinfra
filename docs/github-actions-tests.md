@@ -75,6 +75,19 @@ Manual dispatch is available after the workflow exists on the default branch.
 
 ## Executed gates
 
+WO-37 adds the blocking [capability evidence check](../tools/ci/check_capabilities.py)
+to the trusted candidate controls and the selected revision's documentation gate.
+It checks ADR-0052 lifecycle statuses, index coverage, the generated README count
+and Accepted tester receipts for live-status claims. Missing/Pending/retired WSL
+receipts fail. Its unit tests also cover valid cairo-1/production receipts,
+external or misplaced evidence, fenced examples and partial bundle refusal.
+The six pre-WO-37 revisions retain their original lifecycle/document checks;
+their absence of the new evidence bundle is explicit, while the candidate check
+still runs on every matrix leg. Run locally with
+`python -m unittest discover -s tools/ci/tests -p test_capabilities.py -v` and
+`python tools/ci/check_capabilities.py`; `--write` refreshes only the README count
+from the ADR index. Static CI does not sign live acceptance.
+
 WO-02 adds an offline licence gate against the **candidate CI control checkout**
 on each matrix job. Historical inventories are not reclassified. The runner
 uploads `licences.json` alongside its normal summary, and prints every open

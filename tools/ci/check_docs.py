@@ -7,10 +7,13 @@ from urllib.parse import unquote
 
 import sys
 from historical_links import verified_deleted_link
+from check_capabilities import BUNDLE, STATUSES, check as check_capabilities
 root = Path(sys.argv[1]).resolve()
 report_path = Path(sys.argv[2]).resolve()
 mermaid_path = Path(sys.argv[3]).resolve()
 canonical = (root / 'docs/adr').exists()
+evidence_model = any((root / name).exists() for name in BUNDLE)
+new_statuses = r'|Accepted \(design\)|Dev-verified|Production-accepted|Deferred \(reference design\)' if evidence_model else ''
 adr_dir = root / ('docs/adr' if canonical else 'docs/adrs')
 all_adrs = sorted(adr_dir.glob('[0-9]*.md'))
 adrs = [file for file in all_adrs if 2 <= int(file.name[:4]) <= 18]
@@ -27,7 +30,7 @@ for number, (file, slug) in enumerate(zip(adrs, expected), 2):
     for section in ('Context', 'Decision', 'Options considered', 'Trade-off analysis', 'Consequences', 'Action items and acceptance'):
         assert f'## {section}\n' in content, (file, section)
     assert re.search(r'\*\*Date:\*\* \d{4}-\d{2}-\d{2}', content), file
-    assert re.search(r'\*\*Status:\*\* (Proposed|Accepted|Superseded|Deprecated)', content), file
+    assert re.search(r'\*\*Status:\*\* (Proposed|Accepted|Superseded|Deprecated' + new_statuses + ')', content), file
     assert 'https://' in content, file
     if canonical:
         assert '**Classification:** Constraint' in content, file
@@ -50,7 +53,7 @@ if canonical:
         content = file.read_text(encoding='utf-8')
         title_number = re.match(r'# ADR[ -](\d{4}):', content)
         assert title_number and int(title_number[1]) == int(file.name[:4]), ('ADR title/filename mismatch', file)
-        assert re.search(r'\*\*Status:\*\* (Proposed|Accepted \((lab|production|owner)[ ,)]|Superseded)', content), file
+        assert re.search(r'\*\*Status:\*\* (Proposed|Accepted \((lab|production|owner)[ ,)]|Superseded' + new_statuses + ')', content), file
         if '**Status:** Accepted (lab)' in content:
             assert re.search(r'\]\(\.\./acceptance/[^)]+\)', content), ('missing lab receipt', file)
     successors = {10: [34], 18: [29, 30], 25: [30], 26: [35], 27: [35]}
@@ -97,6 +100,9 @@ if canonical:
         assert 49 in numbers, 'missing WO-34 ADR-0049'
     if (root/'docs/work-orders/WO-36-host-network-and-staging-safety.md').is_file():
         expected_orders.append('WO-36')
+    if evidence_model:
+        expected_orders.append('WO-37')
+        assert {50, 51, 52, 53}.issubset(numbers), 'incomplete WO-37 ADR bundle'
     assert [re.match(r'WO-\d{2}[a-z]?(?=-)',file.name)[0] for file in orders] == sorted(expected_orders), orders
     assert (root / 'docs/work-orders/README.md').is_file()
     assert not (root / 'docs/work-orders/CODEX-PROMPTS.md').exists()
@@ -150,7 +156,7 @@ if canonical:
         for group in groups:
             label=f'**{group[0]:04d}**' if len(group)==1 else f'**{group[0]:04d}–{group[-1]:04d}**'
             assert label in index, 'missing reserved ADR range: '+label
-    for status in ('Proposed', 'Accepted (lab)', 'Accepted (production)', 'Superseded', 'Constraint'):
+    for status in (STATUSES if evidence_model else ('Proposed', 'Accepted (lab)', 'Accepted (production)', 'Superseded', 'Constraint')):
         assert status in index, status
     ssot = (root / 'vcloud-ssot.yaml').read_text(encoding='utf-8')
     assert 'adr: docs/adr/0001-node-host-mounts.md' in ssot, 'active SSoT ADR reference is stale'
@@ -172,6 +178,8 @@ assert digest('docs/node-agent-inventory.json') == inventory_hash
 assert approved_policy_hash in (root / 'vcloud-ssot.yaml').read_text(encoding='utf-8')
 mermaid = json.loads(mermaid_path.read_text(encoding='utf-8'))
 assert mermaid['status'] == 'passed'
+evidence = check_capabilities(root)
+assert evidence['status'] != 'failed', evidence['findings']
 report = {
     'module': 1, 'scope': 'architecture documentation only',
     'status': 'passed', 'adrCount': len(all_adrs), 'componentADRCount': len(adrs),
@@ -182,6 +190,7 @@ report = {
                'localLinks': 'passed', 'codeFenceBalance': 'passed',
                'ssotIdentity': 'passed', 'approvedNodePolicyIntegrity': 'passed'},
     'mermaid': mermaid,
+    'capabilityEvidence': evidence,
     'kubeconform': {'status': 'not_applicable', 'newKubernetesManifests': 0,
                    'reason': 'Module 1 adds documentation, not deployment manifests'},
     'liveAcceptance': 'not executed',

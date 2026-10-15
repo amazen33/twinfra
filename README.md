@@ -1,13 +1,34 @@
 # Twinfra platform bootstrap and architecture
 
-Twinfra (pronounced *twin-infra*) — *your AWS twin, on your own infrastructure.*
+Twinfra (pronounced *twin-infra*) — *your AWS twin, on your own infrastructure* — an AWS-compatible API subset; see [capabilities](docs/capabilities.md).
 
-[The ADR log](docs/adr/README.md) contains 39 records, including 17 Module 1 component ADRs,
-the [complete Mermaid/ASCII topology](docs/module-1-topology.md), and a
-[recruiter-friendly summary](docs/module-1-summary.md). Component choices follow the
-user's requirements. The log distinguishes receipt-backed lab acceptance, proposed
-integration gates and superseding owner decisions; production acceptance remains open.
-See the [original Module 1 documentation checks](docs/module-1-validation.json) for historical static evidence.
+## Current capability and readiness
+
+The current dev environment is `twinfra-dev-cairo-1`: one Ubuntu 24.04
+bare-metal Dell node. [WO-31 owner-reported observations](docs/acceptance/dev-environment-2026-10-13.md)
+record a Ready node, healthy PostgreSQL, Argo CD reconciliation and trusted
+HTTPS console/Keycloak sign-in. Tester sign-off remains Pending; the 24-hour
+soak verdict is Pending. [WO-36 networking](docs/acceptance/host-network-2026-10-15.md)
+and [WO-36a VM qualification](docs/acceptance/host-network-fix-2026-10-15.md)
+also await tester acceptance and do not establish Dell network acceptance.
+
+**Dev-verified items: none with Accepted tester sign-off recorded yet.**
+[ADR-0052](docs/adr/0052-evidence-first-foundation-1-0.md) gates Foundation 1.0
+on signed live evidence. Static implementation and owner observations are
+reported separately in the [capability table](docs/capabilities.md).
+Modules 5a and 5b stay disabled. The supported environment is kubeadm on
+Ubuntu 24.04, bare metal or VM; no other environment is supported.
+High availability, multi-tenancy, compliance and production readiness are not claimed.
+
+WSL is retired; see [ADR-0045](docs/adr/0045-wsl-retirement.md).
+
+[The ADR log](docs/adr/README.md) contains <!-- adr-count:start -->49 records<!-- adr-count:end -->,
+including the 17 historical Module 1 component decisions. The count is generated
+from its index by `python tools/ci/check_capabilities.py --write`.
+The [Mermaid/ASCII topology](docs/module-1-topology.md) and
+[recruiter summary](docs/module-1-summary.md) are design references, not evidence
+of running services. Original [Module 1 checks](docs/module-1-validation.json)
+remain historical static evidence.
 
 ## Repository governance
 
@@ -24,24 +45,29 @@ architecture review, implementation and tester acceptance. The owner applies the
 
 ## Node diagnostic prerequisites
 
-The [Twinfra control-plane portal](console/README.md) provides native health,
-storage, MiniStack AWS emulator, DynamoDB, GitOps and identity views at
-<http://localhost:18080/console/> in the owned WSL lab. Its dedicated
-`vcloud/vcloud-admin` account and private first-login procedure are separate
-from master administration. See the [acceptance record](docs/acceptance/vcloud-console-2026-10-08.md).
+Use the [cairo-1 tunnel and browser procedure](docs/dev-environment.md#part-1-cairo-1-on-bare-metal)
+for <https://console.dev.cairo-1.twinfra.example.com:18444/console/>.
+Keep the laptop loopback forwards open and trust the public, name-constrained
+dev CA. The console uses realm `twinfra`, client `twinfra-console` and a dedicated
+user with `console.admin`; this is separate from Keycloak master-realm
+administration. The realm import contains no users. Follow the runbook's
+private first-user/password/TOTP procedure; never print credentials.
 
 `kubectl`, **`jq`**, `curl` and `ip` (from `iproute2`) are mandatory for node-level
 cluster diagnostics, including the platform health-probe verification script.
-Both Ubuntu host and WSL provisioning install `jq`; `kubectl` is supplied by the
+Ubuntu host provisioning installs `jq`; `kubectl` is supplied by the
 selected Kubernetes bootstrap. See [prerequisites](docs/prerequisites.md) for
 installation and verification commands on existing nodes.
 
 ## Module -1: Ubuntu host preparation
 
 Ubuntu 24.04 host preparation and a single-node **upstream Kubernetes** bootstrap using
-kubeadm, system containerd and Cilium native routing. SSoT v2.2 fixes the identity to
+kubeadm, system containerd and Cilium native routing. The production SSoT v2.2
+profile retains the literal identity
 `vCloud-prod-01`, domain `vcloud.example.com`, repository `amazen33/twinfra` and registry
-`registry.vcloud.example.com`. HugePages remain **128 × 2 MiB + 1 × 1 GiB**.
+`registry.vcloud.example.com`. The current dev profile uses `twinfra-dev-cairo-1`
+and the region-specific names in the [dev runbook](docs/dev-environment.md).
+HugePages remain **128 × 2 MiB + 1 × 1 GiB**.
 
 **The documented node exception is approved.** Only the pinned kubeadm/Cilium/NVIDIA
 components may use their listed node mounts and root/capability settings. The allowlist
@@ -97,8 +123,6 @@ Native routing requires underlay routes to remote node PodCIDRs.
 
 Local syntax, configuration, schema and Helm checks are documented in `docs/validation.md`.
 Production Ubuntu/kubeadm, GPU passthrough and HPC fabric acceptance remain pending.
-The separate WSL lab has a live Kubernetes foundation and Ready platform
-controllers; its current limits are recorded in the local validation section.
 
 Module 2 is available in the [infrastructure runbook](module-2/README.md),
 with [rendered reference YAML](module-2/manifests/README.md),
@@ -109,17 +133,19 @@ physical and live acceptance remain explicit gates.
 
 The [pre-push validation record](docs/pre-push-validation.json) preserves the Module
 -1/1/2 checks for commit `8615b0c` (PR #1). Live Ubuntu, GPU and cluster acceptance
-is still pending; Module 3 has its own current validation record below.
+is still pending; the Module 3 reference has a separate validation record below.
 
-## Module 3: end-to-end GitOps
+## Module 3: implemented delivery reference (live acceptance pending)
 
-The [Module 3 runbook](module-3/README.md) provides complete Tekton Tasks, Pipeline,
-PipelineRun and authenticated push triggers, Argo CD Applications, Prometheus scrape
-and alert hooks, with dashboard definitions retained for WO-10. Protected-main builds promote source tags
-and immutable digests to `gitops/prod`; Argo reconciles the new `vcloud-api` workload.
-Restricted CI Pods use an external mTLS builder and per-run CSI workspaces.
-Run `make module3-validate module3-test module3-alerts`; see
-[validation evidence](docs/module-3-validation.json).
+The [Module 3 runbook](module-3/README.md) retains implemented Tekton Tasks,
+Pipeline, PipelineRun and push-trigger references, Argo CD Applications and
+Prometheus hooks. Their [validation record](docs/module-3-validation.json)
+is static evidence; end-to-end delivery is not Dev-verified.
+[ADR-0052 decision 5](docs/adr/0052-evidence-first-foundation-1-0.md) supersedes
+the Tekton/delivery choice with GitHub Actions, GHCR using `GITHUB_TOKEN`, signed
+provenance and verification of the expected signer/provenance before deployment.
+That deployment-verification work remains pending; this documentation change
+does not remove Tekton or implement the replacement.
 
 ## Module 4a: OpenBao secrets
 
@@ -140,16 +166,18 @@ OIDC arguments and narrow group RBAC. Run `make module4b-validate module4b-test`
 
 Pull requests and main-branch pushes run the [CI workflow](.github/workflows/pr-tests.yaml), including regressions of immutable merged PRs #1–#3, #5 and #6. The [CI guide](docs/github-actions-tests.md) explains historical PR reruns, module coverage and evidence artifacts.
 
-## Module 5a: vLLM and pgvector RAG
+## Reference designs (disabled)
 
-Module 5a now provides the [vLLM/pgvector RAG runbook](module-5a/README.md),
+### Module 5a: vLLM and pgvector RAG
+
+The Module 5a reference provides the [vLLM/pgvector RAG runbook](module-5a/README.md),
 a private one-GPU Knative Service and a CPU LangChain retrieval pipeline using
 CNPG and paired OpenBao CSI credentials. The examples stay outside live GitOps;
 RAG is disabled and its Jobs are suspended until GPU, storage, TLS, secrets and
 database acceptance pass. Run `make module5a-validate module5a-test`; see the
 [validation record](docs/module-5a-validation.json).
 
-## Module 5b: disabled hybrid GPU reference
+### Module 5b: disabled hybrid GPU reference
 
 [Module 5b](module-5b/README.md) adds DeepSeek planning, a private Knative/vLLM
 example, Kueue/MultiKueue queues and a feature-gated Spinifex SigV4 capacity bridge.
@@ -158,20 +186,6 @@ Offloading stays disabled, quotas and deployment replicas stay zero, and live
 GPU/site acceptance remains pending. See [ADR 0023](docs/adr/0023-module-5b-hybrid-hpc.md)
 and the [hybrid flow](module-5b/docs/hybrid-topology.md).
 
-## WSL local validation
-
-The separate [WSL K3s profile](lab/wsl/README.md) follows the requested 20 GB / six
-CPU mirrored-network development environment. It bootstraps a single-node
-`vcloud-wsl-local` cluster with Cilium, restricted namespaces and DNS/policy
-smoke tests. Heavy AI/HPC profiles stay disabled. It does not replace the
-production Ubuntu/kubeadm profile. GitHub CI includes its offline safety and
-schema checks when the profile is present; host execution is opt-in on WSL.
-
-The [correction review](docs/correction-review.md) maps registry, probe, DNS-mark
-and browser-access repairs to [milestones](MILESTONES.md), with explicit evidence
-and remaining gates. Use the [service access runbook](docs/service-access.md)
-for tested Windows URLs. GitOps controller RBAC, database initialization and
-the full application stack remain pending; working health probes and a dashboard
-do not establish those outcomes.
-
-The new Hyper-V development environment is prepared statically in [the cairo-1 runbook](docs/dev-environment.md); [live acceptance](docs/acceptance/dev-environment-2026-10-10.md) remains Pending. Existing WSL material is preserved until WO-28.
+These deferred designs return only with a new owner decision under
+[ADR-0052](docs/adr/0052-evidence-first-foundation-1-0.md). Their manifests and
+tests establish reference behavior only; they provide no GPU/HPC runtime claim.
