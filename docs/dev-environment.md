@@ -747,6 +747,12 @@ measured **0 seconds of observed gap**, with 1,154 samples and maximum observati
 interval **0.150156 seconds**. No alternate IPv4 or DHCP activity was observed;
 fresh SSH, trusted `/readyz` and `.3` Node InternalIP passed after each path.
 This is discrete sampling; it does not establish zero sub-sample packet loss.
+The [bounded repeat on 2026-10-15](https://github.com/amazen33/twinfra/actions/runs/38802828350)
+measured a maximum conservative gap upper bound of **0.244071 seconds**
+(five-second limit), across 1,150 samples with maximum observation interval
+0.141625 seconds. No alternate IPv4/DHCP occurred in its samples and every
+fresh SSH/trusted `/readyz`/Node InternalIP post-check passed. Both frozen run
+records and their exact tested commits are retained in the receipt.
 
 Only a fresh key-only SSH login, matching address/route/ordered IPv4 DNS/Node
 InternalIP, and trusted TLS `https://192.168.1.3:6443/readyz` can confirm. No

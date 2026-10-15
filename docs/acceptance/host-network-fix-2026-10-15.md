@@ -98,6 +98,18 @@ the last healthy sample through completion of the first recovered sample.
 The unrelated runner primary NIC retains its own network configuration. Results
 are sampled evidence, not proof of no shorter unobserved packet interruption.
 
+The [bounded repeat on branch faaecc5](https://github.com/amazen33/twinfra/actions/runs/38802828350)
+passed at `2026-10-15T20:35:33Z`, PR merge commit
+`a535c335069e3b3cc9638fd85a1c77de3de2b2d6`. It measured one conservative
+address/default-route gap upper bound of **0.244071 seconds**, below the
+five-second limit; 1,150 samples, maximum observation interval 0.141625 seconds.
+This is the maximum across the two recorded bounded qualification runs.
+No alternate IPv4 or DHCP activity was observed. Fresh SSH, trusted `/readyz`
+and `.3` Node InternalIP passed after apply (4.10 s), rollback (4.12 s), and
+refused confirmation with real timeout/restoration (121.66 s). This repeat
+demonstrates that a measured nonzero gap is recorded and assessed against the
+owner's bound rather than silently excluded.
+
 Local verification: 133 related unit/regression tests, 151 CI-control tests,
 864 conftest checks, 127 kubeconform-valid resources, render/source drift,
 licence, documentation/Mermaid and actionlint passed. Git Bash needed execution
