@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "date": "2026-10-15",
+  "scope": "Static removal and ported dashboard provenance; no live changes",
+  "portedSource": {
+    "pr": 39,
+    "commit": "48d3a0a05477a88ebb3115fca9f19fcebde2f974",
+    "path": "deploy/observability/perses/dashboards.json",
+    "sha256": "1c967594adfc3501ea72e43e3df20191e07184635d07dc6f9f3ba0481f3f0c77"
+  },
+  "dashboards": {
+    "twinfra-delivery": {
+      "canonicalJSONSHA256": "18486bfa8bcfabf4e641cfef9df5429855381907ade56557605f897a81e1cc6f",
+      "panels": 4
+    },
+    "twinfra-health": {
+      "canonicalJSONSHA256": "1350ff11c355d2118256afd4ea0750546bee31cabea5379dfb1f49848151a5dc",
+      "panels": 3
+    }
+  },
+  "removedComponent": "oci-image|docker.io/grafana/grafana|sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
+  "pendingRemoval": 0,
+  "liveAction": "None: Grafana never deployed in the Dell dev environment (owner evidence in WO-07a)",
+  "testerSignOff": "Pending"
+}

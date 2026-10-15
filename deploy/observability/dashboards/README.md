@@ -16,3 +16,8 @@ Both Dashboard objects are copied unchanged from
 No Project, Datasource, Operator, CRD, image or `PersesDashboard` resource is copied.
 All panels and PromQL remain identical to those ported definitions. PR #39 stays
 unchanged; the owner closes it after WO-07a merges.
+
+The [provenance receipt](../../../docs/acceptance/grafana-removal-2026-10-15.json)
+pins the full source file and each copied Dashboard object's canonical JSON hash.
+CI verifies every field and panel against those hashes without depending on an
+unmerged PR branch surviving a squash merge or owner deletion.

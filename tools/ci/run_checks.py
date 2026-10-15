@@ -94,6 +94,7 @@ OPTIONAL = {
     'lab/wsl/loopback': ['tools/wsl_loopback_routing.py', 'tests/test_wsl_loopback.py'],
     'grafana-removal': ['tools/check_grafana_removal.py','tests/test_grafana_removal.py',
         'docs/work-orders/WO-07a-remove-grafana.md','deploy/observability/dashboards/README.md',
+        'docs/acceptance/grafana-removal-2026-10-15.json',
         'deploy/observability/dashboards/twinfra-delivery.json','deploy/observability/dashboards/twinfra-health.json'],
     'lab/wsl/gitops': ['tools/wsl_platform.py', 'tools/wsl_db_scaler.py', 'tools/wsl_db_test.py', 'tools/wsl_pg_image.py',
                        'tools/stage_wsl_platform.py', 'lab/wsl/platform.sh', 'lab/wsl/prepare-storage.sh',
