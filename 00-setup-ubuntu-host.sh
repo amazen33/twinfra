@@ -723,7 +723,13 @@ install_hpc_kvm() {
 }
 
 render_kubeadm() {
-    local resolv_conf=/etc/resolv.conf endpoint=${CONTROL_PLANE_ENDPOINT:-"$NODE_IP:6443"} dev_proxy=
+    local resolv_conf=/etc/resolv.conf endpoint=${CONTROL_PLANE_ENDPOINT:-"$NODE_IP:6443"} dev_proxy='' dev_images=''
+    # WO-34: kubeadm's own patch overrides, confined to the dev profiles.
+    if [[ -n ${KUBEADM_DNS_IMAGE_TAG:-}${KUBEADM_ETCD_IMAGE_TAG:-} ]]; then
+        [[ $PLATFORM_PROFILE == dev-cairo-1 || $PLATFORM_PROFILE == dev-cairo-2 ]] || bad_config 'Image tag overrides are dev-only'
+        [[ ${KUBEADM_DNS_IMAGE_TAG:-} =~ ^v1\.14\.[0-9]+$ && ${KUBEADM_ETCD_IMAGE_TAG:-} =~ ^3\.6\.[0-9]+-0$ ]] || bad_config 'Dev kubeadm tags must be exact compatible patches'
+        printf -v dev_images 'dns:\n  imageTag: "%s"\netcd:\n  local:\n    imageTag: "%s"\n' "$KUBEADM_DNS_IMAGE_TAG" "$KUBEADM_ETCD_IMAGE_TAG"
+    fi
     # skipPhases alone does not disable kubeadm's kube-proxy image preflight.
     [[ ${IMAGE_STAGING:-false} != true ]] || dev_proxy=$'proxy:\n  disabled: true\n'
     [[ ! -e /run/systemd/resolve/resolv.conf ]] || resolv_conf=/run/systemd/resolve/resolv.conf
@@ -750,7 +756,7 @@ kind: ClusterConfiguration
 kubernetesVersion: "$KUBERNETES_VERSION"
 clusterName: "$CLUSTER_NAME"
 imageRepository: "$IMAGE_REGISTRY/registry.k8s.io"
-${dev_proxy}controlPlaneEndpoint: "$endpoint"
+${dev_proxy}${dev_images}controlPlaneEndpoint: "$endpoint"
 networking:
   podSubnet: "$POD_CIDR"
   serviceSubnet: "$SERVICE_CIDR"
@@ -1693,7 +1699,7 @@ render_exception_policy() {
       }
     },
     "Pod/kube-system/etcd": {
-      "image": "registry.twinfra.example.com/registry.k8s.io/etcd:3.6.8-0",
+      "image": "registry.twinfra.example.com/registry.k8s.io/etcd:3.6.15-0",
       "mounts": {
         "/etc/kubernetes/pki/etcd": {
           "readOnly": true,
@@ -1709,7 +1715,7 @@ render_exception_policy() {
     }
   },
   "sourcePolicySHA256": "d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253",
-  "profile": "WO-21 dev mirror relocation only; same images, mounts and security"
+  "profile": "WO-34 approved dev etcd patch and mirror; unchanged mounts and security"
 }
 VCLOUD_DEV_POLICY_JSON
     else

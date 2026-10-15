@@ -285,6 +285,9 @@ def host_environment(row):
         'POD_CIDR':row['podCidr'],'SERVICE_CIDR':row['serviceCidr'],'NODE_IP':row['ipAddress'],'NODE_NAME':'twinfra-node',
         'CONTROL_PLANE_ENDPOINT':'api.dev.'+row['region']+'.twinfra.example.com:6443','BOOTSTRAP_K8S':'true','INSTALL_HPC':'false','ENABLE_GPU':'false','GPU_SMOKE_TEST':'false','RUN_SMOKE_TESTS':'false','IMAGE_STAGING':'true'}
     values['PAUSE_IMAGE']=json.loads((COMMON/'bootstrap-images.lock.json').read_text())['images']['pause']['canonical']
+    boot=json.loads((COMMON/'bootstrap-images.lock.json').read_text())['images']
+    values['KUBEADM_DNS_IMAGE_TAG']=boot['coredns']['canonical'].rsplit(':',1)[1]
+    values['KUBEADM_ETCD_IMAGE_TAG']=boot['etcd']['canonical'].rsplit(':',1)[1]
     if row.get('interface'):values['NODE_INTERFACE']=row['interface']
     if row.get('delivery')=='bare-metal':
         values['NODE_NAME']=yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())['environments']['dev']['context']

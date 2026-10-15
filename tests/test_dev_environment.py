@@ -14,6 +14,7 @@ import zlib
 from unittest.mock import patch
 
 import yaml
+from p2_receipts import receipt as p2_receipt
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tools'))
@@ -95,7 +96,7 @@ class CNPGImage(unittest.TestCase):
             # Preserve Amendment 12's original lock receipt; WO-34 bounds the
             # current two-pin refresh in test_build_images instead.
             actual=(subprocess.check_output(['git','-C',str(ROOT),'show',CNPG_TAG_RECEIPT+':'+path])
-                    if path in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json') else (ROOT/path).read_bytes())
+                    if path in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json') else p2_receipt(path))
             self.assertEqual(actual,base(path),path)
 
 
@@ -198,7 +199,7 @@ class Profile(unittest.TestCase):
         for code in ('tools/platform_dev.py','tools/platform_resources.py','tools/platform_sources.py','console/aws_views.py','deploy/common/runtime-config.py'):
             self.assertNotIn('from wsl_', (ROOT/code).read_text())
 
-    def test_node_approval_derivative_changes_only_registry_prefix(self):
+    def test_node_approval_derivative_changes_only_registry_and_approved_dev_etcd_patch(self):
         approved=json.loads((ROOT/'security/node-exceptions.json').read_text())
         rendered={}
         for profile in ('production','dev-cairo-1'):
@@ -213,7 +214,9 @@ class Profile(unittest.TestCase):
         derivative.pop('sourcePolicySHA256');derivative.pop('profile')
         normalized=json.loads(json.dumps(derivative).replace('registry.twinfra.example.com',
                                                             'registry.vcloud.example.com'))
-        self.assertEqual(normalized,approved)
+        expected=copy.deepcopy(approved)
+        expected['controlPlane']['Pod/kube-system/etcd']['image']='registry.vcloud.example.com/registry.k8s.io/etcd:3.6.15-0'
+        self.assertEqual(normalized,expected)
 
 
 class DiskConversion(unittest.TestCase):

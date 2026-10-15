@@ -254,3 +254,22 @@ Input sources: `production`, `user-data-remote.yaml`, `user-data.yaml`.
 | RuntimeImage/pause | registry.vcloud.example.com/registry.k8s.io/pause:3.10.2 | Missing/invalid digest or tag-only reference outside the closed bootstrap allowance |
 
 <!-- END GENERATED PRODUCTION IMAGE DEBT -->
+
+## Identity continuity (WO-34 Amendment 3a)
+
+A digest change selects an image for scanning. A finding is introduced only when
+its component, package and vulnerability identity was absent from that component's
+previous pin. Candidate and previous images are scanned against one fresh Grype
+database. A different component cannot supply its baseline. Critical findings with
+a fix always require an exact target/package/version/vulnerability exception.
+
+The issue keeps digest-independent component clock records in its existing lossless
+format. The initial nightly migration resolves historical targets through the
+same component's Git lock history and uses the trusted issue's original dates.
+It does not reset the High clock or change first-seen for newly discovered risk.
+
+P2 carries six existing approvals, with unchanged reasons, approvers and November 12
+expiry, and closes 16 fixed Critical entries. GO-2026-6612 remains separately recorded
+for x/net and stdlib in each candidate, with explicit compensating controls.
+[Promotion evidence and maintenance](image-patch-refresh-p2.md). No exception is
+renewed here; individual renewal proposals remain a separate owner review.

@@ -42,8 +42,8 @@ def inventory(bash='bash', helm='helm', region='cairo-1'):
                 for n in ('kube-apiserver', 'kube-controller-manager', 'kube-scheduler')}
     if not kube.get('proxy', {}).get('disabled', False):
         expected.add(repository + '/kube-proxy:' + kube['kubernetesVersion'])
-    expected |= {repository + '/etcd:' + constant('DefaultEtcdVersion'),
-                 repository + '/coredns:' + constant('CoreDNSVersion'),
+    expected |= {repository + '/etcd:' + kube.get('etcd',{}).get('local',{}).get('imageTag',constant('DefaultEtcdVersion')),
+                 repository + '/coredns:' + kube.get('dns',{}).get('imageTag',constant('CoreDNSVersion')),
                  repository + '/pause:' + constant('PauseVersion')}
     containerd = render('render_containerd 1.7.28')
     expected.add(re.search(r'sandbox_image = "([^"]+)"', containerd)[1])
