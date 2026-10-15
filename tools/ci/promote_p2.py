@@ -43,6 +43,8 @@ def pairs(comparison,component):
     severe=lambda row:{identity(v) for v in row['findings'] if v['severity'] in ('Critical','High') and v['fixAvailable']}
     old,new=severe(before),severe(after)
     if not new<old:raise ValueError('Candidate must be a strict fixable Critical/High identity subset: '+component)
+    if {identity(v) for v in after['findings']}-{identity(v) for v in before['findings']}:
+        raise ValueError('Candidate contains a new vulnerability identity: '+component)
     return before,after
 
 

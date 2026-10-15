@@ -129,6 +129,8 @@ class CarriedExceptions(unittest.TestCase):
         row=next(v for v in comparison['images'] if v['name']=='coredns-after')
         row['findings'].append(finding(NEW+'coredns',cve='CVE-2026-9999'))
         with self.assertRaisesRegex(ValueError,'strict'):promotion.carry_exceptions(comparison,ledger)
+        row['findings'][-1]['severity']='Medium'
+        with self.assertRaisesRegex(ValueError,'new vulnerability identity'):promotion.carry_exceptions(comparison,ledger)
         comparison,ledger=self.fixtures();ledger['exceptions']=[]
         with self.assertRaisesRegex(ValueError,'lacks an existing'):promotion.carry_exceptions(comparison,ledger)
 
