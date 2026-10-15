@@ -12,6 +12,7 @@ from contextlib import redirect_stdout
 from unittest.mock import patch
 
 import yaml
+from p2_receipts import receipt as p2_receipt
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools'))
@@ -80,8 +81,8 @@ class Resolution(unittest.TestCase):
     def test_closed_allowlist_is_exactly_the_owner_approved_renderers_objects_and_tags(self):
         expected={('kubeadm','Pod',name):'registry.twinfra.example.com/registry.k8s.io/'+name+':'+tag
                   for name,tag in [('kube-apiserver','v1.36.5'),('kube-controller-manager','v1.36.5'),
-                                   ('kube-scheduler','v1.36.5'),('etcd','3.6.8-0')]}
-        expected.update({('kubeadm','Deployment','coredns'):'registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.2',
+                                   ('kube-scheduler','v1.36.5'),('etcd','3.6.15-0')]}
+        expected.update({('kubeadm','Deployment','coredns'):'registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.7',
             ('containerd','ContainerRuntimeConfiguration','containerd'):'registry.twinfra.example.com/registry.k8s.io/pause:3.10.2',
             ('kubeadm','RuntimeImage','pause'):'registry.twinfra.example.com/registry.k8s.io/pause:3.10.2'})
         self.assertEqual(guard.BOOTSTRAP_TAG_ALLOWLIST,expected)
@@ -174,7 +175,7 @@ class OperatorAndRenders(unittest.TestCase):
                      'deploy/common/bootstrap-images.lock.json','deploy/common/postgresql-image.lock.json','tools/ci/pr-baselines.json',
                      '00-setup-ubuntu-host.sh','host.env.example','user-data.yaml','user-data-remote.yaml','user-data.yaml.gz'):
             actual=(subprocess.check_output(['git','-C',str(ROOT),'show','9404906da34175f9175822edf9b5be2cf10e7330:'+path])
-                    if path in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json') else (ROOT/path).read_bytes())
+                    if path in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json') else p2_receipt(path))
             self.assertEqual(base(path),actual,path)
 
     def test_runbook_scopes_the_stuck_initdb_job_recovery(self):

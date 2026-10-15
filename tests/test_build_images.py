@@ -13,6 +13,7 @@ import tarfile
 import tempfile
 import threading
 import unittest
+from p2_receipts import receipt as p2_receipt
 from unittest.mock import patch
 import urllib.parse
 import urllib.request
@@ -242,11 +243,11 @@ class ImageBuildTests(unittest.TestCase):
                      'deploy/common/postgresql-image.lock.json',
                      'tools/ci/pr-baselines.json','security/licence-policy.json'):
             old=subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':'+name])
-            raw=(ROOT/name).read_bytes()
+            raw=p2_receipt(name)
             self.assertEqual(raw if name.endswith('.gz') else raw.replace(b'\r\n',b'\n'),old,name)
         name='deploy/common/bootstrap-images.lock.json'
         before=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':'+name]))
-        current=json.loads((ROOT/name).read_text())
+        current=json.loads(p2_receipt(name))
         if 'referenceOnlyImages' in current:
             references=current.pop('referenceOnlyImages')
             self.assertEqual(len(references),1);references[0].pop('purpose')

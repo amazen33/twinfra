@@ -25,6 +25,7 @@ on:
       - tools/ci/triage_go_source.py
       - tools/ci/refresh_source_analysis_lock.py
       - tools/ci/compare_go_candidates.py
+      - tools/ci/promote_p2.py
       - .github/workflows/wo34-tool-build.yaml
 permissions:
   contents: read

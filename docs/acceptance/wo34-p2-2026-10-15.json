@@ -1,0 +1,524 @@
+{
+  "date": "2026-10-15",
+  "runURL": "https://github.com/amazen33/twinfra/actions/runs/38662896911",
+  "base": "e92255278369a25f26bc694b38c33bfd2768c14d",
+  "scope": "Static dev CoreDNS/etcd promotion; no application binaries built/executed",
+  "liveAcceptance": "Pending",
+  "testerSignOff": "Pending",
+  "metadata": {
+    "coredns": {
+      "pin": {
+        "release": "registry.k8s.io/coredns/coredns:v1.14.7",
+        "source": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+        "canonical": "registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.7",
+        "digest": "sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+        "platform": "linux/amd64",
+        "amd64Digest": "sha256:2329f5f0e7e79fbe56dcdf11ecc4337ee2476bb251095bc275fe9461cb88a55b",
+        "configDigest": "sha256:97efff2babf85310d6f87bd969ac64d7006bbbadb147c90579d68d57634750f4",
+        "digestSource": "https://registry.k8s.io/v2/coredns/coredns/manifests/v1.14.7",
+        "verifiedOn": "2026-10-15",
+        "releaseSource": "https://github.com/coredns/coredns/releases/tag/v1.14.7",
+        "releasePublishedAt": "2026-08-19T01:39:14Z"
+      },
+      "release": "https://github.com/coredns/coredns/releases/tag/v1.14.7",
+      "publishedAt": "2026-08-19T01:39:14Z",
+      "licenceSource": "https://raw.githubusercontent.com/coredns/coredns/v1.14.7/LICENSE",
+      "licenceSHA256": "f0530760b1e2ffcf23df322db638ee06d06fc07fead0ed3ddd710f2e224698a9",
+      "sbom": {
+        "path": "deploy/common/vendor/wo34-coredns-v1.14.7.cdx.json.gz",
+        "sha256": "4cd5c00ff3b9c9d95c81d9c679a50e794bb30ecbe109fd09324e0f44d3663468"
+      }
+    },
+    "etcd": {
+      "pin": {
+        "release": "registry.k8s.io/etcd:3.6.15-0",
+        "source": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+        "canonical": "registry.twinfra.example.com/registry.k8s.io/etcd:3.6.15-0",
+        "digest": "sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+        "platform": "linux/amd64",
+        "amd64Digest": "sha256:70a702786a28fef490a71c2ce873c48efa35770d1c3fe76ea4f05f0045b326b7",
+        "configDigest": "sha256:a1aac660a585a27fc102b228524abf4810579ab102b9786d2be28ed2b04e7823",
+        "digestSource": "https://registry.k8s.io/v2/etcd/manifests/3.6.15-0",
+        "verifiedOn": "2026-10-15",
+        "releaseSource": "https://github.com/etcd-io/etcd/releases/tag/v3.6.15",
+        "releasePublishedAt": "2026-09-22T21:06:14Z"
+      },
+      "release": "https://github.com/etcd-io/etcd/releases/tag/v3.6.15",
+      "publishedAt": "2026-09-22T21:06:14Z",
+      "licenceSource": "https://raw.githubusercontent.com/etcd-io/etcd/v3.6.15/LICENSE",
+      "licenceSHA256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "sbom": {
+        "path": "deploy/common/vendor/wo34-etcd-3.6.15-0.cdx.json.gz",
+        "sha256": "3ec7f9e702ccea64fd4b4f8c4647ea4a39c539d92fd514e000bb31c09f0b4c2d"
+      }
+    }
+  },
+  "images": [
+    {
+      "counts": {
+        "CriticalWithFix": 11,
+        "CriticalWithoutFix": 0,
+        "HighWithFix": 48,
+        "HighWithoutFix": 0
+      },
+      "coverage": "complete-oci-archive-linux-amd64",
+      "name": "coredns-before",
+      "reference": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "verifiedAmd64Digest": "sha256:fd5079792b93909db3adefa91e41c3995455013394f0197c7346786ae19079fc"
+    },
+    {
+      "counts": {
+        "CriticalWithFix": 3,
+        "CriticalWithoutFix": 0,
+        "HighWithFix": 20,
+        "HighWithoutFix": 0
+      },
+      "coverage": "complete-oci-archive-linux-amd64",
+      "name": "coredns-after",
+      "reference": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "verifiedAmd64Digest": "sha256:2329f5f0e7e79fbe56dcdf11ecc4337ee2476bb251095bc275fe9461cb88a55b"
+    },
+    {
+      "counts": {
+        "CriticalWithFix": 11,
+        "CriticalWithoutFix": 0,
+        "HighWithFix": 43,
+        "HighWithoutFix": 0
+      },
+      "coverage": "complete-oci-archive-linux-amd64",
+      "name": "etcd-before",
+      "reference": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+      "verifiedAmd64Digest": "sha256:aa2b41e3f99c9a337b82f687875a63c5119e6d39bc43fc76b6c40a96f55cf391"
+    },
+    {
+      "counts": {
+        "CriticalWithFix": 3,
+        "CriticalWithoutFix": 0,
+        "HighWithFix": 13,
+        "HighWithoutFix": 0
+      },
+      "coverage": "complete-oci-archive-linux-amd64",
+      "name": "etcd-after",
+      "reference": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "verifiedAmd64Digest": "sha256:70a702786a28fef490a71c2ce873c48efa35770d1c3fe76ea4f05f0045b326b7"
+    }
+  ],
+  "carriedExceptions": [
+    {
+      "component": "coredns",
+      "before": {
+        "approvedBy": "amazen33",
+        "createdOn": "2026-10-13",
+        "expires": "2026-11-12",
+        "owner": "amazen33",
+        "package": "golang.org/x/net",
+        "reason": "CVE-2026-78663 in golang.org/x/net v0.51.0: fix version(s): 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+        "severity": "Critical",
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "version": "v0.51.0",
+        "vulnerability": "CVE-2026-78663",
+        "workOrder": "WO-34"
+      },
+      "after": {
+        "approvedBy": "amazen33",
+        "createdOn": "2026-10-13",
+        "expires": "2026-11-12",
+        "owner": "amazen33",
+        "package": "golang.org/x/net",
+        "reason": "CVE-2026-78663 in golang.org/x/net v0.51.0: fix version(s): 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+        "severity": "Critical",
+        "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+        "version": "v0.57.0",
+        "vulnerability": "CVE-2026-78663",
+        "workOrder": "WO-34",
+        "controls": [
+          "Argo CD is tunnel-only, with no NodePort, LoadBalancer or Ingress.",
+          "Dell firewall drops etcd client TCP 2379 and peer TCP 2380 on the LAN interface.",
+          "CoreDNS is cluster-internal; no NodePort, LoadBalancer or Ingress.",
+          "The dev environment is LAN-only; no router port forwarding."
+        ]
+      }
+    },
+    {
+      "component": "coredns",
+      "before": {
+        "approvedBy": "amazen33",
+        "createdOn": "2026-10-13",
+        "expires": "2026-11-12",
+        "owner": "amazen33",
+        "package": "stdlib",
+        "reason": "CVE-2026-78663 in stdlib go1.26.1: fix version(s): 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+        "severity": "Critical",
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "version": "go1.26.1",
+        "vulnerability": "CVE-2026-78663",
+        "workOrder": "WO-34"
+      },
+      "after": {
+        "approvedBy": "amazen33",
+        "createdOn": "2026-10-13",
+        "expires": "2026-11-12",
+        "owner": "amazen33",
+        "package": "stdlib",
+        "reason": "CVE-2026-78663 in stdlib go1.26.1: fix version(s): 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+        "severity": "Critical",
+        "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+        "version": "go1.26.6",
+        "vulnerability": "CVE-2026-78663",
+        "workOrder": "WO-34",
+        "controls": [
+          "Argo CD is tunnel-only, with no NodePort, LoadBalancer or Ingress.",
+          "Dell firewall drops etcd client TCP 2379 and peer TCP 2380 on the LAN interface.",
+          "CoreDNS is cluster-internal; no NodePort, LoadBalancer or Ingress.",
+          "The dev environment is LAN-only; no router port forwarding."
+        ]
+      }
+    },
+    {
+      "component": "coredns",
+      "before": {
+        "approvedBy": "amazen33",
+        "createdOn": "2026-10-13",
+        "expires": "2026-11-12",
+        "owner": "amazen33",
+        "package": "stdlib",
+        "reason": "CVE-2026-56857 in stdlib go1.26.1: fix version(s): 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+        "severity": "Critical",
+        "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+        "version": "go1.26.1",
+        "vulnerability": "CVE-2026-56857",
+        "workOrder": "WO-34"
+      },
+      "after": {
+        "approvedBy": "amazen33",
+        "createdOn": "2026-10-13",
+        "expires": "2026-11-12",
+        "owner": "amazen33",
+        "package": "stdlib",
+        "reason": "CVE-2026-56857 in stdlib go1.26.1: fix version(s): 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+        "severity": "Critical",
+        "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+        "version": "go1.26.6",
+        "vulnerability": "CVE-2026-56857",
+        "workOrder": "WO-34"
+      }
+    },
+    {
+      "component": "etcd",
+      "before": {
+        "approvedBy": "amazen33",
+        "createdOn": "2026-10-13",
+        "expires": "2026-11-12",
+        "owner": "amazen33",
+        "package": "golang.org/x/net",
+        "reason": "CVE-2026-78663 in golang.org/x/net v0.47.0: fix version(s): 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+        "severity": "Critical",
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "version": "v0.47.0",
+        "vulnerability": "CVE-2026-78663",
+        "workOrder": "WO-34"
+      },
+      "after": {
+        "approvedBy": "amazen33",
+        "createdOn": "2026-10-13",
+        "expires": "2026-11-12",
+        "owner": "amazen33",
+        "package": "golang.org/x/net",
+        "reason": "CVE-2026-78663 in golang.org/x/net v0.47.0: fix version(s): 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+        "severity": "Critical",
+        "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+        "version": "v0.58.0",
+        "vulnerability": "CVE-2026-78663",
+        "workOrder": "WO-34",
+        "controls": [
+          "Argo CD is tunnel-only, with no NodePort, LoadBalancer or Ingress.",
+          "Dell firewall drops etcd client TCP 2379 and peer TCP 2380 on the LAN interface.",
+          "CoreDNS is cluster-internal; no NodePort, LoadBalancer or Ingress.",
+          "The dev environment is LAN-only; no router port forwarding."
+        ]
+      }
+    },
+    {
+      "component": "etcd",
+      "before": {
+        "approvedBy": "amazen33",
+        "createdOn": "2026-10-13",
+        "expires": "2026-11-12",
+        "owner": "amazen33",
+        "package": "stdlib",
+        "reason": "CVE-2026-78663 in stdlib go1.24.13: fix version(s): 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+        "severity": "Critical",
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "version": "go1.24.13",
+        "vulnerability": "CVE-2026-78663",
+        "workOrder": "WO-34"
+      },
+      "after": {
+        "approvedBy": "amazen33",
+        "createdOn": "2026-10-13",
+        "expires": "2026-11-12",
+        "owner": "amazen33",
+        "package": "stdlib",
+        "reason": "CVE-2026-78663 in stdlib go1.24.13: fix version(s): 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+        "severity": "Critical",
+        "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+        "version": "go1.26.8",
+        "vulnerability": "CVE-2026-78663",
+        "workOrder": "WO-34",
+        "controls": [
+          "Argo CD is tunnel-only, with no NodePort, LoadBalancer or Ingress.",
+          "Dell firewall drops etcd client TCP 2379 and peer TCP 2380 on the LAN interface.",
+          "CoreDNS is cluster-internal; no NodePort, LoadBalancer or Ingress.",
+          "The dev environment is LAN-only; no router port forwarding."
+        ]
+      }
+    },
+    {
+      "component": "etcd",
+      "before": {
+        "approvedBy": "amazen33",
+        "createdOn": "2026-10-13",
+        "expires": "2026-11-12",
+        "owner": "amazen33",
+        "package": "stdlib",
+        "reason": "CVE-2026-56857 in stdlib go1.24.13: fix version(s): 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+        "severity": "Critical",
+        "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+        "version": "go1.24.13",
+        "vulnerability": "CVE-2026-56857",
+        "workOrder": "WO-34"
+      },
+      "after": {
+        "approvedBy": "amazen33",
+        "createdOn": "2026-10-13",
+        "expires": "2026-11-12",
+        "owner": "amazen33",
+        "package": "stdlib",
+        "reason": "CVE-2026-56857 in stdlib go1.24.13: fix version(s): 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+        "severity": "Critical",
+        "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+        "version": "go1.26.8",
+        "vulnerability": "CVE-2026-56857",
+        "workOrder": "WO-34"
+      }
+    }
+  ],
+  "closedExceptions": [
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "google.golang.org/grpc",
+      "reason": "CVE-2026-33186 in google.golang.org/grpc v1.79.1: fix version(s): 1.79.3. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "version": "v1.79.1",
+      "vulnerability": "CVE-2026-33186",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-39832 in golang.org/x/crypto v0.48.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "version": "v0.48.0",
+      "vulnerability": "CVE-2026-39832",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-42508 in golang.org/x/crypto v0.48.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "version": "v0.48.0",
+      "vulnerability": "CVE-2026-42508",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-39834 in golang.org/x/crypto v0.48.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "version": "v0.48.0",
+      "vulnerability": "CVE-2026-39834",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-39830 in golang.org/x/crypto v0.48.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "version": "v0.48.0",
+      "vulnerability": "CVE-2026-39830",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-46595 in golang.org/x/crypto v0.48.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "version": "v0.48.0",
+      "vulnerability": "CVE-2026-46595",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-39831 in golang.org/x/crypto v0.48.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "version": "v0.48.0",
+      "vulnerability": "CVE-2026-39831",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-39833 in golang.org/x/crypto v0.48.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "version": "v0.48.0",
+      "vulnerability": "CVE-2026-39833",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "google.golang.org/grpc",
+      "reason": "CVE-2026-33186 in google.golang.org/grpc v1.71.1: fix version(s): 1.79.3. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+      "version": "v1.71.1",
+      "vulnerability": "CVE-2026-33186",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-39832 in golang.org/x/crypto v0.45.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+      "version": "v0.45.0",
+      "vulnerability": "CVE-2026-39832",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-42508 in golang.org/x/crypto v0.45.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+      "version": "v0.45.0",
+      "vulnerability": "CVE-2026-42508",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-39834 in golang.org/x/crypto v0.45.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+      "version": "v0.45.0",
+      "vulnerability": "CVE-2026-39834",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-39830 in golang.org/x/crypto v0.45.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+      "version": "v0.45.0",
+      "vulnerability": "CVE-2026-39830",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-46595 in golang.org/x/crypto v0.45.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+      "version": "v0.45.0",
+      "vulnerability": "CVE-2026-46595",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-39831 in golang.org/x/crypto v0.45.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+      "version": "v0.45.0",
+      "vulnerability": "CVE-2026-39831",
+      "workOrder": "WO-34"
+    },
+    {
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-13",
+      "expires": "2026-11-12",
+      "owner": "amazen33",
+      "package": "golang.org/x/crypto",
+      "reason": "CVE-2026-39833 in golang.org/x/crypto v0.45.0: fix version(s): 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs; remediated by WO-34. Pending owner risk review.",
+      "severity": "Critical",
+      "target": "registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
+      "version": "v0.45.0",
+      "vulnerability": "CVE-2026-39833",
+      "workOrder": "WO-34"
+    }
+  ],
+  "remainingExceptions": 60,
+  "sourceEvidence": "docs/acceptance/wo34-source-2026-10-14.json",
+  "controls": [
+    "Argo CD is tunnel-only, with no NodePort, LoadBalancer or Ingress.",
+    "Dell firewall drops etcd client TCP 2379 and peer TCP 2380 on the LAN interface.",
+    "CoreDNS is cluster-internal; no NodePort, LoadBalancer or Ingress.",
+    "The dev environment is LAN-only; no router port forwarding."
+  ]
+}

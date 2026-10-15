@@ -133,3 +133,53 @@ Minor or major version upgrades (for example Kubernetes 1.37 or Argo CD 3.6), th
    - the reviewer's usage limit only stopped the final test command; it did not reject it, so re-run it;
    - then commit and open the PR.
 7. **Deadline watch.** If any Critical exception would expire on 2026-11-12 with no fix and no not-reachable evidence, report it **by 2026-11-05**. The owner then decides on an extension, with evidence, before it expires.
+
+## Amendment 3 (2026-10-15, owner decision on the reachable GO-2026-6612 and the 2026-11-12 expiry)
+
+**Owner decision (Ahmed Mazen, 2026-10-15): "accept the recommendation".** It resolves the P2 stop in draft PR #56 and the early expiry notice.
+
+1. **Promote the improved candidates** once each is eligible and passes the supply-chain gate with no new Critical or High identity:
+   Argo CD **v3.5.5** (on or after **2026-10-26**), CoreDNS **v1.14.7** and etcd **v3.6.15-0**.
+   - CoreDNS and etcd are set through kubeadm's own override fields (`dns.imageTag`, `etcd.local.imageTag`) for the dev profiles only, with the digests staged in the
+     bootstrap lock and the scope-B tag-only list (Amendment 13b of WO-31) updated to the new versions. Add a test that the rendered kubeadm config uses exactly these versions.
+   - Live: these are owner-scheduled maintenance steps on the Dell (etcd and CoreDNS one at a time, with an etcd snapshot first). Never re-init or reset the cluster.
+2. **Time-boxed risk acceptance for GO-2026-6612 / CVE-2026-78663 only** (golang.org/x/net HTTP/2 `Framer.ReadFrame`, fixed in x/net v0.60.0):
+   - one exception entry per image (Argo CD, CoreDNS, etcd), class Critical, `approvedBy: amazen33`, expiry **30 days** from the merge of the promoting PR;
+   - reason "reachable in source mode; no released fix; risk accepted by owner 2026-10-15";
+   - controls listed in each entry and verified by tests or existing checks:
+     - Argo CD is tunnel-only, with no NodePort, LoadBalancer or Ingress;
+     - etcd client and peer ports are dropped at the Dell firewall;
+     - CoreDNS is cluster-internal;
+     - the dev environment is LAN-only.
+   This acceptance does not extend to any other vulnerability.
+3. **Take the fix as soon as possible.** When a release of any of the three ships x/net >= v0.60.0 and is at least 14 days old, open a refresh PR. The WO-32 weekly watch
+   reports it. If the vulnerability becomes KEV-listed, the ADR-0049 expedite rule applies at once.
+4. **The 76 Critical exceptions expiring 2026-11-12.** By **2026-11-05**, Codex prepares one PR that:
+   - closes every exception the promotions fixed, with evidence;
+   - for each Critical still open (mostly Argo CD's 22), proposes renewal individually: 30 days maximum, linked to the upstream fix release or issue, with the
+     reachability result. There are no grouped or blanket renewals;
+   - leaves `approvedBy` empty for the owner, who approves the list in the PR.
+5. **#56 stays a draft** until the promotions in item 1 replace it. #58 continues as reviewed (pause 3.10.2; MiniStack not promoted).
+
+## Amendment 3a (2026-10-15, architect; APPROVED by the owner 2026-10-15: "3a approved"): making the approved promotion executable
+
+Codex's stop report (`.build/wo-34/p2-promote-stop/STOP.md`) is right: Amendment 3 approved the promotion but not the gate mechanics it needs.
+The principle the owner approved still stands: **promote a candidate only if it is strictly better, and accept no new risk beyond GO-2026-6612.**
+
+1. **Net-improvement promotion.** A candidate may replace a pinned image only if the complete comparison shows that its fixable Critical and High identities
+   (vulnerability ID plus package) are a **subset** of the currently pinned image's identities. In other words, nothing new is introduced. Both CoreDNS 1.14.7 and etcd 3.6.15 meet this (CI run 38662896911).
+2. **Carry existing exceptions; never extend them.** For each identity that remains, an exception that already exists for the old digest is moved to the new digest:
+   - same vulnerability, same reason, same `approvedBy`;
+   - the **same expiry** (2026-11-12 for the current Criticals), never extended.
+
+   Exceptions for identities that the candidate fixes are closed with evidence. This covers CVE-2026-56857 / GO-2026-6604: it is already present and excepted on the current digests, so moving it adds no new risk.
+3. **"Introduced" means a new identity, not a new digest.** In `supply_chain.py`, a finding on a changed digest counts as introduced only if its (component, package, vulnerability)
+   identity did not exist on the previously pinned digest of the same component. The first-seen date carries over by identity, so the 14-day High clock is neither reset nor falsely started.
+   Add tests:
+   - a carried identity is not "introduced";
+   - a genuinely new identity on a changed digest blocks;
+   - a carried Critical without a carried exception still blocks.
+4. **GO-2026-6612 entries are per image and per affected package.** Each image gets two entries, one for `golang.org/x/net` and one for `stdlib`. Each has a 30-day expiry from the merge of the promoting PR and lists the Amendment 3 controls.
+   If this identity is already excepted on the old digest, carry that exception instead, using the earlier of the two expiry dates.
+5. **Stop rule.** Stop and report if any candidate has an identity not present on the pinned image, or if a remaining Critical has no existing exception to carry.
+6. **Prerequisite.** Start only after PR #58 is actually merged; check the merge on `main` first.

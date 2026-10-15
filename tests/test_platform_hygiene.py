@@ -8,6 +8,7 @@ import tempfile
 import unittest
 
 import yaml
+from p2_receipts import receipt as p2_receipt
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools'))
@@ -200,7 +201,7 @@ class Hygiene(unittest.TestCase):
                      'vcloud-ssot.yaml','deploy/common/host-admin.py','tools/platform_host.py'):
             original=subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+path])
             current=(subprocess.check_output(['git','-C',str(ROOT),'show','b55c0ea3a7805e80c218dcc13a5bfbea7e259a24:'+path])
-                     if path in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json') else (ROOT/path).read_bytes())
+                     if path in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json') else p2_receipt(path))
             if not path.endswith('.gz'):current=current.replace(b'\r\n',b'\n')
             self.assertEqual(current,original,path)
 
