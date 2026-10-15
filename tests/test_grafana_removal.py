@@ -17,9 +17,11 @@ from run_checks import coverage
 
 BASE='e92255278369a25f26bc694b38c33bfd2768c14d'
 PORT='48d3a0a05477a88ebb3115fca9f19fcebde2f974'
+DELIVERY='7c8abbfd9a0f701d29ca5d3a1e9a5288f0fc7511'
 
 
 def original(path):return subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+path])
+def delivered(path):return subprocess.check_output(['git','-C',str(ROOT),'show',DELIVERY+':'+path])
 
 
 class RemovalGuard(unittest.TestCase):
@@ -95,12 +97,16 @@ class ExactChanges(unittest.TestCase):
         self.assertEqual(len(expected['twinfra-health']['spec']['panels']),3)
         self.assertFalse((ROOT/'deploy/observability/perses').exists())
 
-    def test_only_grafana_removed_from_register_and_lock(self):
-        path='security/licence-register.json';before=json.loads(original(path));after=json.loads((ROOT/path).read_text())
+    def test_removal_delivery_changed_only_grafana_in_register_and_lock(self):
+        # Freeze this work order's delivery proof so an independently approved
+        # image refresh does not rewrite it. Current removal remains mandatory.
+        path='security/licence-register.json';before=json.loads(original(path));after=json.loads(delivered(path))
         removed=[c for c in before['components'] if c['name']=='docker.io/grafana/grafana']
         self.assertEqual(len(removed),1);self.assertEqual(removed[0]['class'],'pending-removal')
         before['components']=[c for c in before['components'] if c not in removed]
         self.assertEqual(after,before);self.assertFalse(any(c['class']=='pending-removal' for c in after['components']))
+        current=json.loads((ROOT/path).read_text())
+        self.assertFalse(any('grafana' in c['name'].lower() or c['class']=='pending-removal' for c in current['components']))
         path='lab/wsl/endpoints/artifacts.lock.json';before=json.loads(original(path))
         for key in ('versions','imageSources','images'):self.assertIsNotNone(before[key].pop('grafana'))
         self.assertEqual(json.loads((ROOT/path).read_text()),before)
@@ -111,11 +117,12 @@ class ExactChanges(unittest.TestCase):
             expected=[o for o in before if o['metadata']['name'] not in ('grafana','vcloud-grafana','vcloud-delivery-dashboard')]
             self.assertLess(len(expected),len(before));self.assertEqual(list(yaml.safe_load_all((ROOT/path).read_text())),expected)
 
-    def test_dev_production_images_baselines_and_console_are_unchanged(self):
+    def test_removal_delivery_did_not_change_dev_production_images_baselines_or_console(self):
         for path in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json','console/image.lock.json',
                      'tools/ci/pr-baselines.json','security/licence-policy.json','user-data.yaml','user-data-remote.yaml',
                      'deploy/environments/dev/cairo-1/services/workloads.yaml','deploy/environments/dev/cairo-1/platform/workloads.yaml'):
-            self.assertEqual((ROOT/path).read_bytes().replace(b'\r\n',b'\n'),original(path),path)
+            self.assertEqual(delivered(path),original(path),path)
+        self.assertEqual((ROOT/'tools/ci/pr-baselines.json').read_bytes().replace(b'\r\n',b'\n'),original('tools/ci/pr-baselines.json'))
 
 
 if __name__=='__main__':unittest.main()

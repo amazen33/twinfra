@@ -18,9 +18,6 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
-    'grafana-removal': ['tools/check_grafana_removal.py','tests/test_grafana_removal.py',
-        'docs/work-orders/WO-07a-remove-grafana.md','deploy/observability/dashboards/README.md',
-        'deploy/observability/dashboards/twinfra-delivery.json','deploy/observability/dashboards/twinfra-health.json'],
     'image-patch-p3': ['tools/refresh_p3_pins.py','tools/ci/compare_p3_images.py','tests/test_image_patch_p3.py'],
     'platform-hygiene': ['tools/platform_network_boundary.py','tests/test_platform_hygiene.py'],
     'image-references': ['tools/platform_image_references.py','tests/test_image_references.py'],
@@ -95,6 +92,9 @@ OPTIONAL = {
     'lab/wsl/proxy-marks': ['tools/wsl_proxy_marks.py', 'lab/wsl/vcloud-wsl-proxy-marks.service',
                           'lab/wsl/vcloud-wsl-proxy-marks.timer'],
     'lab/wsl/loopback': ['tools/wsl_loopback_routing.py', 'tests/test_wsl_loopback.py'],
+    'grafana-removal': ['tools/check_grafana_removal.py','tests/test_grafana_removal.py',
+        'docs/work-orders/WO-07a-remove-grafana.md','deploy/observability/dashboards/README.md',
+        'deploy/observability/dashboards/twinfra-delivery.json','deploy/observability/dashboards/twinfra-health.json'],
     'lab/wsl/gitops': ['tools/wsl_platform.py', 'tools/wsl_db_scaler.py', 'tools/wsl_db_test.py', 'tools/wsl_pg_image.py',
                        'tools/stage_wsl_platform.py', 'lab/wsl/platform.sh', 'lab/wsl/prepare-storage.sh',
                        'lab/wsl/prepare-tls.sh', 'lab/wsl/test-network.sh', 'lab/wsl/platform-artifacts.lock.json',

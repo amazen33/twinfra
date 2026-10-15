@@ -287,12 +287,11 @@ class InventoryAndIntegrity(unittest.TestCase):
 
     def test_licence_register_preserves_existing_terms_and_only_adds_scanners_actions(self):
         old=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':security/licence-register.json']))
+        removed='oci-image|docker.io/grafana/grafana|sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572'
+        entry=next(v for v in old['components'] if v['id']==removed)
+        self.assertEqual(entry['class'],'pending-removal');old['components'].remove(entry)
         old={v['id']:v for v in old['components']}
         current={v['id']:v for v in sc.read(ROOT/'security/licence-register.json')['components']}
-        removed='oci-image|docker.io/grafana/grafana|sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572'
-        self.assertEqual(old.pop(removed)['class'],'pending-removal')
-        self.assertNotIn(removed,current)
-        self.assertFalse(any(v['name']=='docker.io/grafana/grafana' for v in current.values()))
         for name,entry in old.items():
             value=copy.deepcopy(current[name])
             value['locations']=[p for p in value['locations'] if p!='.github/workflows/supply-chain.yaml']
@@ -306,6 +305,8 @@ class InventoryAndIntegrity(unittest.TestCase):
                 self.assertEqual(value['locations'],[p for p in entry['locations'] if p!='deploy/common/bootstrap-images.lock.json'])
                 value['locations']=entry['locations']
             self.assertEqual(value,entry,name)
+        self.assertNotIn(removed,current)
+        self.assertFalse(any(v['name']=='docker.io/grafana/grafana' for v in current.values()))
         extra=[v for k,v in current.items() if k not in old]
         python=[v for v in extra if v['name']=='docker.io/library/python']
         for entry in python:
