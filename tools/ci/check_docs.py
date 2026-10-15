@@ -95,6 +95,8 @@ if canonical:
     if (root/'docs/work-orders/WO-34-image-patch-refresh.md').is_file():
         expected_orders.append('WO-34')
         assert 49 in numbers, 'missing WO-34 ADR-0049'
+    if (root/'docs/work-orders/WO-36-host-network-and-staging-safety.md').is_file():
+        expected_orders.append('WO-36')
     assert [re.match(r'WO-\d{2}[a-z]?(?=-)',file.name)[0] for file in orders] == sorted(expected_orders), orders
     assert (root / 'docs/work-orders/README.md').is_file()
     assert not (root / 'docs/work-orders/CODEX-PROMPTS.md').exists()

@@ -120,6 +120,9 @@ def evaluate(state, expected):
     add('Secure Boot / lockdown',state['secureBoot'] and '[integrity]' in state['lockdown'],state['lockdown'])
     checks.append({'name':'Swap','status':'WARN' if state['swap'] else 'PASS','detail':'active; shared bootstrap disables it' if state['swap'] else 'off'})
     checks.append({'name':'sshd effective settings','status':'INFO','detail':state['sshd']})
+    if 'networkIntegrity' in state:
+        checks.append({'name':'Owned network files',**state['networkIntegrity']})
+        checks.extend(state['networkWarnings'])
     result=state['result'];post=bool(result and result.get('status')=='ready')
     resume=bool(isinstance(result,dict) and isinstance(result.get('status'),str) and not post and state.get('adminConf'))
     mode='post-bootstrap' if post else 'resume' if resume else 'pre-bootstrap'
@@ -141,6 +144,41 @@ def evaluate(state, expected):
         detail='bootstrap-owned cluster, incomplete' if resume else 'bootstrap-owned cluster verified'
         add('Reserved ports / cluster ownership',bool(ready),detail if ready else 'bootstrap identity/version/listener verification failed')
     return {'status':'failed' if any(c['status']=='BLOCK' for c in checks) else 'passed','mode':mode,'checks':checks}
+
+
+def network_agent():
+    import types
+    module=types.ModuleType('host_network')
+    exec(NETWORK_SOURCE,module.__dict__)
+    module.ROOT=ROOT
+    return module
+
+
+def network_warnings():
+    """Since-boot journal counters and retained CRI restart attempts, no raw logs."""
+    checks=[]
+    try:
+        result=command(['journalctl','-b','--no-pager','-o','json','--case-sensitive=no',
+                        '--grep=eno1.*(lost carrier|link is down|DHCP.*lease lost|DHCP.*lost lease)'],allowed=(0,1))
+        entries=[json.loads(line).get('MESSAGE','') for line in result.stdout.splitlines() if line.strip()]
+        for name,pattern in [('eno1 carrier losses',r'lost carrier|link is down'),('eno1 DHCP lease losses',r'DHCP.*(?:lease lost|lost lease)')]:
+            count=sum(bool(re.search(pattern,str(message),re.I)) for message in entries)
+            checks.append({'name':name,'status':'WARN' if count else 'PASS','detail':{'since':'boot','count':count}})
+    except (ValueError,OSError,subprocess.TimeoutExpired):
+        checks.append({'name':'eno1 network loss counters','status':'WARN','detail':'Since-boot journal unavailable; not a host-check failure'})
+    try:
+        boot=int(re.search(r'^btime (\d+)$',read('/proc/stat'),re.M)[1])*10**9
+        containers=json.loads(run(['crictl','--runtime-endpoint=unix:///run/containerd/containerd.sock','ps','-a','-o','json']))['containers']
+        counts={name:0 for name in ('kube-apiserver','kube-controller-manager','kube-scheduler','etcd')}
+        for container in containers:
+            meta=container.get('metadata',{});name=meta.get('name');labels=container.get('labels',{})
+            if name in counts and labels.get('io.kubernetes.pod.namespace')=='kube-system' and labels.get('io.kubernetes.pod.name','')==name+'-twinfra-dev-cairo-1':
+                if int(container.get('createdAt',0))>=boot and int(meta.get('attempt',0))>0:counts[name]+=1
+        checks.append({'name':'Control-plane static-pod restarts','status':'WARN' if any(counts.values()) else 'PASS',
+                       'detail':{'since':'boot','retainedAttempts':counts,'coverage':'lower bound; CRI garbage collection may remove old attempts'}})
+    except (ValueError,OSError,KeyError,TypeError,subprocess.TimeoutExpired):
+        checks.append({'name':'Control-plane static-pod restarts','status':'WARN','detail':'Since-boot CRI history unavailable; not a host-check failure'})
+    return checks
 
 
 def owned_file(name,marker):
@@ -432,7 +470,20 @@ def dispatch(data):
     if data.get('context')!='twinfra-dev-cairo-1' or data.get('ip')!='192.168.1.3' or data.get('interface')!='eno1':
         raise ValueError('Unapproved host context')
     action=data['action']
-    if action=='check':return evaluate(inventory(data),data)
+    if action=='check':
+        current=inventory(data)
+        current.update(networkIntegrity=network_agent().integrity(),networkWarnings=network_warnings())
+        return evaluate(current,data)
+    if action.startswith('network-'):
+        module=network_agent()
+        if action=='network-status':return module.poll(data)
+        identity=evaluate(inventory(data),data)
+        if identity['status']!='passed' or identity['mode']!='post-bootstrap':
+            raise ValueError('Network action requires identity-verified ready WO-31 host')
+        if action=='network-check':return module.check(data)
+        if action=='network-start':return module.start(data,NETWORK_SOURCE)
+        if action=='network-confirm':return module.confirm(data)
+        raise ValueError('Unknown network action')
     if action=='bootstrap-state':return bootstrap_state(data)
     if action=='bootstrap-preflight':
         code=BOOTSTRAP_SOURCE+'\nset -Eeuo pipefail\n'+data['environment']+'\nVCLOUD_CONFIG_FILE=/dev/null\nload_config\nvalidate_config\npreflight\n'

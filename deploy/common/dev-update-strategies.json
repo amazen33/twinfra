@@ -1,0 +1,4 @@
+{
+  "twinfra-openbao": "Single OpenBao process uses PostgreSQL storage without HA coordination; two active instances are unsafe. WO-08 owns migration to HA Raft.",
+  "twinfra-keycloak": "The current generated Keycloak configuration explicitly uses cache=local. Overlapping replicas do not share authentication sessions. Clustered cache readiness belongs to WO-33 / ADR-0050."
+}

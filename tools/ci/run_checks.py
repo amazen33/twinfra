@@ -18,6 +18,9 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'host-network': ['deploy/common/host-network.py','deploy/common/dev-update-strategies.json',
+                     'tools/ci/check_staging.py','tests/test_host_network.py',
+                     '.github/workflows/staging-check.yaml','tests/wo36_receipts.py','docs/work-orders/WO-36-host-network-and-staging-safety.md'],
     'image-patch-p2': ['tools/ci/promote_p2.py','tests/test_image_patch_p2.py','tests/p2_receipts.py',
         'docs/acceptance/wo34-p2-2026-10-15.json'],
     'image-patch-p3': ['tools/refresh_p3_pins.py','tools/ci/compare_p3_images.py','tests/test_image_patch_p3.py'],
@@ -310,6 +313,8 @@ def main():
         if report['modules']['bare-metal']=='present':
             run('bare-metal-tests',[python,'-m','unittest','discover','-s','tests','-p','test_bare_metal.py','-v'],unit=True)
             run('dev-log-caps-shellcheck',[binaries['shellcheck'],'deploy/common/dev-log-caps.sh'])
+        if report['modules']['host-network']=='present':
+            run('host-network-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_host_network.py','-v'],unit=True)
         if report['modules']['dev-image-build']=='present':
             run('dev-image-build-tests',[python,'-m','unittest','discover','-s','tests','-p','test_build_images.py','-v'],unit=True)
         if report['modules']['lab/wsl'] == 'present':

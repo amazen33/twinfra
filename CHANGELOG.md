@@ -13,6 +13,10 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Security
 
+- Add an owned, rollback-protected static network transaction for the Dell dev
+  host, since-boot network/restart warnings, safe stateless rolling updates and
+  a lightweight image-staging attestation gate (WO-36). Live acceptance is Pending.
+
 - Promote dev CoreDNS to 1.14.7 and etcd to 3.6.15-0 with pinned digests,
   close 16 fixed Critical exceptions and carry six approvals without extending
   their expiry; preserve component/package/vulnerability age across image changes (WO-34 3a).

@@ -64,3 +64,11 @@ The component list with stability levels, the OpenSearch version decision, resou
 - Use the first stable Perses and Operator releases built with Go >= 1.26.9 and golang.org/x/net >= 0.60.0 that are at least 14 days old, and that pass the supply-chain gate.
 - If no such release exists when this work order starts, stop and let the owner choose between waiting and a reproducible source rebuild with the patched Go (Apache-2.0 permits it).
 - Authentication stays as designed in WO-07: Keycloak SSO through APISIX, read-only dashboards provisioned from Git, and no anonymous access.
+
+
+## WO-36 follow-up: host link-loss alert (2026-10-15)
+
+Add a Prometheus alert for `eno1` carrier loss / link flaps on
+`twinfra-dev-cairo-1`, correlated with DHCP lease loss and control-plane restarts.
+WO-36's host-check reports since-boot warnings; WO-10 implements and tests the
+metrics and alert rule. This note records follow-up scope, not a deployed alert.

@@ -53,7 +53,10 @@ def deployment(name,container,volumes=(),init=(),uid=65532):
     for c in [container,*init]:
         c['securityContext']=security()|{'runAsUser':uid,'runAsGroup':uid};c['imagePullPolicy']='IfNotPresent'
         c.setdefault('resources',{'requests':{'cpu':'50m','memory':'128Mi'},'limits':{'cpu':'1','memory':'512Mi'}})
-    return obj('Deployment',name,{'replicas':1,'strategy':{'type':'Recreate'},'selector':{'matchLabels':{'app.kubernetes.io/name':name}},
+    strategy={'type':'RollingUpdate','rollingUpdate':{'maxUnavailable':0,'maxSurge':1}}
+    reasons=json.loads((COMMON/'dev-update-strategies.json').read_text())
+    if name in reasons:strategy={'type':'Recreate'}
+    return obj('Deployment',name,{'replicas':1,'strategy':strategy,'selector':{'matchLabels':{'app.kubernetes.io/name':name}},
         'template':{'metadata':{'labels':l},'spec':{'automountServiceAccountToken':False,
         'securityContext':{'runAsNonRoot':True,'runAsUser':uid,'runAsGroup':uid,'fsGroup':uid,'seccompProfile':{'type':'RuntimeDefault'}},
         'containers':[container],'initContainers':list(init),'volumes':list(volumes),
@@ -351,11 +354,13 @@ def outputs():
     return result
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','build-images','stage-images','host-check','host-bootstrap','host-ssh','host-firewall','host-storage'])
-    parser.add_argument('--context');parser.add_argument('--ssh',default='twinfra-operator@192.168.1.3');parser.add_argument('--check',action='store_true');parser.add_argument('--apply',action='store_true');parser.add_argument('--archive-dir',type=Path)
+    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','build-images','stage-images','host-check','host-bootstrap','host-ssh','host-firewall','host-storage','host-network'])
+    parser.add_argument('--context');parser.add_argument('--ssh',default='twinfra-operator@192.168.1.3');parser.add_argument('--check',action='store_true');parser.add_argument('--apply',action='store_true');parser.add_argument('--rollback',action='store_true');parser.add_argument('--archive-dir',type=Path)
     parser.add_argument('--download-inputs',action='store_true',help='Owner-only pinned image/wheel download for build-images')
     parser.add_argument('--refresh-console',action='store_true',help='WO-34: propose a Python patch/base metadata refresh through the builders')
     args=parser.parse_args()
+    if args.rollback and args.action!='host-network':parser.error('--rollback is only for host-network')
+    if sum((args.check,args.apply,args.rollback))>1:parser.error('--check, --apply and --rollback are mutually exclusive')
     if args.download_inputs and args.action!='build-images':parser.error('--download-inputs is only for build-images')
     if args.refresh_console and args.action!='build-images':parser.error('--refresh-console is only for build-images')
     if args.action=='build-images':
@@ -366,7 +371,7 @@ def main():
         print(json.dumps(report,indent=2));return 0
     if args.action.startswith('host-'):
         from platform_host import action
-        return action(args.action,args.context,args.ssh,args.check,args.apply)
+        return action(args.action,args.context,args.ssh,args.check,args.apply,args.rollback)
     if args.action=='stage-images':
         from platform_image_staging import stage_applications
         if not args.context:parser.error('stage-images requires --context')

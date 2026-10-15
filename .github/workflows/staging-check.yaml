@@ -1,0 +1,20 @@
+name: staging-check
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+permissions:
+  contents: read
+jobs:
+  staging-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Install existing pinned policy libraries
+        run: python -m pip install --disable-pip-version-check -r tools/ci/requirements.txt
+      - name: Verify image-staging attestation
+        run: python tools/ci/check_staging.py --event "$GITHUB_EVENT_PATH"

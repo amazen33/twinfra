@@ -70,6 +70,9 @@ def assert_current_seed(path):
 
 
 def receipt(path):
+    if path in ('vcloud-ssot.yaml','deploy/common/host-admin.py','tools/platform_host.py') and (ROOT/'deploy/common/host-network.py').is_file():
+        from wo36_receipts import receipt as network_receipt
+        return network_receipt(path)
     if path=='security/licence-policy.json':
         # WO-07a owner review permits only removing the last pending entry.
         # Validate the entire current file before comparing historical receipts.
