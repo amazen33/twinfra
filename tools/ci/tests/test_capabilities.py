@@ -64,6 +64,12 @@ class Capabilities(unittest.TestCase):
         self.claim('Real', self.receipt().replace('[receipt]', '[Historical (retired environment)]'))
         self.assertFails('Historical (retired environment)')
 
+    def test_current_signed_evidence_can_accompany_retained_historical_link(self):
+        old = self.receipt(name='wsl-old.md', environment='WSL2').replace(
+            '[receipt]', '[Historical (retired environment)]')
+        self.claim('Dev-verified', old + '; ' + self.receipt())
+        self.assertEqual(check(self.root)['status'], 'passed')
+
     def test_all_live_claims_require_accepted_current_receipt(self):
         for status in ('Dev-verified', 'Real', 'Parity-tested', '**Real**', 'Dev-verified (scoped)'):
             with self.subTest(status=status):
@@ -166,6 +172,10 @@ class Capabilities(unittest.TestCase):
             adr = root/'docs/adr/0002-kubernetes.md'
             adr.write_text(adr.read_text().replace('**Status:** Proposed', '**Status:** Dev-verified') +
                            '\n[receipt](../acceptance/current.md)\n')
+            index = root/'docs/adr/README.md'
+            index.write_text(index.read_text().replace(
+                '| [0002](0002-kubernetes.md) | Proposed | None |',
+                '| [0002](0002-kubernetes.md) | Dev-verified | [receipt](../acceptance/current.md) |'))
             def run():
                 return subprocess.run([sys.executable, str(repo/'tools/ci/check_docs.py'), str(root),
                                        str(root/'docs.json'), str(root/'mermaid.json')],

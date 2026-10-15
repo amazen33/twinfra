@@ -51,7 +51,7 @@ def table_rows(text):
 
 def receipt_errors(root, source, claim, status):
     errors, valid = [], False
-    for target in re.findall(r'\[[^\]\n]+\]\(([^)\n]+)\)', claim):
+    for label, target in re.findall(r'\[([^\]\n]+)\]\(([^)\n]+)\)', claim):
         if target.startswith(('http:', 'https:', '#')):
             continue
         path = (source.parent / unquote(target.split('#')[0]).strip('<>')).resolve()
@@ -63,7 +63,7 @@ def receipt_errors(root, source, claim, status):
         text = unfenced(path.read_text(encoding='utf-8'))
         # Do not mistake retained WSL source discussions in a cairo-1 receipt
         # for its environment. Inspect its identity/scope, not arbitrary prose.
-        historical = historical_receipt(path, text) or re.search(r'Historical', claim, re.I)
+        historical = historical_receipt(path, text) or re.search(r'Historical', label, re.I)
         if historical:
             errors.append('Historical (retired environment) receipt: ' + target)
             continue
