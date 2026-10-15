@@ -19,6 +19,7 @@ import os
 from pathlib import Path
 import shlex
 import shutil
+import secrets
 import ssl
 import subprocess
 import sys
@@ -55,7 +56,10 @@ def guard():
 
 class API(BaseHTTPRequestHandler):
     ready=True
+    token=''
     def do_GET(self):
+        if self.headers.get('Authorization')!='Bearer '+API.token:
+            self.send_response(401);self.end_headers();return
         if self.path=='/readyz':
             body=b'ok' if API.ready else b'not ready';status=200 if API.ready else 503
         elif self.path=='/api/v1/nodes':
@@ -73,8 +77,11 @@ def fixture_api():
          '-addext','subjectAltName=IP:'+IP])
     (WORK/'tls.key').chmod(0o600)
     ca=base64.b64encode((WORK/'tls.crt').read_bytes()).decode()
+    API.token=secrets.token_urlsafe(32)
+    (WORK/'api-token').write_text(API.token);(WORK/'api-token').chmod(0o600)
     kube={'apiVersion':'v1','kind':'Config','clusters':[{'name':'ci','cluster':{'server':'https://'+IP+':6443','certificate-authority-data':ca}}],
-          'contexts':[{'name':'ci','context':{'cluster':'ci','user':'ci'}}],'current-context':'ci','users':[{'name':'ci','user':{}}]}
+          'contexts':[{'name':'ci','context':{'cluster':'ci','user':'ci'}}],'current-context':'ci',
+          'users':[{'name':'ci','user':{'tokenFile':str(WORK/'api-token')}}]}
     Path('/etc/kubernetes').mkdir();Path('/etc/kubernetes/admin.conf').write_text(json.dumps(kube))
     server=ThreadingHTTPServer((IP,6443),API);context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain(WORK/'tls.crt',WORK/'tls.key');server.socket=context.wrap_socket(server.socket,server_side=True)
