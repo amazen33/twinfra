@@ -196,6 +196,7 @@ def main():
         # never against the dependencies of the six pre-policy historical revisions.
         run('candidate-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
                                   '--report', report_dir / 'licences.json'])
+        run('candidate-capability-evidence', [python, ROOT / 'check_capabilities.py', '--root', ROOT.parents[1]])
         if (ROOT.parents[1]/'tools/check_grafana_removal.py').is_file():
             run('candidate-grafana-removal',[python,ROOT.parents[1]/'tools/check_grafana_removal.py','--root',ROOT.parents[1]])
             if sha==control_sha:
