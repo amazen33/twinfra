@@ -14,7 +14,7 @@ sys.path.insert(0,str(ROOT/'tools'))
 import platform_dev as dev
 sys.path.insert(0,str(ROOT/'tools/ci'))
 import record_p3_scan as receipt
-BASE='d63fca605f43bde3d40b5aba641ad30996930340'
+BASE='48299120a8afd716ccdb22185053aa7c883fa573'
 MINI='sha256:451a0cc80a4f464e1c2d2f77fbb40ac37d01902d58ca3630ac5eaea9c92f12da'
 PAUSE='registry.twinfra.example.com/registry.k8s.io/pause:3.10.2'
 
