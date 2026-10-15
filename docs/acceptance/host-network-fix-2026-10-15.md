@@ -33,7 +33,9 @@ bytes offline. These are owner-reported live facts, not a new Codex inspection.
   Runs `tools/ci/host_network_vm.py` on a disposable Ubuntu 24.04 hosted VM.
   Artifact `host-network-ubuntu-24-proof/result.json` contains versions, commit,
   apply/refused-confirmation/rollback outcomes and sampled address/route checks;
-  public per-unit journals accompany it. Exact run link/result: Pending CI.
+  public per-unit journals accompany it. The [real VM run](https://github.com/amazen33/twinfra/actions/runs/38800517974)
+  passed on 2026-10-15 at 20:18:34Z, testing PR merge commit
+  `871ebeab52def254dd9095b47e1fecd06a4c065a` (branch `a6e65de`).
 - Real production worker, netplan/networkd, detached systemd unit, key-only SSH
   and TLS-verified kubectl; dummy `eno1` and synthetic Node/readyz API. This proves
   transaction behavior, not Dell hardware, DHCP server or Kubernetes acceptance.
@@ -41,6 +43,32 @@ bytes offline. These are owner-reported live facts, not a new Codex inspection.
   are never uploaded. The fixture refuses non-hosted or pre-existing host state.
 - Production/WSL renders, image locks and historical baseline inventory remain
   byte-identical. Gate counts/results and all six historical revisions are in PR CI.
+
+### Observed real Ubuntu VM results
+
+Ubuntu 24.04.5 LTS, Microsoft virtual machine; netplan.io
+`1.1.2-8ubuntu1~24.04.3`, systemd `255.4-1ubuntu8.17`, OpenSSH server
+`1:9.6p1-3ubuntu13.19`. The initial exact legacy profile was adopted with WARN.
+
+| Transaction | Result | Duration | Address / route / final YAML |
+| --- | --- | --- | --- |
+| Apply legacy upgrade | Accepted after fresh key login and trusted HTTPS readiness | 3.67 s | `.3/24`, gateway `.1`, corrected static profile |
+| Rollback upgrade | Accepted through the same confirmation checks | 3.22 s | `.3/24`, gateway `.1`, exact legacy static bytes |
+| Apply with readiness returning HTTP 503 | Confirmation refused; real timeout and worker restoration passed | 121.49 s | `.3/24`, gateway `.1`, exact legacy static bytes; no DHCP YAML |
+
+All 235 samples (approximately every 0.5 seconds) recorded the intended address,
+gateway and Node InternalIP; no sample showed a missing/different address or
+route. This is sampled evidence, not a claim of zero sub-sample packet loss.
+The timeout operation correctly reports `failed`; the integration test passes
+because it asserts refusal and successful runtime/YAML restoration. No mocked
+netplan subprocess, shortened timeout or insecure TLS override was used.
+
+Local verification: 132 related unit/regression tests, 151 CI-control tests,
+864 conftest checks, 127 kubeconform-valid resources, render/source drift,
+licence, documentation/Mermaid and actionlint passed. Git Bash needed execution
+outside the Windows sandbox; the same offline tests then passed without
+weakening them. The real Linux kubeadm preview and six historical baselines run
+in GitHub CI, not on this Windows host.
 
 ## Remaining owner acceptance
 
