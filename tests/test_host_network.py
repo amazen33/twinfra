@@ -4,6 +4,7 @@ from contextlib import nullcontext
 import importlib.util
 import json
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
@@ -310,6 +311,10 @@ class Render(unittest.TestCase):
         section=text[text.index('8. **Owner: application images.**'):text.index('9. **Owner: dev CA and TLS.**')]
         self.assertNotIn('385934466c',section);self.assertNotRegex(section,r'sha256:[a-f0-9]{64}')
         self.assertIn('deploy/common/images.lock.json',section)
+        code=re.search(r'python -c "([^\n]+)"',section)[1]
+        output=subprocess.check_output([sys.executable,'-c',code],cwd=ROOT,text=True)
+        images=json.loads((dev.COMMON/'images.lock.json').read_text())['images']
+        self.assertEqual(output.strip().splitlines(),[name+': '+images[name]['canonical'] for name in ('console','postgres')])
 
     def test_only_network_hooks_and_site_metadata_change_original_host_sources(self):
         from wo36_receipts import receipt

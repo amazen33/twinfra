@@ -249,7 +249,7 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
    Expected digests come from this checkout's lock, never from a copied receipt:
 
    ```powershell
-   python -c "import json; from pathlib import Path; images=json.loads(Path('deploy/common/images.lock.json').read_text())['images']; print('\n'.join(name+': '+images[name]['canonical'] for name in ('console','postgresql')))"
+   python -c "import json; from pathlib import Path; images=json.loads(Path('deploy/common/images.lock.json').read_text())['images']; print('\n'.join(name+': '+images[name]['canonical'] for name in ('console','postgres')))"
    ```
 
    Any digest, wheel hash or source mismatch stops the build; the command never
