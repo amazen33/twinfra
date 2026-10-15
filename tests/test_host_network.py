@@ -299,6 +299,22 @@ class Controller(unittest.TestCase):
         for step in workflow['jobs']['netplan-vm']['steps']:
             if 'uses' in step:self.assertRegex(step['uses'],r'@[a-f0-9]{40}$')
 
+    def test_vm_gap_bounds_fail_long_gaps_other_addresses_dhcp_and_missing_coverage(self):
+        spec=importlib.util.spec_from_file_location('network_vm_bounds',ROOT/'tools/ci/host_network_vm.py')
+        vm=importlib.util.module_from_spec(spec);spec.loader.exec_module(vm)
+        def row(at,good=True):return {'at':str(at),'monotonic':at,'completed':at+.01,
+            'addresses':[vm.IP] if good else [],'gateways':['192.168.1.1'] if good else [],'dhcpActive':False}
+        samples=[row(0),row(.2,False),row(.4,False),row(.6)]
+        self.assertEqual(vm.evaluate_samples(samples)['maxGapSecondsUpperBound'],.61)
+        near=[row(i/5,False) for i in range(1,25)]
+        self.assertLessEqual(vm.evaluate_samples([row(0),*near,row(4.9)])['maxGapSecondsUpperBound'],5)
+        with self.assertRaisesRegex(ValueError,'five seconds'):vm.evaluate_samples([row(0),*near,row(5.01)])
+        for mutation,error in (({'addresses':['192.168.1.102']},'Alternate'),({'dhcpActive':True},'DHCP'),
+                               ({'error':'fixture'},'sampling failed')):
+            with self.assertRaisesRegex(ValueError,error):vm.evaluate_samples([row(0),row(.2)|mutation,row(.4)])
+        with self.assertRaisesRegex(ValueError,'coverage'):vm.evaluate_samples([row(0),row(1.1)])
+        with self.assertRaisesRegex(ValueError,'recover'):vm.evaluate_samples([row(0),row(.2,False)])
+
     def test_real_ip_json_shapes_get_mac_from_link_not_ipv4_address_output(self):
         address=[{'ifindex':2,'ifname':'eno1','flags':['BROADCAST','MULTICAST','UP','LOWER_UP'],
                   'addr_info':[{'family':'inet','local':'192.168.1.3','prefixlen':24,'scope':'global'}]}]

@@ -733,6 +733,16 @@ this equivalent transaction, including refusal and rollback. See the
 [Netplan try source](https://github.com/canonical/netplan/blob/1.0/netplan_cli/cli/commands/try_command.py)
 and [backend restoration source](https://github.com/canonical/netplan/blob/1.0/netplan_cli/configmanager.py).
 
+Owner-approved VM acceptance permits a transient reconfiguration gap of **at
+most five seconds**; this is not a zero-downtime transaction. The sampler records
+all IPv4 addresses, routes and DHCP evidence on `eno1` throughout. An alternate
+IPv4 address, DHCP activity, a longer gap or failed fresh SSH/trusted TLS
+`/readyz`/Node InternalIP post-check fails. Gap duration uses a conservative
+last-good-to-first-good upper bound, including sample uncertainty; observation
+coverage gaps also fail. The measured maximum and exact run are recorded in the
+[receipt](acceptance/host-network-fix-2026-10-15.md). The CI runner's unrelated
+primary NIC retains its own networking; DHCP prohibition concerns `eno1`.
+
 Only a fresh key-only SSH login, matching address/route/ordered IPv4 DNS/Node
 InternalIP, and trusted TLS `https://192.168.1.3:6443/readyz` can confirm. No
 insecure TLS override is used. Success requires explicit netplan acceptance,

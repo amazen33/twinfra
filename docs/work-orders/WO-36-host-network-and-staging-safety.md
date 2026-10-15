@@ -128,3 +128,14 @@ rollback target is the legacy static file, never the old DHCP recovery copy.
 Tests cover exact-hash adoption, a one-byte difference, upgrade apply and
 upgrade rollback retaining `.3`. This clarification qualifies Amendment 1 item 3:
 only an already corrected static profile makes `--apply` a no-op.
+
+### Owner clarification: bounded reconfiguration gap (2026-10-15)
+
+The owner permits a transient address/default-route gap during apply, upgrade
+or rollback only when its measured duration is at most five seconds and is
+recorded in the VM receipt and runbook. The VM samples all IPv4 addresses and
+DHCP evidence throughout: no other IPv4 address may be assigned to `eno1` and
+no DHCP client may run on that interface. Afterwards a fresh key-only SSH login,
+trusted TLS API `/readyz`, and Node InternalIP `.3` must pass. Any longer gap,
+alternate address, DHCP activity or failed post-check fails acceptance.
+This explicitly qualifies the earlier "throughout" address-retention wording.
