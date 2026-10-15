@@ -63,6 +63,16 @@ The timeout operation correctly reports `failed`; the integration test passes
 because it asserts refusal and successful runtime/YAML restoration. No mocked
 netplan subprocess, shortened timeout or insecure TLS override was used.
 
+**Repeat-run finding, unresolved:** the [next VM run](https://github.com/amazen33/twinfra/actions/runs/38801049650)
+completed all three operations with the expected final static `.3` and route,
+but its continuous-sampling assertion failed. Sample 9 at
+`2026-10-15T20:20:27.057968Z` observed `.3` temporarily absent and no default route
+on `eno1` during reconfiguration; adjacent samples and all final checks show
+`.3`/gateway `.1`. No different address was observed. This supersedes any
+inference that the first pass establishes uninterrupted retention. The strict
+assertion remains in place; owner clarification is pending on whether a
+transient reconfiguration gap is permitted. Keep the PR draft until resolved.
+
 Local verification: 132 related unit/regression tests, 151 CI-control tests,
 864 conftest checks, 127 kubeconform-valid resources, render/source drift,
 licence, documentation/Mermaid and actionlint passed. Git Bash needed execution

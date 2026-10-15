@@ -85,6 +85,7 @@ def fixture_api():
           'users':[{'name':'ci','user':{'tokenFile':str(WORK/'api-token')}}]}
     Path('/etc/kubernetes').mkdir();Path('/etc/kubernetes/admin.conf').write_text(json.dumps(kube))
     server=ThreadingHTTPServer((IP,6443),API);context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.minimum_version=ssl.TLSVersion.TLSv1_2
     context.load_cert_chain(WORK/'tls.crt',WORK/'tls.key');server.socket=context.wrap_socket(server.socket,server_side=True)
     threading.Thread(target=server.serve_forever,daemon=True).start()
     return server
