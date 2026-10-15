@@ -1,0 +1,40 @@
+name: WO-36a real Ubuntu network proof
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - deploy/common/host-network.py
+      - tools/platform_host.py
+      - tools/platform_dev.py
+      - tools/ci/host_network_vm.py
+      - tests/test_host_network.py
+      - .github/workflows/host-network-vm.yaml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  netplan-vm:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.14.5'
+      - name: Install existing pinned libraries and kubectl
+        run: |
+          python -m pip install --disable-pip-version-check -r tools/ci/requirements.txt
+          python tools/ci/stage_tools.py --source . --destination .build/network-tools --only kubectl
+          sudo install -m 0755 .build/network-tools/bin/kubectl /usr/local/bin/kubectl
+      - name: Real netplan apply, refused confirmation and static rollback
+        run: |
+          sudo env GITHUB_ACTIONS=true RUNNER_ENVIRONMENT="$RUNNER_ENVIRONMENT" "$(command -v python)" tools/ci/host_network_vm.py --report .build/network-vm
+      - name: Upload public network proof (never private fixture keys)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: host-network-ubuntu-24-proof
+          path: .build/network-vm/
+          if-no-files-found: warn

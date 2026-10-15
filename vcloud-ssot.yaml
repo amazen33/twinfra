@@ -68,6 +68,9 @@ siteNetwork:
     interface: eno1
     address: 192.168.1.3/24
     mac: 64:00:6a:86:5c:4f
+  management:
+    kind: intel-amt
+    address: 192.168.1.4
   futureControlPlaneVIP: 192.168.1.10
   futureNodeAddresses: [192.168.1.11, 192.168.1.12, 192.168.1.13]
 addressPlan:

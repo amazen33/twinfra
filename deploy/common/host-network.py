@@ -8,6 +8,7 @@ pipe (not /dev/null) until an independently authenticated controller confirms.
 import base64
 from contextlib import contextmanager
 import hashlib
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -27,6 +28,8 @@ CLOUD='/etc/cloud/cloud.cfg.d/99-twinfra-disable-network-config.cfg'
 DHCP='/etc/netplan/50-cloud-init.yaml'
 FILES=(STATIC,CLOUD,DHCP)
 OWNER='WO-36 twinfra-dev-cairo-1'
+LEGACY_SHA256='1739e68f586cda48fadfc3a38905bd62f22167cb3842415623cce43b5ce89ad7'
+OWNERSHIP=STATE_DIR+'/ownership-v2.json'
 
 
 def path(name):return ROOT/name.lstrip('/')
@@ -85,7 +88,8 @@ def effective(data):
     links=json.loads(run(['ip','-j','link','show','dev','eno1']))
     routes=json.loads(run(['ip','-j','-4','route','show','default','dev','eno1']))
     dns=run(['resolvectl','dns','eno1']).strip().split(':',1)[-1].split()
-    nodes=json.loads(run(['kubectl','--kubeconfig','/etc/kubernetes/admin.conf','--request-timeout=5s','get','nodes','-o','json']))['items']
+    dns=[entry for entry in dns if ipaddress.ip_address(entry.split('%')[0]).version==4]
+    nodes=json.loads(run(['kubectl','--kubeconfig','/etc/kubernetes/admin.conf','--request-timeout=5s','get','--raw=/api/v1/nodes']))['items']
     node=[n for n in nodes if n['metadata']['name']==data['node']]
     internal=[a['address'] for n in node for a in n['status']['addresses'] if a['type']=='InternalIP']
     addresses=[a for iface in addr for a in iface['addr_info'] if a.get('family')=='inet' and a['local']==data['ip']]
@@ -100,38 +104,85 @@ def matches(info,data,mode='apply',baseline=None):
     good=info['present'] and info['mac']==data['mac'] and info['nodeInternalIP']==[data['ip']]
     if mode=='apply':
         return good and info['static'] and info['prefixLength']==24 and info['gateways']==[data['gateway']] and info['dns']==data['dns']
-    return good and info['gateways']==baseline['effective']['gateways'] and info['dns']==baseline['effective']['dns']
+    return good and info['prefixLength']==24 and info['gateways']==[data['gateway']] and info['dns']==data['dns']
 
 
 def owned():
-    baseline=load(STATE_DIR+'/baseline.json');committed=load(STATE_DIR+'/committed.json')
-    if baseline is None:
-        if path(STATIC).exists() or path(CLOUD).exists():raise ValueError('Unowned network destination; no adoption')
-        return None
-    if baseline.get('owner')!=OWNER or set(baseline.get('files',{}))!=set(FILES):raise ValueError('Invalid network baseline ownership')
-    backup=path(STATE_DIR+'/50-cloud-init.yaml');secure(backup)
-    if not backup.is_file() or base64.b64encode(backup.read_bytes()).decode()!=baseline['files'][DHCP]['data']:
-        raise ValueError('Saved DHCP copy differs')
-    if committed:
-        if committed.get('owner')!=OWNER or snapshot()!=committed.get('files'):raise ValueError('Owned network files differ; no adoption')
-    elif snapshot()!=baseline['files']:
-        raise ValueError('Incomplete network transaction; inspect journal and saved files locally')
-    return baseline
+    record=load(OWNERSHIP)
+    if record is None:return None
+    if record.get('owner')!=OWNER or record.get('version')!=2 or snapshot()!=record.get('files'):
+        raise ValueError('Owned network files differ; no adoption')
+    if any(item and not root_private(name,item['mode']) for name,item in record['files'].items()):
+        raise ValueError('Owned network permissions differ')
+    return record
+
+
+def profile(files,config):
+    """Closed static profiles only. No YAML guessing or dynamic fallback adoption."""
+    item=files[STATIC]
+    if not item or item['mode']!=0o600 or files[DHCP] is not None:return None
+    cloud=files[CLOUD]
+    if not cloud or cloud['mode']!=0o600 or base64.b64decode(cloud['data'])!=b'network: {config: disabled}\n':return None
+    raw=base64.b64decode(item['data'],validate=True)
+    if len(raw)==308 and hashlib.sha256(raw).hexdigest()==LEGACY_SHA256:return 'legacy'
+    # Reject a caller-provided arbitrary candidate: removing the two new fields
+    # must reproduce the sole owner-approved legacy profile exactly.
+    old=config.replace('      accept-ra: false\n      link-local: []\n','').encode()
+    if hashlib.sha256(old).hexdigest()!=LEGACY_SHA256:raise ValueError('Unapproved static candidate')
+    if raw==config.encode():return 'current'
+    return None
+
+
+def root_private(name,mode=0o600):
+    p=path(name);secure(p);info=p.stat()
+    return info.st_uid==0 and info.st_gid==0 and stat.S_IMODE(info.st_mode)==mode
+
+
+def inactive():
+    if path('/run/netplan/netplan-try.ready').exists():raise ValueError('Another netplan try is active')
+    previous=load(STATE_DIR+'/transaction.json')
+    if previous:
+        if previous.get('owner')!=OWNER or not re.fullmatch(r'twinfra-network-[a-f0-9]{32}',previous.get('unit','')):
+            raise ValueError('Foreign network transaction receipt')
+        if unit_active(previous['unit']) or previous['status'] in ('running','awaiting-confirmation'):
+            raise ValueError('Network transaction active or incomplete; second run refused')
+
+
+def adoptable(data,info):
+    files=snapshot();kind=profile(files,data['config'])
+    if not kind or not all(root_private(n) for n in (STATIC,CLOUD)) or not matches(info,data):
+        raise ValueError('Unowned network destination or effective state differs; adoption refused')
+    return {'owner':OWNER,'version':2,'files':files,'profile':kind,'previous':None}
+
+
+def safe_fallback(files,data):
+    if profile(files,data['config']):return
+    if data.get('dhcpReservationConfirmed') is True and files[STATIC] is None and files[DHCP] is not None:return
+    raise ValueError('Unsafe fallback: previous static .3 or owner --dhcp-reservation-confirmed required; no changes made')
 
 
 def integrity():
     try:
-        baseline=owned();committed=load(STATE_DIR+'/committed.json')
-        if not baseline:return {'status':'WARN','detail':'Static network not yet owned; owner host-network apply pending'}
-        if not committed:return {'status':'WARN','detail':'Saved DHCP verified; no accepted network transaction'}
-        mode=committed['mode']
-        return {'status':'PASS','detail':'Owned network files verified ('+mode+')'}
+        record=owned()
+        if not record:
+            if path(STATIC).exists():raise ValueError('Unowned static file')
+            return {'status':'WARN','detail':'Static network not yet owned; owner host-network check pending'}
+        if record['profile']=='legacy':return {'status':'WARN','detail':'adopted (legacy profile; upgrade pending)'}
+        return {'status':'PASS','detail':'Owned network files verified ('+record['profile']+')'}
     except (ValueError,OSError,KeyError,TypeError):return {'status':'BLOCK','detail':'Owned network integrity verification failed'}
 
 
 def check(data):
-    info=effective(data);integrity_result=integrity()
-    passed=matches(info,data) and integrity_result['status']=='PASS' and path(STATIC).is_file()
+    info=effective(data)
+    if not load(OWNERSHIP) and path(STATIC).exists():
+        # Adoption changes metadata only, never netplan or its effective state.
+        candidate=adoptable(data,info);inactive()
+        with lock():
+            inactive()
+            if snapshot()!=candidate['files']:raise ValueError('Network files changed during adoption')
+            save(OWNERSHIP,candidate)
+    integrity_result=integrity()
+    passed=matches(info,data) and integrity_result['status']!='BLOCK' and owned() is not None and path(STATIC).is_file()
     return {'status':'passed' if passed else 'failed','mode':'static-check','network':info,'integrity':integrity_result}
 
 
@@ -159,31 +210,33 @@ def unit_active(unit):
 
 
 def start(data,source):
+    # All fallback/adoption checks precede even lock-file and staging writes.
+    inactive();mode=data['mode'];info=effective(data)
+    if mode not in ('apply','rollback'):raise ValueError('Invalid network mode')
+    if info['mac']!=data['mac'] or not info['present'] or info['nodeInternalIP']!=[data['ip']]:raise ValueError('Host NIC/address identity differs')
+    record=owned()
+    if record is None and path(STATIC).exists():record=adoptable(data,info)
+    before=snapshot()
+    if mode=='rollback':
+        if not record or not record.get('previous'):raise ValueError('No saved safe rollback target')
+        target=record['previous']
+    else:
+        target={STATIC:{'data':base64.b64encode(data['config'].encode()).decode(),'mode':0o600},
+                CLOUD:{'data':base64.b64encode(b'network: {config: disabled}\n').decode(),'mode':0o600},DHCP:None}
+        if profile(target,data['config'])!='current':raise ValueError('Unapproved static candidate')
+    safe_fallback(before,data);safe_fallback(target,data)
     with lock():
-        if path('/run/netplan/netplan-try.ready').exists():raise ValueError('Another netplan try is active')
-        previous=load(STATE_DIR+'/transaction.json')
-        if previous and (previous.get('owner')!=OWNER or not re.fullmatch(r'twinfra-network-[a-f0-9]{32}',previous.get('unit',''))):
-            raise ValueError('Foreign network transaction receipt')
-        if previous and (unit_active(previous['unit']) or previous['status'] in ('running','awaiting-confirmation')):
-            raise ValueError('Network transaction active or incomplete; second run refused')
-        baseline=owned();mode=data['mode'];info=effective(data)
-        if mode not in ('apply','rollback'):raise ValueError('Invalid network mode')
-        if info['mac']!=data['mac'] or not info['present']:raise ValueError('Host NIC/address identity differs')
-        if mode=='apply' and baseline and matches(info,data) and path(STATIC).is_file():return check(data)
-        if not baseline:
-            if mode=='rollback':raise ValueError('No saved owned DHCP configuration')
-            before=snapshot()
-            if before[DHCP] is None:raise ValueError('Missing 50-cloud-init.yaml; no DHCP configuration to preserve')
-            baseline={'owner':OWNER,'files':before,'effective':info}
-            write(STATE_DIR+'/50-cloud-init.yaml',base64.b64decode(before[DHCP]['data']))
-            save(STATE_DIR+'/baseline.json',baseline)
+        inactive()
+        if snapshot()!=before:raise ValueError('Network files changed before transaction')
+        if record and not load(OWNERSHIP):save(OWNERSHIP,record)
+        if mode=='apply' and record and record['profile']=='current' and matches(info,data):return check(data)
         worker=path(STATE_DIR+'/worker.py');secure(worker)
         marker=load(STATE_DIR+'/worker.json')
         if worker.exists() and (not marker or hashlib.sha256(worker.read_bytes()).hexdigest()!=marker.get('sha256')):
             raise ValueError('Unowned network worker; no adoption')
         write(STATE_DIR+'/worker.py',source.encode());save(STATE_DIR+'/worker.json',{'sha256':hashlib.sha256(source.encode()).hexdigest()})
         unit='twinfra-network-'+uuid.uuid4().hex
-        report={'owner':OWNER,'unit':unit,'mode':mode,'status':'running','before':snapshot(),'data':data}
+        report={'owner':OWNER,'unit':unit,'mode':mode,'status':'running','before':before,'target':target,'data':data}
         save(STATE_DIR+'/transaction.json',report)
         try:
             run(['systemd-run','--unit='+unit,'--no-block','--property=Type=oneshot',
@@ -215,7 +268,7 @@ def confirm(data):
     if report['status']!='awaiting-confirmation' or time.monotonic()-report['readyAt']>90 or not unit_active(report['unit']):
         raise ValueError('Network confirmation window closed')
     if snapshot()!=report.get('candidate'):raise ValueError('Candidate network files changed; confirmation refused')
-    if not matches(effective(data),data,report['mode'],load(STATE_DIR+'/baseline.json')):raise ValueError('Applied network verification failed; confirmation refused')
+    if not matches(effective(data),data,report['mode']):raise ValueError('Applied network verification failed; confirmation refused')
     # This request itself arrived over a new key-only SSH connection. Verify TLS
     # and the existing kubeadm identity; never disable CA/hostname verification.
     if run(['kubectl','--kubeconfig','/etc/kubernetes/admin.conf','--server=https://192.168.1.3:6443',
@@ -226,14 +279,16 @@ def confirm(data):
 
 def worker(unit):
     with lock(wait=True):
-        report=state({'unit':unit});data=report['data'];baseline=load(STATE_DIR+'/baseline.json')
+        report=state({'unit':unit});data=report['data']
         if report['status']!='running':raise ValueError('Network worker replay refused')
+        if snapshot()!=report['before']:raise ValueError('Network files changed before worker')
+        safe_fallback(report['before'],data);safe_fallback(report['target'],data)
         child=None;accepted=False
         try:
-            if report['mode']=='apply':
-                write(STATIC,data['config'].encode());write(CLOUD,b'network: {config: disabled}\n')
-                path(DHCP).unlink()  # exact saved copy remains in the owned directory
-            else:restore(baseline['files'])
+            # Direct replacement is equivalent only because BOTH the generated
+            # backend fallback and the exact YAML snapshot keep .3 (or the owner
+            # attests a reservation). Real Ubuntu VM coverage verifies both.
+            restore(report['target'])
             report['candidate']=snapshot();save(STATE_DIR+'/transaction.json',report)
             ready=path('/run/netplan/netplan-try.ready');secure(ready)
             if ready.exists():raise ValueError('Another netplan try is active')
@@ -257,8 +312,9 @@ def worker(unit):
                 # netplan can return 0 after reverting! Require its explicit
                 # acceptance acknowledgement as well as exit code and checks.
                 accepted=sent and child.returncode==0 and 'Configuration accepted.' in output.read()
-            if not accepted or snapshot()!=report['candidate'] or not matches(effective(data),data,report['mode'],baseline):raise ValueError('Netplan did not accept verified configuration')
-            save(STATE_DIR+'/committed.json',{'owner':OWNER,'mode':report['mode'],'files':snapshot()})
+            if not accepted or snapshot()!=report['candidate'] or not matches(effective(data),data,report['mode']):raise ValueError('Netplan did not accept verified configuration')
+            save(OWNERSHIP,{'owner':OWNER,'version':2,'profile':profile(snapshot(),data['config']) or 'reserved-dhcp',
+                            'files':snapshot(),'previous':report['before']})
             report['status']='passed'
         except Exception:
             if child and child.poll() is None:
@@ -269,6 +325,7 @@ def worker(unit):
             # After explicit acceptance a later verification failure is surfaced
             # for local recovery rather than falsely claiming runtime rollback.
             if not accepted:restore(report['before'])
+            else:report['recoveryRequired']=True
             report['status']='failed'
         finally:
             save(STATE_DIR+'/transaction.json',report)

@@ -665,6 +665,7 @@ The owner-approved `siteNetwork` section of `vcloud-ssot.yaml` records:
 | 192.168.1.1 | Router, gateway and primary DNS |
 | 192.168.1.2–192.168.1.99 | Fixed range, excluded from DHCP after the static change |
 | 192.168.1.3/24 | `twinfra-dev-cairo-1`, `eno1`, MAC `64:00:6a:86:5c:4f` |
+| 192.168.1.4 | Intel AMT out-of-band management; [owner-only setup](runbooks/intel-amt.md) |
 | 192.168.1.10 | Future WO-33 control-plane VIP, not assigned by WO-36 |
 | 192.168.1.11–192.168.1.13 | Future nodes, not assigned by WO-36 |
 | 192.168.1.100–192.168.1.254 | Router DHCP pool after owner changes it |
@@ -681,67 +682,98 @@ python tools/platform_dev.py host-network --context twinfra-dev-cairo-1 --check
 python tools/platform_dev.py host-check --context twinfra-dev-cairo-1
 ```
 
-An initial `--check` may fail because the address is still dynamic. All commands
-require the same exact ready cluster identity, node IP/listeners, Secure Boot and
-kernel lockdown `[integrity]` checks as WO-31. The NIC MAC must also match.
-`--check` reads only. A successful JSON report has this shape (illustrative,
-not live evidence):
+All commands retain the exact WO-31 ready-cluster, node IP/listener, Secure Boot,
+kernel lockdown `[integrity]` and NIC MAC checks. No Kubernetes re-init, reset or
+certificate rotation is performed. `--check` normally reads, but may record
+ownership of an already correct static configuration without applying netplan.
+Only the root:root, mode 0600 approved static file and disabled-cloud-init file
+are adopted; an unknown file or changed effective state is refused unchanged.
+
+The owner-recovered legacy static file is exactly 308 bytes, SHA-256
+`1739e68f586cda48fadfc3a38905bd62f22167cb3842415623cce43b5ce89ad7`.
+It lacks the new IPv6 suppression keys. `--check` adopts it with this successful
+JSON result (illustrative; not independent live evidence):
 
 ```json
-{"status":"passed","mode":"static-check","network":{"address":"192.168.1.3","present":true,"static":true,"prefixLength":24,"mac":"64:00:6a:86:5c:4f","gateways":["192.168.1.1"],"dns":["192.168.1.1","1.1.1.1"],"nodeInternalIP":["192.168.1.3"]},"integrity":{"status":"PASS","detail":"Owned network files verified (apply)"}}
+{"status":"passed","mode":"static-check","network":{"address":"192.168.1.3","present":true,"static":true,"prefixLength":24,"mac":"64:00:6a:86:5c:4f","gateways":["192.168.1.1"],"dns":["192.168.1.1","1.1.1.1"],"nodeInternalIP":["192.168.1.3"]},"integrity":{"status":"WARN","detail":"adopted (legacy profile; upgrade pending)"}}
 ```
 
-The owned netplan also sets `ignore-carrier: true`: Netplan emits
-`ConfigureWithoutCarrier=yes`, which makes systemd 255 retain configuration on
-carrier loss. A static lease replacement alone does not establish that behavior.
-See the [Netplan networkd generator](https://github.com/canonical/netplan/blob/1.0/src/networkd.c)
+DNS comparison preserves the configured IPv4 order and ignores IPv6 entries,
+including the incident's additional `fe80::1`. The corrected static profile sets
+`dhcp4: false`, `dhcp6: false`, `accept-ra: false`, `link-local: []` and
+`ignore-carrier: true`. The latter emits `ConfigureWithoutCarrier=yes`, retaining
+configuration on carrier loss; see the
+[Netplan generator](https://github.com/canonical/netplan/blob/1.0/src/networkd.c)
 and [systemd 255 network contract](https://github.com/systemd/systemd/blob/v255/man/systemd.network.xml).
 
-The root-owned transaction lives under `/var/lib/twinfra/host-network/`. It saves
-an exact mode-preserving snapshot and a copy of `50-cloud-init.yaml`, writes
-`/etc/netplan/60-twinfra-static.yaml` and
-`/etc/cloud/cloud.cfg.d/99-twinfra-disable-network-config.cfg`, then removes the
-old cloud-init netplan from the active directory. Existing unowned destinations,
-modified owned files or a concurrent transaction are refused. A detached
-`twinfra-network-<id>` systemd unit survives an SSH disconnect. Its worker invokes
-`netplan try --timeout 120`, keeping stdin open. Only after a new key-only SSH
-login, matching effective static address/route/DNS/InternalIP, and TLS-verified
-`https://192.168.1.3:6443/readyz` (`kubectl` using the existing trusted admin
-kubeconfig) does it confirm. It requires netplan's explicit acceptance message,
-its exit code and post-checks; exit zero alone can mean rollback.
+**Safe fallback is checked before any write, including transaction/lock files.**
+Both the starting state and rollback target must keep `.3`: an approved static
+snapshot, or the owner's explicit `--dhcp-reservation-confirmed` assertion that
+the router reserves `.3` for `64:00:6a:86:5c:4f`. The flag does not configure or
+verify the router. Without either guarantee, apply and rollback refuse unchanged.
+Never set the flag merely to bypass refusal. The current legacy static upgrade
+needs no DHCP flag. An unreserved DHCP rollback cannot be made safe by timing out.
 
-If verification/login fails or the controller disappears, netplan's timeout
-restores runtime and the detached worker restores the original on-disk files.
-Inspect `journalctl -u twinfra-network-<id>` and the JSON result. An unexpectedly
-killed worker or a failure after acceptance is reported as failure requiring
-local inspection; never reboot into an unverified on-disk configuration. The
-implementation follows the [netplan try confirmation and rollback contract](https://github.com/canonical/netplan/blob/1.0/netplan_cli/cli/commands/try_command.py).
-It never re-initializes/resets Kubernetes or rotates certificates.
-
-Rollback uses the same detached try/fresh-login/TLS confirmation sequence:
+The root-owned v2 receipt is `/var/lib/twinfra/host-network/ownership-v2.json`.
+Older receipts and recovery backups are preserved as evidence, not selected as
+implicit DHCP rollback targets. A successful upgrade saves the immediately prior
+legacy static snapshot as its rollback target. Already corrected owned static
+profiles make `--apply` a no-op. Rollback uses the same verification sequence:
 
 ```powershell
 python tools/platform_dev.py host-network --context twinfra-dev-cairo-1 --rollback
 ```
 
-It restores the saved DHCP configuration. It must retain `.3` and the saved
-route/DNS to confirm; after changing the DHCP pool, arrange the optional `.3`
-reservation before attempting rollback, or the attempt will safely time out.
-A failed rollback restores the preceding static files. `--check` is a static
-configuration check, so it intentionally fails after a successful DHCP rollback.
+The detached `twinfra-network-<id>` unit keeps netplan's stdin pipe open during
+`netplan try --timeout 120`. Netplan restores generated backend state on timeout,
+**not overwritten YAML**; the worker separately restores the exact prior files.
+Direct YAML replacement is used with a pre-verified static fallback, avoiding
+`--config-file` overlay merging with the old YAML. The real Ubuntu VM proof tests
+this equivalent transaction, including refusal and rollback. See the
+[Netplan try source](https://github.com/canonical/netplan/blob/1.0/netplan_cli/cli/commands/try_command.py)
+and [backend restoration source](https://github.com/canonical/netplan/blob/1.0/netplan_cli/configmanager.py).
 
-Only after static `--check` passes, the owner sets the router pool start `.100`,
-end `.254`. Optional reservation: `64:00:6a:86:5c:4f` to `.3`. The laptop (formerly
-at `.9`) renews into that pool; nothing depends on its address. A router/Dell UPS
-is optional. The optional owner test disconnects router power for 60 seconds and
-records unchanged `.3`/node InternalIP and no control-plane restarts.
+Owner-approved VM acceptance permits a transient reconfiguration gap of **at
+most five seconds**; this is not a zero-downtime transaction. The sampler records
+all IPv4 addresses, routes and DHCP evidence on `eno1` throughout. An alternate
+IPv4 address, DHCP activity, a longer gap or failed fresh SSH/trusted TLS
+`/readyz`/Node InternalIP post-check fails. Gap duration uses a conservative
+last-good-to-first-good upper bound, including sample uncertainty; observation
+coverage gaps also fail. The measured maximum and exact run are recorded in the
+[receipt](acceptance/host-network-fix-2026-10-15.md). The CI runner's unrelated
+primary NIC retains its own networking; DHCP prohibition concerns `eno1`.
+The qualifying [Ubuntu VM run on 2026-10-15](https://github.com/amazen33/twinfra/actions/runs/38802229941)
+measured **0 seconds of observed gap**, with 1,154 samples and maximum observation
+interval **0.150156 seconds**. No alternate IPv4 or DHCP activity was observed;
+fresh SSH, trusted `/readyz` and `.3` Node InternalIP passed after each path.
+This is discrete sampling; it does not establish zero sub-sample packet loss.
+The [bounded repeat on 2026-10-15](https://github.com/amazen33/twinfra/actions/runs/38802828350)
+measured a maximum conservative gap upper bound of **0.244071 seconds**
+(five-second limit), across 1,150 samples with maximum observation interval
+0.141625 seconds. No alternate IPv4/DHCP occurred in its samples and every
+fresh SSH/trusted `/readyz`/Node InternalIP post-check passed. Both frozen run
+records and their exact tested commits are retained in the receipt.
 
-Host-check adds owned-network-file integrity to the existing kernel lockdown
-check. Unconfigured static ownership warns; tampering blocks. Since-boot `eno1`
-carrier/DHCP lease losses warn, as do retained CRI control-plane restart attempts.
-Restart counts are a lower bound because CRI garbage collection removes history;
-unavailable journal/CRI history warns rather than hiding an observation gap.
-The Prometheus link-loss alert remains a WO-10 follow-up.
+Only a fresh key-only SSH login, matching address/route/ordered IPv4 DNS/Node
+InternalIP, and trusted TLS `https://192.168.1.3:6443/readyz` can confirm. No
+insecure TLS override is used. Success requires explicit netplan acceptance,
+exit code zero and post-checks; zero alone can mean rollback. Failed/lost
+confirmation restores the static backend and YAML. Unexpected worker death or
+a failure after acceptance requires local journal/saved-file inspection; do not
+reboot into unverified configuration. Inspect `journalctl -u twinfra-network-<id>`.
+
+The [WO-36a receipt](acceptance/host-network-fix-2026-10-15.md) distinguishes the
+owner-reported Dell recovery from the real Ubuntu 24.04 CI VM proof. The VM uses
+a dummy NIC, protected runner primary routing and a synthetic Kubernetes API;
+it does not establish Dell hardware or cluster acceptance. Tester sign-off and
+the optional controlled router-outage test remain Pending. Never run the CI
+fixture on the Dell. The owner already reports the router pool is `.100–.254`;
+there is no router mutation in this work order. A router/Dell UPS is optional.
+
+Host-check verifies owned network integrity: legacy adoption warns, tampering
+blocks. Since-boot carrier/DHCP losses and retained CRI control-plane restart
+attempts warn. Counts are lower bounds because CRI garbage collection removes
+history; unavailable history warns. The link-loss alert remains a WO-10 follow-up.
 
 ### Dev update strategies
 
