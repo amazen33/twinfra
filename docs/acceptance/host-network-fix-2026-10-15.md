@@ -73,10 +73,32 @@ inference that the first pass establishes uninterrupted retention. The strict
 assertion correctly failed. The owner then approved a measured gap of at most
 five seconds, no alternate IPv4 or DHCP on `eno1`, and fresh SSH/trusted TLS/
 Node InternalIP post-checks. The updated VM sampler enforces those exact bounds;
-the bounded run and measured maximum are Pending CI. Only a passing bounded run
-can make the PR ready. The original first-pass result alone is insufficient.
+the qualifying [bounded VM run](https://github.com/amazen33/twinfra/actions/runs/38802229941)
+passed at `2026-10-15T20:31:10Z`, PR merge commit
+`d5fa59bdfad828e39d1127cc1c85981ba2ee3792` (branch `eaba8dd`). The original
+first-pass result alone is insufficient; this bounded run makes the PR eligible
+for review under the owner's explicit direction.
 
-Local verification: 132 related unit/regression tests, 151 CI-control tests,
+| Bounded acceptance measurement | Observed result |
+| --- | --- |
+| Maximum measured address/default-route gap upper bound | **0 seconds** (no missing-address/route samples; limit 5 seconds) |
+| Samples / maximum observation interval including command time | **1,154 / 0.150156 seconds** |
+| All IPv4 addresses on eno1 | `.3` only; no alternate address |
+| DHCP on eno1 | Disabled generated networkd configuration, no DHCP client/lease or dynamic address; no standalone DHCP client process observed |
+| Apply / rollback / refused confirmation | 2.94 s / 2.94 s / 121.89 s; expected accepted / accepted / failed operation statuses |
+| Fresh key-only SSH / trusted TLS readyz after each operation | All passed |
+| Node InternalIP after each operation | `192.168.1.3` |
+
+The sampler queries `networkctl --json=short`, the active generated network
+configuration and lease state, `/proc` client processes, every `eno1` IPv4
+address and its default routes. It fails on sampling errors, observation
+coverage gaps over one second, alternate IPv4, DHCP activity, wrong routes,
+unrecovered gaps or a conservative gap bound over five seconds. Gap bounds span
+the last healthy sample through completion of the first recovered sample.
+The unrelated runner primary NIC retains its own network configuration. Results
+are sampled evidence, not proof of no shorter unobserved packet interruption.
+
+Local verification: 133 related unit/regression tests, 151 CI-control tests,
 864 conftest checks, 127 kubeconform-valid resources, render/source drift,
 licence, documentation/Mermaid and actionlint passed. Git Bash needed execution
 outside the Windows sandbox; the same offline tests then passed without

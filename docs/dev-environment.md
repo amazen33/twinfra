@@ -742,6 +742,11 @@ last-good-to-first-good upper bound, including sample uncertainty; observation
 coverage gaps also fail. The measured maximum and exact run are recorded in the
 [receipt](acceptance/host-network-fix-2026-10-15.md). The CI runner's unrelated
 primary NIC retains its own networking; DHCP prohibition concerns `eno1`.
+The qualifying [Ubuntu VM run on 2026-10-15](https://github.com/amazen33/twinfra/actions/runs/38802229941)
+measured **0 seconds of observed gap**, with 1,154 samples and maximum observation
+interval **0.150156 seconds**. No alternate IPv4 or DHCP activity was observed;
+fresh SSH, trusted `/readyz` and `.3` Node InternalIP passed after each path.
+This is discrete sampling; it does not establish zero sub-sample packet loss.
 
 Only a fresh key-only SSH login, matching address/route/ordered IPv4 DNS/Node
 InternalIP, and trusted TLS `https://192.168.1.3:6443/readyz` can confirm. No
