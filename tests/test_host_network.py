@@ -287,6 +287,12 @@ class Controller(unittest.TestCase):
             info=type('Stat',(),{'st_uid':uid,'st_gid':gid,'st_mode':mode})()
             with patch.object(net,'secure'),patch.object(Path,'stat',return_value=info):
                 self.assertEqual(net.root_private(net.STATIC),expected)
+        # A reserved-DHCP rollback preserves its original safe mode; adoption
+        # of the owner-approved static file still requires exactly 0600.
+        info=type('Stat',(),{'st_uid':0,'st_gid':0,'st_mode':0o100644})()
+        with patch.object(net,'secure'),patch.object(Path,'stat',return_value=info):
+            self.assertFalse(net.root_private(net.DHCP))
+            self.assertTrue(net.root_private(net.DHCP,0o644))
 
     def test_vm_fixture_refuses_local_execution_and_workflow_is_restricted(self):
         spec=importlib.util.spec_from_file_location('network_vm',ROOT/'tools/ci/host_network_vm.py')

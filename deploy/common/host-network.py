@@ -112,7 +112,7 @@ def owned():
     if record is None:return None
     if record.get('owner')!=OWNER or record.get('version')!=2 or snapshot()!=record.get('files'):
         raise ValueError('Owned network files differ; no adoption')
-    if any(item and not root_private(name) for name,item in record['files'].items()):
+    if any(item and not root_private(name,item['mode']) for name,item in record['files'].items()):
         raise ValueError('Owned network permissions differ')
     return record
 
@@ -133,9 +133,9 @@ def profile(files,config):
     return None
 
 
-def root_private(name):
+def root_private(name,mode=0o600):
     p=path(name);secure(p);info=p.stat()
-    return info.st_uid==0 and info.st_gid==0 and stat.S_IMODE(info.st_mode)==0o600
+    return info.st_uid==0 and info.st_gid==0 and stat.S_IMODE(info.st_mode)==mode
 
 
 def inactive():
