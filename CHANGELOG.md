@@ -7,6 +7,10 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ## [Unreleased]
 
+### Removed
+
+- Remove Grafana deployment inputs and its pending-removal licence entry (WO-07a). Keep the two ported dashboard definitions as plain data for WO-10; no Perses deployment.
+
 ### Security
 
 - Run WO-34 console reproduction and complete image comparisons only in the

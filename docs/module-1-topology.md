@@ -45,7 +45,7 @@ and [vLLM serving](https://docs.vllm.ai/en/stable/serving/online_serving/).
 
  PostgreSQL lifecycle: CloudNativePG; secrets: OpenBao; identity: Keycloak
  Async ingestion/HPC: Kafka + Strimzi; delivery: Tekton --> Registry/Git --> Argo CD
- Telemetry: OpenTelemetry --> selected trace backend; Prometheus --> Grafana
+ Telemetry: OpenTelemetry --> selected trace backend; Prometheus --> dashboard files (WO-10 deployment pending)
  HPC: admission --> proposed capacity adapter --> Spinifex/cloud --> execution cluster
 ```
 
@@ -95,7 +95,7 @@ flowchart TB
             ARGO["Argo CD: reviewed Git reconciliation"]
             OTEL["OpenTelemetry gateway Collector"]
             PROM["Prometheus: metrics / alert rules"]
-            GRAFANA["Grafana: operator dashboards"]
+            DASHBOARDS["Dashboards: WO-10 pending; read-only Git, Keycloak SSO via APISIX"]
         end
 
         subgraph APPS["workload-apps | restricted pods / default deny"]
@@ -142,7 +142,6 @@ flowchart TB
     RAG -->|"Workload auth / DB lease"| BAO
     BAO -->|"Credential lifecycle"| PG
     KEYCLOAK -->|"Dedicated identity database"| PG
-    GRAFANA -->|"Dedicated configuration database"| PG
     PG -->|"WAL / base backup via reviewed integration"| BACKUP
 
     PG -->|"Committed outbox rows"| OUTBOX
@@ -191,9 +190,9 @@ flowchart TB
     PG -->|"Scraped metrics"| PROM
     KAFKA -->|"Scraped metrics"| PROM
     GEN -->|"Scraped metrics"| PROM
-    GRAFANA -->|"Metric queries"| PROM
-    GRAFANA -->|"Trace queries"| TRACE
-    GRAFANA -->|"Operator OIDC"| KEYCLOAK
+    DASHBOARDS -->|"Metric queries"| PROM
+    DASHBOARDS -->|"Trace queries"| TRACE
+    DASHBOARDS -->|"Operator OIDC"| KEYCLOAK
     ARGO -->|"Operator OIDC"| KEYCLOAK
 ```
 
@@ -246,7 +245,7 @@ or all Internet egress to make an integration pass.
 | RAG / ingestion worker | Private vLLM embedding service | HTTPS 443 via reviewed non-root TLS endpoint | Model/task/dimension-specific embeddings |
 | RAG | Private vLLM generation service | HTTPS 443 via reviewed non-root TLS endpoint | Scoped workload auth, token budgets and streaming |
 | RAG / ingestion / job API / outbox publisher | PostgreSQL or scoped connection pool | PostgreSQL TLS 5432 | Distinct roles; tenant-filtered/RLS queries; read/write endpoints explicit |
-| Keycloak / Grafana | Their dedicated PostgreSQL database/role | PostgreSQL TLS 5432 | Infrastructure data; separate ownership from RAG tables |
+| Keycloak | Its dedicated PostgreSQL database/role | PostgreSQL TLS 5432 | Infrastructure data; separate ownership from RAG tables |
 | OpenBao | PostgreSQL credential-management endpoint | PostgreSQL TLS 5432 | Only approved role creation/rotation/revocation SQL |
 | PostgreSQL instances / approved poolers | Peer DB instances | PostgreSQL TLS 5432 | Replication/connection handling; exact Cluster identities |
 | Approved workload agents/SDKs | OpenBao | HTTPS 8200 | Bound workload identities and secret paths |
@@ -255,7 +254,7 @@ or all Internet egress to make an integration pass.
 | Kafka brokers/controllers | Cluster peers | Authenticated TLS; pinned listener ports | KRaft quorum/replication; no plaintext/anonymous listener |
 | OTel-instrumented clients | Gateway Collector | TLS OTLP gRPC 4317 or HTTP 4318 | Only configured sender identities/protocols |
 | Prometheus | Approved metrics exporters / Collector | Authenticated HTTP(S); exact exporter target ports | Scrape identities; no generic all-pod scrape permission |
-| Grafana | Prometheus / selected trace backend | HTTPS; selected proxy/backend ports | Read-only operator data-source credentials |
+| Dashboards (WO-10 pending) | Prometheus / selected trace backend | HTTPS through APISIX and Keycloak SSO | Read-only definitions provisioned from Git; no configuration database |
 | Collector | Selected trace/log backend | TLS; selected export ports | Redaction, retention and data residency contract |
 | Selected controllers / OpenBao reviewer | Kubernetes API | TLS 6443 locally; verified provider endpoint in cloud | Least-privilege RBAC; projected tokens; exact destination |
 | API server | Approved admission webhooks | TLS; pinned webhook ports | Named webhook service identities; availability policy reviewed |
@@ -314,7 +313,7 @@ CloudNativePG does not automatically scale PostgreSQL writes. Generic CPU HPA is
 discouraged upstream; the custom read-capacity policy is an additional integration.
 VPA remains recommendation-only. See
 [the upstream constraints](https://cloudnative-pg.io/docs/1.28/resource_management/).
-OpenTelemetry and Grafana do not supply trace storage by themselves; a retained trace
+OpenTelemetry and dashboard definitions do not supply trace storage by themselves; a retained trace
 backend is explicitly outstanding. See
 [Collector architecture](https://opentelemetry.io/docs/collector/architecture/).
 

@@ -31,7 +31,7 @@ removes the duplicate number.
 3. WO-02 licence register and CI gate.
 4. WO-04 (token verification) and WO-06 (remove LocalStack), in parallel.
 5. WO-05 admission policies: audit first, then enforcement once the owner approves.
-6. WO-07 Perses replaces Grafana.
+6. WO-07 is split: [WO-07a](WO-07a-remove-grafana.md) removes Grafana; WO-07b deployment moves to [WO-10 Amendment 1](WO-10-observability-stack-v1.md#amendment-1-2026-10-15-owner-split-approved-perses-deployment-wo-07b-moves-here).
 7. WO-08 OpenBao, External Secrets, cert-manager. Needs the owner's key ceremony.
 8. WO-09 off-node backups and restore drill. Needs a backup target from the owner.
 9. WO-10 observability stack v1. Needs WO-02 and WO-07, plus the owner's node-exception approvals.

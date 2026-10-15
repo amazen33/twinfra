@@ -179,6 +179,15 @@ class ADRLog(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn('missing lab receipt', result.stderr)
 
+    def test_explicit_split_work_order_preserves_original_and_unknown_suffix_fails(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=self.fixture(directory)
+            path=root/'docs/work-orders/WO-07a-remove-grafana.md'
+            path.write_text('# WO-07a: Remove Grafana\n')
+            self.assertEqual(self.check(root).returncode,0)
+            path.rename(path.with_name('WO-07b-unapproved.md'))
+            self.assertNotEqual(self.check(root).returncode,0)
+
     def test_broken_link_outside_component_docs_fails(self):
         with tempfile.TemporaryDirectory() as directory:
             root = self.fixture(directory)

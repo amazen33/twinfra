@@ -212,3 +212,16 @@ Each matrix job uploads its public validation summary and individual logs for
 environment dumps and credential files are excluded. These results establish
 static/offline acceptance; GPU, Kubernetes admission, end-to-end networking,
 OIDC discovery and live OpenBao revocation still require the Ubuntu lab.
+
+## WO-07a candidate deployment guard
+
+`python tools/check_grafana_removal.py --root .` rejects Grafana images, charts,
+workloads and `grafana_dashboard` labels in locked/generated deployment inputs,
+including compressed manifests. It identifies chart metadata/dependencies and
+image pins; unused dashboard data bundled inside the upstream Cilium chart does
+not make Cilium a Grafana chart. CI also checks actual Helm/Kustomize renders.
+The guard targets the candidate, while historical ADRs, receipts, test fixtures
+and the six frozen revisions retain their original contents and gates.
+`python -m unittest discover -s tests -p test_grafana_removal.py -v` covers
+negative fixtures, missing bundles, exact removals, unchanged dev/production
+images and both dashboard definitions copied from PR #39 without deployment.

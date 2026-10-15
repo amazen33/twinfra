@@ -289,6 +289,10 @@ class InventoryAndIntegrity(unittest.TestCase):
         old=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':security/licence-register.json']))
         old={v['id']:v for v in old['components']}
         current={v['id']:v for v in sc.read(ROOT/'security/licence-register.json')['components']}
+        removed='oci-image|docker.io/grafana/grafana|sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572'
+        self.assertEqual(old.pop(removed)['class'],'pending-removal')
+        self.assertNotIn(removed,current)
+        self.assertFalse(any(v['name']=='docker.io/grafana/grafana' for v in current.values()))
         for name,entry in old.items():
             value=copy.deepcopy(current[name])
             value['locations']=[p for p in value['locations'] if p!='.github/workflows/supply-chain.yaml']

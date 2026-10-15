@@ -7156,27 +7156,6 @@
       ]
     },
     {
-      "id": "oci-image|docker.io/grafana/grafana|sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
-      "ecosystem": "oci-image",
-      "name": "docker.io/grafana/grafana",
-      "version": "sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
-      "locations": [
-        "lab/wsl/endpoints/artifacts.lock.json",
-        "lab/wsl/endpoints/gitops/workloads.yaml"
-      ],
-      "spdx": "AGPL-3.0-only",
-      "class": "pending-removal",
-      "licenceSource": "https://raw.githubusercontent.com/grafana/grafana/v13.2.3/LICENSE",
-      "verifiedOn": "2026-10-09",
-      "recordedOn": "2026-10-09",
-      "integrities": [
-        "sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572"
-      ],
-      "adr": "0030",
-      "expires": "2026-12-08",
-      "followUp": "WO-07"
-    },
-    {
       "id": "oci-image|docker.io/library/busybox|sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e",
       "ecosystem": "oci-image",
       "name": "docker.io/library/busybox",

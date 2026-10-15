@@ -1,4 +1,5 @@
 # WO-07: Perses replaces Grafana
+> **Status update (owner, 2026-10-15):** split. The Grafana removal is WO-07a; the Perses deployment moved to WO-10 (as WO-07b). PR #39 is superseded.
 
 **Status:** Approved for implementation (owner, 2026-10-08) · **Phase:** 1 · **Author:** Claude · **Implementer:** Codex
 **Branch:** `codex/wo-07-perses` · **Decisions:** ADR-0030, ADR-0034

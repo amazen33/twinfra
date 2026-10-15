@@ -18,6 +18,9 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'grafana-removal': ['tools/check_grafana_removal.py','tests/test_grafana_removal.py',
+        'docs/work-orders/WO-07a-remove-grafana.md','deploy/observability/dashboards/README.md',
+        'deploy/observability/dashboards/twinfra-delivery.json','deploy/observability/dashboards/twinfra-health.json'],
     'image-patch-p3': ['tools/refresh_p3_pins.py','tools/ci/compare_p3_images.py','tests/test_image_patch_p3.py'],
     'platform-hygiene': ['tools/platform_network_boundary.py','tests/test_platform_hygiene.py'],
     'image-references': ['tools/platform_image_references.py','tests/test_image_references.py'],
@@ -187,6 +190,10 @@ def main():
         # never against the dependencies of the six pre-policy historical revisions.
         run('candidate-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
                                   '--report', report_dir / 'licences.json'])
+        if (ROOT.parents[1]/'tools/check_grafana_removal.py').is_file():
+            run('candidate-grafana-removal',[python,ROOT.parents[1]/'tools/check_grafana_removal.py','--root',ROOT.parents[1]])
+            if sha==control_sha:
+                run('candidate-grafana-removal-tests',[python,'-m','unittest','discover','-s','tests','-p','test_grafana_removal.py','-v'],unit=True)
         if (ROOT.parents[1] / 'tools/check_emulator_removal.py').is_file():
             run('candidate-emulator-removal', [python, ROOT.parents[1] / 'tools/check_emulator_removal.py',
                 '--root', ROOT.parents[1]])
@@ -372,6 +379,9 @@ def main():
             render_options = [part for file in render_inputs for part in ('--rendered', file)]
             run('candidate-rendered-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
                                               '--report', report_dir / 'licences.json', *render_options])
+            if (ROOT.parents[1]/'tools/check_grafana_removal.py').is_file():
+                run('candidate-rendered-grafana-removal',[python,ROOT.parents[1]/'tools/check_grafana_removal.py',
+                    '--root',ROOT.parents[1],*render_options])
         report['status'] = 'passed'
         return 0
     except (ValueError, RuntimeError, OSError) as error:
