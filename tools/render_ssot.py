@@ -92,6 +92,9 @@ def outputs():
         dev_policy=json.loads(json.dumps(profile_policy).replace(s['registry'],dev['registry']))
         dev_policy['sourcePolicySHA256']=decision['policySHA256']
         dev_policy['profile']='WO-21 dev mirror relocation only; same images, mounts and security'
+        boot=json.loads((ROOT/'deploy/common/bootstrap-images.lock.json').read_text())
+        dev_policy['controlPlane']['Pod/kube-system/etcd']['image']=boot['images']['etcd']['canonical']
+        dev_policy['profile']='WO-34 approved dev etcd patch and mirror; unchanged mounts and security'
         dev_text=json.dumps(dev_policy,indent=2)+'\n'
     else:dev_text=policy_text
     script = replace_block(script, 'EXCEPTION POLICY', "render_exception_policy() {\n    if [[ $PLATFORM_PROFILE == dev-* ]]; then\n        cat <<'VCLOUD_DEV_POLICY_JSON'\n" + dev_text + "VCLOUD_DEV_POLICY_JSON\n    else\n    cat <<'VCLOUD_POLICY_JSON'\n" + policy_text + 'VCLOUD_POLICY_JSON\n    fi\n}')

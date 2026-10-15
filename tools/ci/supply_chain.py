@@ -76,10 +76,48 @@ def immutable(entry):
     return source+'@'+digest
 
 
+def image_inputs(root,name,entry,revision=None):
+    """Resolve actual pinned scan inputs at either immutable Git revision."""
+    ref=immutable(entry);references=[(ref,'registry:'+ref,entry['digest'])]
+    if name not in ('console','postgres'):return 'pinned-registry',references
+    archive=root/'.build/dev-images'/('console.oci.tar' if name=='console' else 'postgresql-pgvector.tar')
+    if revision is None and archive.is_file():
+        sys.path.insert(0,str(root/'tools'))
+        from platform_image_staging import validate_archive
+        validate_archive(archive,entry['digest'])
+        return 'built-archive',[(ref,'oci-archive:'+archive.as_posix(),entry['digest'])]
+    def content(path):return git(root,'show',revision+':'+path) if revision else (root/path).read_text(encoding='utf-8')
+    if name=='console':
+        pinned=json.loads(content(RECEIPTS[0]))['base'].removeprefix('registry.twinfra.example.com/')
+        references=[(pinned,'registry:'+pinned,pinned.split('@')[1])]
+    else:
+        code=content('tools/platform_pg_image.py')
+        values=[re.search(r"^"+key+r"='([^']+)'$",code,re.MULTILINE)[1] for key in ('BASE','EXTENSION')]
+        references=[(v,'registry:'+v,v.split('@')[1]) for v in values]
+    return 'pinned-inputs-only',references
+
+
+def component_history(root):
+    """Migrate the trusted pre-3a issue clock on the first base-less nightly scan."""
+    lineage={}
+    if not (root/'.git').exists():return lineage
+    for path in LOCKS:
+        revisions=git(root,'log','--format=%H','--',path).splitlines()
+        for revision in revisions:
+            data=json.loads(git(root,'show',revision+':'+path))
+            for name,entry in data['images'].items():
+                targets=lineage.setdefault(path+':'+name,set());targets.add(immutable(entry))
+                if name=='console' and git(root,'ls-tree','--name-only',revision,'--',RECEIPTS[0]):
+                    receipt=json.loads(git(root,'show',revision+':'+RECEIPTS[0]))
+                    if isinstance(receipt.get('base'),str):targets.add(receipt['base'].removeprefix('registry.twinfra.example.com/'))
+    return {key:sorted(values) for key,values in lineage.items()}
+
+
 def inventory(root=ROOT,base=None,full=False):
     paths=tracked(root);changes=changed(root,base) if base else paths
     full=full or not base or any(p.startswith(POLICY_INPUTS) for p in changes)
     targets={};coverage=[]
+    lineage=component_history(root) if not base else {}
     for filename in LOCKS:
         current=read(root/filename)['images']
         old=json.loads(git(root,'show',base+':'+filename))['images'] if base else {}
@@ -89,35 +127,21 @@ def inventory(root=ROOT,base=None,full=False):
             selected=full or introduced or filename in changes and old.get(name)!=entry
             if name=='console' and RECEIPTS[0] in changes:selected=True
             if name=='postgres' and RECEIPTS[1] in changes:selected=True
-            references=[(ref,'registry:'+ref,entry['digest'])]
-            if name in ('console','postgres'):
-                archive=root/'.build/dev-images'/('console.oci.tar' if name=='console' else 'postgresql-pgvector.tar')
-                if archive.is_file():
-                    sys.path.insert(0,str(root/'tools'))
-                    from platform_image_staging import validate_archive
-                    validate_archive(archive,entry['digest'])
-                    references=[(ref,'oci-archive:'+archive.as_posix(),entry['digest'])]
-                    mode='built-archive'
-                elif name=='console':
-                    receipt=read(root/RECEIPTS[0]);pinned=receipt['base']
-                    pinned=pinned.removeprefix('registry.twinfra.example.com/')
-                    references=[(pinned,'registry:'+pinned,pinned.split('@')[1])];mode='pinned-inputs-only'
-                else:
-                    # This receipt records selected manifests and copied files;
-                    # upstream root pins belong to the existing builder constants.
-                    code=(root/'tools/platform_pg_image.py').read_text(encoding='utf-8')
-                    values=[re.search(r"^"+key+r"='([^']+)'$",code,re.MULTILINE)[1] for key in ('BASE','EXTENSION')]
-                    references=[(value,'registry:'+value,value.split('@')[1]) for value in values]
-                    mode='pinned-inputs-only'
-            else:mode='pinned-registry'
+            mode,references=image_inputs(root,name,entry)
             coverage.append(dict(entry=identifier,pinned=ref,mode=mode,selected=selected,
                                  scannedInputs=[r[0] for r in references]))
             if not selected:continue
             for target,source,digest in references:
                 if not SHA.fullmatch(digest):raise ValueError('Unpinned build input')
                 value=targets.setdefault(digest,dict(target=target,source=source,digest=digest,
-                                                      platform='linux/amd64',origins=[],introduced=False))
+                                                      platform='linux/amd64',origins=[],introduced=False,previousInputs=[],historicalTargets=[]))
                 value['origins'].append(identifier);value['introduced']|=introduced
+                value['historicalTargets']=sorted(set(value['historicalTargets'])|set(lineage.get(identifier,[])))
+                if base and name in old:
+                    previous=image_inputs(root,name,old[name],base)[1] if introduced else references
+                    for prior,prior_source,prior_digest in previous:
+                        value['previousInputs'].append(dict(component=identifier,target=prior,source=prior_source,
+                                                            digest=prior_digest,platform='linux/amd64'))
     locks=[p for p in paths if is_lockfile(p) and (full or p in changes)]
     return dict(version=1,full=full,base=base,images=list(targets.values()),coverage=coverage,lockfiles=locks)
 
@@ -254,17 +278,51 @@ def scan_locks(paths,root,tools,out,aliases=None):
     return osv_findings(read(out),root,aliases)
 
 
+def classify_image_findings(findings,previous,images,has_base):
+    """Compare only the same component's package/CVE, never another image's risk."""
+    by_target={}
+    for value in findings+previous:by_target.setdefault(value['target'],[]).append(value)
+    metadata={v['target']:v for v in images}
+    for value in findings:
+        item=metadata.get(value['target'])
+        if not item:continue
+        components=item.get('origins',[]);value['components']=components
+        value['historicalTargets']=item.get('historicalTargets',[])
+        # Persist these digest/version-independent dates in the existing lossless
+        # issue-state format. A new component cannot borrow a different one's age.
+        value['componentKeys']=[finding('component:'+c,value['package'],'',[value['vulnerability']],
+                                       value['severity'],value['fixAvailable'],'identity')['key'] for c in components]
+        if not has_base:continue
+        carried=[];all_carried=bool(components)
+        for component in components:
+            matches=[old for prior in item.get('previousInputs',[]) if prior['component']==component
+                     for old in by_target.get(prior['target'],[])
+                     if (old['package'],old['vulnerability'])==(value['package'],value['vulnerability'])]
+            all_carried &= bool(matches);carried.extend(old['key'] for old in matches)
+        value['introduced']=not all_carried
+        value['previousKeys']=sorted(set(carried))
+    return findings
+
+
 def scan(plan,tools,cache,out,root=ROOT):
     out.mkdir(parents=True,exist_ok=True)
-    items=sboms(plan,tools,cache,out)
+    baseline={}
+    current_targets={i['target'] for i in plan['images']}
+    for item in plan['images']:
+        for previous in item.get('previousInputs',[]):
+            if previous['target'] not in current_targets:
+                baseline[previous['target']]={k:v for k,v in previous.items() if k!='component'}
+    items=sboms(plan|{'images':plan['images']+list(baseline.values())},tools,cache,out)
     env=dict(os.environ,GRYPE_DB_CACHE_DIR=str((out/'database').resolve()),GRYPE_DB_AUTO_UPDATE='false')
     run([tools['grype'],'db','update'],out/'database-update.log',env=env)
     run([tools['grype'],'db','status','-o','json'],out/'database.json',env=env)
-    findings=[]
+    findings=[];previous=[]
     for item in items:
         raw=out/(item['digest'].split(':')[1]+'.grype.json')
         run([tools['grype'],'sbom:'+item['sbom'],'-o','json'],raw,env=env)
-        findings.extend(grype_findings(read(raw),item))
+        values=grype_findings(read(raw),item)
+        (previous if item['target'] in baseline else findings).extend(values)
+    classify_image_findings(findings,previous,plan['images'],bool(plan.get('base')))
     lock_findings=scan_locks(plan['lockfiles'],root,tools,out/'osv.json')
     if plan.get('base') and plan['lockfiles']:
         with tempfile.TemporaryDirectory(prefix='base-',dir=out) as tmp:
@@ -287,7 +345,7 @@ def scan(plan,tools,cache,out,root=ROOT):
             merged[value['key']]['fixAvailable']|=value['fixAvailable']
             merged[value['key']]['fixVersions']=sorted(set(merged[value['key']]['fixVersions']+value['fixVersions']))
         else:merged[value['key']]=value
-    result=dict(version=1,date=today().isoformat(),inventory=plan,findings=list(merged.values()),
+    result=dict(version=1,date=today().isoformat(),inventory=plan,findings=list(merged.values()),previousFindings=previous,
                 database=read(out/'database.json'))
     write(out/'findings.json',result);return result
 
@@ -367,17 +425,29 @@ def evaluate(result,exceptions,kev,state=None,on=None,bootstrap=False,root=ROOT)
     kev_ids={v['cveID'] for v in kev['vulnerabilities']}
     if not isinstance(kev.get('catalogVersion'),str) or not isinstance(kev.get('vulnerabilities'),list):
         raise ValueError('Invalid KEV catalog')
+    historical_dates={}
+    for key,fields in identities.items():
+        if key in state:historical_dates.setdefault((fields[0],fields[1],fields[3]),[]).append(date.fromisoformat(state[key]))
     output=[]
     for raw in result['findings']:
         value=dict(raw)
         # Missing issues cannot continually reset pre-existing risk's grace clock.
         # New PR introductions are immediate; the initial pinned baseline has a fixed anchor.
-        first=date.fromisoformat(state.get(value['key'],(on if value['introduced'] else fallback).isoformat()))
+        prior_keys=[value['key'],*value.get('componentKeys',[]),*value.get('previousKeys',[])]
+        dates=[date.fromisoformat(state[k]) for k in prior_keys if k in state]
+        for target in value.get('historicalTargets',[]):
+            dates.extend(historical_dates.get((target,value['package'],value['vulnerability']),[]))
+        first=min(dates) if dates else (on if value['introduced'] else fallback)
         if first>on:raise ValueError('Future first-seen date')
         state[value['key']]=first.isoformat();value['firstSeen']=first.isoformat()
         fields=[value[k] for k in ('target','package','version','vulnerability')]
         if value['key'] in identities and identities[value['key']]!=fields:raise ValueError('Finding identity collision')
         identities[value['key']]=fields
+        for component,key in zip(value.get('components',[]),value.get('componentKeys',[]),strict=True):
+            stable=['component:'+component,value['package'],'',value['vulnerability']]
+            if key!=sha(json.dumps(stable,separators=(',',':')).encode()):raise ValueError('Invalid component identity')
+            if key in identities and identities[key]!=stable:raise ValueError('Component identity collision')
+            state[key]=min(first,date.fromisoformat(state.get(key,first.isoformat()))).isoformat();identities[key]=stable
         value['kev']=bool(set(value['aliases']) & kev_ids)
         value['blockReason']='KEV' if value['kev'] else 'Critical with fix' if value['severity']=='Critical' and value['fixAvailable'] else (
             'High introduced by PR' if value['introduced'] else 'High with fix aged 14 days') if (

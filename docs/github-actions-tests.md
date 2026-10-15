@@ -225,3 +225,18 @@ Each matrix job uploads its public validation summary and individual logs for
 environment dumps and credential files are excluded. These results establish
 static/offline acceptance; GPU, Kubernetes admission, end-to-end networking,
 OIDC discovery and live OpenBao revocation still require the Ubuntu lab.
+
+## WO-34 Amendment 3a
+
+The optional P2 bundle tests exact dev kubeadm imageTag overrides in both regions,
+closed tag allowances, unchanged production settings and scoped shared-source/seed
+changes. Completed WO-31/P1/P3 delivery receipts remain frozen at their immutable
+commits; P2 independently compares every current change against merged main e922552.
+
+The supply-chain suite compares old and candidate image SBOMs against the same
+fresh database. Introduction is component/package/vulnerability based, with exact
+Critical exception matching retained. Tests cover carried/new identities, missing
+Critical approvals, other-component isolation, non-renewing carry, and first-seen
+migration from the original issue records through a nightly scan and lossless
+reporter round trip. Pending approvals or expired entries still fail. No scanner
+job receives secrets or write permissions.

@@ -22,8 +22,8 @@ BOOTSTRAP_TAG_ALLOWLIST={
     ('kubeadm','Pod','kube-apiserver'):'registry.twinfra.example.com/registry.k8s.io/kube-apiserver:v1.36.5',
     ('kubeadm','Pod','kube-controller-manager'):'registry.twinfra.example.com/registry.k8s.io/kube-controller-manager:v1.36.5',
     ('kubeadm','Pod','kube-scheduler'):'registry.twinfra.example.com/registry.k8s.io/kube-scheduler:v1.36.5',
-    ('kubeadm','Pod','etcd'):'registry.twinfra.example.com/registry.k8s.io/etcd:3.6.8-0',
-    ('kubeadm','Deployment','coredns'):'registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.2',
+    ('kubeadm','Pod','etcd'):'registry.twinfra.example.com/registry.k8s.io/etcd:3.6.15-0',
+    ('kubeadm','Deployment','coredns'):'registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.7',
     ('containerd','ContainerRuntimeConfiguration','containerd'):'registry.twinfra.example.com/registry.k8s.io/pause:3.10.2',
     ('kubeadm','RuntimeImage','pause'):'registry.twinfra.example.com/registry.k8s.io/pause:3.10.2',
 }

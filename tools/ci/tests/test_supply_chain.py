@@ -170,6 +170,28 @@ class Gate(unittest.TestCase):
 
 
 class InventoryAndIntegrity(unittest.TestCase):
+    def p2_register_replacements(self,current):
+        """Assert every field of the two owner-approved replacements; omit no comparison."""
+        pins=[('registry.k8s.io/coredns/coredns','7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286',
+               'coredns/coredns/v1.14.7','f0530760b1e2ffcf23df322db638ee06d06fc07fead0ed3ddd710f2e224698a9',
+               'wo34-coredns-v1.14.7.cdx.json.gz','4cd5c00ff3b9c9d95c81d9c679a50e794bb30ecbe109fd09324e0f44d3663468'),
+              ('registry.k8s.io/etcd','5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1',
+               'etcd-io/etcd/v3.6.15','cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30',
+               'wo34-etcd-3.6.15-0.cdx.json.gz','3ec7f9e702ccea64fd4b4f8c4647ea4a39c539d92fd514e000bb31c09f0b4c2d')]
+        expected=[]
+        for name,pin,licence,licence_hash,sbom,sbom_hash in pins:
+            item=dict(id='oci-image|'+name+'|sha256:'+pin,ecosystem='oci-image',name=name,version='sha256:'+pin,
+                locations=['deploy/common/bootstrap-images.lock.json'],spdx='Apache-2.0',**{'class':'allowed'},
+                licenceSource='https://raw.githubusercontent.com/'+licence+'/LICENSE',verifiedOn='2026-10-15',recordedOn='2026-10-15',
+                integrities=['sha256:'+pin],notes='Unmodified upstream. Primary LICENSE SHA256 '+licence_hash+'. OS/dependency terms remain in the reviewed SBOM.',
+                imageSBOM=dict(path='deploy/common/vendor/'+sbom,sha256=sbom_hash))
+            self.assertEqual(current[item['id']],item)
+            raw=(ROOT/item['imageSBOM']['path']).read_bytes();self.assertEqual(hashlib.sha256(raw).hexdigest(),sbom_hash)
+            import gzip
+            self.assertEqual(json.loads(gzip.decompress(raw))['bomFormat'],'CycloneDX')
+            expected.append(item)
+        return expected
+
     def fixture(self,root):
         for name in (*sc.LOCKS,*sc.RECEIPTS):
             target=root/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes((ROOT/name).read_bytes())
@@ -275,6 +297,9 @@ class InventoryAndIntegrity(unittest.TestCase):
         for a,b in zip(old['findings'],new['findings']):
             if a['id']=='schema-source:tools/ci/toolchain.lock.json':
                 b=copy.deepcopy(b);b['fingerprint']=a['fingerprint']
+            if a['id']=='image-digest:00-setup-ubuntu-host.sh' and (ROOT/'tools/ci/promote_p2.py').is_file():
+                self.assertEqual(b['fingerprint'],hashlib.sha256((ROOT/'00-setup-ubuntu-host.sh').read_bytes()).hexdigest())
+                b=copy.deepcopy(b);b['fingerprint']=a['fingerprint']
             self.assertEqual(a,b)
         added=[v for v in new['findings'] if v['id'] not in {f['id'] for f in old['findings']}]
         for entry in added:
@@ -292,8 +317,17 @@ class InventoryAndIntegrity(unittest.TestCase):
         self.assertEqual(entry['class'],'pending-removal');old['components'].remove(entry)
         old={v['id']:v for v in old['components']}
         current={v['id']:v for v in sc.read(ROOT/'security/licence-register.json')['components']}
+        replacements=self.p2_register_replacements(current) if (ROOT/'tools/ci/promote_p2.py').is_file() else []
         for name,entry in old.items():
-            value=copy.deepcopy(current[name])
+            if name=='oci-image|registry.k8s.io/coredns/coredns|sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9' and replacements:
+                self.assertNotIn(name,current)
+                self.assertEqual(replacements[0]['name'],entry['name'])
+                # Its fully asserted replacement supersedes this immutable historical receipt.
+                value=copy.deepcopy(entry)
+            else:value=copy.deepcopy(current[name])
+            if name=='oci-image|registry.k8s.io/etcd|sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5' and replacements:
+                self.assertEqual(value['locations'],['security/node-exceptions.json'])
+                value['locations']=entry['locations']
             value['locations']=[p for p in value['locations'] if p!='.github/workflows/supply-chain.yaml']
             if entry['name']=='docker.io/library/python':
                 # WO-34 moves only the console builder/dev consumers to 3.14.8.
@@ -308,6 +342,8 @@ class InventoryAndIntegrity(unittest.TestCase):
         self.assertNotIn(removed,current)
         self.assertFalse(any(v['name']=='docker.io/grafana/grafana' for v in current.values()))
         extra=[v for k,v in current.items() if k not in old]
+        for replacement in replacements:
+            self.assertIn(replacement,extra);extra.remove(replacement)
         python=[v for v in extra if v['name']=='docker.io/library/python']
         for entry in python:
             self.assertEqual(entry['version'],'sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170')

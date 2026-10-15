@@ -8,6 +8,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 import yaml
+from p2_receipts import receipt as p2_receipt
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools'))
@@ -27,14 +28,14 @@ class PatchPins(unittest.TestCase):
         for name in ('00-setup-ubuntu-host.sh','host.env.example','user-data.yaml','user-data-remote.yaml','user-data.yaml.gz',
                      'vcloud-ssot.yaml','security/licence-policy.json','tools/ci/pr-baselines.json',
                      'lab/wsl/console/artifacts.lock.json','lab/wsl/console/workloads.yaml'):
-            self.assertEqual((ROOT/name).read_bytes().replace(b'\r\n',b'\n') if not name.endswith('.gz') else (ROOT/name).read_bytes(),old(name),name)
+            self.assertEqual(p2_receipt(name).replace(b'\r\n',b'\n') if not name.endswith('.gz') else p2_receipt(name),old(name),name)
 
     def test_blocked_ministack_pin_is_unchanged_and_no_app_pin_changes(self):
-        name='deploy/common/images.lock.json';before=json.loads(old(name));current=json.loads((ROOT/name).read_text())
+        name='deploy/common/images.lock.json';before=json.loads(old(name));current=json.loads(p2_receipt(name))
         self.assertEqual(current,before)
 
     def test_pause_is_kubeadm_pin_and_old_alias_is_reference_only(self):
-        name='deploy/common/bootstrap-images.lock.json';before=json.loads(old(name));current=json.loads((ROOT/name).read_text())
+        name='deploy/common/bootstrap-images.lock.json';before=json.loads(old(name));current=json.loads(p2_receipt(name))
         self.assertEqual(current['images']['pause'],current['images']['kubeadm-pause'])
         self.assertEqual(current['images']['pause']['canonical'],PAUSE)
         reference=current.pop('referenceOnlyImages');self.assertEqual(len(reference),1)
@@ -49,14 +50,14 @@ class PatchPins(unittest.TestCase):
 
     def test_seed_changes_only_bootstrap_inventory_and_pause_override(self):
         path='deploy/environments/dev/cairo-2/seed/user-data'
-        current=yaml.safe_load((ROOT/path).read_text());before=yaml.safe_load(old(path))
+        current=yaml.safe_load(p2_receipt(path));before=yaml.safe_load(old(path))
         for file in current['write_files']:
             original=next(v for v in before['write_files'] if v['path']==file['path'])
             if file['path']=='/etc/twinfra-host.env':
                 self.assertEqual(file['content'].replace('PAUSE_IMAGE='+PAUSE+'\n',''),original['content'])
                 file['content']=original['content']
             if file['path']=='/etc/twinfra/bootstrap-images.lock.json':
-                self.assertEqual(json.loads(file['content']),json.loads((dev.COMMON/'bootstrap-images.lock.json').read_text()))
+                self.assertEqual(json.loads(file['content']),json.loads(p2_receipt('deploy/common/bootstrap-images.lock.json')))
                 file['content']=original['content']
         self.assertEqual(current,before)
 

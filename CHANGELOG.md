@@ -13,6 +13,10 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Security
 
+- Promote dev CoreDNS to 1.14.7 and etcd to 3.6.15-0 with pinned digests,
+  close 16 fixed Critical exceptions and carry six approvals without extending
+  their expiry; preserve component/package/vulnerability age across image changes (WO-34 3a).
+
 - Run WO-34 console reproduction and complete image comparisons only in the
   paths-filtered WO-34 workflow; unrelated PRs retain changed-input supply-chain
   validation without rebuilding the console or forcing an image inventory rescan.

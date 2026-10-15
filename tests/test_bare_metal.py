@@ -17,6 +17,7 @@ import unittest
 from unittest.mock import patch
 
 import yaml
+from p2_receipts import receipt as p2_receipt
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools'))
@@ -43,6 +44,8 @@ def historical_delivery_bytes(name):
     if name in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
                 'deploy/environments/dev/cairo-2/seed/user-data','deploy/environments/dev/cairo-1/host.env'):
         return subprocess.check_output(['git','-C',str(ROOT),'show','b55c0ea3a7805e80c218dcc13a5bfbea7e259a24:'+name])
+    if name in ('00-setup-ubuntu-host.sh','user-data.yaml','user-data-remote.yaml','user-data.yaml.gz') and (ROOT/'tools/ci/promote_p2.py').is_file():
+        return p2_receipt(name)
     return (ROOT/name).read_bytes()
 
 
@@ -718,7 +721,7 @@ class PinsAndProfiles(unittest.TestCase):
 
     def test_masked_byte_comparisons_against_main(self):
         def base(name):return subprocess.check_output(['git','-C',str(ROOT),'show',MAIN+':'+name])
-        self.assertEqual(mask_bpffs_script((ROOT/'00-setup-ubuntu-host.sh').read_text()),mask_bpffs_script(base('00-setup-ubuntu-host.sh').decode()))
+        self.assertEqual(mask_bpffs_script(p2_receipt('00-setup-ubuntu-host.sh').decode()),mask_bpffs_script(base('00-setup-ubuntu-host.sh').decode()))
         self.assertEqual((ROOT/'host.env.example').read_bytes().replace(b'\r\n',b'\n'),base('host.env.example'))
         production_base=lambda name:subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_2_BASE+':'+name])
         def production_mask(raw,remote=False):
@@ -734,10 +737,10 @@ class PinsAndProfiles(unittest.TestCase):
             replacement='\n'.join('      '+line if line else '' for line in masked.rstrip('\n').split('\n'))
             return raw.replace(literal,replacement,1)
         for name in ('user-data.yaml','user-data-remote.yaml'):
-            self.assertEqual(production_mask((ROOT/name).read_bytes(),name.endswith('remote.yaml')),production_mask(production_base(name),name.endswith('remote.yaml')),name)
+            self.assertEqual(production_mask(p2_receipt(name),name.endswith('remote.yaml')),production_mask(production_base(name),name.endswith('remote.yaml')),name)
             self.assertNotIn(b'containerLogMaxSize: 10Mi',base(name))
         self.assertEqual(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),(ROOT/'user-data.yaml').read_bytes())
-        self.assertEqual(production_mask(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes())),production_mask(gzip.decompress(production_base('user-data.yaml.gz'))))
+        self.assertEqual(production_mask(gzip.decompress(p2_receipt('user-data.yaml.gz'))),production_mask(gzip.decompress(production_base('user-data.yaml.gz'))))
         path='deploy/environments/dev/cairo-2/seed/user-data'
         def mask(raw):
             raw=raw.replace(b'\r\n',b'\n')
@@ -761,7 +764,7 @@ class PinsAndProfiles(unittest.TestCase):
 
     def test_amendment_2_changes_only_approved_blocks_against_current_main(self):
         base=lambda name:subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_2_BASE+':'+name]).decode()
-        current=(ROOT/'00-setup-ubuntu-host.sh').read_text()
+        current=p2_receipt('00-setup-ubuntu-host.sh').decode()
         self.assertEqual(mask_bpffs_script(current),mask_bpffs_script(base('00-setup-ubuntu-host.sh')))
         self.assertNotEqual(current,base('00-setup-ubuntu-host.sh'))
         for name in ('host.env.example','deploy/environments/dev/cairo-1/host.env',
@@ -819,12 +822,12 @@ class PinsAndProfiles(unittest.TestCase):
 
     def test_amendment_4_render_changes_only_etcd_block_and_derived_checksums(self):
         def base(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_4_BASE+':'+name])
-        self.assertEqual(mask_etcd_script((ROOT/'00-setup-ubuntu-host.sh').read_text()),mask_etcd_script(base('00-setup-ubuntu-host.sh').decode()))
+        self.assertEqual(mask_etcd_script(p2_receipt('00-setup-ubuntu-host.sh').decode()),mask_etcd_script(base('00-setup-ubuntu-host.sh').decode()))
         for name in ('user-data.yaml','user-data-remote.yaml'):
-            self.assertEqual(mask_production_render((ROOT/name).read_bytes(),remote='remote' in name),
+            self.assertEqual(mask_production_render(p2_receipt(name),remote='remote' in name),
                              mask_production_render(base(name),remote='remote' in name),name)
         self.assertEqual(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),(ROOT/'user-data.yaml').read_bytes())
-        self.assertEqual(mask_production_render(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes())),
+        self.assertEqual(mask_production_render(gzip.decompress(p2_receipt('user-data.yaml.gz'))),
                          mask_production_render(gzip.decompress(base('user-data.yaml.gz'))))
         path='deploy/environments/dev/cairo-2/seed/user-data'
         def mask_seed(raw):
@@ -937,12 +940,12 @@ class PinsAndProfiles(unittest.TestCase):
 
     def test_amendment_8_changes_only_return_statuses_and_derived_render_hashes(self):
         def base(name):return subprocess.check_output(['git','-C',str(ROOT),'show',AMENDMENT_8_BASE+':'+name])
-        self.assertEqual(mask_skip_guards((ROOT/'00-setup-ubuntu-host.sh').read_text()),mask_skip_guards(base('00-setup-ubuntu-host.sh').decode()))
+        self.assertEqual(mask_skip_guards(p2_receipt('00-setup-ubuntu-host.sh').decode()),mask_skip_guards(base('00-setup-ubuntu-host.sh').decode()))
         for name in ('user-data.yaml','user-data-remote.yaml'):
-            self.assertEqual(mask_production_render((ROOT/name).read_bytes(),mask_skip_guards,remote='remote' in name),
+            self.assertEqual(mask_production_render(p2_receipt(name),mask_skip_guards,remote='remote' in name),
                              mask_production_render(base(name),mask_skip_guards,remote='remote' in name),name)
         self.assertEqual(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),(ROOT/'user-data.yaml').read_bytes())
-        self.assertEqual(mask_production_render(gzip.decompress((ROOT/'user-data.yaml.gz').read_bytes()),mask_skip_guards),
+        self.assertEqual(mask_production_render(gzip.decompress(p2_receipt('user-data.yaml.gz')),mask_skip_guards),
                          mask_production_render(gzip.decompress(base('user-data.yaml.gz')),mask_skip_guards))
         path='deploy/environments/dev/cairo-2/seed/user-data'
         def seed_mask(raw):

@@ -18,6 +18,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'image-patch-p2': ['tools/ci/promote_p2.py','tests/test_image_patch_p2.py','tests/p2_receipts.py',
+        'docs/acceptance/wo34-p2-2026-10-15.json'],
     'image-patch-p3': ['tools/refresh_p3_pins.py','tools/ci/compare_p3_images.py','tests/test_image_patch_p3.py'],
     'platform-hygiene': ['tools/platform_network_boundary.py','tests/test_platform_hygiene.py'],
     'image-references': ['tools/platform_image_references.py','tests/test_image_references.py'],
@@ -298,6 +300,8 @@ def main():
             run('platform-hygiene-tests',[python,'-m','unittest','discover','-s','tests','-p','test_platform_hygiene.py','-v'],unit=True)
         if report['modules']['image-patch-p3']=='present':
             run('image-patch-p3-tests',[python,'-m','unittest','discover','-s','tests','-p','test_image_patch_p3.py','-v'],unit=True)
+        if report['modules']['image-patch-p2']=='present':
+            run('image-patch-p2-tests',[python,'-m','unittest','discover','-s','tests','-p','test_image_patch_p2.py','-v'],unit=True)
         if report['modules']['image-references']=='present':
             run('image-reference-tests',[python,'-m','unittest','discover','-s','tests','-p','test_image_references.py','-v'],unit=True)
             run('image-reference-renders',[python,'tools/platform_image_references.py','--bash',binaries['bash'],

@@ -89,6 +89,10 @@ write_files:
 
     PAUSE_IMAGE=registry.twinfra.example.com/registry.k8s.io/pause:3.10.2
 
+    KUBEADM_DNS_IMAGE_TAG=v1.14.7
+
+    KUBEADM_ETCD_IMAGE_TAG=3.6.15-0
+
     '
 - path: /usr/local/sbin/00-setup-ubuntu-host.sh
   owner: root:root
@@ -584,16 +588,24 @@ write_files:
     \ KVM in the parent hypervisor'; fi\n        [[ -c /dev/kvm ]] || die 'KVM device\
     \ is unavailable'\n        kvm-ok\n    fi\n}\n\nrender_kubeadm() {\n    local\
     \ resolv_conf=/etc/resolv.conf endpoint=${CONTROL_PLANE_ENDPOINT:-\"$NODE_IP:6443\"\
-    } dev_proxy=\n    # skipPhases alone does not disable kubeadm's kube-proxy image\
-    \ preflight.\n    [[ ${IMAGE_STAGING:-false} != true ]] || dev_proxy=$'proxy:\\\
-    n  disabled: true\\n'\n    [[ ! -e /run/systemd/resolve/resolv.conf ]] || resolv_conf=/run/systemd/resolve/resolv.conf\n\
+    } dev_proxy='' dev_images=''\n    # WO-34: kubeadm's own patch overrides, confined\
+    \ to the dev profiles.\n    if [[ -n ${KUBEADM_DNS_IMAGE_TAG:-}${KUBEADM_ETCD_IMAGE_TAG:-}\
+    \ ]]; then\n        [[ $PLATFORM_PROFILE == dev-cairo-1 || $PLATFORM_PROFILE ==\
+    \ dev-cairo-2 ]] || bad_config 'Image tag overrides are dev-only'\n        [[\
+    \ ${KUBEADM_DNS_IMAGE_TAG:-} =~ ^v1\\.14\\.[0-9]+$ && ${KUBEADM_ETCD_IMAGE_TAG:-}\
+    \ =~ ^3\\.6\\.[0-9]+-0$ ]] || bad_config 'Dev kubeadm tags must be exact compatible\
+    \ patches'\n        printf -v dev_images 'dns:\\n  imageTag: \"%s\"\\netcd:\\\
+    n  local:\\n    imageTag: \"%s\"\\n' \"$KUBEADM_DNS_IMAGE_TAG\" \"$KUBEADM_ETCD_IMAGE_TAG\"\
+    \n    fi\n    # skipPhases alone does not disable kubeadm's kube-proxy image preflight.\n\
+    \    [[ ${IMAGE_STAGING:-false} != true ]] || dev_proxy=$'proxy:\\n  disabled:\
+    \ true\\n'\n    [[ ! -e /run/systemd/resolve/resolv.conf ]] || resolv_conf=/run/systemd/resolve/resolv.conf\n\
     \    cat <<EOF\napiVersion: kubeadm.k8s.io/v1beta4\nkind: InitConfiguration\n\
     localAPIEndpoint:\n  advertiseAddress: \"$NODE_IP\"\n  bindPort: 6443\nnodeRegistration:\n\
     \  name: \"$NODE_NAME\"\n  criSocket: \"$CRI_SOCKET\"\n  taints: []\n  kubeletExtraArgs:\n\
     \    - name: node-ip\n      value: \"$NODE_IP\"\npatches:\n  directory: \"$STATE_DIR/kubeadm-patches\"\
     \nskipPhases:\n  - addon/kube-proxy\n---\napiVersion: kubeadm.k8s.io/v1beta4\n\
     kind: ClusterConfiguration\nkubernetesVersion: \"$KUBERNETES_VERSION\"\nclusterName:\
-    \ \"$CLUSTER_NAME\"\nimageRepository: \"$IMAGE_REGISTRY/registry.k8s.io\"\n${dev_proxy}controlPlaneEndpoint:\
+    \ \"$CLUSTER_NAME\"\nimageRepository: \"$IMAGE_REGISTRY/registry.k8s.io\"\n${dev_proxy}${dev_images}controlPlaneEndpoint:\
     \ \"$endpoint\"\nnetworking:\n  podSubnet: \"$POD_CIDR\"\n  serviceSubnet: \"\
     $SERVICE_CIDR\"\n  dnsDomain: cluster.local\napiServer:\n  certSANs:\n    - \"\
     $NODE_IP\"\n    - \"$NODE_NAME\"\n---\napiVersion: kubelet.config.k8s.io/v1beta1\n\
@@ -978,14 +990,14 @@ write_files:
     ,\n      \"mounts\": {\n        \"/etc/kubernetes/scheduler.conf\": {\n      \
     \    \"readOnly\": true,\n          \"type\": \"FileOrCreate\",\n          \"\
     required\": true\n        }\n      }\n    },\n    \"Pod/kube-system/etcd\": {\n\
-    \      \"image\": \"registry.twinfra.example.com/registry.k8s.io/etcd:3.6.8-0\"\
+    \      \"image\": \"registry.twinfra.example.com/registry.k8s.io/etcd:3.6.15-0\"\
     ,\n      \"mounts\": {\n        \"/etc/kubernetes/pki/etcd\": {\n          \"\
     readOnly\": true,\n          \"type\": \"DirectoryOrCreate\",\n          \"required\"\
     : true\n        },\n        \"/var/lib/etcd\": {\n          \"readOnly\": false,\n\
     \          \"type\": \"DirectoryOrCreate\",\n          \"required\": true\n  \
     \      }\n      }\n    }\n  },\n  \"sourcePolicySHA256\": \"d9799b19ff5fb101cde1870840f29b6d54d6e6cff2c22b389a62d9adfe7cd253\"\
-    ,\n  \"profile\": \"WO-21 dev mirror relocation only; same images, mounts and\
-    \ security\"\n}\nVCLOUD_DEV_POLICY_JSON\n    else\n    cat <<'VCLOUD_POLICY_JSON'\n\
+    ,\n  \"profile\": \"WO-34 approved dev etcd patch and mirror; unchanged mounts\
+    \ and security\"\n}\nVCLOUD_DEV_POLICY_JSON\n    else\n    cat <<'VCLOUD_POLICY_JSON'\n\
     {\n  \"status\": \"approved\",\n  \"approval\": {\n    \"by\": \"user\",\n   \
     \ \"date\": \"2026-10-05\",\n    \"decision\": \"Approve the documented node exception\"\
     ,\n    \"adr\": \"docs/adr-0001-node-host-mounts.md\",\n    \"inventorySHA256\"\
@@ -1817,22 +1829,25 @@ write_files:
     ,\n      \"configDigest\": \"sha256:137b99d7bbba00a26374e3d8018ea318ff0d9de86d46bf16f2632364676826b3\"\
     ,\n      \"digestSource\": \"https://registry.k8s.io/v2/kube-scheduler/manifests/v1.36.5\"\
     ,\n      \"verifiedOn\": \"2026-10-10\"\n    },\n    \"etcd\": {\n      \"release\"\
-    : \"registry.k8s.io/etcd:3.6.8-0\",\n      \"source\": \"registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5\"\
-    ,\n      \"canonical\": \"registry.twinfra.example.com/registry.k8s.io/etcd:3.6.8-0\"\
-    ,\n      \"digest\": \"sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5\"\
-    ,\n      \"platform\": \"linux/amd64\",\n      \"amd64Digest\": \"sha256:aa2b41e3f99c9a337b82f687875a63c5119e6d39bc43fc76b6c40a96f55cf391\"\
-    ,\n      \"configDigest\": \"sha256:ee85eb1f0edd27fd11e3bed20f21a4001ad63107eb2f8d489429648a799c0e86\"\
-    ,\n      \"digestSource\": \"https://registry.k8s.io/v2/etcd/manifests/3.6.8-0\"\
-    ,\n      \"verifiedOn\": \"2026-10-10\"\n    },\n    \"coredns\": {\n      \"\
-    release\": \"registry.k8s.io/coredns/coredns:v1.14.2\",\n      \"source\": \"\
-    registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9\"\
-    ,\n      \"canonical\": \"registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.2\"\
-    ,\n      \"digest\": \"sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9\"\
-    ,\n      \"platform\": \"linux/amd64\",\n      \"amd64Digest\": \"sha256:fd5079792b93909db3adefa91e41c3995455013394f0197c7346786ae19079fc\"\
-    ,\n      \"configDigest\": \"sha256:38667dd9be96c17227adde456e33ad701bdbdc5c6db0272a1d33a929bd8e62d6\"\
-    ,\n      \"digestSource\": \"https://registry.k8s.io/v2/coredns/coredns/manifests/v1.14.2\"\
-    ,\n      \"verifiedOn\": \"2026-10-10\"\n    },\n    \"pause\": {\n      \"release\"\
-    : \"registry.k8s.io/pause:3.10.2\",\n      \"source\": \"registry.k8s.io/pause@sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4\"\
+    : \"registry.k8s.io/etcd:3.6.15-0\",\n      \"source\": \"registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1\"\
+    ,\n      \"canonical\": \"registry.twinfra.example.com/registry.k8s.io/etcd:3.6.15-0\"\
+    ,\n      \"digest\": \"sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1\"\
+    ,\n      \"platform\": \"linux/amd64\",\n      \"amd64Digest\": \"sha256:70a702786a28fef490a71c2ce873c48efa35770d1c3fe76ea4f05f0045b326b7\"\
+    ,\n      \"configDigest\": \"sha256:a1aac660a585a27fc102b228524abf4810579ab102b9786d2be28ed2b04e7823\"\
+    ,\n      \"digestSource\": \"https://registry.k8s.io/v2/etcd/manifests/3.6.15-0\"\
+    ,\n      \"verifiedOn\": \"2026-10-15\",\n      \"releaseSource\": \"https://github.com/etcd-io/etcd/releases/tag/v3.6.15\"\
+    ,\n      \"releasePublishedAt\": \"2026-09-22T21:06:14Z\"\n    },\n    \"coredns\"\
+    : {\n      \"release\": \"registry.k8s.io/coredns/coredns:v1.14.7\",\n      \"\
+    source\": \"registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286\"\
+    ,\n      \"canonical\": \"registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.7\"\
+    ,\n      \"digest\": \"sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286\"\
+    ,\n      \"platform\": \"linux/amd64\",\n      \"amd64Digest\": \"sha256:2329f5f0e7e79fbe56dcdf11ecc4337ee2476bb251095bc275fe9461cb88a55b\"\
+    ,\n      \"configDigest\": \"sha256:97efff2babf85310d6f87bd969ac64d7006bbbadb147c90579d68d57634750f4\"\
+    ,\n      \"digestSource\": \"https://registry.k8s.io/v2/coredns/coredns/manifests/v1.14.7\"\
+    ,\n      \"verifiedOn\": \"2026-10-15\",\n      \"releaseSource\": \"https://github.com/coredns/coredns/releases/tag/v1.14.7\"\
+    ,\n      \"releasePublishedAt\": \"2026-08-19T01:39:14Z\"\n    },\n    \"pause\"\
+    : {\n      \"release\": \"registry.k8s.io/pause:3.10.2\",\n      \"source\": \"\
+    registry.k8s.io/pause@sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4\"\
     ,\n      \"canonical\": \"registry.twinfra.example.com/registry.k8s.io/pause:3.10.2\"\
     ,\n      \"digest\": \"sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4\"\
     ,\n      \"platform\": \"linux/amd64\",\n      \"amd64Digest\": \"sha256:412c4a7219cb8a299a37337f3d87810c5340095322e15594a1637785adad0f17\"\
@@ -1885,7 +1900,23 @@ write_files:
     ,\n      \"configDigest\": \"sha256:cd073f4c5f6a8e9dc6f3125ba00cf60819cae95c1ec84a1f146ee4a9cf9e803f\"\
     ,\n      \"digestSource\": \"https://registry.k8s.io/v2/pause/manifests/3.10.1\"\
     ,\n      \"verifiedOn\": \"2026-10-10\",\n      \"purpose\": \"Unchanged production/default\
-    \ profile alias; excluded from dev staging.\"\n    }\n  ]\n}\n"
+    \ profile alias; excluded from dev staging.\"\n    },\n    {\n      \"release\"\
+    : \"registry.k8s.io/coredns/coredns:v1.14.2\",\n      \"source\": \"registry.k8s.io/coredns/coredns@sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9\"\
+    ,\n      \"canonical\": \"registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.2\"\
+    ,\n      \"digest\": \"sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9\"\
+    ,\n      \"platform\": \"linux/amd64\",\n      \"amd64Digest\": \"sha256:fd5079792b93909db3adefa91e41c3995455013394f0197c7346786ae19079fc\"\
+    ,\n      \"configDigest\": \"sha256:38667dd9be96c17227adde456e33ad701bdbdc5c6db0272a1d33a929bd8e62d6\"\
+    ,\n      \"digestSource\": \"https://registry.k8s.io/v2/coredns/coredns/manifests/v1.14.2\"\
+    ,\n      \"verifiedOn\": \"2026-10-10\",\n      \"purpose\": \"Unchanged production\
+    \ kubeadm default; excluded from dev staging.\"\n    },\n    {\n      \"release\"\
+    : \"registry.k8s.io/etcd:3.6.8-0\",\n      \"source\": \"registry.k8s.io/etcd@sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5\"\
+    ,\n      \"canonical\": \"registry.twinfra.example.com/registry.k8s.io/etcd:3.6.8-0\"\
+    ,\n      \"digest\": \"sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5\"\
+    ,\n      \"platform\": \"linux/amd64\",\n      \"amd64Digest\": \"sha256:aa2b41e3f99c9a337b82f687875a63c5119e6d39bc43fc76b6c40a96f55cf391\"\
+    ,\n      \"configDigest\": \"sha256:ee85eb1f0edd27fd11e3bed20f21a4001ad63107eb2f8d489429648a799c0e86\"\
+    ,\n      \"digestSource\": \"https://registry.k8s.io/v2/etcd/manifests/3.6.8-0\"\
+    ,\n      \"verifiedOn\": \"2026-10-10\",\n      \"purpose\": \"Unchanged production\
+    \ kubeadm default; excluded from dev staging.\"\n    }\n  ]\n}\n"
 - path: /usr/local/lib/twinfra/stage-images.py
   permissions: '0644'
   content: "#!/usr/bin/env python3\n# SPDX-License-Identifier: MIT\n\"\"\"Owner/VM\

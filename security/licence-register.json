@@ -7806,21 +7806,26 @@
       ]
     },
     {
-      "id": "oci-image|registry.k8s.io/coredns/coredns|sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
+      "id": "oci-image|registry.k8s.io/coredns/coredns|sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
       "ecosystem": "oci-image",
       "name": "registry.k8s.io/coredns/coredns",
-      "version": "sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9",
-      "spdx": "Apache-2.0",
-      "class": "allowed",
-      "licenceSource": "https://raw.githubusercontent.com/coredns/coredns/v1.14.2/LICENSE",
-      "verifiedOn": "2026-10-10",
-      "recordedOn": "2026-10-10",
-      "integrities": [
-        "sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9"
-      ],
+      "version": "sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
       "locations": [
         "deploy/common/bootstrap-images.lock.json"
-      ]
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/coredns/coredns/v1.14.7/LICENSE",
+      "verifiedOn": "2026-10-15",
+      "recordedOn": "2026-10-15",
+      "integrities": [
+        "sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286"
+      ],
+      "notes": "Unmodified upstream. Primary LICENSE SHA256 f0530760b1e2ffcf23df322db638ee06d06fc07fead0ed3ddd710f2e224698a9. OS/dependency terms remain in the reviewed SBOM.",
+      "imageSBOM": {
+        "path": "deploy/common/vendor/wo34-coredns-v1.14.7.cdx.json.gz",
+        "sha256": "4cd5c00ff3b9c9d95c81d9c679a50e794bb30ecbe109fd09324e0f44d3663468"
+      }
     },
     {
       "id": "oci-image|registry.k8s.io/etcd|sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
@@ -7828,7 +7833,6 @@
       "name": "registry.k8s.io/etcd",
       "version": "sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5",
       "locations": [
-        "deploy/common/bootstrap-images.lock.json",
         "security/node-exceptions.json"
       ],
       "spdx": "NOASSERTION",
@@ -7840,6 +7844,28 @@
         "sha256:397189418d1a00e500c0605ad18d1baf3b541a1004d768448c367e48071622e5"
       ],
       "evidencePending": true
+    },
+    {
+      "id": "oci-image|registry.k8s.io/etcd|sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "ecosystem": "oci-image",
+      "name": "registry.k8s.io/etcd",
+      "version": "sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "locations": [
+        "deploy/common/bootstrap-images.lock.json"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/etcd-io/etcd/v3.6.15/LICENSE",
+      "verifiedOn": "2026-10-15",
+      "recordedOn": "2026-10-15",
+      "integrities": [
+        "sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1"
+      ],
+      "notes": "Unmodified upstream. Primary LICENSE SHA256 cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30. OS/dependency terms remain in the reviewed SBOM.",
+      "imageSBOM": {
+        "path": "deploy/common/vendor/wo34-etcd-3.6.15-0.cdx.json.gz",
+        "sha256": "3ec7f9e702ccea64fd4b4f8c4647ea4a39c539d92fd514e000bb31c09f0b4c2d"
+      }
     },
     {
       "id": "oci-image|registry.k8s.io/kube-apiserver|sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
