@@ -94,7 +94,7 @@ class Files(unittest.TestCase):
 
     def awaiting(self):
         report=self.begin();full=net.load(net.STATE_DIR+'/transaction.json')
-        full.update(status='awaiting-confirmation',readyAt=10)
+        full.update(status='awaiting-confirmation',readyAt=10,candidate=net.snapshot())
         net.save(net.STATE_DIR+'/transaction.json',full)
         return report,full
 
@@ -115,6 +115,13 @@ class Files(unittest.TestCase):
             self.assertEqual(net.load(net.STATE_DIR+'/confirm.json'),{'unit':report['unit']})
         with patch.object(net.time,'monotonic',return_value=111):
             with self.assertRaisesRegex(ValueError,'window closed'):net.confirm(data)
+
+    def test_confirmation_refuses_changed_candidate_and_worker_cannot_replay(self):
+        report,_=self.awaiting();self.put(net.CLOUD,b'foreign edit')
+        with patch.object(net,'unit_active',return_value=True),patch.object(net.time,'monotonic',return_value=20):
+            with self.assertRaisesRegex(ValueError,'Candidate network files changed'):net.confirm(DATA|{'unit':report['unit']})
+        self.assertFalse(net.path(net.STATE_DIR+'/confirm.json').exists())
+        with self.assertRaisesRegex(ValueError,'replay refused'):net.worker(report['unit'])
 
     def worker_case(self,accept=False,fail_spawn=False,mode='apply'):
         report=self.begin(mode);unit=report['unit'];before=net.snapshot();self.tick=0

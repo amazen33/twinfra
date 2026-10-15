@@ -212,6 +212,7 @@ def confirm(data):
     report=state(data)
     if report['status']!='awaiting-confirmation' or time.monotonic()-report['readyAt']>90 or not unit_active(report['unit']):
         raise ValueError('Network confirmation window closed')
+    if snapshot()!=report.get('candidate'):raise ValueError('Candidate network files changed; confirmation refused')
     if not matches(effective(data),data,report['mode'],load(STATE_DIR+'/baseline.json')):raise ValueError('Applied network verification failed; confirmation refused')
     # This request itself arrived over a new key-only SSH connection. Verify TLS
     # and the existing kubeadm identity; never disable CA/hostname verification.
@@ -224,12 +225,14 @@ def confirm(data):
 def worker(unit):
     with lock(wait=True):
         report=state({'unit':unit});data=report['data'];baseline=load(STATE_DIR+'/baseline.json')
+        if report['status']!='running':raise ValueError('Network worker replay refused')
         child=None;accepted=False
         try:
             if report['mode']=='apply':
                 write(STATIC,data['config'].encode());write(CLOUD,b'network: {config: disabled}\n')
                 path(DHCP).unlink()  # exact saved copy remains in the owned directory
             else:restore(baseline['files'])
+            report['candidate']=snapshot();save(STATE_DIR+'/transaction.json',report)
             ready=path('/run/netplan/netplan-try.ready');secure(ready)
             if ready.exists():raise ValueError('Another netplan try is active')
             # A live pipe is essential: /dev/null makes netplan's select loop
@@ -252,7 +255,7 @@ def worker(unit):
                 # netplan can return 0 after reverting! Require its explicit
                 # acceptance acknowledgement as well as exit code and checks.
                 accepted=sent and child.returncode==0 and 'Configuration accepted.' in output.read()
-            if not accepted or not matches(effective(data),data,report['mode'],baseline):raise ValueError('Netplan did not accept verified configuration')
+            if not accepted or snapshot()!=report['candidate'] or not matches(effective(data),data,report['mode'],baseline):raise ValueError('Netplan did not accept verified configuration')
             save(STATE_DIR+'/committed.json',{'owner':OWNER,'mode':report['mode'],'files':snapshot()})
             report['status']='passed'
         except Exception:
