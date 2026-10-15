@@ -63,7 +63,8 @@ class PatchPins(unittest.TestCase):
 
     def test_services_render_is_unchanged_when_ministack_is_stopped(self):
         path='deploy/environments/dev/cairo-1/services/workloads.yaml'
-        before=list(yaml.safe_load_all(old(path)));current=list(yaml.safe_load_all((ROOT/path).read_text()))
+        from wo36_receipts import receipt as network_receipt
+        before=list(yaml.safe_load_all(old(path)));current=list(yaml.safe_load_all(network_receipt(path)))
         self.assertEqual(current,before)
 
     def test_receipt_retains_blocked_mini_exception_and_rejects_promoted_critical(self):

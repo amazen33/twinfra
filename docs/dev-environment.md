@@ -246,12 +246,24 @@ No step touches pCloud, `iotee-nat`, IOT-EE or the WSL controller distro.
    ```
 
    Expected build: `status: passed`, `repositoryWrites: false`, `runtimeImport: false`.
-   Console: `sha256:385934466c5453902e4beda1d6ed7afb09eae6dd3419d0a7b0b219eece4cc4e2`.
-   PostgreSQL: `sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6`.
+   Expected digests come from this checkout's lock, never from a copied receipt:
+
+   ```powershell
+   python -c "import json; from pathlib import Path; images=json.loads(Path('deploy/common/images.lock.json').read_text())['images']; print('\n'.join(name+': '+images[name]['canonical'] for name in ('console','postgresql')))"
+   ```
+
    Any digest, wheel hash or source mismatch stops the build; the command never
-   updates repository locks or receipts. The existing image title remains
-   `vcloud-console` to preserve its digest. Cache directories are
-   `.build/console/` and `.build/dev-images/inputs/`; outputs are `.build/dev-images/`.
+   updates repository locks or receipts. The rebuilt image title is
+   `twinfra-console`. Cache directories are `.build/console/` and
+   `.build/dev-images/inputs/`; outputs are `.build/dev-images/`.
+
+   **Before merging an image-changing PR:** stage from its branch, run the
+   readonly `stage-images --check` above, then add the exact line
+   `Staging: PASS (stage-images --check, YYYY-MM-DD)` to the PR body using the
+   actual UTC date. Extra staged images do not change running workloads. The
+   lightweight `staging-check` fails on changed common locks or rendered dev
+   image references until that owner attestation exists. It never stages images
+   or treats an attestation as automated live evidence.
 
    Expected: ten application images, `problems: []`, canonical digest matches and
    CRI `pinned: true`. Archive names: `console.oci.tar`, `postgresql-pgvector.tar`.
@@ -643,3 +655,107 @@ etcd WAL fsync p99 (<10 ms target, report even a miss) remain
 [Pending](acceptance/dev-environment-2026-10-12.md). Only the tester signs acceptance.
 WSL material remains until WO-28; no WSL, laptop, Dell or GitHub-settings changes
 were performed by this work order.
+
+## WO-36: Dell address plan and safe network changes
+
+The owner-approved `siteNetwork` section of `vcloud-ssot.yaml` records:
+
+| Address | Use |
+| --- | --- |
+| 192.168.1.1 | Router, gateway and primary DNS |
+| 192.168.1.2–192.168.1.99 | Fixed range, excluded from DHCP after the static change |
+| 192.168.1.3/24 | `twinfra-dev-cairo-1`, `eno1`, MAC `64:00:6a:86:5c:4f` |
+| 192.168.1.10 | Future WO-33 control-plane VIP, not assigned by WO-36 |
+| 192.168.1.11–192.168.1.13 | Future nodes, not assigned by WO-36 |
+| 192.168.1.100–192.168.1.254 | Router DHCP pool after owner changes it |
+
+DNS order is `192.168.1.1`, then `1.1.1.1`. CGNAT provides no inbound internet
+path; UIs remain accessible through trusted HTTPS over laptop tunnels.
+
+**Owner only, after merge; live acceptance Pending:**
+
+```powershell
+python tools/platform_dev.py host-network --context twinfra-dev-cairo-1 --check
+python tools/platform_dev.py host-network --context twinfra-dev-cairo-1 --apply
+python tools/platform_dev.py host-network --context twinfra-dev-cairo-1 --check
+python tools/platform_dev.py host-check --context twinfra-dev-cairo-1
+```
+
+An initial `--check` may fail because the address is still dynamic. All commands
+require the same exact ready cluster identity, node IP/listeners, Secure Boot and
+kernel lockdown `[integrity]` checks as WO-31. The NIC MAC must also match.
+`--check` reads only. A successful JSON report has this shape (illustrative,
+not live evidence):
+
+```json
+{"status":"passed","mode":"static-check","network":{"address":"192.168.1.3","present":true,"static":true,"prefixLength":24,"mac":"64:00:6a:86:5c:4f","gateways":["192.168.1.1"],"dns":["192.168.1.1","1.1.1.1"],"nodeInternalIP":["192.168.1.3"]},"integrity":{"status":"PASS","detail":"Owned network files verified (apply)"}}
+```
+
+The owned netplan also sets `ignore-carrier: true`: Netplan emits
+`ConfigureWithoutCarrier=yes`, which makes systemd 255 retain configuration on
+carrier loss. A static lease replacement alone does not establish that behavior.
+See the [Netplan networkd generator](https://github.com/canonical/netplan/blob/1.0/src/networkd.c)
+and [systemd 255 network contract](https://github.com/systemd/systemd/blob/v255/man/systemd.network.xml).
+
+The root-owned transaction lives under `/var/lib/twinfra/host-network/`. It saves
+an exact mode-preserving snapshot and a copy of `50-cloud-init.yaml`, writes
+`/etc/netplan/60-twinfra-static.yaml` and
+`/etc/cloud/cloud.cfg.d/99-twinfra-disable-network-config.cfg`, then removes the
+old cloud-init netplan from the active directory. Existing unowned destinations,
+modified owned files or a concurrent transaction are refused. A detached
+`twinfra-network-<id>` systemd unit survives an SSH disconnect. Its worker invokes
+`netplan try --timeout 120`, keeping stdin open. Only after a new key-only SSH
+login, matching effective static address/route/DNS/InternalIP, and TLS-verified
+`https://192.168.1.3:6443/readyz` (`kubectl` using the existing trusted admin
+kubeconfig) does it confirm. It requires netplan's explicit acceptance message,
+its exit code and post-checks; exit zero alone can mean rollback.
+
+If verification/login fails or the controller disappears, netplan's timeout
+restores runtime and the detached worker restores the original on-disk files.
+Inspect `journalctl -u twinfra-network-<id>` and the JSON result. An unexpectedly
+killed worker or a failure after acceptance is reported as failure requiring
+local inspection; never reboot into an unverified on-disk configuration. The
+implementation follows the [netplan try confirmation and rollback contract](https://github.com/canonical/netplan/blob/1.0/netplan_cli/cli/commands/try_command.py).
+It never re-initializes/resets Kubernetes or rotates certificates.
+
+Rollback uses the same detached try/fresh-login/TLS confirmation sequence:
+
+```powershell
+python tools/platform_dev.py host-network --context twinfra-dev-cairo-1 --rollback
+```
+
+It restores the saved DHCP configuration. It must retain `.3` and the saved
+route/DNS to confirm; after changing the DHCP pool, arrange the optional `.3`
+reservation before attempting rollback, or the attempt will safely time out.
+A failed rollback restores the preceding static files. `--check` is a static
+configuration check, so it intentionally fails after a successful DHCP rollback.
+
+Only after static `--check` passes, the owner sets the router pool start `.100`,
+end `.254`. Optional reservation: `64:00:6a:86:5c:4f` to `.3`. The laptop (formerly
+at `.9`) renews into that pool; nothing depends on its address. A router/Dell UPS
+is optional. The optional owner test disconnects router power for 60 seconds and
+records unchanged `.3`/node InternalIP and no control-plane restarts.
+
+Host-check adds owned-network-file integrity to the existing kernel lockdown
+check. Unconfigured static ownership warns; tampering blocks. Since-boot `eno1`
+carrier/DHCP lease losses warn, as do retained CRI control-plane restart attempts.
+Restart counts are a lower bound because CRI garbage collection removes history;
+unavailable journal/CRI history warns rather than hiding an observation gap.
+The Prometheus link-loss alert remains a WO-10 follow-up.
+
+### Dev update strategies
+
+| Workload | Strategy | Reason |
+| --- | --- | --- |
+| twinfra-console | RollingUpdate, unavailable 0 / surge 1 | Stateless backend |
+| twinfra-gateway | RollingUpdate, unavailable 0 / surge 1 | Stateless APISIX, shared OIDC configuration |
+| twinfra-ministack | RollingUpdate, unavailable 0 / surge 1 | Disposable local API validation; no durable data |
+| twinfra-keycloak | Recreate | Current `cache=local` does not share authentication sessions; clustered cache is WO-33 / ADR-0050 |
+| twinfra-openbao | Recreate | Single active process with PostgreSQL storage, no HA coordination; Raft is WO-08 |
+
+The generator uses `deploy/common/dev-update-strategies.json` for the two
+Recreate reasons; tests reject an undocumented Recreate or unsafe stateless
+rolling parameters. Upstream controller strategies and StatefulSets are unchanged.
+An unstaged new image leaves the old stateless pod Ready; resource pressure may
+leave the new pod Pending and the rollout incomplete. Staging remains mandatory
+for all image changes, including the two single-process services.

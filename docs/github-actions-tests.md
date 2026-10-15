@@ -1,5 +1,22 @@
 # GitHub Actions validation
 
+## WO-36 network and staging checks
+
+`test_host_network.py` runs fake SSH/netplan and temporary-filesystem failures,
+safe rollout/reason checks and image-change/body-attestation fixtures in the PR
+gate. Its optional bundle is absent in the six historical revisions; their
+original suites remain required. Earlier delivery receipts project out only the
+explicit WO-36 network hooks and exact site metadata, comparing all remaining
+AST nodes/bytes against merged main; current network behavior is tested separately.
+
+The separate `staging-check` workflow runs on opened, synchronize, reopened and
+edited PRs, with `contents: read`, pinned checkout, no secrets or image scans.
+Common image-lock changes or rendered dev image-reference changes require an
+exact PR body line `Staging: PASS (stage-images --check, YYYY-MM-DD)` with a valid
+UTC calendar date. The owner stages/checks the PR branch first, then attests;
+the workflow never connects to the host or asserts live validation itself.
+Only the owner later makes this check required in repository settings.
+
 ## WO-07a candidate deployment guard
 
 `python tools/check_grafana_removal.py --root .` rejects Grafana images, charts,

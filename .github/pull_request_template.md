@@ -12,6 +12,10 @@ the historical baselines. Do not treat static checks as live acceptance.
 
 ## Live checks
 
+- [ ] If image locks or rendered dev image references change, stage from this PR branch and run `stage-images --check` before merging. Replace the placeholder below only after that succeeds (UTC date):
+
+Staging: PASS (stage-images --check, <UTC date>)
+
 List owner authorization, environment, commands and results, or state
 `Not executed: no live changes in this work order`. Keep credentials and
 private configuration out of commands, logs and PR text.

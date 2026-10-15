@@ -134,7 +134,8 @@ class ExactChanges(unittest.TestCase):
             self.assertEqual(set(lock['images']),set(json.loads(original(path))['images']))
             self.assertNotIn('perses',json.dumps(lock['images']).lower())
         for path in ('tools/ci/pr-baselines.json','security/node-exceptions.json','vcloud-ssot.yaml'):
-            self.assertEqual((ROOT/path).read_bytes().replace(b'\r\n',b'\n'),original(path),path)
+            from p2_receipts import receipt
+            self.assertEqual(receipt(path).replace(b'\r\n',b'\n'),original(path),path)
 
 
 if __name__=='__main__':unittest.main()

@@ -58,6 +58,8 @@ def expected():
 def request(ssh, action, **values):
     data=expected()|{'action':action}|values
     code=(COMMON/'host-admin.py').read_text()
+    if action=='check' or action.startswith('network-'):
+        code='NETWORK_SOURCE='+repr((COMMON/'host-network.py').read_text())+'\n'+code
     if action=='bootstrap-preflight':
         # Source the exact Module -1 helpers in memory; --check writes no files.
         code='BOOTSTRAP_SOURCE='+repr((ROOT/'00-setup-ubuntu-host.sh').read_text())+'\n'+code
@@ -96,7 +98,36 @@ def bootstrap(ssh, check=False, copier=subprocess.run, sleeper=time.sleep):
     return request(ssh,'bootstrap-finish',unit=unit,hashes=hashes)
 
 
-def execute(action, ssh, check=False, apply=False):
+def network(ssh, mode, sleeper=time.sleep):
+    """Fresh key-only requests; no network operation runs in this process."""
+    site=yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())['siteNetwork']
+    data={'mac':site['host']['mac'],'gateway':site['gateway'],'dns':site['dns']}
+    if mode=='check':return request(ssh,'network-check',**data)
+    config=yaml.safe_dump({'network':{'version':2,'renderer':'networkd','ethernets':{'eno1':{
+        'dhcp4':False,'dhcp6':False,'ignore-carrier':True,'addresses':[site['host']['address']],
+        'routes':[{'to':'default','via':site['gateway']}],'nameservers':{'addresses':site['dns']}}}}},sort_keys=False)
+    report=request(ssh,'network-start',**data,mode=mode,config=config)
+    if report['status']!='running':return report
+    unit=report['unit'];print(report['message'],file=sys.stderr)
+    confirmed=False
+    # Bounded controller polling; loss of this client cannot confirm netplan.
+    for _ in range(90):
+        sleeper(2)
+        report=request(ssh,'network-status',unit=unit,**data)
+        if report['status']=='awaiting-confirmation':
+            if not confirmed:
+                ssh.run(['true'])
+                confirmation=request(ssh,'network-confirm',unit=unit,**data)
+                if confirmation['status']=='failed':return confirmation
+                confirmed=True
+        elif report['status']!='running':return report
+    raise ValueError('Network polling deadline exceeded; inspect unit journal; no confirmation sent after expiry')
+
+
+def execute(action, ssh, check=False, apply=False, rollback=False):
+    if action=='host-network':
+        if sum((check,apply,rollback))!=1:raise ValueError('host-network requires exactly one of --check, --apply, --rollback')
+        return network(ssh,'check' if check else 'apply' if apply else 'rollback')
     if action=='host-bootstrap':return bootstrap(ssh,check)
     if action=='host-check':return request(ssh,'check')
     if action not in ('host-ssh','host-firewall','host-storage'):raise ValueError('Unknown host action')
@@ -111,8 +142,8 @@ def execute(action, ssh, check=False, apply=False):
     return request(ssh,'firewall-confirm',rollback=report['rollback'])
 
 
-def action(name, context, target, check=False, apply=False):
+def action(name, context, target, check=False, apply=False, rollback=False):
     if context!='twinfra-dev-cairo-1':raise ValueError('Use explicit --context twinfra-dev-cairo-1')
-    report=execute(name,SSH(target,context),check,apply)
+    report=execute(name,SSH(target,context),check,apply,rollback)
     print(json.dumps(report,indent=2))
     return 20 if report['status']=='reboot-required' else int(report['status']=='failed')

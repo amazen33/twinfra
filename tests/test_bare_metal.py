@@ -41,7 +41,7 @@ AMENDMENT_13_BASE='a84169a63a941f98c989d4db4739e9470e803fe4'
 
 def historical_delivery_bytes(name):
     """Freeze original WO-31 delivery receipts; WO-34 bounds current dev diffs."""
-    if name=='security/licence-policy.json':return p2_receipt(name)
+    if name in ('security/licence-policy.json','vcloud-ssot.yaml','deploy/common/host-admin.py'):return p2_receipt(name)
     if name in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json',
                 'deploy/environments/dev/cairo-2/seed/user-data','deploy/environments/dev/cairo-1/host.env'):
         return subprocess.check_output(['git','-C',str(ROOT),'show','b55c0ea3a7805e80c218dcc13a5bfbea7e259a24:'+name])
