@@ -60,9 +60,10 @@ class API(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.headers.get('Authorization')!='Bearer '+API.token:
             self.send_response(401);self.end_headers();return
-        if self.path=='/readyz':
+        endpoint=self.path.partition('?')[0] # kubectl appends ?timeout=5s
+        if endpoint=='/readyz':
             body=b'ok' if API.ready else b'not ready';status=200 if API.ready else 503
-        elif self.path=='/api/v1/nodes':
+        elif endpoint=='/api/v1/nodes':
             body=json.dumps({'apiVersion':'v1','kind':'NodeList','items':[{'metadata':{'name':'twinfra-dev-cairo-1'},
                 'status':{'addresses':[{'type':'InternalIP','address':IP}]}}]}).encode();status=200
         else:body=b'not found';status=404
