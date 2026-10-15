@@ -189,6 +189,21 @@ class Files(unittest.TestCase):
 
 
 class Controller(unittest.TestCase):
+    def test_real_ip_json_shapes_get_mac_from_link_not_ipv4_address_output(self):
+        address=[{'ifindex':2,'ifname':'eno1','flags':['BROADCAST','MULTICAST','UP','LOWER_UP'],
+                  'addr_info':[{'family':'inet','local':'192.168.1.3','prefixlen':24,'scope':'global'}]}]
+        def run(args):
+            if args[:4]==['ip','-j','-4','address']:return json.dumps(address)
+            if args[:3]==['ip','-j','link']:return json.dumps([{'ifname':'eno1','address':DATA['mac'],'link_type':'ether'}])
+            if args[:4]==['ip','-j','-4','route']:return json.dumps([{'dst':'default','gateway':'192.168.1.1','dev':'eno1'}])
+            if args[0]=='resolvectl':return 'Link 2 (eno1): 192.168.1.1 1.1.1.1\n'
+            if args[0]=='kubectl':return json.dumps({'items':[{'metadata':{'name':DATA['node']},'status':{'addresses':[{'type':'InternalIP','address':DATA['ip']}]}}]})
+            raise AssertionError('Unexpected command '+str(args))
+        with patch.object(net,'run',side_effect=run):
+            self.assertEqual(net.effective(DATA),INFO)
+            address[0]['addr_info'][0]['dynamic']=True
+            self.assertFalse(net.effective(DATA)['static'])
+
     def test_rendered_netplan_matches_the_ssot_and_retains_address_without_carrier(self):
         captured=[]
         with patch.object(host,'request',side_effect=lambda ssh,action,**data:captured.append(data) or {'status':'passed'}):

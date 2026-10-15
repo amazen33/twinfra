@@ -81,6 +81,8 @@ def run(args):
 
 def effective(data):
     addr=json.loads(run(['ip','-j','-4','address','show','dev','eno1']))
+    # ip -4 address omits link-layer fields; query the MAC independently.
+    links=json.loads(run(['ip','-j','link','show','dev','eno1']))
     routes=json.loads(run(['ip','-j','-4','route','show','default','dev','eno1']))
     dns=run(['resolvectl','dns','eno1']).strip().split(':',1)[-1].split()
     nodes=json.loads(run(['kubectl','--kubeconfig','/etc/kubernetes/admin.conf','--request-timeout=5s','get','nodes','-o','json']))['items']
@@ -90,7 +92,7 @@ def effective(data):
     return {'address':data['ip'],'present':len(addresses)==1,
         'static':len(addresses)==1 and not addresses[0].get('dynamic',False) and 'dynamic' not in addresses[0].get('flags',[]),
         'prefixLength':addresses[0]['prefixlen'] if addresses else None,
-        'mac':addr[0].get('address') if len(addr)==1 else None,
+        'mac':links[0].get('address') if len(links)==1 else None,
         'gateways':[r.get('gateway') for r in routes],'dns':dns,'nodeInternalIP':internal}
 
 
