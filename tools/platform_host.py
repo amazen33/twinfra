@@ -98,15 +98,16 @@ def bootstrap(ssh, check=False, copier=subprocess.run, sleeper=time.sleep):
     return request(ssh,'bootstrap-finish',unit=unit,hashes=hashes)
 
 
-def network(ssh, mode, sleeper=time.sleep):
+def network(ssh, mode, sleeper=time.sleep, dhcp_reservation_confirmed=False):
     """Fresh key-only requests; no network operation runs in this process."""
     site=yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text())['siteNetwork']
     data={'mac':site['host']['mac'],'gateway':site['gateway'],'dns':site['dns']}
-    if mode=='check':return request(ssh,'network-check',**data)
     config=yaml.safe_dump({'network':{'version':2,'renderer':'networkd','ethernets':{'eno1':{
-        'dhcp4':False,'dhcp6':False,'ignore-carrier':True,'addresses':[site['host']['address']],
+        'dhcp4':False,'dhcp6':False,'ignore-carrier':True,'accept-ra':False,'link-local':[],'addresses':[site['host']['address']],
         'routes':[{'to':'default','via':site['gateway']}],'nameservers':{'addresses':site['dns']}}}}},sort_keys=False)
-    report=request(ssh,'network-start',**data,mode=mode,config=config)
+    data.update(config=config,dhcpReservationConfirmed=dhcp_reservation_confirmed)
+    if mode=='check':return request(ssh,'network-check',**data)
+    report=request(ssh,'network-start',**data,mode=mode)
     if report['status']!='running':return report
     unit=report['unit'];print(report['message'],file=sys.stderr)
     confirmed=False
@@ -124,10 +125,10 @@ def network(ssh, mode, sleeper=time.sleep):
     raise ValueError('Network polling deadline exceeded; inspect unit journal; no confirmation sent after expiry')
 
 
-def execute(action, ssh, check=False, apply=False, rollback=False):
+def execute(action, ssh, check=False, apply=False, rollback=False, dhcp_reservation_confirmed=False):
     if action=='host-network':
         if sum((check,apply,rollback))!=1:raise ValueError('host-network requires exactly one of --check, --apply, --rollback')
-        return network(ssh,'check' if check else 'apply' if apply else 'rollback')
+        return network(ssh,'check' if check else 'apply' if apply else 'rollback',dhcp_reservation_confirmed=dhcp_reservation_confirmed)
     if action=='host-bootstrap':return bootstrap(ssh,check)
     if action=='host-check':return request(ssh,'check')
     if action not in ('host-ssh','host-firewall','host-storage'):raise ValueError('Unknown host action')
@@ -142,8 +143,8 @@ def execute(action, ssh, check=False, apply=False, rollback=False):
     return request(ssh,'firewall-confirm',rollback=report['rollback'])
 
 
-def action(name, context, target, check=False, apply=False, rollback=False):
+def action(name, context, target, check=False, apply=False, rollback=False, dhcp_reservation_confirmed=False):
     if context!='twinfra-dev-cairo-1':raise ValueError('Use explicit --context twinfra-dev-cairo-1')
-    report=execute(name,SSH(target,context),check,apply,rollback)
+    report=execute(name,SSH(target,context),check,apply,rollback,dhcp_reservation_confirmed)
     print(json.dumps(report,indent=2))
     return 20 if report['status']=='reboot-required' else int(report['status']=='failed')

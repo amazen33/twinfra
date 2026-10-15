@@ -16,6 +16,7 @@ BASE='7e5d017'
 SITE={'subnet':'192.168.1.0/24','gateway':'192.168.1.1','dns':['192.168.1.1','1.1.1.1'],
       'fixedRange':['192.168.1.2','192.168.1.99'],'dhcpRange':['192.168.1.100','192.168.1.254'],
       'host':{'name':'twinfra-dev-cairo-1','interface':'eno1','address':'192.168.1.3/24','mac':'64:00:6a:86:5c:4f'},
+      'management':{'kind':'intel-amt','address':'192.168.1.4'},
       'futureControlPlaneVIP':'192.168.1.10','futureNodeAddresses':['192.168.1.11','192.168.1.12','192.168.1.13']}
 
 
@@ -56,12 +57,15 @@ def receipt(name):
             if getattr(node,'name',None)=='request':
                 node.body=[n for n in node.body if not (isinstance(n,ast.If) and ast.unparse(n.test)=="action == 'check' or action.startswith('network-')")]
             if getattr(node,'name',None) in ('execute','action'):
+                if node.args.args[-1].arg!='dhcp_reservation_confirmed':raise AssertionError('Unknown host network safety argument')
+                node.args.args.pop();node.args.defaults.pop()
                 if node.args.args[-1].arg!='rollback':raise AssertionError('Unknown host action signature')
                 node.args.args.pop();node.args.defaults.pop()
                 if node.name=='execute':node.body=[n for n in node.body if not (isinstance(n,ast.If) and ast.unparse(n.test)=="action == 'host-network'")]
                 else:
                     for call in ast.walk(node):
                         if isinstance(call,ast.Call) and isinstance(call.func,ast.Name) and call.func.id=='execute':
+                            if ast.unparse(call.args.pop())!='dhcp_reservation_confirmed':raise AssertionError('Unknown host network safety argument')
                             if ast.unparse(call.args.pop())!='rollback':raise AssertionError('Unknown host dispatch argument')
     else:raise AssertionError('Not a WO-36 receipt path')
     if ast.dump(before)!=ast.dump(after):raise AssertionError('Host source changed outside WO-36 hooks: '+name)

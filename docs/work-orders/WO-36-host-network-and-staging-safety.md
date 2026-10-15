@@ -81,3 +81,50 @@ Record it in the SSoT (site network section) and in `docs/dev-environment.md`.
 ## Report back
 
 The files changed, the `host-network --check` output format, the per-workload strategy table, and CI.
+
+## Amendment 1 (2026-10-15, architect; owner "OK"): fix the failed live apply, adopt the hand-applied static file, add an AMT owner procedure
+
+**What happened live (2026-10-15).**
+1. `host-network --apply` (main af954d7) applied the static configuration at 16:42Z. The address, route and DNS (192.168.1.1, 1.1.1.1) were correct, and SSH to .3 worked during the try window.
+2. Confirmation was refused ("Applied network verification failed"). The likely cause: the effective DNS list also contained the IPv6 router-advertised resolver `fe80::1`, which the strict comparison rejected.
+3. At the 120-second timeout, netplan reverted. The worker restored `50-cloud-init.yaml` (DHCP), and the router (pool now .100–.254) leased **192.168.1.102**. The API server, bound to .3, became unreachable, and the Dell had to be found and recovered at the console.
+4. The owner re-applied the same static file by hand at about 19:25Z. `/etc/netplan` now contains only `60-twinfra-static.yaml` (root, 0600), and cloud-init network config is disabled. The backup is in `/var/lib/twinfra/host-network/recover-2026-10-15/`.
+   The cluster recovered fully: 20 of 20 pods Running, and all 3 Argo CD apps Synced and Healthy.
+
+**Fixes (one PR, `codex/wo-36a-host-network-fix`):**
+1. **DNS comparison.** Compare only the configured IPv4 resolvers, in order. Ignore IPv6 link-local and router-advertised entries.
+   Also set `accept-ra: false` and `link-local: []` on `eno1` in the static file, since the node is IPv4-only. Add a test using exactly the live output `["192.168.1.1","1.1.1.1","fe80::1"]`.
+2. **A rollback that cannot change the address.** A rollback must never leave the node on a different address.
+   - Before writing anything, `--apply` and `--rollback` refuse to run unless a fallback keeps .3: either the DHCP reservation for MAC `64:00:6a:86:5c:4f` is confirmed by the owner (a flag the owner sets), or the rollback target is the previous *static* file.
+   - Rework the transaction on netplan's real semantics (`netplan try` restores only the generated backend, not the YAML). Prefer writing the candidate only inside the try, through `netplan try --config-file`, or prove an equivalent with a real test.
+3. **Adopt the existing hand-applied file.** If `60-twinfra-static.yaml` is already present, has exactly the expected content and permissions, and the effective state matches, `--check` passes and records ownership without applying anything. `--apply` becomes a no-op.
+4. **Test on a real Ubuntu 24.04 VM before the Dell.** In CI, or as a documented local Hyper-V procedure, run apply, the refused-confirmation path and rollback against real netplan and systemd-networkd. Prove the address and route survive each path. The receipt records the VM run.
+5. **Address plan:** add `192.168.1.4` = Intel AMT (out-of-band management) to `siteNetwork` in the SSoT and to the docs.
+
+**Owner procedure (documentation only; Codex writes `docs/runbooks/intel-amt.md` and never touches AMT):**
+- Hardware facts: i7-4790 (vPro), BIOS A25 (2019-05-30), ME firmware 9.1.45.3000. It includes the INTEL-SA-00075 fix, but ME 9.x is no longer serviced.
+- Setup: MEBx (Ctrl+P) with a strong unique password kept in a password manager; network access activated; static 192.168.1.4, gateway .1; KVM on with no user consent; remote provisioning off; TLS after first contact (ports 16993/16995).
+  Manage it with MeshCommander or MeshCentral (Apache-2.0) from the laptop only.
+- Rules:
+  - the host firewall cannot protect AMT;
+  - never port-forward 16992–16995, 623, 664 or 5900;
+  - AMT stays LAN-only;
+  - disable it if the network is ever exposed.
+- The test is a remote power cycle plus KVM into the BIOS, with a short receipt.
+
+
+### Owner clarification: recognized legacy static profile (2026-10-15)
+
+The owner's direct implementation instruction recognizes only the root:root,
+0600, 308-byte static file with SHA-256
+`1739e68f586cda48fadfc3a38905bd62f22167cb3842415623cce43b5ce89ad7`.
+It has `ignore-carrier: true`, and lacks `accept-ra` and `link-local`.
+`--check` may record ownership only if the effective address is static `.3`,
+gateway `.1`, and IPv4 DNS is `.1` then `1.1.1.1`; report WARN
+"adopted (legacy profile; upgrade pending)" while returning passed.
+Unknown content or ownership/mode mismatch is refused without changes.
+`--apply` upgrades this adopted profile through the fixed transaction; the
+rollback target is the legacy static file, never the old DHCP recovery copy.
+Tests cover exact-hash adoption, a one-byte difference, upgrade apply and
+upgrade rollback retaining `.3`. This clarification qualifies Amendment 1 item 3:
+only an already corrected static profile makes `--apply` a no-op.

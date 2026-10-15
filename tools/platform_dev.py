@@ -358,7 +358,10 @@ def main():
     parser.add_argument('--context');parser.add_argument('--ssh',default='twinfra-operator@192.168.1.3');parser.add_argument('--check',action='store_true');parser.add_argument('--apply',action='store_true');parser.add_argument('--rollback',action='store_true');parser.add_argument('--archive-dir',type=Path)
     parser.add_argument('--download-inputs',action='store_true',help='Owner-only pinned image/wheel download for build-images')
     parser.add_argument('--refresh-console',action='store_true',help='WO-34: propose a Python patch/base metadata refresh through the builders')
+    parser.add_argument('--dhcp-reservation-confirmed',action='store_true',help='Owner confirms the router reserves .3 for the approved MAC; host-network apply/rollback only')
     args=parser.parse_args()
+    if args.dhcp_reservation_confirmed and (args.action!='host-network' or not (args.apply or args.rollback)):
+        parser.error('--dhcp-reservation-confirmed requires host-network --apply or --rollback')
     if args.rollback and args.action!='host-network':parser.error('--rollback is only for host-network')
     if sum((args.check,args.apply,args.rollback))>1:parser.error('--check, --apply and --rollback are mutually exclusive')
     if args.download_inputs and args.action!='build-images':parser.error('--download-inputs is only for build-images')
@@ -371,7 +374,7 @@ def main():
         print(json.dumps(report,indent=2));return 0
     if args.action.startswith('host-'):
         from platform_host import action
-        return action(args.action,args.context,args.ssh,args.check,args.apply,args.rollback)
+        return action(args.action,args.context,args.ssh,args.check,args.apply,args.rollback,args.dhcp_reservation_confirmed)
     if args.action=='stage-images':
         from platform_image_staging import stage_applications
         if not args.context:parser.error('stage-images requires --context')

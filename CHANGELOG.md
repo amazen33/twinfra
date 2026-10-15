@@ -13,6 +13,11 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Security
 
+- Fix IPv4 DNS confirmation, adopt the exact owner-recovered legacy static
+  profile, and refuse network transactions without a fallback retaining `.3`.
+  Prove apply/refusal/rollback with real Ubuntu netplan in CI; document the
+  owner-only Intel AMT address and isolation procedure (WO-36 Amendment 1).
+
 - Add an owned, rollback-protected static network transaction for the Dell dev
   host, since-boot network/restart warnings, safe stateless rolling updates and
   a lightweight image-staging attestation gate (WO-36). Live acceptance is Pending.
