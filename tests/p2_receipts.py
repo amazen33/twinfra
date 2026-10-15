@@ -70,6 +70,16 @@ def assert_current_seed(path):
 
 
 def receipt(path):
+    if path=='security/licence-policy.json':
+        # WO-07a owner review permits only removing the last pending entry.
+        # Validate the entire current file before comparing historical receipts.
+        before=original(path)
+        old=b'  "pendingRemoval": [\n    "docker.io/grafana/grafana"\n  ],'
+        if before.count(old)!=1:raise AssertionError('Original pending-removal list differs')
+        expected=before.replace(old,b'  "pendingRemoval": [],',1)
+        if (ROOT/path).read_bytes().replace(b'\r\n',b'\n')!=expected:
+            raise AssertionError('Licence policy differs beyond the approved empty pending-removal list')
+        return before
     if path in PATHS and (ROOT/'tools/ci/promote_p2.py').is_file():
         assert_current_source()
         if path.startswith('user-data'):assert_current_seed(path)

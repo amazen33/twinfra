@@ -16,7 +16,7 @@ sys.path[:0]=[str(ROOT/'tools'),str(ROOT/'tools/ci')]
 import platform_dev as dev
 import platform_image_references as refs
 from promote_p2 import PINS,CONTROLS,BASE
-from p2_receipts import expected_source, assert_current_source, assert_current_seed
+from p2_receipts import expected_source, assert_current_source, assert_current_seed, receipt as p2_receipt
 
 
 def old(path):return subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+path])
@@ -53,7 +53,7 @@ class Promotion(unittest.TestCase):
     def test_shared_source_only_dev_override_and_etcd_contract_blocks_differ(self):
         assert_current_source()
         for path in ('host.env.example','vcloud-ssot.yaml','security/node-exceptions.json','tools/ci/pr-baselines.json','security/licence-policy.json'):
-            self.assertEqual((ROOT/path).read_bytes().replace(b'\r\n',b'\n'),old(path),path)
+            self.assertEqual(p2_receipt(path).replace(b'\r\n',b'\n'),old(path),path)
 
     def test_production_seeds_only_embed_shared_dev_changes_and_hash(self):
         for path in ('user-data.yaml','user-data-remote.yaml','user-data.yaml.gz'):

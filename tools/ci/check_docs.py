@@ -65,6 +65,8 @@ if canonical:
     assert 'WO-06' in next(adr_dir.glob('0025-*.md')).read_text(encoding='utf-8')
     orders = sorted((root / 'docs/work-orders').glob('WO-*.md'))
     expected_orders = [f'WO-{number:02d}' for number in range(1, 12)]
+    if (root/'docs/work-orders/WO-07a-remove-grafana.md').is_file():
+        expected_orders.append('WO-07a')
     rename_order = root / 'docs/work-orders/WO-20-rename-to-twinfra.md'
     rename_adr = adr_dir / '0036-product-name-twinfra.md'
     if rename_adr.is_file() or rename_order.is_file():
@@ -93,7 +95,7 @@ if canonical:
     if (root/'docs/work-orders/WO-34-image-patch-refresh.md').is_file():
         expected_orders.append('WO-34')
         assert 49 in numbers, 'missing WO-34 ADR-0049'
-    assert [file.name[:5] for file in orders] == sorted(expected_orders), orders
+    assert [re.match(r'WO-\d{2}[a-z]?(?=-)',file.name)[0] for file in orders] == sorted(expected_orders), orders
     assert (root / 'docs/work-orders/README.md').is_file()
     assert not (root / 'docs/work-orders/CODEX-PROMPTS.md').exists()
     # Controls validate whichever selected revision CI checked out.

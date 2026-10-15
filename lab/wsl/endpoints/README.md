@@ -2,7 +2,7 @@
 
 This profile extends the owned `vcloud-wsl-local` WSL cluster only. It runs
 OpenBao 2.7.1, Keycloak 26.8.0, APISIX 3.19.0, Knative/Kourier 1.23.0,
-Prometheus Operator 0.94.1, Prometheus 3.15.0, Grafana 13.2.3 and OpenTelemetry
+Prometheus Operator 0.94.1, Prometheus 3.15.0 and OpenTelemetry
 Collector 0.162.0. Release manifests and image digests are frozen in
 [artifacts.lock.json](artifacts.lock.json). No production SSoT identity changes.
 
@@ -50,3 +50,11 @@ The shared [APISIX prerequisites](../../../tools/platform_ingress.py) configure 
 to authenticated TLS API-driven standalone mode so real `ApisixRoute` resources
 reconcile. It preserves the CPU demo and smoke routes, supplies the pinned
 2.2.0 controller/0.27.1 ADC prerequisites, and keeps admin port 9180 private.
+
+## Dashboard removal (WO-07a)
+
+The dashboard service, image, Secret creation, port-forward and acceptance probe
+are removed. The remaining WSL endpoint files stay until WO-28. The live target
+is now `twinfra-dev-cairo-1`; no WSL procedure was executed for this removal.
+[Plain dashboard definitions](../../../deploy/observability/dashboards/README.md)
+are retained for WO-10 and currently have no service or URL.

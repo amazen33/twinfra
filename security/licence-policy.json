@@ -60,9 +60,7 @@
   "operatorPulledRepositories": [
     "docker.io/nvidia/cuda"
   ],
-  "pendingRemoval": [
-    "docker.io/grafana/grafana"
-  ],
+  "pendingRemoval": [],
   "baselineKinds": [
     "apt-pins",
     "image-sbom",

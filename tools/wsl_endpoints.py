@@ -298,22 +298,6 @@ def observability():
                            'readinessProbe':{'httpGet':{'path':'/','port':13133}},'livenessProbe':{'httpGet':{'path':'/','port':13133}}},
                           [{'name':'config','configMap':{'name':'vcloud-otel'}}])]
     otel_service=service('otel-collector',4318);otel_service['spec']['ports'].append({'name':'grpc','port':4317,'targetPort':4317});result.append(otel_service)
-    datasources={'apiVersion':1,'datasources':[{'name':'vCloud Prometheus','type':'prometheus','access':'proxy',
-        'url':'http://prometheus.platform-services.svc.cluster.local:9090','isDefault':True,'editable':False}]}
-    result += [config('vcloud-grafana',{'datasources.yaml':yaml.safe_dump(datasources,sort_keys=False)}),
-               deployment('grafana',{'name':'grafana','image':image('grafana'),
-                 'env':[{'name':'GF_SECURITY_ADMIN_USER__FILE','value':'/auth/admin-user'},
-                        {'name':'GF_SECURITY_ADMIN_PASSWORD__FILE','value':'/auth/admin-password'},
-                        {'name':'GF_AUTH_ANONYMOUS_ENABLED','value':'false'}, {'name':'GF_ANALYTICS_REPORTING_ENABLED','value':'false'},
-                        {'name':'GF_ANALYTICS_CHECK_FOR_UPDATES','value':'false'}, {'name':'GF_PLUGINS_PREINSTALL_DISABLED','value':'true'}],
-                 'volumeMounts':[{'name':'auth','mountPath':'/auth','readOnly':True},
-                                 {'name':'datasources','mountPath':'/etc/grafana/provisioning/datasources','readOnly':True},
-                                 {'name':'data','mountPath':'/var/lib/grafana'},{'name':'tmp','mountPath':'/tmp'}],
-                 'readinessProbe':{'httpGet':{'path':'/api/health','port':3000}}},
-                 [{'name':'auth','secret':{'secretName':'vcloud-wsl-grafana-admin','defaultMode':0o440}},
-                  {'name':'datasources','configMap':{'name':'vcloud-grafana'}},
-                  {'name':'data','emptyDir':{'medium':'Memory','sizeLimit':'128Mi'}},{'name':'tmp','emptyDir':{'medium':'Memory','sizeLimit':'32Mi'}}]),
-               service('grafana',3000)]
     return result
 
 
@@ -343,7 +327,6 @@ def network(router='10.42.0.188'):
                     [{'toEndpoints':[knative],'toPorts':ports(8080,8081)},
                      {'toEndpoints':[{'k8s:io.kubernetes.pod.namespace':NS,'k8s:vcloud.io/lab-role':'server'}],'toPorts':ports(8080)}]),
                cnp('vcloud-wsl-otel',endpoint('otel-collector'),health(13133)+[{'fromEndpoints':[demo],'toPorts':ports(4317,4318)}],[]),
-               cnp('vcloud-wsl-grafana',endpoint('grafana'),health(3000),[{'toEndpoints':[prom],'toPorts':ports(9090)}]),
                cnp('vcloud-wsl-prometheus',prom,health(9090),[api,
                     {'toEndpoints':[endpoint('apisix')],'toPorts':ports(9091)},
                     {'toEndpoints':[endpoint('cloudnative-pg')],'toPorts':ports(8080)},

@@ -1,5 +1,18 @@
 # GitHub Actions validation
 
+## WO-07a candidate deployment guard
+
+`python tools/check_grafana_removal.py --root .` rejects Grafana images, charts,
+workloads and `grafana_dashboard` labels in locked/generated deployment inputs,
+including compressed manifests. It identifies chart metadata/dependencies and
+image pins; unused dashboard data bundled inside the upstream Cilium chart does
+not make Cilium a Grafana chart. CI also checks actual Helm/Kustomize renders.
+The guard targets the candidate, while historical ADRs, receipts, test fixtures
+and the six frozen revisions retain their original contents and gates.
+`python -m unittest discover -s tests -p test_grafana_removal.py -v` covers
+negative fixtures, missing bundles, exact removals, unchanged dev/production
+images and both dashboard definitions copied from PR #39 without deployment.
+
 The [vCloud tests workflow](../.github/workflows/pr-tests.yaml) runs on pull
 requests targeting `main`, pushes to `main`, and manual dispatch. Its stable
 aggregate check is **vCloud PR gate**. Require that check in a GitHub branch

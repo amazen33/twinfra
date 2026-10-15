@@ -312,6 +312,9 @@ class InventoryAndIntegrity(unittest.TestCase):
 
     def test_licence_register_preserves_existing_terms_and_only_adds_scanners_actions(self):
         old=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':security/licence-register.json']))
+        removed='oci-image|docker.io/grafana/grafana|sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572'
+        entry=next(v for v in old['components'] if v['id']==removed)
+        self.assertEqual(entry['class'],'pending-removal');old['components'].remove(entry)
         old={v['id']:v for v in old['components']}
         current={v['id']:v for v in sc.read(ROOT/'security/licence-register.json')['components']}
         replacements=self.p2_register_replacements(current) if (ROOT/'tools/ci/promote_p2.py').is_file() else []
@@ -336,6 +339,8 @@ class InventoryAndIntegrity(unittest.TestCase):
                 self.assertEqual(value['locations'],[p for p in entry['locations'] if p!='deploy/common/bootstrap-images.lock.json'])
                 value['locations']=entry['locations']
             self.assertEqual(value,entry,name)
+        self.assertNotIn(removed,current)
+        self.assertFalse(any(v['name']=='docker.io/grafana/grafana' for v in current.values()))
         extra=[v for k,v in current.items() if k not in old]
         for replacement in replacements:
             self.assertIn(replacement,extra);extra.remove(replacement)

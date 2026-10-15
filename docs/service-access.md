@@ -62,7 +62,11 @@ live state and browser acceptance Pending.
 
 ## Services with no working browser endpoint
 
-GPU/vLLM, Spinifex offloading, Grafana, Knative and durable trace storage are
+The [plain dashboard definitions](../deploy/observability/dashboards/README.md)
+are retained for WO-10; they have no URL or deployed service. Grafana deployment
+inputs were removed by WO-07a.
+
+GPU/vLLM, Spinifex offloading, Knative and durable trace storage are
 excluded from the rebuilt dev profile. No billing console, real EC2 instances
 or additional AWS services were added by WO-06. MiniStack remains an ephemeral
 development emulator. The previous emulator's module, runtime routes and

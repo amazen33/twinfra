@@ -3,7 +3,6 @@
     "knative": "1.23.0",
     "prometheusOperator": "0.94.1",
     "prometheus": "3.15.0",
-    "grafana": "13.2.3",
     "otelCollector": "0.162.0",
     "openbao": "2.7.1",
     "keycloak": "26.8.0",
@@ -31,7 +30,6 @@
     "keycloak": "quay.io/keycloak/keycloak:26.8.0",
     "apisix": "docker.io/apache/apisix:3.19.0-debian",
     "prometheus": "quay.io/prometheus/prometheus:v3.15.0",
-    "grafana": "docker.io/grafana/grafana:13.2.3",
     "otel-collector": "docker.io/otel/opentelemetry-collector-contrib:0.162.0",
     "prometheus-config-reloader": "quay.io/prometheus-operator/prometheus-config-reloader:v0.94.1",
     "knative-queue-proxy": "gcr.io/knative-releases/knative.dev/serving/cmd/queue@sha256:a3cc71ce80dbc6df8781f15eac2cf3531a4c9815271799afd8776bef9e6aeaf2",
@@ -63,11 +61,6 @@
       "source": "quay.io/prometheus/prometheus@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e",
       "canonical": "registry.vcloud.example.com/quay.io/prometheus/prometheus@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e",
       "digest": "sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e"
-    },
-    "grafana": {
-      "source": "docker.io/grafana/grafana@sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
-      "canonical": "registry.vcloud.example.com/docker.io/grafana/grafana@sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572",
-      "digest": "sha256:b28bae15e219c998fb0e0424ed724930cc61b1f61fb404d47c862f9a23f9e572"
     },
     "otel-collector": {
       "source": "docker.io/otel/opentelemetry-collector-contrib@sha256:39923a8e431bd1f57be82411999d389fcfe40857492e4365456d97a4c1f74be6",

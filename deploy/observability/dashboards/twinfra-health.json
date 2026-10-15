@@ -1,0 +1,139 @@
+{
+  "kind": "Dashboard",
+  "metadata": {
+    "name": "twinfra-health",
+    "project": "twinfra"
+  },
+  "spec": {
+    "display": {
+      "name": "Twinfra environment health"
+    },
+    "duration": "1h",
+    "refreshInterval": "30s",
+    "panels": {
+      "panel1": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Scrape targets"
+          },
+          "plugin": {
+            "kind": "TimeSeriesChart",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "TimeSeriesQuery",
+              "spec": {
+                "plugin": {
+                  "kind": "PrometheusTimeSeriesQuery",
+                  "spec": {
+                    "query": "up",
+                    "datasource": {
+                      "kind": "Datasource",
+                      "name": "prometheus"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "panel2": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "PostgreSQL instances"
+          },
+          "plugin": {
+            "kind": "TimeSeriesChart",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "TimeSeriesQuery",
+              "spec": {
+                "plugin": {
+                  "kind": "PrometheusTimeSeriesQuery",
+                  "spec": {
+                    "query": "cnpg_collector_up",
+                    "datasource": {
+                      "kind": "Datasource",
+                      "name": "prometheus"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "panel3": {
+        "kind": "Panel",
+        "spec": {
+          "display": {
+            "name": "Platform alerts"
+          },
+          "plugin": {
+            "kind": "TimeSeriesChart",
+            "spec": {}
+          },
+          "queries": [
+            {
+              "kind": "TimeSeriesQuery",
+              "spec": {
+                "plugin": {
+                  "kind": "PrometheusTimeSeriesQuery",
+                  "spec": {
+                    "query": "ALERTS{alertstate=\"firing\"}",
+                    "datasource": {
+                      "kind": "Datasource",
+                      "name": "prometheus"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "layouts": [
+      {
+        "kind": "Grid",
+        "spec": {
+          "items": [
+            {
+              "x": 0,
+              "y": 0,
+              "width": 12,
+              "height": 8,
+              "content": {
+                "$ref": "#/spec/panels/panel1"
+              }
+            },
+            {
+              "x": 12,
+              "y": 0,
+              "width": 12,
+              "height": 8,
+              "content": {
+                "$ref": "#/spec/panels/panel2"
+              }
+            },
+            {
+              "x": 0,
+              "y": 8,
+              "width": 12,
+              "height": 8,
+              "content": {
+                "$ref": "#/spec/panels/panel3"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

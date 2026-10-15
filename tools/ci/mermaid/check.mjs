@@ -19,7 +19,8 @@ for (const diagram of diagrams) {
   const vertices = parsed.db.getVertices();
   const ids = vertices instanceof Map ? [...vertices.keys()] : Object.keys(vertices);
   const edges = parsed.db.getEdges();
-  for (const required of ['APISIX', 'KOURIER', 'QP', 'RAG', 'EMBED', 'PG', 'GEN', 'SPINIFEX', 'TEKTON', 'ARGO', 'KEYCLOAK', 'BAO', 'PROM', 'GRAFANA', 'OTEL', 'KAFKA', 'STRIMZI', 'CNPG', 'KNCTRL', 'API']) {
+  const dashboard = fs.existsSync(path.join(workspace, 'docs/work-orders/WO-07a-remove-grafana.md')) ? 'DASHBOARDS' : 'GRAFANA';
+  for (const required of ['APISIX', 'KOURIER', 'QP', 'RAG', 'EMBED', 'PG', 'GEN', 'SPINIFEX', 'TEKTON', 'ARGO', 'KEYCLOAK', 'BAO', 'PROM', dashboard, 'OTEL', 'KAFKA', 'STRIMZI', 'CNPG', 'KNCTRL', 'API']) {
     if (!ids.includes(required)) throw new Error(`Missing node ${required}`);
   }
   const hasEdge = (start, end) => edges.some(edge => edge.start === start && edge.end === end);

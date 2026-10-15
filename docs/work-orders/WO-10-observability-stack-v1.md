@@ -57,3 +57,10 @@ and signs off the receipt.
 ## Report back
 
 The component list with stability levels, the OpenSearch version decision, resource use in the lab, and the receipt.
+
+## Amendment 1 (2026-10-15, owner "split approved"): Perses deployment (WO-07b) moves here
+
+- Deploy Perses and the Perses Operator in this work order, after Prometheus is running. Use the dashboards that WO-07a keeps under `deploy/observability/dashboards/`.
+- Use the first stable Perses and Operator releases built with Go >= 1.26.9 and golang.org/x/net >= 0.60.0 that are at least 14 days old, and that pass the supply-chain gate.
+- If no such release exists when this work order starts, stop and let the owner choose between waiting and a reproducible source rebuild with the patched Go (Apache-2.0 permits it).
+- Authentication stays as designed in WO-07: Keycloak SSO through APISIX, read-only dashboards provisioned from Git, and no anonymous access.

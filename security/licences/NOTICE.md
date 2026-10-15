@@ -31,9 +31,9 @@ terms and obtain owner authorization before enabling the CUDA test; this project
 does not grant NVIDIA rights or include CUDA in a first-party image. The licence gate rejects using
 that reference as a Dockerfile base or enabling the default CUDA smoke-test switch.
 
-Grafana remains pending removal. Redis was replaced under WO-25 and LocalStack
-was removed under WO-06; neither remains a platform selection. Their frozen expiry dates and follow-up work orders appear in the
-register and every successful CI licence report.
+Grafana was removed under WO-07a. The licence register has no pending-removal
+entries. Redis was replaced under WO-25 and LocalStack was removed under WO-06;
+none remains a platform selection. Historical decisions retain their original terms.
 
 WO-31 uses the unmodified Ubuntu-installed nftables, LVM and ext4 utilities as
 base-os under [ADR-0044](../../docs/adr/0044-licence-gate-scope-and-classes.md).
