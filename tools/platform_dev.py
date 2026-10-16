@@ -383,7 +383,9 @@ def main():
         except (ValueError,OSError):
             report={'status':'failed','testerSignOff':'Pending','error':'Cannot write a new fragment under .build; existing receipts are never overwritten.'}
         print(json.dumps(report,indent=2))
-        return 0 if report['status']=='passed' else 2 if report['status']=='incomplete' else 1
+        if report['status']=='passed':return 0
+        if report['status']=='incomplete':return 2
+        return 1
     if args.dhcp_reservation_confirmed and (args.action!='host-network' or not (args.apply or args.rollback)):
         parser.error('--dhcp-reservation-confirmed requires host-network --apply or --rollback')
     if args.rollback and args.action!='host-network':parser.error('--rollback is only for host-network')

@@ -1,6 +1,7 @@
 """WO-40a offline failure injection. No kubectl, SSH, host or browser operations."""
 import copy
 import ast
+import base64
 from datetime import date, datetime, timedelta, timezone
 import io
 import json
@@ -126,6 +127,7 @@ class Acceptance(unittest.TestCase):
         self.assertEqual(result['checks']['valkeyRestart']['status'], 'pending')
         self.assertFalse(self.client.restarted)
         self.assertEqual(result['testerSignOff'], 'Pending')
+        self.assertEqual(result['podSnapshots']['initial'], result['podSnapshots']['final'])
         self.assertEqual(len(result['versions']), 12)
         self.assertNotIn(COOKIE, json.dumps(result))
         self.assertNotIn(TOKEN, json.dumps(result))
@@ -305,7 +307,8 @@ class Contracts(unittest.TestCase):
             path = Path(tmp) / '.build/receipt.json'
             ac.write_fragment(path, {'status': 'incomplete', 'testerSignOff': 'Pending'})
             with self.assertRaises(ValueError):ac.write_fragment(path, {})
-            with self.assertRaises(ValueError):ac.write_fragment(Path(tmp) / 'docs/acceptance/signed.md', {})
+            signed = Path(tmp) / 'docs/acceptance/signed.md'
+            with self.assertRaises(ValueError):ac.write_fragment(signed, {})
 
     def test_cli_excludes_mutation_flags_and_invalid_receipt_before_any_accept(self):
         with patch.object(ac, 'accept') as remote:
@@ -348,10 +351,15 @@ class Contracts(unittest.TestCase):
             def close(self):pass
         with patch.object(ac.http.client, 'HTTPConnection', Connection), \
              patch('sys.stdin', io.StringIO(json.dumps({'roleless': TOKEN}))), \
+             patch.dict(os.environ, {'OIDC_ISSUER': 'https://auth.example.test/realms/twinfra', 'OIDC_CLIENT': 'twinfra-console'}), \
              patch('sys.stdout', new_callable=io.StringIO) as output:
             exec(ac.TOKEN_PROBE, {})
         self.assertEqual(json.loads(output.getvalue()), [401, 401, 401, 403])
         self.assertEqual(len(sent[2]), 2)
+        encoded = sent[1][0][1].split('.')[1]
+        claims = json.loads(base64.urlsafe_b64decode(encoded + '=' * (-len(encoded) % 4)))
+        self.assertEqual(claims['iss'], 'https://auth.example.test/realms/twinfra')
+        self.assertEqual(claims['resource_access']['twinfra-console']['roles'], ['console.admin'])
         self.assertNotIn(TOKEN, output.getvalue())
 
     def test_readonly_network_check_cannot_adopt_or_start_a_transaction(self):
@@ -366,7 +374,8 @@ class Contracts(unittest.TestCase):
         exec(ast.literal_eval(assignment.value), namespace)
         with self.assertRaisesRegex(ValueError, 'Read-only acceptance refuses network adoption'):
             namespace['adoptable']({}, {})
-        with self.assertRaises(ValueError):host.execute('host-network', ac.ReadOnlyNetwork(ssh), apply=True)
+        guarded = ac.ReadOnlyNetwork(ssh)
+        with self.assertRaises(ValueError):host.execute('host-network', guarded, apply=True)
 
 
 if __name__ == '__main__':unittest.main()
