@@ -84,7 +84,7 @@ that the earlier suggested 60-second power-off scenario was measured.
 ## Tester sign-off
 
 Tester: Ahmed Mazen (@amazen33), enterprise and cloud tester; QoS tester
-Result: Pending
-Date (UTC):
-QoS targets checked:
-Notes:
+Result: Accepted
+Date (UTC): 2026-10-16
+QoS targets checked: power cut survived on twinfra-dev-cairo-1: static 192.168.1.3 kept through a 40 s router outage, 0 DHCP lease losses, 0 pod or control-plane restarts after the last boot, 20/20 pods Running, 3 Argo CD apps Synced/Healthy.
+Notes: Dev-verified. Owner-reported observations 2026-10-15/16, verified read-only by the architect. Recorded by the architect at the owner's instruction.
