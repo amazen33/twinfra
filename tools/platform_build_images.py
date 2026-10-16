@@ -27,6 +27,14 @@ def build_images(download_inputs=False, refresh_console=False):
     directory.mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='build-',dir=directory) as tmp,ExitStack() as stack:
         work=Path(tmp);console_path=work/'console.oci.tar';postgres_path=work/'postgresql-pgvector.tar'
+        if 'backup' in images:
+            from platform_backup_image import download_inputs as backup_inputs, build as backup_build
+            backup_wheels=ROOT/'.build/wo09/wheels'
+            if download_inputs:backup_inputs(base,backup_wheels)
+            receipt=backup_build(base,backup_wheels,work/'backups.oci.tar')
+            if receipt!=json.loads((ROOT/'deploy/common/backup-image.lock.json').read_text()):
+                raise ValueError('Backup receipt differs; image locks were not changed')
+            validate_archive(work/'backups.oci.tar',images['backup']['digest'])
         built_console=console.build(base,console_path,wheels)
         console_receipt=(console.verify_patch_refresh(built_console) if refresh_console
                          else console.verify_receipt(built_console))
@@ -57,7 +65,9 @@ def build_images(download_inputs=False, refresh_console=False):
             lock.write_text(json.dumps(value,indent=2)+'\n',encoding='utf-8',newline='\n')
         console_path.replace(directory/'console.oci.tar')
         postgres_path.replace(directory/'postgresql-pgvector.tar')
+        if 'backup' in images:(work/'backups.oci.tar').replace(directory/'backups.oci.tar')
     return {'status':'passed','archives':{'console':str(directory/'console.oci.tar'),
-            'postgres':str(directory/'postgresql-pgvector.tar')},
-            'digests':{name:images[name]['digest'] for name in ('console','postgres')},
+            'postgres':str(directory/'postgresql-pgvector.tar'),
+            **({'backup':str(directory/'backups.oci.tar')} if 'backup' in images else {})},
+            'digests':{name:images[name]['digest'] for name in ('console','postgres','backup') if name in images},
             'repositoryWrites':refresh_console,'runtimeImport':False}

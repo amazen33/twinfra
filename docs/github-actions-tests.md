@@ -1,5 +1,20 @@
 # GitHub Actions validation
 
+## WO-09 backups and ADR-0054
+
+The optional backup bundle adds offline unit, exact node-exception, strict schema,
+source/render drift and promtool checks. It is explicitly absent in all six frozen
+historical revisions. The candidate licence/enterprise gate still applies on every
+matrix leg; it runs after regression checks so draft admission failures do not hide
+their results. It remains blocking. Existing legacy approvals keep frozen identities
+and dated backfill deadlines under [the licence ladder](licence-ladder.md).
+
+The paths-filtered `backup-build.yaml` reproduces the first-party backup archive,
+uses admitted Python/OpenSSL and etcd images in disposable containers to test CMS
+encryption/decryption and tamper rejection, and scans the complete archive plus its
+SDK lock. It has contents:read, pinned actions and no secrets. No live host is used.
+No private key, snapshot, credential file or OCI archive is uploaded as an artifact.
+
 ## WO-36 network and staging checks
 
 `test_host_network.py` runs fake SSH/netplan and temporary-filesystem failures,

@@ -1,0 +1,37 @@
+groups:
+- name: twinfra.backups
+  rules:
+  - alert: TwinfraBackupStaleBase
+    expr: (time() - twinfra_backup_last_success_timestamp_seconds{kind="base"} >=
+      87300) or absent(twinfra_backup_last_success_timestamp_seconds{kind="base"})
+    for: 1m
+    labels:
+      severity: critical
+      kind: base
+    annotations:
+      summary: Twinfra base backup is stale or missing
+  - alert: TwinfraBackupStaleWal
+    expr: (time() - twinfra_backup_last_success_timestamp_seconds{kind="wal"} >= 900)
+      or absent(twinfra_backup_last_success_timestamp_seconds{kind="wal"})
+    for: 1m
+    labels:
+      severity: critical
+      kind: wal
+    annotations:
+      summary: Twinfra wal backup is stale or missing
+  - alert: TwinfraBackupStaleEtcd
+    expr: (time() - twinfra_backup_last_success_timestamp_seconds{kind="etcd"} >=
+      21600) or absent(twinfra_backup_last_success_timestamp_seconds{kind="etcd"})
+    for: 1m
+    labels:
+      severity: critical
+      kind: etcd
+    annotations:
+      summary: Twinfra etcd backup is stale or missing
+  - alert: TwinfraBackupCheckFailed
+    expr: twinfra_backup_check_failed == 1
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: Twinfra backup check reported failure

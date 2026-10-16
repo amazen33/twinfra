@@ -1,0 +1,26 @@
+{
+  "digest": "sha256:0c93f3a3c81adf9f7394f4feb8121503e3667c28cefa5ec28b81602e0fd10b7a",
+  "canonical": "registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:0c93f3a3c81adf9f7394f4feb8121503e3667c28cefa5ec28b81602e0fd10b7a",
+  "base": "registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+  "filesSHA256": {
+    "deploy/common/backup/upload.py": "1b93cfeef5539412bfdfffbd099fe019078e87a2e965080404cf6d932e115cb1",
+    "deploy/common/backup/requirements.txt": "19ca2e9dcbb94fd926a7320d7cb01885f70a7227ecb60003528f11ff7911a8ae"
+  },
+  "wheels": {
+    "boto3-1.43.108-py3-none-any.whl": "19e9da95ef0c494e27052049a42137550e66730509bb613e76eaa30ddf9a7170",
+    "botocore-1.43.108-py3-none-any.whl": "ab9d16c6b4350aaa54ed28202dfa2998b2d735fdbf3247eb60af469d8d48a5b8",
+    "jmespath-1.1.0-py3-none-any.whl": "a5663118de4908c91729bea0acadca56526eb2698e83de10cd116ae0f4e97c64",
+    "python_dateutil-2.9.0.post0-py2.py3-none-any.whl": "a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427",
+    "s3transfer-0.19.2-py3-none-any.whl": "d8168eccca828cbb2cd573675333f3bddd254313a9c42494b84c76b539e8ba25",
+    "six-1.17.0-py2.py3-none-any.whl": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+    "urllib3-2.8.0-py3-none-any.whl": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3"
+  },
+  "openssl": {
+    "name": "openssl/openssl",
+    "version": "3.5.7",
+    "image": "registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+    "path": "/usr/bin/openssl",
+    "sha256": "acc10176d038aeb7b2a77d9ec972ac2985857a7191f7aecb7c54ef0e2c7e9549",
+    "librarySHA256": "8ae56f0a9481280a68c19f59809cd242a07a91ad7142944d21a878221992244b"
+  }
+}

@@ -257,6 +257,9 @@ class ImageBuildTests(unittest.TestCase):
         self.assertEqual(current,before)
         old_lock=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':deploy/common/images.lock.json']))
         current_lock=json.loads((ROOT/'deploy/common/images.lock.json').read_text())
+        if (ROOT/'deploy/common/backup-config.json').is_file():
+            from wo09_receipts import images
+            current_lock=json.loads(images())
         for key in ('console','python'):
             for field in ('source','canonical','digest'):
                 old_lock['images'][key][field]=current_lock['images'][key][field]

@@ -1,0 +1,19 @@
+{
+  "environment": "twinfra-dev-cairo-1",
+  "enabled": false,
+  "namespace": "twinfra-platform-services",
+  "cluster": "twinfra-postgres",
+  "bucket": "twinfra-dev-cairo-1-backups",
+  "endpointURL": "https://481407e21f55c4bcc20def49989f03e2.r2.cloudflarestorage.com",
+  "region": "auto",
+  "jurisdiction": "default / automatic location; dev data only",
+  "postgresPrefix": "postgres/twinfra-postgres",
+  "etcdPrefix": "etcd/twinfra-dev-cairo-1",
+  "credentialSecret": "twinfra-backup-s3",
+  "retentionDays": 7,
+  "archiveTimeoutSeconds": 300,
+  "postgresRpoSeconds": 900,
+  "postgresRtoSeconds": 7200,
+  "etcdRpoSeconds": 21600,
+  "restoreNamespace": "twinfra-restore-drill"
+}

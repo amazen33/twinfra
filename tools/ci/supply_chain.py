@@ -29,7 +29,7 @@ INITIAL_DATE=date(2026,10,13)
 BOOTSTRAP_BRANCH='codex/wo-32-supply-chain-scanning'
 SHA=re.compile(r'sha256:[a-f0-9]{64}')
 LOCKS=('deploy/common/bootstrap-images.lock.json','deploy/common/images.lock.json')
-RECEIPTS=('console/image.lock.json','deploy/common/postgresql-image.lock.json')
+RECEIPTS=('console/image.lock.json','deploy/common/postgresql-image.lock.json','deploy/common/backup-image.lock.json')
 POLICY_INPUTS=('security/vulnerability-', 'security/licence-', 'tools/ci/', '.github/workflows/')
 EXCEPTION_DAYS={'Critical':30,'High':60}
 
@@ -79,16 +79,16 @@ def immutable(entry):
 def image_inputs(root,name,entry,revision=None):
     """Resolve actual pinned scan inputs at either immutable Git revision."""
     ref=immutable(entry);references=[(ref,'registry:'+ref,entry['digest'])]
-    if name not in ('console','postgres'):return 'pinned-registry',references
-    archive=root/'.build/dev-images'/('console.oci.tar' if name=='console' else 'postgresql-pgvector.tar')
+    if name not in ('console','postgres','backup'):return 'pinned-registry',references
+    archive=root/'.build/dev-images'/({'console':'console.oci.tar','postgres':'postgresql-pgvector.tar','backup':'backups.oci.tar'}[name])
     if revision is None and archive.is_file():
         sys.path.insert(0,str(root/'tools'))
         from platform_image_staging import validate_archive
         validate_archive(archive,entry['digest'])
         return 'built-archive',[(ref,'oci-archive:'+archive.as_posix(),entry['digest'])]
     def content(path):return git(root,'show',revision+':'+path) if revision else (root/path).read_text(encoding='utf-8')
-    if name=='console':
-        pinned=json.loads(content(RECEIPTS[0]))['base'].removeprefix('registry.twinfra.example.com/')
+    if name in ('console','backup'):
+        pinned=json.loads(content(RECEIPTS[0 if name=='console' else 2]))['base'].removeprefix('registry.twinfra.example.com/')
         references=[(pinned,'registry:'+pinned,pinned.split('@')[1])]
     else:
         code=content('tools/platform_pg_image.py')
@@ -127,6 +127,7 @@ def inventory(root=ROOT,base=None,full=False):
             selected=full or introduced or filename in changes and old.get(name)!=entry
             if name=='console' and RECEIPTS[0] in changes:selected=True
             if name=='postgres' and RECEIPTS[1] in changes:selected=True
+            if name=='backup' and RECEIPTS[2] in changes:selected=True
             mode,references=image_inputs(root,name,entry)
             coverage.append(dict(entry=identifier,pinned=ref,mode=mode,selected=selected,
                                  scannedInputs=[r[0] for r in references]))

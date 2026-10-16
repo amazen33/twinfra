@@ -1,0 +1,45 @@
+name: WO-09 backup image and CMS verification
+on:
+  pull_request:
+    paths:
+      - deploy/common/backup/**
+      - deploy/common/backup-*.json
+      - tools/platform_backup*.py
+      - tools/ci/backup_crypto_test.py
+      - tools/ci/backup_scan.py
+      - .github/workflows/backup-build.yaml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  backup-build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.14.5'
+      - run: python -m pip install --disable-pip-version-check -r tools/ci/requirements.txt
+      - name: Reproduce the pinned backup archive without running installers
+        run: python tools/platform_backup_image.py --download-inputs
+      - name: Real admitted-image CMS and etcd snapshot restore fixture
+        run: python tools/ci/backup_crypto_test.py --output .build/backup-crypto
+      - name: Stage the already approved scanner versions
+        run: python tools/ci/stage_tools.py --source . --destination .build/backup-scan-tools --only syft grype osv-scanner
+      - name: Scan the complete built archive and its pinned requirements
+        run: python tools/ci/backup_scan.py --tools .build/backup-scan-tools/bin --out .build/backup-scan
+      - name: Retain public summaries only
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: wo09-backup-verification
+          path: |
+            .build/backup-crypto/summary.json
+            .build/backup-scan/*.json
+            .build/backup-scan/*.log
+          retention-days: 14
+          if-no-files-found: warn

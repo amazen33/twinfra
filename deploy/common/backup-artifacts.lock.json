@@ -1,0 +1,146 @@
+{
+  "plugin": {
+    "version": "0.15.1",
+    "url": "https://github.com/cloudnative-pg/plugin-barman-cloud/releases/download/v0.15.1/manifest.yaml",
+    "sha256": "8f377ff4a7d0d3f74fc64b0f7ac4f449fc38ca9e83a40107cca2f9315a9bd920",
+    "publishedAt": "2026-09-30T13:34:15Z",
+    "gzipSHA256": "546e97cde065e2d48270192bfb194385dfd687e7960a5d04e287f52f3ef83c89"
+  },
+  "images": {
+    "barman-plugin": {
+      "release": "ghcr.io/cloudnative-pg/plugin-barman-cloud:v0.15.1",
+      "source": "ghcr.io/cloudnative-pg/plugin-barman-cloud@sha256:c75acad19a36e8176cfe2885761ff1b836c6ef977d7257e298c99a28b5c302ef",
+      "canonical": "registry.twinfra.example.com/ghcr.io/cloudnative-pg/plugin-barman-cloud@sha256:c75acad19a36e8176cfe2885761ff1b836c6ef977d7257e298c99a28b5c302ef",
+      "digest": "sha256:c75acad19a36e8176cfe2885761ff1b836c6ef977d7257e298c99a28b5c302ef",
+      "publishedAt": "2026-09-30T13:34:15Z",
+      "verifiedOn": "2026-10-16",
+      "digestSource": "https://ghcr.io/v2/cloudnative-pg/plugin-barman-cloud/manifests/v0.15.1"
+    },
+    "barman-sidecar": {
+      "release": "ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar:v0.15.1",
+      "source": "ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar@sha256:2287a793a804db751edd0d07d44cd549e357677e98a800eb12e2cf7c0d53f9b0",
+      "canonical": "registry.twinfra.example.com/ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar@sha256:2287a793a804db751edd0d07d44cd549e357677e98a800eb12e2cf7c0d53f9b0",
+      "digest": "sha256:2287a793a804db751edd0d07d44cd549e357677e98a800eb12e2cf7c0d53f9b0",
+      "publishedAt": "2026-09-30T13:34:15Z",
+      "verifiedOn": "2026-10-16",
+      "digestSource": "https://ghcr.io/v2/cloudnative-pg/plugin-barman-cloud-sidecar/manifests/v0.15.1"
+    }
+  },
+  "runtimePackages": [
+    {
+      "name": "barman",
+      "version": "3.20.1",
+      "url": "https://files.pythonhosted.org/packages/eb/8c/b225bca1623a6370885f005e2f575f5f13c5c790eb9bef6695299efca4dd/barman-3.20.1.tar.gz",
+      "sha256": "cac6542ac7a8f7cf2a7892807509d78dd24346a021afc24a7c3ec5b1626cc636"
+    },
+    {
+      "name": "psycopg2",
+      "version": "2.9.13",
+      "url": "https://files.pythonhosted.org/packages/91/81/6ea19b8b28feb9405c8c87a307776614d6e404bdb98467d1ce10a39d2c1d/psycopg2-2.9.13.tar.gz",
+      "sha256": "d36784fc2dae69523ba4b79c7d1d1b4d6e83e87836874f111262f4db940b16a6"
+    }
+  ],
+  "wheels": [
+    {
+      "name": "boto3",
+      "version": "1.43.108",
+      "filename": "boto3-1.43.108-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/74/e4/7e88c40e9f61888e12dac0de41a5fddc2bcd1c3992d9b28e17d915cce0df/boto3-1.43.108-py3-none-any.whl",
+      "sha256": "19e9da95ef0c494e27052049a42137550e66730509bb613e76eaa30ddf9a7170",
+      "publishedAt": "2026-10-02T19:32:23.826652Z",
+      "spdx": "Apache-2.0",
+      "requiresDist": [
+        "botocore<1.44.0,>=1.43.108",
+        "jmespath<2.0.0,>=0.7.1",
+        "s3transfer<0.20.0,>=0.19.0",
+        "botocore[crt]<2.0a0,>=1.21.0; extra == \"crt\""
+      ]
+    },
+    {
+      "name": "botocore",
+      "version": "1.43.108",
+      "filename": "botocore-1.43.108-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/7a/0b/4670b7e23914b5cc357be5ca45fae503b57d98ecff4b3eabea70412809fd/botocore-1.43.108-py3-none-any.whl",
+      "sha256": "ab9d16c6b4350aaa54ed28202dfa2998b2d735fdbf3247eb60af469d8d48a5b8",
+      "publishedAt": "2026-10-02T19:32:15.086909Z",
+      "spdx": "Apache-2.0",
+      "requiresDist": [
+        "jmespath<2.0.0,>=0.7.1",
+        "python-dateutil<3.0.0,>=2.1",
+        "urllib3!=2.2.0,<3,>=1.25.4",
+        "awscrt==0.36.0; extra == \"crt\""
+      ]
+    },
+    {
+      "name": "jmespath",
+      "version": "1.1.0",
+      "filename": "jmespath-1.1.0-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/14/2f/967ba146e6d58cf6a652da73885f52fc68001525b4197effc174321d70b4/jmespath-1.1.0-py3-none-any.whl",
+      "sha256": "a5663118de4908c91729bea0acadca56526eb2698e83de10cd116ae0f4e97c64",
+      "publishedAt": "2026-01-22T16:35:24.919874Z",
+      "spdx": "MIT",
+      "requiresDist": null
+    },
+    {
+      "name": "python-dateutil",
+      "version": "2.9.0.post0",
+      "filename": "python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+      "sha256": "a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427",
+      "publishedAt": "2024-03-01T18:36:18.570437Z",
+      "spdx": "Dual License",
+      "requiresDist": [
+        "six >=1.5"
+      ]
+    },
+    {
+      "name": "s3transfer",
+      "version": "0.19.2",
+      "filename": "s3transfer-0.19.2-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/bc/e7/5c595c75e9f41a44f30e526eda465ea0b4eec93470e074e4a111b253f13a/s3transfer-0.19.2-py3-none-any.whl",
+      "sha256": "d8168eccca828cbb2cd573675333f3bddd254313a9c42494b84c76b539e8ba25",
+      "publishedAt": "2026-07-22T19:30:43.251801Z",
+      "spdx": "Apache License 2.0",
+      "requiresDist": [
+        "botocore<2.0a.0,>=1.37.4",
+        "botocore[crt]<2.0a.0,>=1.37.4; extra == \"crt\""
+      ]
+    },
+    {
+      "name": "six",
+      "version": "1.17.0",
+      "filename": "six-1.17.0-py2.py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl",
+      "sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+      "publishedAt": "2024-12-04T17:35:26.475808Z",
+      "spdx": "MIT",
+      "requiresDist": null
+    },
+    {
+      "name": "urllib3",
+      "version": "2.8.0",
+      "filename": "urllib3-2.8.0-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl",
+      "sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+      "publishedAt": "2026-09-15T19:29:34.577402Z",
+      "spdx": "MIT",
+      "requiresDist": [
+        "brotli>=1.2.0; platform_python_implementation == \"CPython\" and extra == \"brotli\"",
+        "brotlicffi>=1.2.0.0; platform_python_implementation != \"CPython\" and extra == \"brotli\"",
+        "h2<5,>=4; extra == \"h2\"",
+        "pysocks!=1.5.7,<2.0,>=1.5.6; extra == \"socks\"",
+        "backports-zstd>=1.0.0; python_version < \"3.14\" and extra == \"zstd\""
+      ]
+    }
+  ],
+  "embeddedTools": [
+    {
+      "name": "openssl/openssl",
+      "version": "3.5.7",
+      "image": "registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "path": "/usr/bin/openssl",
+      "sha256": "acc10176d038aeb7b2a77d9ec972ac2985857a7191f7aecb7c54ef0e2c7e9549",
+      "librarySHA256": "8ae56f0a9481280a68c19f59809cd242a07a91ad7142944d21a878221992244b"
+    }
+  ]
+}

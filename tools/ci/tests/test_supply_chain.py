@@ -317,6 +317,10 @@ class InventoryAndIntegrity(unittest.TestCase):
         self.assertEqual(entry['class'],'pending-removal');old['components'].remove(entry)
         old={v['id']:v for v in old['components']}
         current={v['id']:v for v in sc.read(ROOT/'security/licence-register.json')['components']}
+        if (ROOT/'deploy/common/backup-config.json').is_file():
+            sys.path.insert(0,str(ROOT/'tests'))
+            from wo09_receipts import register
+            current={v['id']:v for v in json.loads(register())['components']}
         replacements=self.p2_register_replacements(current) if (ROOT/'tools/ci/promote_p2.py').is_file() else []
         for name,entry in old.items():
             if name=='oci-image|registry.k8s.io/coredns/coredns|sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9' and replacements:

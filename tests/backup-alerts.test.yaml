@@ -1,0 +1,39 @@
+rule_files:
+  - ../deploy/common/backup/alerts.rules.yaml
+evaluation_interval: 1m
+tests:
+  - name: recent successful backups do not alert
+    interval: 1m
+    input_series:
+      - {series: 'twinfra_backup_last_success_timestamp_seconds{kind="base"}', values: '1+60x20'}
+      - {series: 'twinfra_backup_last_success_timestamp_seconds{kind="wal"}', values: '1+60x20'}
+      - {series: 'twinfra_backup_last_success_timestamp_seconds{kind="etcd"}', values: '1+60x20'}
+      - {series: 'twinfra_backup_check_failed', values: '0+0x20'}
+    alert_rule_test:
+      - {eval_time: 16m, alertname: TwinfraBackupStaleBase, exp_alerts: []}
+      - {eval_time: 16m, alertname: TwinfraBackupStaleWal, exp_alerts: []}
+      - {eval_time: 16m, alertname: TwinfraBackupStaleEtcd, exp_alerts: []}
+      - {eval_time: 16m, alertname: TwinfraBackupCheckFailed, exp_alerts: []}
+  - name: missing series fails closed after hold time
+    alert_rule_test:
+      - eval_time: 2m
+        alertname: TwinfraBackupStaleWal
+        exp_alerts:
+          - exp_labels: {severity: critical, kind: wal}
+            exp_annotations: {summary: Twinfra wal backup is stale or missing}
+  - name: WAL RPO breach and explicit failed backup alert
+    interval: 1m
+    input_series:
+      - {series: 'twinfra_backup_last_success_timestamp_seconds{kind="wal"}', values: '1+0x20'}
+      - {series: 'twinfra_backup_check_failed', values: '1+0x20'}
+    alert_rule_test:
+      - eval_time: 17m
+        alertname: TwinfraBackupStaleWal
+        exp_alerts:
+          - exp_labels: {severity: critical, kind: wal}
+            exp_annotations: {summary: Twinfra wal backup is stale or missing}
+      - eval_time: 2m
+        alertname: TwinfraBackupCheckFailed
+        exp_alerts:
+          - exp_labels: {severity: critical}
+            exp_annotations: {summary: Twinfra backup check reported failure}

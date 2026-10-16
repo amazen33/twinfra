@@ -1,0 +1,16 @@
+{
+  "certificate_v1.json": {
+    "url": "https://raw.githubusercontent.com/cert-manager/cert-manager/0b9448974868c5669d4f3e7499f5afd393889e22/deploy/crds/cert-manager.io_certificates.yaml",
+    "sha256": "4373b354661730a1c6ae766ee2e524d6fae6778a219aa397e5bf0256bc991ee6",
+    "vendor": "cert-manager-certificates.yaml.gz",
+    "version": "1.20.4",
+    "licenceSource": "https://raw.githubusercontent.com/cert-manager/cert-manager/0b9448974868c5669d4f3e7499f5afd393889e22/LICENSE"
+  },
+  "issuer_v1.json": {
+    "url": "https://raw.githubusercontent.com/cert-manager/cert-manager/0b9448974868c5669d4f3e7499f5afd393889e22/deploy/crds/cert-manager.io_issuers.yaml",
+    "sha256": "6c90266b7aa958900ada75960c22425d0c47f3d4048fc92abac6f87e6b0e2c7b",
+    "vendor": "cert-manager-issuers.yaml.gz",
+    "version": "1.20.4",
+    "licenceSource": "https://raw.githubusercontent.com/cert-manager/cert-manager/0b9448974868c5669d4f3e7499f5afd393889e22/LICENSE"
+  }
+}
