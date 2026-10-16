@@ -36,6 +36,9 @@ removes the duplicate number.
 6. WO-07 is split: [WO-07a](WO-07a-remove-grafana.md) removes Grafana; WO-07b deployment moves to [WO-10 Amendment 1](WO-10-observability-stack-v1.md#amendment-1-2026-10-15-owner-split-approved-perses-deployment-wo-07b-moves-here).
 7. WO-08 OpenBao, External Secrets, cert-manager. Needs the owner's key ceremony.
 8. WO-09 off-node backups and restore drill. Needs a backup target from the owner.
+   WO-09a first splits the ADR-0054 ladder, dated legacy backfill and ADR-0049
+   Amendments 1/1a into a standalone governance PR; it must merge before WO-08
+   runtime admission or WO-09 backups. See WO-08 Amendment 2.
 9. WO-10 observability stack v1. Needs WO-02 and WO-07, plus the owner's node-exception approvals.
 10. WO-11 console roles, forgery protection and audit.
 

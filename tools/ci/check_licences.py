@@ -5,6 +5,7 @@ from collections import Counter
 from datetime import date
 import fnmatch
 import json
+import licence_ladder
 import os
 from pathlib import Path
 import re
@@ -136,7 +137,8 @@ def check_component(entry, component, policy, root, today, baseline):
     if kind == 'blocked':
         raise ValueError('Blocked class')
     if entry.get('expires'):
-        expiry(entry, today, 120 if kind == 'exception' else 60 if kind == 'pending-removal' else None)
+        limit = 183 if entry.get('adr') == '0054' else 120
+        expiry(entry, today, limit if kind == 'exception' else 60 if kind == 'pending-removal' else None)
     actual = observed_integrities(component)
     if entry.get('integrities', []) != actual:
         raise ValueError('Artifact integrity changed; reverify the registered release')
@@ -192,7 +194,9 @@ def check_component(entry, component, policy, root, today, baseline):
             raise ValueError('Exception is not authorized by the policy')
         if authorized.get('module') and not module_off(root, authorized['module']):
             raise ValueError('Module enabled with an open runtime exception')
-        permitted.append(authorized['spdx'])
+        permitted.extend(identifiers(expression(authorized['spdx'])))
+        if entry.get('adr')=='0054' and not (root/entry.get('notice','')).is_file():
+            raise ValueError('Missing ADR-0054 notice/source offer')
     elif kind == 'pending-removal':
         if entry['name'] not in policy['pendingRemoval'] or not entry.get('expires'):
             raise ValueError('Pending removal is not named in the owner decision')
@@ -250,6 +254,8 @@ def audit(root, today=None, rendered=()):
             continue
         try:
             check_component(entry, component, policy, root, today, baseline)
+            if 'ladder' in policy:
+                licence_ladder.validate(entry, policy, identifiers(expression(entry['spdx'])), today)
             if entry.get('evidencePending') and f'licence-source:{key}' not in baseline:
                 raise ValueError('Unverified licence requires an explicit dated evidence baseline')
             if entry['ecosystem'] == 'oci-image' and entry['class'] != 'pending-removal':
@@ -278,6 +284,8 @@ def audit(root, today=None, rendered=()):
                 countsByEcosystem=dict(sorted(Counter(x['ecosystem'] for x in rows).items())),
                 countsByClass={kind: sum(x['class'] == kind for x in rows) for kind in policy['classes']}, components=rows,
                 openBaseline=baseline_doc['findings'],
+                legacyBackfill=[dict(id=e['id'], tier=e['tier'], due=e['enterpriseGrade']['due'])
+                                for e in entries.values() if e.get('enterpriseGrade', {}).get('status') == 'legacy-pending'],
                 pendingRemoval=[e for e in entries.values() if e['class'] == 'pending-removal'])
 
 
@@ -296,6 +304,9 @@ def main():
     print('Licence gate: ' + report['status'])
     for key in ('countsByEcosystem', 'countsByClass'):
         print(key + ': ' + json.dumps(report.get(key, {}), sort_keys=True))
+    backfill = Counter(e['due'] for e in report.get('legacyBackfill', []))
+    if backfill:
+        print('ADR-0054 legacy-pending backfill: ' + json.dumps(dict(sorted(backfill.items()))))
     for kind in ('openBaseline', 'pendingRemoval'):
         for entry in report.get(kind, []):
             print(f'{kind}: {entry["id"]} expires {entry["expires"]}')
@@ -305,6 +316,10 @@ def main():
         lines = ['### Candidate licence gate: ' + report['status'], '',
                  'Ecosystems: `' + json.dumps(report.get('countsByEcosystem', {}), sort_keys=True) + '`', '',
                  'Classes: `' + json.dumps(report.get('countsByClass', {}), sort_keys=True) + '`', '']
+        if backfill:
+            lines += ['Legacy enterprise-grade backfill (Foundation 1.0):', '']
+            lines += [f'- {count} entries due **{deadline}**' for deadline, count in sorted(backfill.items())]
+            lines.append('')
         for kind in ('openBaseline', 'pendingRemoval'):
             lines.append('Open ' + kind + ':')
             lines.extend(f'- `{e["id"]}` — expires **{e["expires"]}**' for e in report.get(kind, []))

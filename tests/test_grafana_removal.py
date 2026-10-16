@@ -119,6 +119,9 @@ class ExactChanges(unittest.TestCase):
         self.assertEqual(before['pendingRemoval'],['docker.io/grafana/grafana'])
         current=json.loads((ROOT/path).read_text())
         self.assertEqual(current['pendingRemoval'],[])
+        if (ROOT/'tools/ci/licence_ladder.py').is_file():
+            from ladder_receipts import policy
+            current=json.loads(policy())
         before['pendingRemoval']=[]
         self.assertEqual(current,before)
 

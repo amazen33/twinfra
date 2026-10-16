@@ -74,6 +74,11 @@ def receipt(path):
         from wo36_receipts import receipt as network_receipt
         return network_receipt(path)
     if path=='security/licence-policy.json':
+        if (ROOT/'tools/ci/licence_ladder.py').is_file():
+            from ladder_receipts import policy
+            policy()  # Assert every field before projecting this historical receipt.
+            before=original(path)
+            return before
         # WO-07a owner review permits only removing the last pending entry.
         # Validate the entire current file before comparing historical receipts.
         before=original(path)

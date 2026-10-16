@@ -132,10 +132,152 @@
           "imageSBOM": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["path", "sha256"],
+            "required": [
+              "path",
+              "sha256"
+            ],
             "properties": {
-              "path": {"type": "string", "minLength": 1},
-              "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          },
+          "tier": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "approvedBy": {
+            "const": "amazen33"
+          },
+          "enterpriseGrade": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "status",
+                  "due"
+                ],
+                "properties": {
+                  "status": {
+                    "const": "legacy-pending"
+                  },
+                  "due": {
+                    "type": "string",
+                    "format": "date"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "status",
+                  "criteria"
+                ],
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "verified",
+                      "pending"
+                    ]
+                  },
+                  "criteria": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "maturity",
+                      "governance",
+                      "activitySupport",
+                      "securityProcess",
+                      "supplyChain",
+                      "adoption"
+                    ],
+                    "properties": {
+                      "maturity": {
+                        "$ref": "#/$defs/criterion"
+                      },
+                      "governance": {
+                        "$ref": "#/$defs/criterion"
+                      },
+                      "activitySupport": {
+                        "$ref": "#/$defs/criterion"
+                      },
+                      "securityProcess": {
+                        "$ref": "#/$defs/criterion"
+                      },
+                      "supplyChain": {
+                        "$ref": "#/$defs/criterion"
+                      },
+                      "adoption": {
+                        "$ref": "#/$defs/criterion"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "climbing": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "reviewedOn",
+              "reevaluateOn",
+              "reviewAtMinorUpgrade",
+              "rejectedCandidates"
+            ],
+            "properties": {
+              "reviewedOn": {
+                "type": "string",
+                "format": "date"
+              },
+              "reevaluateOn": {
+                "type": "string",
+                "format": "date"
+              },
+              "reviewAtMinorUpgrade": {
+                "const": true
+              },
+              "rejectedCandidates": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "name",
+                    "tier",
+                    "failedCriterion",
+                    "evidence"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "tier": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 3
+                    },
+                    "failedCriterion": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "evidence": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -191,8 +333,90 @@
                 "adr"
               ]
             }
+          },
+          {
+            "if": {
+              "required": [
+                "tier"
+              ]
+            },
+            "then": {
+              "required": [
+                "enterpriseGrade"
+              ]
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "tier"
+              ],
+              "properties": {
+                "tier": {
+                  "minimum": 3
+                }
+              },
+              "not": {
+                "required": [
+                  "enterpriseGrade"
+                ],
+                "properties": {
+                  "enterpriseGrade": {
+                    "required": [
+                      "status"
+                    ],
+                    "properties": {
+                      "status": {
+                        "const": "legacy-pending"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "approvedBy",
+                "enterpriseGrade",
+                "climbing",
+                "unmodified",
+                "separateUnit",
+                "notice"
+              ]
+            }
           }
         ]
+      }
+    }
+  },
+  "$defs": {
+    "criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result",
+        "evidence",
+        "date"
+      ],
+      "properties": {
+        "result": {
+          "enum": [
+            "pass",
+            "pending",
+            "fail"
+          ]
+        },
+        "evidence": {
+          "type": "string",
+          "format": "uri"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "notes": {
+          "type": "string"
+        }
       }
     }
   }

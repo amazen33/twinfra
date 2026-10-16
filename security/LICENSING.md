@@ -8,6 +8,11 @@ ecosystem/name/version identity. OCI tag and mirror spellings resolve through
 the existing locks to the same digest identity. Manifest artifacts are counted
 individually; npm/pip distributions are deduplicated by name and version.
 
+[ADR-0054](../docs/adr/0054-licence-ladder-and-enterprise-grade-gate.md) adds
+runtime tiers and evidence qualification. The [dated legacy transition and
+toolchain-wave review](../docs/licence-ladder.md) preserve exact existing
+approvals without extending their expiry dates.
+
 Run `python tools/ci/check_licences.py --report .build/licences.json` from the
 repository root. CI calls it from its control checkout before the module gates,
 so only the candidate inventory is subject to this policy. Historical revisions

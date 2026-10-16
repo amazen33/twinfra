@@ -1,5 +1,16 @@
 # GitHub Actions validation
 
+## WO-09a governance split
+
+The licence gate enforces ADR-0054 tiers and enterprise qualification, reports
+526 unchanged legacy runtime approvals for dated backfill (13 due 2027-01-14;
+513 due 2027-04-16), and retains the existing shorter expiry dates. The CI-control
+unit suite includes `test_licence_ladder.py` and `test_toolchain_wave.py`;
+the latter covers package/fix matching, KEV, upstream eligibility, isolation,
+owner approval and 30/60-day bounds. Historical receipt projections validate all
+prior approval fields before removing only the new tier/backfill metadata.
+No backup or runtime bundle is introduced. See [licence ladder](licence-ladder.md).
+
 ## WO-36 network and staging checks
 
 `test_host_network.py` runs fake SSH/netplan and temporary-filesystem failures,
