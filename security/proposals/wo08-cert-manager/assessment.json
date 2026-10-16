@@ -1,0 +1,2462 @@
+{
+  "date": "2026-10-16",
+  "status": "owner-review-required; not admitted",
+  "policyCommit": "e4e0894f104f831c274ded0a46fdb3af7014a532",
+  "policySHA256": "d31cf7f4d81620b3f32044cd10bd129be68dc77de3528013f22171681293eca5",
+  "rule": "ADR-0049 Amendments 1/1a",
+  "release": {
+    "version": "v1.21.2",
+    "publishedAt": "2026-09-11T07:51:11Z",
+    "sourceCommit": "922a06aa49ee4bb802db268ef72a174af70edd32"
+  },
+  "upstreamReleaseEvidence": "https://github.com/cert-manager/cert-manager/releases",
+  "eligibleFixedRelease": false,
+  "coverage": "verified Linux-amd64 regular-file rootfs projection; no application execution",
+  "coverageLimit": "Native Windows OCI scanning fails on stereoscope colon-containing cache filenames. Complete Linux OCI admission scan remains Pending.",
+  "scannerEvidence": {
+    "platform": "windows/amd64",
+    "syftVersion": "1.52.0",
+    "syftBinarySHA256": "dc71719e9995813f44115f87d6753456685efb0d4cd691373be165b0bb6efa07",
+    "grypeVersion": "0.119.0",
+    "grypeBinarySHA256": "5fa9104fb0630b9cd8049b12cb7b29713ce58fcaf586a26b3ad93d418982a52c"
+  },
+  "database": {
+    "schemaVersion": "v6.1.10",
+    "from": "https://grype.anchore.io/databases/v6/vulnerability-db_v6.1.10_2026-10-16T00:28:12Z_1792132191.tar.zst?checksum=sha256%3A9985d2b30dc728eea2941d23e7d7a2e04daebd65c50a959c6136a858927516b9",
+    "built": "2026-10-16T06:29:51Z",
+    "path": "E:\\vCloud\\.build\\wo09\\grype-db\\6\\vulnerability.db",
+    "valid": true
+  },
+  "kev": {
+    "catalogVersion": "2026.10.15",
+    "sha256": "253d615220c533948d22affe03b5a8311d36add834bb67b099c16bade10af73b"
+  },
+  "images": [
+    {
+      "component": "controller",
+      "digest": "sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "toolchain": "go1.26.8",
+      "binarySHA256": "301468a64f3575e4b3b7a6a1febc6b6e6be38d06d0163f99fff5da9bb36f207f",
+      "role": "deployment",
+      "counts": {
+        "Critical": 3,
+        "High": 13
+      },
+      "qualifyingPackageCveEntries": 16,
+      "nonQualifying": [],
+      "amd64Digest": "sha256:57bb397c639e0e94184ba67848e5dad04284f24645e521e764a0ee5f5002f286",
+      "sbomSHA256": "66ae67f23e385ed3bd3a6741e3a4f987f549ba68ed636288527002dc54f8be0f",
+      "grypeReportSHA256": "d283a6017e97ee76fdb6de9b7e7a164aeb768ea151cfe54c2ab95f67eb11a9f4"
+    },
+    {
+      "component": "cainjector",
+      "digest": "sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "toolchain": "go1.26.8",
+      "binarySHA256": "b422b1dc46b026219ce600e99a30dccbdafd958608e7dba3f07dd9b573b0bb27",
+      "role": "deployment",
+      "counts": {
+        "Critical": 3,
+        "High": 13
+      },
+      "qualifyingPackageCveEntries": 16,
+      "nonQualifying": [],
+      "amd64Digest": "sha256:aa2bc58725d92a643f5069dde58abc93b65566ded8951348873ac9ee7efef66c",
+      "sbomSHA256": "48483ad10e3cbc87e31e68f992f28e4218d0d631fb869a00157a6e8eca9c87cd",
+      "grypeReportSHA256": "2c25d823ee6d6c25531fe1cd8da6baa1bb312cea08804aa5cd457fb456aad864"
+    },
+    {
+      "component": "webhook",
+      "digest": "sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "toolchain": "go1.26.8",
+      "binarySHA256": "2fd791f90d25728e7b23d981062f55c65f1bfee5127a404ec4cf84102fd88472",
+      "role": "deployment",
+      "counts": {
+        "Critical": 3,
+        "High": 13
+      },
+      "qualifyingPackageCveEntries": 16,
+      "nonQualifying": [],
+      "amd64Digest": "sha256:b929259301ee75270ab4651d5e6bd4ba7b6624b1ce48ba767d064295a9312101",
+      "sbomSHA256": "fc5eb839ce88b866a037bfa9c0296f4cc018e4bc8ef8240cbf6765932d0b998d",
+      "grypeReportSHA256": "dbdfd1369711b51958457c51859426ef6250842cc8aaa4076c14dfd61066078e"
+    },
+    {
+      "component": "startupapicheck",
+      "digest": "sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "toolchain": "go1.26.8",
+      "binarySHA256": "c28f6b082ad4c4c00f462116b80123cb0dc932d94b51f95944751c0d9c112caf",
+      "role": "optional; not admitted",
+      "counts": {
+        "Critical": 3,
+        "High": 13
+      },
+      "qualifyingPackageCveEntries": 16,
+      "nonQualifying": [],
+      "amd64Digest": "sha256:ed347b0ab607058f139b83f41567109456b9776330b63da8086a120afb7f1729",
+      "sbomSHA256": "9997188f6a7b1f9a18102509061f94162d377d3e8c23749de8a6c47daf1c3620",
+      "grypeReportSHA256": "3c19d2e8c998b704aee7a341de2d670d2c3f179a4e385a60b8de0fbcd0838ca6"
+    },
+    {
+      "component": "acmesolver",
+      "digest": "sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "toolchain": "go1.26.8",
+      "binarySHA256": "f84886ce57b0849266787a539f00141f7da382618a50cd8b1239c63ea6196094",
+      "role": "optional; not admitted",
+      "counts": {
+        "Critical": 3,
+        "High": 13
+      },
+      "qualifyingPackageCveEntries": 16,
+      "nonQualifying": [],
+      "amd64Digest": "sha256:dc5c5b8456d1a50af47a240987e85afce352b5c1155a8a4698b7c91eac19f407",
+      "sbomSHA256": "cd5830d734d02cd038bb5a4297c24928cfb3f461aa6ef23847f45354d3554395",
+      "grypeReportSHA256": "65ce76738d924d40212a3517d29dfea7bb09306f7624a5335c0570a993229414"
+    }
+  ],
+  "findings": [
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "0f6e545f2df0dd7ce9d509740cb62c92058b4650f63d36b4ab62c1e30271cf30",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "f8e30df9018d1d6021a3c36d2f7ab4fff58c66d5c8588c0b2d6f391b133994ac",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "3539cd7e573ffb8164f6c611d7020041f2d2e2c77ba21a653368ba3bfb732e72",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78659",
+      "aliases": [
+        "CVE-2026-78659",
+        "GO-2026-6603"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "dfab6bfa4d0ffeaaf146bc9019fdca811de9173acf2d1049e6cfbf8edd277587",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78659",
+      "aliases": [
+        "CVE-2026-78659",
+        "GO-2026-6603"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "3620871361b0f02c5a32bddd5078fec2931587fbb7880b0372fdf3d70032504a",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78669",
+      "aliases": [
+        "CVE-2026-78669",
+        "GO-2026-6611"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "179b9a40cb4f64b05d1918fe87c6fbe20c218211d7070814eb88a4c24f80dd29",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78669",
+      "aliases": [
+        "CVE-2026-78669",
+        "GO-2026-6611"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "06fbea43b9f433bac4d8250d4bf10ed858a79ef466e6050ea8dedb77f7a9c75f",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94440",
+      "aliases": [
+        "CVE-2026-94440",
+        "GO-2026-6608"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "3104b8e9517e3378e7977344fe4676ee38ec4d9aee4a2218481d07496020b8d9",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97031",
+      "aliases": [
+        "CVE-2026-97031",
+        "GO-2026-6607"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "2d2e09d8e04cc6a37042a985e5f3f9a77a9441129bbb1cb7b822b6f0d16b208a",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78667",
+      "aliases": [
+        "CVE-2026-78667",
+        "GO-2026-6609"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "d6b39480cd438bc1a4326b32cd1cb21af6d2d3d8d72eb5f8dfb55b77d35c9240",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94439",
+      "aliases": [
+        "CVE-2026-94439",
+        "GO-2026-6613"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "2c3a275851840b31605ee703944119f7b348fc0f69c4cfd274b0e7704a1dbdcb",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56866",
+      "aliases": [
+        "CVE-2026-56866",
+        "GO-2026-6605"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "a0aca215f1f2303ffa2acd16dc7532b6fcbc3628cc9da08440e335ab534087a0",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78660",
+      "aliases": [
+        "CVE-2026-78660",
+        "GO-2026-6610"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "5cae2e777b5b8a6cd679ade8c3173bc4f238e6e9fee6d5b49412b140761f75fb",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78660",
+      "aliases": [
+        "CVE-2026-78660",
+        "GO-2026-6610"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "b1ccef12e206f65ded648aebe38372cc3a9d36bb415a61c479ca5d8c3a63bdcb",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-97032",
+      "aliases": [
+        "CVE-2026-97032",
+        "GO-2026-6617"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "3c179cca7063b650e3304438c5593981fa16c894ae9f1e0dccf376a5510ff9da",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97032",
+      "aliases": [
+        "CVE-2026-97032",
+        "GO-2026-6617"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "a89930944f0ae86de91278eba455ad081de97b8c12cb2f23e829e565836acd60",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94448",
+      "aliases": [
+        "CVE-2026-94448",
+        "GO-2026-6599"
+      ],
+      "severity": "Medium",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "5f2338efe72747a36c508efe31269153b970f7e95f0ab96c584539b95e224905",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97030",
+      "aliases": [
+        "CVE-2026-97030",
+        "GO-2026-6600"
+      ],
+      "severity": "Medium",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "dee6085c996b676d564eb5ae2b6bd6cbadccd5a0f7c8d18fcd5e663bb492f334",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "go.opentelemetry.io/otel/exporters/otlp/otlptrace",
+      "version": "v1.40.0",
+      "vulnerability": "CVE-2026-81870",
+      "aliases": [
+        "CVE-2026-81870",
+        "GHSA-8wmf-6v46-5gfg"
+      ],
+      "severity": "Low",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.45.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "99b407c1ff94502993b94ac2432ff01538d9e045b253f3fad9c55288a3b7281e",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc",
+      "version": "v1.40.0",
+      "vulnerability": "CVE-2026-81870",
+      "aliases": [
+        "CVE-2026-81870",
+        "GHSA-8wmf-6v46-5gfg"
+      ],
+      "severity": "Low",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.45.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "d459251f6ba5895b2a1bfabe0b8c69168aceb635ac3ca1acdf1265c0d275508d",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "go.opentelemetry.io/otel/sdk",
+      "version": "v1.44.0",
+      "vulnerability": "CVE-2026-81870",
+      "aliases": [
+        "CVE-2026-81870",
+        "GHSA-8wmf-6v46-5gfg"
+      ],
+      "severity": "Low",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.45.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "698cbaafdb100c79907924accf83bc9bf8cf02430cd6fd75ea0a31038ec5ca4b",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "golang.org/x/crypto",
+      "version": "v0.56.0",
+      "vulnerability": "GO-2026-5932",
+      "aliases": [
+        "GO-2026-5932"
+      ],
+      "severity": "Unknown",
+      "fixAvailable": false,
+      "fixVersions": [],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "069c102b334218c810ad847e4b875add8c0e9c0352afab4bd047d7470a1176d7",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "7ee219f77029353d74e062db6043bac073a59e77a4d719b1d92c5085bd635f40",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "adaff0179bcfb82f018c30edb44f1f2cbe607f4a28936628ce8e5035dbc2c70a",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "b16795e1e381302d840081d8fbea2b4afa39a25407fad8c2be80bfea2f590f48",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78659",
+      "aliases": [
+        "CVE-2026-78659",
+        "GO-2026-6603"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "c22ab329600b16d851528999d405b5f2e4883165876963ae43c78295183a7781",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78659",
+      "aliases": [
+        "CVE-2026-78659",
+        "GO-2026-6603"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "54853ac343b91ca417988318a6fcb9c5a060d648939bdd32ac6a748fc52214a8",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78669",
+      "aliases": [
+        "CVE-2026-78669",
+        "GO-2026-6611"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "5b146996e3e2dc3cf1e241f30abd5945a29f085d4ebc7a3d81d6b95d82025538",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78669",
+      "aliases": [
+        "CVE-2026-78669",
+        "GO-2026-6611"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "4315b9565f3951723dc9ac944cf4a6d56ffeb6abfe3f3f5f386155c727c2e52c",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94440",
+      "aliases": [
+        "CVE-2026-94440",
+        "GO-2026-6608"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "597758b4e62e99aea03956da216f790bdaca0e49fb4860c1e759eed8ccb57a5d",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97031",
+      "aliases": [
+        "CVE-2026-97031",
+        "GO-2026-6607"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "1b4f67b23d31c6bebb1ea450d66f660e122b4f399fa623b2040708c78f58b3b3",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78667",
+      "aliases": [
+        "CVE-2026-78667",
+        "GO-2026-6609"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "5c11dd1639858efb07e4ef965cd12c654413482c28df93eade1a35940ad3ae6f",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94439",
+      "aliases": [
+        "CVE-2026-94439",
+        "GO-2026-6613"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "d7872999e415a803b725329431e4359ba51ea3ae6a774ded5f88ea1d88e46c16",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56866",
+      "aliases": [
+        "CVE-2026-56866",
+        "GO-2026-6605"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "2d90e91420cc2ce1e0fcf64ea2873214b3176e681c77f92bf1756797ad2fdba2",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78660",
+      "aliases": [
+        "CVE-2026-78660",
+        "GO-2026-6610"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "9763bd71e6e2212f5669fdbe1eae27e40968a306e401ec81324c9d5c875a6a68",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78660",
+      "aliases": [
+        "CVE-2026-78660",
+        "GO-2026-6610"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "dcd5e9a5e6b062e9e4bcc9125c0b6b68be7d98bcd9de6817a4e9f6bca5de8436",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-97032",
+      "aliases": [
+        "CVE-2026-97032",
+        "GO-2026-6617"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "346206ba7195fc4fa28c26e071e990da86c5e57a34f0f091226795b4effe244b",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97032",
+      "aliases": [
+        "CVE-2026-97032",
+        "GO-2026-6617"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "4e8e976dd482913966acf52b8152355ce9d19dedad685a561f85e75445e24e0b",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94448",
+      "aliases": [
+        "CVE-2026-94448",
+        "GO-2026-6599"
+      ],
+      "severity": "Medium",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "826763176756e1d5f96280fea9f9f9ff75a7bf101ce0a5a865f9b3773bebd089",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97030",
+      "aliases": [
+        "CVE-2026-97030",
+        "GO-2026-6600"
+      ],
+      "severity": "Medium",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "08440fe7fec233cc9bad8b381637f65da469f1b7dbfcfe2aad780ee0977033a7",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "golang.org/x/crypto",
+      "version": "v0.56.0",
+      "vulnerability": "GO-2026-5932",
+      "aliases": [
+        "GO-2026-5932"
+      ],
+      "severity": "Unknown",
+      "fixAvailable": false,
+      "fixVersions": [],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "999e4a06d1e085feb81b19cea65ec3d93fe9fb1df89325a18ede5f33c2ded4ea",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "f24dbfe27122ad4fd84ff29410d709f040a87b5148b351fdb67f9aef52b023c7",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "df5660ce23cf80b8bb1e03ebb1cb2a27882f4ca759ba3fd8292781398e4eb712",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "941447d4b946e539e537cac89641cd803d59a967c640e198f903d962c1fca445",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78659",
+      "aliases": [
+        "CVE-2026-78659",
+        "GO-2026-6603"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "72916a6f12a9fc2814c0e24c0be9edeb1c8b784c5ad47e68d683ab9181a7d6c0",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78659",
+      "aliases": [
+        "CVE-2026-78659",
+        "GO-2026-6603"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "6646dd6b9b9cab2afa3779f99fcf76aa3d2d98da7d622bfeaefb8dddaca32b02",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78669",
+      "aliases": [
+        "CVE-2026-78669",
+        "GO-2026-6611"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "b6a7e31fca161d4b417f98a835d1a3996bc26fa84567f454d1256b3544a43ca8",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78669",
+      "aliases": [
+        "CVE-2026-78669",
+        "GO-2026-6611"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "a4480aedaabdbc7284e2c3677998c89fed1dc9813f93d2d21ccb0a20ca48a179",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94440",
+      "aliases": [
+        "CVE-2026-94440",
+        "GO-2026-6608"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "48910e605a28c2f8d44b5cecf3f8c6ff2d2a74b4ab4776eb40d30312e7835a73",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97031",
+      "aliases": [
+        "CVE-2026-97031",
+        "GO-2026-6607"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "4621170d694d14e2f53b5016aeea1f532d548f6743eff565e3912b3550295d87",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78667",
+      "aliases": [
+        "CVE-2026-78667",
+        "GO-2026-6609"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "286317af9830f91c54a0f6285c65818f1c80928c88719f4971e717288f6c78ff",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94439",
+      "aliases": [
+        "CVE-2026-94439",
+        "GO-2026-6613"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "b0f7693bf0abf2c0c89b499bcf6d7d3a4304c08a202922734750b57a3b942da3",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56866",
+      "aliases": [
+        "CVE-2026-56866",
+        "GO-2026-6605"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "12d49de4c75a0e0ebb82c16f9fde896edc3ff63f6f7ee639b3f185ee40391295",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78660",
+      "aliases": [
+        "CVE-2026-78660",
+        "GO-2026-6610"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "bd1b262feb49e04067cf98588f196081fff8baaf733d67761b20a3a342ce07bc",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78660",
+      "aliases": [
+        "CVE-2026-78660",
+        "GO-2026-6610"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "e60b1456c8cc9aa2441ac4dab808fbf903a34fd1063c066bf7e55c81005f9706",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-97032",
+      "aliases": [
+        "CVE-2026-97032",
+        "GO-2026-6617"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "ff49d8920e705bd69a2224e108c78de557ce6e594c33c8517d251539e8a49cd9",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97032",
+      "aliases": [
+        "CVE-2026-97032",
+        "GO-2026-6617"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "3b5105c3f00345030543a8b76acf2bb0db80f2862510cdb49401126621ff6e18",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94448",
+      "aliases": [
+        "CVE-2026-94448",
+        "GO-2026-6599"
+      ],
+      "severity": "Medium",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "6da9175efdab64c8abd595f61b1fa30460a294d05eb0ed348f9348a34e3d5cd7",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97030",
+      "aliases": [
+        "CVE-2026-97030",
+        "GO-2026-6600"
+      ],
+      "severity": "Medium",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "ee94ac5d2f8b2f7b469445e2dfc57dcbfaadaab5641de2f1deea4d43910fc532",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "go.opentelemetry.io/otel/exporters/otlp/otlptrace",
+      "version": "v1.40.0",
+      "vulnerability": "CVE-2026-81870",
+      "aliases": [
+        "CVE-2026-81870",
+        "GHSA-8wmf-6v46-5gfg"
+      ],
+      "severity": "Low",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.45.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "76836fc91dcf1a46fa623ea22f53226fdeb8741f12fc5a409a5b56835294cfb7",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc",
+      "version": "v1.40.0",
+      "vulnerability": "CVE-2026-81870",
+      "aliases": [
+        "CVE-2026-81870",
+        "GHSA-8wmf-6v46-5gfg"
+      ],
+      "severity": "Low",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.45.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "ceedad0d5ef14c9d64892f7b7d53b6a314eadd0d54b6fd609f62d9f926a271d5",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "go.opentelemetry.io/otel/sdk",
+      "version": "v1.44.0",
+      "vulnerability": "CVE-2026-81870",
+      "aliases": [
+        "CVE-2026-81870",
+        "GHSA-8wmf-6v46-5gfg"
+      ],
+      "severity": "Low",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.45.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "58e8367e95863100c39ff125102cfba6ef988b2fadf1d74a17893748fcc40e73",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "golang.org/x/crypto",
+      "version": "v0.56.0",
+      "vulnerability": "GO-2026-5932",
+      "aliases": [
+        "GO-2026-5932"
+      ],
+      "severity": "Unknown",
+      "fixAvailable": false,
+      "fixVersions": [],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "6dc00e5c44d50e5366e76e244c1d1481a962386058915f9479c7a6cb837583e9",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "20a5943eaac1a35fc3b5478e972d55287eda81df0ecd9229f79b66c5d2a2c856",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "c1ea9e2fc2f7d936e8c836bb919ac5913b1746b45bb2518d5344880a56b69205",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "c0c4ab57cc23b6c62526702f25f30a599368451d89ea0efc1537a7025205aabc",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78659",
+      "aliases": [
+        "CVE-2026-78659",
+        "GO-2026-6603"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "9f3c64b2d07355885279182e5847d044ebb010cb2e7eddedaafa899a36e61e34",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78659",
+      "aliases": [
+        "CVE-2026-78659",
+        "GO-2026-6603"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "9b19e9ef456eb8da4413c31b299b70b0e5cdc86bb0b62eebeed7ae3e406915bb",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78669",
+      "aliases": [
+        "CVE-2026-78669",
+        "GO-2026-6611"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "fb13a7a58f0c40b29ab1dff865f5dda02a3f753e677411936f9bf9d2bffce1c5",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78669",
+      "aliases": [
+        "CVE-2026-78669",
+        "GO-2026-6611"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "1a06b3d08ba481a0828c4687d616bf7eb3afa82093ed9a218322a0cd2dba2902",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94440",
+      "aliases": [
+        "CVE-2026-94440",
+        "GO-2026-6608"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "28c84dd9fd4e766eb81a9bc83a1da2d7f2aabf5542889471c12c797776c9b0b2",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97031",
+      "aliases": [
+        "CVE-2026-97031",
+        "GO-2026-6607"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "0cf9ebc16d79a74843766d8b7e28426916ecc754679db046576fffd79fb70aac",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78667",
+      "aliases": [
+        "CVE-2026-78667",
+        "GO-2026-6609"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "b0fa8d544dc262654a8c7997957537404defb57a6b346dc18f3ea49ad1af678a",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94439",
+      "aliases": [
+        "CVE-2026-94439",
+        "GO-2026-6613"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "cd456dd70099e7d77076e85f0aacd4dd7d7fcc87a2033c3c343fb3e8ecf4f5b6",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56866",
+      "aliases": [
+        "CVE-2026-56866",
+        "GO-2026-6605"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "fb9b24058234ecd19812749145e6399881c59da64a08da85161829a6e1634b5a",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78660",
+      "aliases": [
+        "CVE-2026-78660",
+        "GO-2026-6610"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "b3b63c54468f8cca8a217384a3a9103ffa268a4c1eb2deeb416aa90e1f89e636",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78660",
+      "aliases": [
+        "CVE-2026-78660",
+        "GO-2026-6610"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "0b67190cd57c8168c3a37d0bbc84a1b832e26fc36a72371e00fddb3632affb75",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-97032",
+      "aliases": [
+        "CVE-2026-97032",
+        "GO-2026-6617"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "9141992c78f02b1b4935c305385ca29bb7618ebe5780b7a00c6f25aee1e980f2",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97032",
+      "aliases": [
+        "CVE-2026-97032",
+        "GO-2026-6617"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "2db640435392df59d4f7cb89b6038ce73772fd910185e75af19900ffa15f6ec6",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94448",
+      "aliases": [
+        "CVE-2026-94448",
+        "GO-2026-6599"
+      ],
+      "severity": "Medium",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "07c6fe95d62456895318c45abd6452c042e02f601901b6241cdbcb9a1b802522",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97030",
+      "aliases": [
+        "CVE-2026-97030",
+        "GO-2026-6600"
+      ],
+      "severity": "Medium",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "98d46b84dd22c5cbd848cc0b562f77e495f2913ea49b2f846974bf7c607f243e",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "golang.org/x/crypto",
+      "version": "v0.56.0",
+      "vulnerability": "GO-2026-5932",
+      "aliases": [
+        "GO-2026-5932"
+      ],
+      "severity": "Unknown",
+      "fixAvailable": false,
+      "fixVersions": [],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "4733696e6da1db632e1b8d25479198b4c373efe04478ac50f014b50922d263af",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "b70f06c3489a9f875d5e69cc0595f638cdc90ea09221b6ea907a86ad6b89967d",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "684868263743c87c485b44181643559ff85a0284e5625c72a5a3e89114c0d6db",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "c34c7cc84c3b8ddd658d458a645ec8778d89fdbf75a2f8a83898bf9383113a0a",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "Critical with fix",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78659",
+      "aliases": [
+        "CVE-2026-78659",
+        "GO-2026-6603"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "95691b59b5e8d19988ccacd3e762300478141e33a0b697350df6ace45031f717",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78659",
+      "aliases": [
+        "CVE-2026-78659",
+        "GO-2026-6603"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "303932f455a1f5492035216002e1a5c26a15bd169ce33f9a5cbc1c7f80956e24",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78669",
+      "aliases": [
+        "CVE-2026-78669",
+        "GO-2026-6611"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "de04e3821385c014f50f6f6d1f0e277be7676c9b72338d4e3892cfa6591eb107",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78669",
+      "aliases": [
+        "CVE-2026-78669",
+        "GO-2026-6611"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "b36ac2ce03b358adb7c736b0f864a20712c68769f1573f22acb459d3be4326bb",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94440",
+      "aliases": [
+        "CVE-2026-94440",
+        "GO-2026-6608"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "3b38df417bf089340dab31c331ba5e0b094c732c445c7355eb37364c57ab7f5d",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97031",
+      "aliases": [
+        "CVE-2026-97031",
+        "GO-2026-6607"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "b464810eea7a500d3a3c6360bb25637bad8708498b5dc0d0322aad1acca1452d",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78667",
+      "aliases": [
+        "CVE-2026-78667",
+        "GO-2026-6609"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "56cd545276b9942ff731d426dfa7bb70facb26b1354576700a7268fd916a101e",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94439",
+      "aliases": [
+        "CVE-2026-94439",
+        "GO-2026-6613"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "c23b799e380024d55955bc2dc39f619530feba8a8bd2829f980f1ab9005d3abd",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56866",
+      "aliases": [
+        "CVE-2026-56866",
+        "GO-2026-6605"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "2a5bc99e857ce8633dc2e9f456845c29678d7c528e438611ee10bab7d1627bff",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78660",
+      "aliases": [
+        "CVE-2026-78660",
+        "GO-2026-6610"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "7a842a81fad31fc2aca61a2ce67d150799acf4615ab6cd4e708d8f470634edd8",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78660",
+      "aliases": [
+        "CVE-2026-78660",
+        "GO-2026-6610"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "e830da96aec55c3c3d892949356bb6aa9f1d4b3d4a1aab3dbb056e0ba6766077",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-97032",
+      "aliases": [
+        "CVE-2026-97032",
+        "GO-2026-6617"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "84bd3bf6bc30978defac6f7896106e9c698b076f7fdf56719cd2adbe3ccc7baa",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97032",
+      "aliases": [
+        "CVE-2026-97032",
+        "GO-2026-6617"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "d5253965fa02b996a390917b8640b5aeb674bdba2373e1e99db36badfc61a667",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "High introduced by PR",
+      "exception": null,
+      "blocked": true
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94448",
+      "aliases": [
+        "CVE-2026-94448",
+        "GO-2026-6599"
+      ],
+      "severity": "Medium",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "76e3392baaaa008d00da80e6f37b178bc6bed3590ca5a941aeff1a230c10f538",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97030",
+      "aliases": [
+        "CVE-2026-97030",
+        "GO-2026-6600"
+      ],
+      "severity": "Medium",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "scanner": "grype",
+      "introduced": true,
+      "key": "13e49dc2b51647f5b450ec6dfdc5f2d6593ffc60d1483b6bc0720f6193225f11",
+      "firstSeen": "2026-10-16",
+      "kev": false,
+      "blockReason": "",
+      "exception": null,
+      "blocked": false
+    }
+  ],
+  "qualifyingPackageCveEntries": 80,
+  "nonQualifying": [],
+  "expiryCounts": {
+    "2026-11-15": 15,
+    "2026-12-15": 65
+  },
+  "exceptionBatchSHA256": "fd7e7d5ab48fb3a1cecf53547dc052b8ebe67dd298ccad05ac224453670dc63d",
+  "runtimeChanges": false,
+  "ownerApprovalRecorded": false,
+  "activeExceptionRegistryChanged": false,
+  "liveActions": false
+}

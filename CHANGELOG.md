@@ -7,6 +7,12 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ## [Unreleased]
 
+### Added
+
+- WO-08: prepared an unapproved cert-manager 1.21.2 toolchain-wave exception
+  batch and scan provenance for review after the standalone governance gate merges.
+  No runtime or active exception change.
+
 ### Removed
 
 - Remove Grafana deployment inputs and its pending-removal licence entry (WO-07a). Keep the two ported dashboard definitions as plain data for WO-10; no Perses deployment.

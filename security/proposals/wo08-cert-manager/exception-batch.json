@@ -1,0 +1,2915 @@
+{
+  "version": 1,
+  "exceptions": [
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78659",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78659",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78669",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78669",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94440",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97031",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78667",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94439",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56866",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78660",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78660",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-97032",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-controller@sha256:70f532fd9cfde0b09d55687200942399d89838bc2d5d5b45152eb799a15912b8",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97032",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78659",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78659",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78669",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78669",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94440",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97031",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78667",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94439",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56866",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78660",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78660",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-97032",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-cainjector@sha256:c85268c64f2e0e76684bf5fe8906caff34b82523561c6affe0fae3546bd87562",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97032",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78659",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78659",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78669",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78669",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94440",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97031",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78667",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94439",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56866",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78660",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78660",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-97032",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-webhook@sha256:a60e2dac46dbb8a7f3df95c54ce941012f54c2fe022f0ee55aaa1ab40ed957ae",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97032",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78659",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78659",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78669",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78669",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94440",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97031",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78667",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94439",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56866",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78660",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78660",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-97032",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-startupapicheck@sha256:46e75b6866359ffb5d82624f41e3ed1c70b2994982702ced547ce5edb418a8f5",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97032",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78659",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78659",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78669",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78669",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94440",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97031",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78667",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-94439",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56866",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9, 1.27.2; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78660",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78660",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-97032",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 0.60.0; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/jetstack/cert-manager-acmesolver@sha256:699b40d622211ab7accad8a21b04c5fbaa1841ef7a12621e8de492dbe27b2503",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-97032",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "",
+      "createdOn": "2026-10-16",
+      "expires": "2026-12-15",
+      "workOrder": "WO-34",
+      "controls": [
+        "Cluster-internal; no Service exposed outside the namespace.",
+        "External egress only to Kubernetes API server.",
+        "Refresh within 14 days of an eligible fixed upstream release; immediate KEV escalation."
+      ],
+      "reason": "ADR-0049 Amendment 1a: scanner fixes 1.26.9; no eligible fixed upstream release; not KEV. Owner batch approval required.",
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-16",
+        "upstreamEvidence": "https://github.com/cert-manager/cert-manager/releases",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "Kubernetes API server"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    }
+  ]
+}
