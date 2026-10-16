@@ -4,15 +4,23 @@ Twinfra (pronounced *twin-infra*) — *your AWS twin, on your own infrastructure
 
 ## Current capability and readiness
 
-The current dev environment is `twinfra-dev-cairo-1`: one Ubuntu 24.04
-bare-metal Dell node. [WO-31 owner-reported observations](docs/acceptance/dev-environment-2026-10-13.md)
+**v0.1.0 is an acceptance candidate for dev use, not a published release.**
+The current environment is `twinfra-dev-cairo-1`: one Ubuntu 24.04 bare-metal
+Dell node. [WO-31 observations](docs/acceptance/dev-environment-2026-10-13.md)
 record a Ready node, healthy PostgreSQL, Argo CD reconciliation and trusted
-HTTPS console/Keycloak sign-in. Tester sign-off remains Pending; the 24-hour
-soak verdict is Pending. [WO-36 networking](docs/acceptance/host-network-2026-10-15.md)
-and [WO-36a VM qualification](docs/acceptance/host-network-fix-2026-10-15.md)
-also await tester acceptance and do not establish Dell network acceptance.
+HTTPS sign-in; its tester sign-off and soak verdict remain Pending.
 
-**Dev-verified items: none with Accepted tester sign-off recorded yet.**
+| Dev-verified item | Accepted evidence and exact scope |
+| --- | --- |
+| Static node address / router-loss resilience | [WO-36](docs/acceptance/host-network-2026-10-15.md): `.3` retained through a 40-second router outage; zero DHCP lease losses or post-boot pod/control-plane restarts |
+| Safe static-netplan transaction qualification | [WO-36a](docs/acceptance/host-network-fix-2026-10-15.md): real Ubuntu VM apply/refusal/rollback, maximum gap 0.245504 s; current owned profile adoption checked on cairo-1 |
+
+These signed results do not establish Dell rollback, staging-failure recovery,
+Foundation 1.0 or whole-platform acceptance. The owner-run
+[`accept` suite](docs/runbooks/release-acceptance.md) writes sanitized JSON;
+the [consolidated v0.1.0 receipt](docs/acceptance/release-0.1.0-2026-10-16.md)
+remains Pending. No live suite was run by this PR.
+
 [ADR-0052](docs/adr/0052-evidence-first-foundation-1-0.md) gates Foundation 1.0
 on signed live evidence. Static implementation and owner observations are
 reported separately in the [capability table](docs/capabilities.md).

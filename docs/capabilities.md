@@ -1,10 +1,14 @@
 # Twinfra capability statement
 
-As of 2026-10-16. Twinfra implements an **AWS-compatible API subset**, not AWS
+As of 2026-10-16. v0.1.0 is a dev acceptance candidate, not a published release.
+Twinfra implements an **AWS-compatible API subset**, not AWS
 service parity. The deployed MiniStack profile is an emulator with persistence
 disabled (`MINISTACK_PERSIST=0`); an emulated EC2 response does not create a VM.
 Rows below cover the AWS catalog in [ADR-0029](adr/0029-aws-compatible-enterprise-simulator.md)
 and the platform building blocks. Unlisted AWS services are not claimed.
+
+Platform-only **Dev-verified** rows below are limited to their Accepted receipts;
+they do not establish any AWS service as Real.
 
 Status meanings: **Emulated by MiniStack** identifies only an emulator-backed
 API subset; **Planned** includes implemented code awaiting current acceptance;
@@ -71,7 +75,9 @@ Accepted tester sign-off. Historical observations do not advance current status.
 | Platform capability | Status | Evidence / current implementation and missing acceptance | Work order changing it |
 | --- | --- | --- | --- |
 | Ubuntu / kubeadm single-node host | Planned | [WO-31 bootstrap observations](acceptance/dev-environment-2026-10-13.md): Ready node, staging and log caps owner-reported; tester/soak Pending | [WO-31](work-orders/WO-31-bare-metal-cairo-1.md); ADR-0052 evidence work |
-| Static network and host firewall | Planned | [WO-36](acceptance/host-network-2026-10-15.md), [WO-36a VM proof](acceptance/host-network-fix-2026-10-15.md); tester and Dell/router-cycle acceptance Pending | [WO-36](work-orders/WO-36-host-network-and-staging-safety.md) |
+| Static address / router-loss resilience | Dev-verified | [Accepted WO-36](acceptance/host-network-2026-10-15.md): `.3` retained during a 40 s router outage; zero DHCP lease loss or post-boot pod/control-plane restarts | [WO-36](work-orders/WO-36-host-network-and-staging-safety.md) |
+| Static-netplan transaction qualification | Dev-verified | [Accepted WO-36a](acceptance/host-network-fix-2026-10-15.md) and [Accepted cairo-1 current-profile check](acceptance/host-network-2026-10-15.md): real Ubuntu VM apply/refusal/rollback, gap 0.245504 s; owned current profile adopted on cairo-1; no new Dell rollback claim | [WO-36 Amendment 1](work-orders/WO-36-host-network-and-staging-safety.md) |
+| Host firewall / image-staging failure recovery | Planned | [WO-31 firewall observations](acceptance/dev-environment-2026-10-13.md), [WO-36 remaining gates](acceptance/host-network-2026-10-15.md); broader signed acceptance still Pending | [WO-31](work-orders/WO-31-bare-metal-cairo-1.md), [WO-36](work-orders/WO-36-host-network-and-staging-safety.md) |
 | Cilium native eBPF / default deny / PSS | Planned | [Bootstrap/policy observations](acceptance/dev-environment-2026-10-13.md); current signed enforcement acceptance Pending | [WO-31](work-orders/WO-31-bare-metal-cairo-1.md), [WO-05](work-orders/WO-05-admission-policies.md) |
 | Local storage / CNPG / pgvector | Planned | [WO-31 PG LV and healthy database observations](acceptance/dev-environment-2026-10-13.md); tester, backups/PITR and growth acceptance Pending | [WO-09](work-orders/WO-09-backups-and-restore-drill.md), WO-33 |
 | Argo CD reconciliation / Valkey cache | Planned | [Owner-reported GitHub fetch and application health](acceptance/dev-environment-2026-10-13.md); [Valkey acceptance](acceptance/valkey-2026-10-09.md) Pending | [WO-31](work-orders/WO-31-bare-metal-cairo-1.md), [WO-25](work-orders/WO-25-redis-to-valkey.md) |

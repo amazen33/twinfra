@@ -9,6 +9,11 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Changed
 
+- Add the owner-run WO-40a dev acceptance suite, sanitized receipt fragments and
+  consolidated Pending receipt; reflect only the signed WO-36/36a network scope
+  as Dev-verified. Fail exception expiry within 7 days and warn within 21 days.
+  Release workflow, VERSION, image pins and deployed manifests are unchanged.
+
 - Record the tester sign-off (Accepted, 2026-10-16) for the WO-36 and WO-36a host-network receipts: the first Dev-verified item on `twinfra-dev-cairo-1`.
 ### Added
 
