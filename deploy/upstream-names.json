@@ -428,6 +428,84 @@
       "sources": [],
       "names": [],
       "note": "Only pinned image used. Deployment/Service/configuration are Twinfra-owned; no upstream name exemption."
+    },
+    {
+      "project": "cnpg-barman-cloud",
+      "version": "0.15.1",
+      "source": "https://github.com/cloudnative-pg/plugin-barman-cloud/releases/download/v0.15.1/manifest.yaml",
+      "sources": [
+        {
+          "path": "deploy/common/vendor/barman-cloud.yaml.gz",
+          "format": "gzip",
+          "sha256": "546e97cde065e2d48270192bfb194385dfd687e7960a5d04e287f52f3ef83c89"
+        }
+      ],
+      "names": [
+        {
+          "kind": "CustomResourceDefinition",
+          "name": "objectstores.barmancloud.cnpg.io"
+        },
+        {
+          "kind": "ServiceAccount",
+          "name": "plugin-barman-cloud"
+        },
+        {
+          "kind": "Role",
+          "name": "barman-plugin-leader-election-role"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "barman-plugin-metrics-auth-role"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "barman-plugin-metrics-reader"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "barman-plugin-objectstore-editor-role"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "barman-plugin-objectstore-viewer-role"
+        },
+        {
+          "kind": "ClusterRole",
+          "name": "plugin-barman-cloud"
+        },
+        {
+          "kind": "RoleBinding",
+          "name": "barman-plugin-leader-election-rolebinding"
+        },
+        {
+          "kind": "ClusterRoleBinding",
+          "name": "barman-plugin-metrics-auth-rolebinding"
+        },
+        {
+          "kind": "ClusterRoleBinding",
+          "name": "plugin-barman-cloud-binding"
+        },
+        {
+          "kind": "Service",
+          "name": "barman-cloud"
+        },
+        {
+          "kind": "Deployment",
+          "name": "barman-cloud"
+        },
+        {
+          "kind": "Certificate",
+          "name": "barman-cloud-client"
+        },
+        {
+          "kind": "Certificate",
+          "name": "barman-cloud-server"
+        },
+        {
+          "kind": "Issuer",
+          "name": "selfsigned-issuer"
+        }
+      ]
     }
   ]
 }

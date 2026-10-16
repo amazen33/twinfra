@@ -170,6 +170,25 @@ class Gate(unittest.TestCase):
 
 
 class InventoryAndIntegrity(unittest.TestCase):
+    def test_wo09_etcd_alias_retains_only_the_exact_admitted_image_identity(self):
+        if not (ROOT/'deploy/common/backup-config.json').is_file():return
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);self.fixture(root)
+            original={p:json.dumps(sc.read(root/p)) for p in sc.LOCKS}
+            common=sc.read(root/sc.LOCKS[1]);common['images'].pop('etcd-backup')
+            original[sc.LOCKS[1]]=json.dumps(common)
+            with (patch.object(sc,'tracked',return_value=[]),patch.object(sc,'changed',return_value=[sc.LOCKS[1]]),
+                  patch.object(sc,'git',side_effect=lambda root,*a:original[a[-1].split(':',1)[1]])):
+                plan=sc.inventory(root,base='a'*40,full=True)
+            etcd=sc.read(root/sc.LOCKS[0])['images']['etcd']
+            item=next(v for v in plan['images'] if v['digest']==etcd['digest'])
+            self.assertEqual(item['origins'],[sc.LOCKS[0]+':etcd']);self.assertFalse(item['introduced'])
+            self.assertTrue(all(p['component']==sc.LOCKS[0]+':etcd' for p in item['previousInputs']))
+            current=sc.read(root/sc.LOCKS[1]);current['images']['etcd-backup']['digest']='sha256:'+'f'*64
+            sc.write(root/sc.LOCKS[1],current)
+            with patch.object(sc,'tracked',return_value=[]),self.assertRaisesRegex(ValueError,'alias differs'):
+                sc.inventory(root,full=True)
+
     def p2_register_replacements(self,current):
         """Assert every field of the two owner-approved replacements; omit no comparison."""
         pins=[('registry.k8s.io/coredns/coredns','7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286',
@@ -317,6 +336,10 @@ class InventoryAndIntegrity(unittest.TestCase):
         self.assertEqual(entry['class'],'pending-removal');old['components'].remove(entry)
         old={v['id']:v for v in old['components']}
         current={v['id']:v for v in sc.read(ROOT/'security/licence-register.json')['components']}
+        if (ROOT/'deploy/common/backup-config.json').is_file():
+            sys.path.insert(0,str(ROOT/'tests'))
+            from wo09_receipts import register
+            current={v['id']:v for v in json.loads(register())['components']}
         replacements=self.p2_register_replacements(current) if (ROOT/'tools/ci/promote_p2.py').is_file() else []
         for name,entry in old.items():
             if name=='oci-image|registry.k8s.io/coredns/coredns|sha256:e7e6440cfd1e919280958f5b5a6ab2b184d385bba774c12ad2a9e1e4183f90d9' and replacements:

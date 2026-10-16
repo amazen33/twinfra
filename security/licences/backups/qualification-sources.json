@@ -1,0 +1,78 @@
+{
+  "checkedOn": "2026-10-16",
+  "scorecards": {
+    "boto/boto3": {
+      "source": "https://api.securityscorecards.dev/projects/github.com/boto/boto3",
+      "score": 7.4,
+      "date": "2026-10-12",
+      "checks": [
+        {
+          "name": "Maintained",
+          "score": 10
+        },
+        {
+          "name": "Security-Policy",
+          "score": 10
+        },
+        {
+          "name": "Signed-Releases",
+          "score": -1
+        }
+      ]
+    },
+    "openssl/openssl": {
+      "source": "https://api.securityscorecards.dev/projects/github.com/openssl/openssl",
+      "score": 6.3,
+      "date": "2026-10-12",
+      "checks": [
+        {
+          "name": "Maintained",
+          "score": 10
+        },
+        {
+          "name": "Security-Policy",
+          "score": 10
+        },
+        {
+          "name": "Signed-Releases",
+          "score": 8
+        }
+      ]
+    },
+    "cloudnative-pg/plugin-barman-cloud": {
+      "source": "https://api.securityscorecards.dev/projects/github.com/cloudnative-pg/plugin-barman-cloud",
+      "status": "unavailable",
+      "errorType": "HTTPError"
+    },
+    "EnterpriseDB/barman": {
+      "source": "https://api.securityscorecards.dev/projects/github.com/EnterpriseDB/barman",
+      "status": "unavailable",
+      "errorType": "HTTPError"
+    },
+    "psycopg/psycopg2": {
+      "source": "https://api.securityscorecards.dev/projects/github.com/psycopg/psycopg2",
+      "score": 4.6,
+      "date": "2026-10-12",
+      "checks": [
+        {
+          "name": "Maintained",
+          "score": 10
+        },
+        {
+          "name": "Security-Policy",
+          "score": 0
+        },
+        {
+          "name": "Signed-Releases",
+          "score": -1
+        }
+      ]
+    }
+  },
+  "notes": [
+    "Public OpenSSF observations, not component approval.",
+    "psycopg2 governance and disclosure/support qualification remain unresolved.",
+    "Plugin GitHub security page reports no SECURITY.md; equivalent disclosure-policy scope must be proven.",
+    "pyrage fails governance and is not selected."
+  ]
+}

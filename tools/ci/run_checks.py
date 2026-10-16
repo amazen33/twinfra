@@ -18,6 +18,13 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'backups': ['tools/platform_backups.py','tools/platform_backup_image.py','tools/platform_backup_sources.py',
+        'tools/ci/backup-requirements.txt',
+        'tools/platform_backup_actions.py','tools/platform_backup_validate.py','tools/platform_backup_secret.py',
+        'deploy/common/backup-config.json','deploy/common/backup-artifacts.lock.json','deploy/common/backup-image.lock.json',
+        'deploy/common/backup-node-exception.json','deploy/common/backup/restore-storage.py',
+        'deploy/common/backup/upload.py','deploy/common/backup/requirements.txt','tests/test_backups.py',
+        'docs/runbooks/backup-and-restore.md','tests/backup-alerts.test.yaml'],
     'host-network': ['deploy/common/host-network.py','deploy/common/dev-update-strategies.json',
                      'tools/ci/check_staging.py','tests/test_host_network.py',
                      '.github/workflows/staging-check.yaml','tests/wo36_receipts.py','docs/work-orders/WO-36-host-network-and-staging-safety.md'],
@@ -194,8 +201,8 @@ def main():
         control_sha = subprocess.check_output(['git', '-C', str(ROOT.parents[1]), 'rev-parse', 'HEAD'], text=True).strip()
         # Governance is evaluated against the CI control checkout (the candidate),
         # never against the dependencies of the six pre-policy historical revisions.
-        run('candidate-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
-                                  '--report', report_dir / 'licences.json'])
+        # Admission is still blocking, but runs after the offline suites so a
+        # draft dependency qualification cannot hide historical regression evidence.
         run('candidate-capability-evidence', [python, ROOT / 'check_capabilities.py', '--root', ROOT.parents[1]])
         if (ROOT.parents[1]/'tools/check_grafana_removal.py').is_file():
             run('candidate-grafana-removal',[python,ROOT.parents[1]/'tools/check_grafana_removal.py','--root',ROOT.parents[1]])
@@ -316,6 +323,13 @@ def main():
             run('dev-log-caps-shellcheck',[binaries['shellcheck'],'deploy/common/dev-log-caps.sh'])
         if report['modules']['host-network']=='present':
             run('host-network-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_host_network.py','-v'],unit=True)
+        if report['modules']['backups']=='present':
+            run('backup-source-drift',[python,'tools/platform_backup_sources.py','check'])
+            run('backup-tests',[python,'-m','unittest','discover','-s','tests','-p','test_backups.py','-v'],unit=True)
+            run('backup-schema-policy',[python,'tools/platform_backup_validate.py','--kubeconform',binaries['kubeconform'],
+                '--conftest',binaries['conftest'],'--schemas',assets/'schemas','--build',report_dir/'backups'])
+            run('backup-alert-rules',[binaries['promtool'],'check','rules','deploy/common/backup/alerts.rules.yaml'])
+            run('backup-alert-tests',[binaries['promtool'],'test','rules','tests/backup-alerts.test.yaml'])
         if report['modules']['dev-image-build']=='present':
             run('dev-image-build-tests',[python,'-m','unittest','discover','-s','tests','-p','test_build_images.py','-v'],unit=True)
         if report['modules']['lab/wsl'] == 'present':
@@ -393,6 +407,9 @@ def main():
             if (ROOT.parents[1]/'tools/check_grafana_removal.py').is_file():
                 run('candidate-rendered-grafana-removal',[python,ROOT.parents[1]/'tools/check_grafana_removal.py',
                     '--root',ROOT.parents[1],*render_options])
+        if sha != control_sha:
+            run('candidate-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
+                                      '--report', report_dir / 'licences.json'])
         report['status'] = 'passed'
         return 0
     except (ValueError, RuntimeError, OSError) as error:

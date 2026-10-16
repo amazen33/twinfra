@@ -83,6 +83,36 @@
       "canonical": "registry.twinfra.example.com/docker.io/twinfra/twinfra-console@sha256:ec1eebc9b51a1e7e019b501039f8c822eee5751b6322b205ec0b5eea9f30cd54",
       "digest": "sha256:ec1eebc9b51a1e7e019b501039f8c822eee5751b6322b205ec0b5eea9f30cd54",
       "buildReceipt": "console/image.lock.json"
+    },
+    "barman-plugin": {
+      "release": "ghcr.io/cloudnative-pg/plugin-barman-cloud:v0.15.1",
+      "source": "ghcr.io/cloudnative-pg/plugin-barman-cloud@sha256:c75acad19a36e8176cfe2885761ff1b836c6ef977d7257e298c99a28b5c302ef",
+      "canonical": "registry.twinfra.example.com/ghcr.io/cloudnative-pg/plugin-barman-cloud@sha256:c75acad19a36e8176cfe2885761ff1b836c6ef977d7257e298c99a28b5c302ef",
+      "digest": "sha256:c75acad19a36e8176cfe2885761ff1b836c6ef977d7257e298c99a28b5c302ef",
+      "publishedAt": "2026-09-30T13:34:15Z",
+      "verifiedOn": "2026-10-16",
+      "digestSource": "https://ghcr.io/v2/cloudnative-pg/plugin-barman-cloud/manifests/v0.15.1"
+    },
+    "barman-sidecar": {
+      "release": "ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar:v0.15.1",
+      "source": "ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar@sha256:2287a793a804db751edd0d07d44cd549e357677e98a800eb12e2cf7c0d53f9b0",
+      "canonical": "registry.twinfra.example.com/ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar@sha256:2287a793a804db751edd0d07d44cd549e357677e98a800eb12e2cf7c0d53f9b0",
+      "digest": "sha256:2287a793a804db751edd0d07d44cd549e357677e98a800eb12e2cf7c0d53f9b0",
+      "publishedAt": "2026-09-30T13:34:15Z",
+      "verifiedOn": "2026-10-16",
+      "digestSource": "https://ghcr.io/v2/cloudnative-pg/plugin-barman-cloud-sidecar/manifests/v0.15.1"
+    },
+    "backup": {
+      "source": "docker.io/twinfra/twinfra-backup@sha256:9f39f06b643ab0c096590ffaba0c81264ec8d4ff5d436982971a54186108c50d",
+      "canonical": "registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:9f39f06b643ab0c096590ffaba0c81264ec8d4ff5d436982971a54186108c50d",
+      "digest": "sha256:9f39f06b643ab0c096590ffaba0c81264ec8d4ff5d436982971a54186108c50d",
+      "buildReceipt": "deploy/common/backup-image.lock.json"
+    },
+    "etcd-backup": {
+      "source": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "canonical": "registry.twinfra.example.com/registry.k8s.io/etcd:3.6.15-0@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "digest": "sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "release": "registry.k8s.io/etcd:3.6.15-0"
     }
   }
 }

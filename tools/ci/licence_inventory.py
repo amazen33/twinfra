@@ -234,6 +234,11 @@ def enumerate_inputs(root, rendered=()):
                 add('tool', name, version, path)
         if path.endswith('.json') and not path.endswith('package-lock.json') and ('lock' in path or path in ('lab/wsl/profile.json', 'security/node-exceptions.json')):
             data = json.loads(file.read_text(encoding='utf-8'))
+            if path == 'deploy/common/backup-artifacts.lock.json':
+                for package in data.get('runtimePackages', []):
+                    add('pip',package['name'],package['version'],path,sha256=package['sha256'])
+                for binary in data.get('embeddedTools', []):
+                    add('tool',binary['name'],binary['version'],path,sha256=binary['sha256'])
             walk_images(data, path)
             for obj in objects(data):
                 url = obj.get('url') or (obj.get('imageUrl') if path=='deploy/hyperv/ubuntu-image.lock.json' else None)

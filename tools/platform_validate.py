@@ -74,7 +74,8 @@ def main():
     for name,entry in json.loads((ROOT/'deploy/common/schema.lock.json').read_text()).items():
         if hashlib.sha256((ROOT/'deploy/common/schemas'/name).read_bytes()).hexdigest()!=entry['sha256']:raise ValueError('Schema differs: '+name)
     templates=[ROOT/'deploy/common/schemas/{{.ResourceKind}}.json',args.schemas/'{{.ResourceKind}}.json',ROOT/'module-2/schemas/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json',
-               ROOT/'module-2/schemas/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json',args.build/'schemas/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json']
+               ROOT/'module-2/schemas/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json',args.build/'schemas/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json',
+               ROOT/'deploy/common/backup/schemas/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json']
     # Extract exact schemas for CNPG Database/other CRDs from the pinned upstream input.
     schema_dir=args.build/'schemas';schema_dir.mkdir(exist_ok=True)
     for obj in objects:

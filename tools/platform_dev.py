@@ -112,7 +112,10 @@ def controllers():
                 for env in c.get('env',[]):
                     ref=env.get('valueFrom',{}).get('secretKeyRef',{})
                     if ref.get('name')=='argocd-redis':ref['name']='twinfra-argocd-cache'
-            if 'cnpg' in m['name']:spec['containers'][0].setdefault('env',[]).append({'name':'WATCH_NAMESPACE','value':NS})
+            if 'cnpg' in m['name']:
+                from platform_backups import config
+                watched=NS+',twinfra-restore-drill' if config()['enabled'] else NS
+                spec['containers'][0].setdefault('env',[]).append({'name':'WATCH_NAMESPACE','value':watched})
         if o['kind']=='ConfigMap' and m['name']=='argocd-cmd-params-cm':
             o['data']={'controller.repo.server':'argocd-repo-server:8081','server.repo.server':'argocd-repo-server:8081',
                 'controller.status.processors':'2','controller.operation.processors':'1','reposerver.parallelism.limit':'2',
@@ -335,10 +338,11 @@ def seed(row):
         'network-config':yaml.safe_dump(network,sort_keys=False)}
 
 def outputs():
+    from platform_backups import backup_objects, cluster_patch, config, outputs as backup_outputs
     ssot=yaml.safe_load((ROOT/'vcloud-ssot.yaml').read_text());root,children=applications()
     namespace=obj('Namespace',NS,ns=None);namespace['metadata']['labels'].update({'pod-security.kubernetes.io/enforce':'restricted','pod-security.kubernetes.io/enforce-version':'v1.30','pod-security.kubernetes.io/audit':'restricted','pod-security.kubernetes.io/warn':'restricted'})
     result={TARGET/'root.yaml':yaml.safe_dump_all(root,sort_keys=False),TARGET/'apps/applications.yaml':yaml.safe_dump_all(children,sort_keys=False),
-        TARGET/'platform/workloads.yaml':yaml.safe_dump_all([namespace]+controllers()+database()+network(),sort_keys=False),
+        TARGET/'platform/workloads.yaml':yaml.safe_dump_all([namespace]+controllers()+[cluster_patch(o) if o['kind']=='Cluster' and config()['enabled'] else o for o in database()]+network()+(backup_objects() if config()['enabled'] else []),sort_keys=False),
         TARGET/'services/workloads.yaml':yaml.safe_dump_all(endpoints()+portal()+gateway(),sort_keys=False)}
     for folder,component in [('platform','platform'),('services','services')]:
         result[TARGET/folder/'kustomization.yaml']=yaml.safe_dump({'apiVersion':'kustomize.config.k8s.io/v1beta1','kind':'Kustomization','resources':['workloads.yaml'],'labels':[{'pairs':{k:v for k,v in labels(component).items() if k.startswith('twinfra.io/')},'includeSelectors':False,'includeTemplates':True}]},sort_keys=False)
@@ -351,21 +355,34 @@ def outputs():
                     result[ROOT/'deploy/environments/dev'/row['region']/'host'/name]=text
             else:
                 for name,text in seed(row).items():result[ROOT/'deploy/environments/dev'/row['region']/'seed'/name]=text
+    result.update(backup_outputs())
     return result
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','build-images','stage-images','host-check','host-bootstrap','host-ssh','host-firewall','host-storage','host-network'])
+    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','build-images','stage-images','host-check','host-bootstrap','host-ssh','host-firewall','host-storage','host-network','backup-check','restore-manifest'])
     parser.add_argument('--context');parser.add_argument('--ssh',default='twinfra-operator@192.168.1.3');parser.add_argument('--check',action='store_true');parser.add_argument('--apply',action='store_true');parser.add_argument('--rollback',action='store_true');parser.add_argument('--archive-dir',type=Path)
     parser.add_argument('--download-inputs',action='store_true',help='Owner-only pinned image/wheel download for build-images')
     parser.add_argument('--refresh-console',action='store_true',help='WO-34: propose a Python patch/base metadata refresh through the builders')
+    parser.add_argument('--restore-drill',action='store_true',help='WO-09: only the separately owned temporary restore LV')
+    parser.add_argument('--remove',action='store_true',help='WO-09: remove the owned restore LV after the drill namespace is absent')
+    parser.add_argument('--target-time',help='WO-09: timezone-qualified PITR target for restore-manifest only')
+    parser.add_argument('--prometheus',action='store_true',help='WO-10 metrics contract from backup-check')
     parser.add_argument('--dhcp-reservation-confirmed',action='store_true',help='Owner confirms the router reserves .3 for the approved MAC; host-network apply/rollback only')
     args=parser.parse_args()
+    if args.restore_drill and args.action!='host-storage':parser.error('--restore-drill requires host-storage')
+    if args.remove and not args.restore_drill:parser.error('--remove requires --restore-drill')
+    if args.target_time and args.action!='restore-manifest':parser.error('--target-time requires restore-manifest')
+    if args.prometheus and args.action!='backup-check':parser.error('--prometheus requires backup-check')
+    if args.action in ('backup-check','restore-manifest') and (args.apply or args.rollback or args.remove):parser.error('Backup observations/rendering cannot mutate')
     if args.dhcp_reservation_confirmed and (args.action!='host-network' or not (args.apply or args.rollback)):
         parser.error('--dhcp-reservation-confirmed requires host-network --apply or --rollback')
     if args.rollback and args.action!='host-network':parser.error('--rollback is only for host-network')
     if sum((args.check,args.apply,args.rollback))>1:parser.error('--check, --apply and --rollback are mutually exclusive')
     if args.download_inputs and args.action!='build-images':parser.error('--download-inputs is only for build-images')
     if args.refresh_console and args.action!='build-images':parser.error('--refresh-console is only for build-images')
+    if args.action in ('backup-check','restore-manifest') or args.restore_drill:
+        from platform_backup_actions import action
+        return action(args)
     if args.action=='build-images':
         from platform_build_images import build_images
         try:report=build_images(args.download_inputs,args.refresh_console)

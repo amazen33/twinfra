@@ -119,6 +119,9 @@ class ExactChanges(unittest.TestCase):
         self.assertEqual(before['pendingRemoval'],['docker.io/grafana/grafana'])
         current=json.loads((ROOT/path).read_text())
         self.assertEqual(current['pendingRemoval'],[])
+        if (ROOT/'deploy/common/backup-config.json').is_file():
+            from wo09_receipts import policy
+            current=json.loads(policy())
         before['pendingRemoval']=[]
         self.assertEqual(current,before)
 
@@ -131,6 +134,9 @@ class ExactChanges(unittest.TestCase):
     def test_no_perses_pins_or_policy_identity_and_baseline_changes(self):
         for path in ('deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json'):
             lock=json.loads((ROOT/path).read_text())
+            if path=='deploy/common/images.lock.json' and (ROOT/'deploy/common/backup-config.json').is_file():
+                from wo09_receipts import images
+                lock=json.loads(images())
             self.assertEqual(set(lock['images']),set(json.loads(original(path))['images']))
             self.assertNotIn('perses',json.dumps(lock['images']).lower())
         for path in ('tools/ci/pr-baselines.json','security/node-exceptions.json','vcloud-ssot.yaml'):

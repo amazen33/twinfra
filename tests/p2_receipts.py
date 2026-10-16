@@ -70,6 +70,9 @@ def assert_current_seed(path):
 
 
 def receipt(path):
+    if path=='deploy/common/images.lock.json' and (ROOT/'deploy/common/backup-config.json').is_file():
+        from wo09_receipts import images
+        return images()
     if path in ('vcloud-ssot.yaml','deploy/common/host-admin.py','tools/platform_host.py') and (ROOT/'deploy/common/host-network.py').is_file():
         from wo36_receipts import receipt as network_receipt
         return network_receipt(path)
@@ -80,7 +83,11 @@ def receipt(path):
         old=b'  "pendingRemoval": [\n    "docker.io/grafana/grafana"\n  ],'
         if before.count(old)!=1:raise AssertionError('Original pending-removal list differs')
         expected=before.replace(old,b'  "pendingRemoval": [],',1)
-        if (ROOT/path).read_bytes().replace(b'\r\n',b'\n')!=expected:
+        current=(ROOT/path).read_bytes().replace(b'\r\n',b'\n')
+        if (ROOT/'deploy/common/backup-config.json').is_file():
+            from wo09_receipts import policy
+            current=policy()
+        if current!=expected:
             raise AssertionError('Licence policy differs beyond the approved empty pending-removal list')
         return before
     if path in PATHS and (ROOT/'tools/ci/promote_p2.py').is_file():

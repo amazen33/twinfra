@@ -114,7 +114,8 @@ def stage_applications(context, target, check=False, archive_dir=None, transport
     repairable = {p['name'] for p in report['problems'] if p['reason'] in ('unpinned', 'missing digest-only name')}
     directory = archive_dir or ROOT / '.build/dev-images'
     archives = {}
-    for name, filename in [('console', 'console.oci.tar'), ('postgres', 'postgresql-pgvector.tar')]:
+    for name, filename in [('console', 'console.oci.tar'), ('postgres', 'postgresql-pgvector.tar'), ('backup','backups.oci.tar')]:
+        if name not in lock['images']:continue
         if name not in missing:
             continue
         path = directory / filename

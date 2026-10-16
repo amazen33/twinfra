@@ -31,6 +31,8 @@ IMAGES={
     'ghcr.io/cloudnative-pg/cloudnative-pg':('cloudnative-pg/cloudnative-pg','{version}'),
     'ghcr.io/cloudnative-pg/postgresql':('cloudnative-pg/postgres-containers','{version}-standard-trixie'),
     'ghcr.io/cloudnative-pg/pgvector':('cloudnative-pg/pgvector','{version}'),
+    'ghcr.io/cloudnative-pg/plugin-barman-cloud':('cloudnative-pg/plugin-barman-cloud','{tag}'),
+    'ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar':('cloudnative-pg/plugin-barman-cloud','{tag}'),
 }
 HUB={
     'docker.io/library/busybox':r'^\d+\.\d+\.\d+$',

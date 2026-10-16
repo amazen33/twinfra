@@ -7,6 +7,14 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ## [Unreleased]
 
+### Added
+
+- Add gated WO-09 off-node PostgreSQL/WAL and CMS-encrypted etcd backups to R2,
+  isolated restore-LV tooling, freshness/alert tests and owner restore runbook.
+  Admission, WO-08, staging and live restore acceptance remain pending.
+- Add ADR-0054 licence tiers, per-criterion enterprise evidence, climbing records
+  and immutable legacy approvals with dated backfill; retain blocking admission.
+
 ### Removed
 
 - Remove Grafana deployment inputs and its pending-removal licence entry (WO-07a). Keep the two ported dashboard definitions as plain data for WO-10; no Perses deployment.

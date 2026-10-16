@@ -1,6 +1,6 @@
 # Twinfra architecture decision log
 
-This is the single ADR log. The next free number is **0054**.
+This is the single ADR log. The next free number is **0055**.
 The [work-order handoff](../work-orders/README.md) controls implementation order.
 The current status is recorded in this index; individual decision texts and
 their original status headers remain historical snapshots of their decisions.
@@ -76,11 +76,12 @@ immutable evidence of their original revisions, including old paths.
 | [0046: environment and region names](0046-naming-dev-environment-and-regions.md) | Accepted (design) | None; [WO-31 bootstrap/platform/soak observations](../acceptance/dev-environment-2026-10-13.md) (tester Pending; soak Pending); [WO-36 network](../acceptance/host-network-2026-10-15.md) / [WO-36a VM proof](../acceptance/host-network-fix-2026-10-15.md) (tester Pending; Dell acceptance Pending) | VM, contexts and conformance names |
 | [0047: upstream-owned names](0047-upstream-owned-resource-names.md) | Accepted (design) | None; [WO-31 bootstrap/platform/soak observations](../acceptance/dev-environment-2026-10-13.md) (tester Pending; soak Pending) | WO-21 static naming inventory; live acceptance Pending |
 | [0048: cairo-1 on a dedicated bare-metal host](0048-cairo-1-on-bare-metal-host.md) | Accepted (design) | None; [WO-31 bootstrap/platform/soak observations](../acceptance/dev-environment-2026-10-13.md) (tester Pending; soak Pending); [WO-36 network](../acceptance/host-network-2026-10-15.md) / [WO-36a VM proof](../acceptance/host-network-fix-2026-10-15.md) (tester Pending; Dell acceptance Pending) | Amends 0032 and 0046; Dell primary, laptop operator/cairo-2 cold standby; [WO-31](../work-orders/WO-31-bare-metal-cairo-1.md); live acceptance Pending |
-| [0049: supply-chain vulnerability scanning](0049-supply-chain-vulnerability-scanning.md) | Accepted (design) | [WO-32 static evidence](../acceptance/supply-chain-2026-10-14.md) (tester Pending) | [WO-32](../work-orders/WO-32-supply-chain-scanning.md); pinned scanners, PR gate and scheduled reporting; after-merge issue acceptance Pending |
+| [0049: supply-chain vulnerability scanning](0049-supply-chain-vulnerability-scanning.md) | Accepted (design) | [WO-32 static evidence](../acceptance/supply-chain-2026-10-14.md) (tester Pending) | [WO-32](../work-orders/WO-32-supply-chain-scanning.md); [Amendment 1: toolchain-wave rule](amendments/0049-amendment-1-toolchain-wave.md), Accepted (design), owner 2026-10-16; per-image approval and live issue acceptance remain required |
 | [0050: Make `cairo-1` multi-node ready before EdgePulse (HA when nodes arrive)](0050-cairo-1-high-availability.md) | Accepted (design) | None — no Accepted live receipt | WO-33 readiness and WO-33b later join/HA acceptance; one node today |
 | [0051: Real DNS names under `twinfra.amazen33.dev`](0051-real-dns-zone-twinfra-amazen33-dev.md) | Accepted (design) | None — no Accepted live receipt | Owner DNS and WO-33 certificate work; no DNS change or public UI exposure in this work order |
 | [0052: Evidence first — the evidence model and the Foundation 1.0 gate](0052-evidence-first-foundation-1-0.md) | Accepted (design) | None — no Accepted live receipt | Foundation 1.0 evidence gate; decision 5 supersedes ADR-0008/0020; provenance verification not yet implemented |
 | [0053: Tenancy model — AWS-style accounts and IAM map to tenants](0053-tenancy-model-accounts-and-iam.md) | Proposed | None — no Accepted live receipt | Design only; tenancy implementation and cross-account denial matrix await Foundation 1.0 and WO-22/Wave 2 |
+| [0054: Licence ladder and enterprise-grade gate](0054-licence-ladder-and-enterprise-grade-gate.md) | Accepted (design) | Owner approval, 2026-10-16; no live acceptance | WO-09 Barman/psycopg2 admission requires component evidence; dated legacy backfill belongs to Foundation 1.0 |
 
 ADR numbers **0037** and **0039–0041** are reserved for other approved work orders.
 

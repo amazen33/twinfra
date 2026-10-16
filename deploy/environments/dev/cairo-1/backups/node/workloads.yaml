@@ -1,0 +1,301 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: twinfra-etcd-backup
+  namespace: kube-system
+  labels:
+    twinfra.io/environment: dev
+    twinfra.io/region: cairo-1
+    twinfra.io/component: etcd-backup
+    app.kubernetes.io/part-of: twinfra
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: twinfra-backup-config
+  namespace: kube-system
+  labels:
+    twinfra.io/environment: dev
+    twinfra.io/region: cairo-1
+    twinfra.io/component: backup-config
+    app.kubernetes.io/part-of: twinfra
+data:
+  backup-config.json: '{"archiveTimeoutSeconds": 300, "bucket": "twinfra-dev-cairo-1-backups",
+    "cluster": "twinfra-postgres", "credentialSecret": "twinfra-backup-s3", "enabled":
+    false, "endpointURL": "https://481407e21f55c4bcc20def49989f03e2.r2.cloudflarestorage.com",
+    "environment": "twinfra-dev-cairo-1", "etcdPrefix": "etcd/twinfra-dev-cairo-1",
+    "etcdRpoSeconds": 21600, "jurisdiction": "default / automatic location; dev data
+    only", "namespace": "twinfra-platform-services", "postgresPrefix": "postgres/twinfra-postgres",
+    "postgresRpoSeconds": 900, "postgresRtoSeconds": 7200, "region": "auto", "restoreNamespace":
+    "twinfra-restore-drill", "retentionDays": 7}'
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: twinfra-etcd-backup
+  namespace: kube-system
+  labels:
+    twinfra.io/environment: dev
+    twinfra.io/region: cairo-1
+    twinfra.io/component: etcd-backup
+    app.kubernetes.io/part-of: twinfra
+spec:
+  schedule: 0 */6 * * *
+  timeZone: Etc/UTC
+  suspend: true
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 300
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 1800
+      ttlSecondsAfterFinished: 600
+      template:
+        metadata:
+          labels:
+            twinfra.io/environment: dev
+            twinfra.io/region: cairo-1
+            twinfra.io/component: backups
+            app.kubernetes.io/part-of: twinfra
+            app.kubernetes.io/name: twinfra-etcd-backup
+        spec:
+          restartPolicy: Never
+          serviceAccountName: twinfra-etcd-backup
+          automountServiceAccountToken: false
+          nodeSelector:
+            kubernetes.io/hostname: twinfra-dev-cairo-1
+          tolerations:
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
+            effect: NoSchedule
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65532
+            runAsGroup: 65532
+            fsGroup: 65532
+            seccompProfile:
+              type: RuntimeDefault
+          volumes:
+          - name: etcd-0
+            hostPath:
+              path: /etc/kubernetes/pki/etcd/ca.crt
+              type: File
+          - name: etcd-1
+            hostPath:
+              path: /etc/kubernetes/pki/etcd/healthcheck-client.crt
+              type: File
+          - name: etcd-2
+            hostPath:
+              path: /etc/kubernetes/pki/etcd/healthcheck-client.key
+              type: File
+          - name: snapshot
+            emptyDir:
+              medium: Memory
+              sizeLimit: 512Mi
+          - name: config
+            configMap:
+              name: twinfra-backup-config
+          - name: recipient
+            configMap:
+              name: twinfra-backup-recipient
+          - name: api-token
+            projected:
+              defaultMode: 288
+              sources:
+              - serviceAccountToken:
+                  path: token
+                  expirationSeconds: 3600
+              - configMap:
+                  name: kube-root-ca.crt
+                  items:
+                  - key: ca.crt
+                    path: ca.crt
+          initContainers:
+          - name: snapshot
+            image: registry.twinfra.example.com/registry.k8s.io/etcd:3.6.15-0@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1
+            imagePullPolicy: IfNotPresent
+            command:
+            - /usr/local/bin/etcdctl
+            - --endpoints=https://192.168.1.3:2379
+            - --cacert=/etcd-tls/ca.crt
+            - --cert=/etcd-tls/healthcheck-client.crt
+            - --key=/etcd-tls/healthcheck-client.key
+            - snapshot
+            - save
+            - /backup/snapshot.db
+            securityContext:
+              runAsNonRoot: false
+              runAsUser: 0
+              runAsGroup: 65532
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+              seccompProfile:
+                type: RuntimeDefault
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: '1'
+                memory: 512Mi
+            volumeMounts:
+            - name: snapshot
+              mountPath: /backup
+            - name: etcd-0
+              mountPath: /etcd-tls/ca.crt
+              readOnly: true
+            - name: etcd-1
+              mountPath: /etcd-tls/healthcheck-client.crt
+              readOnly: true
+            - name: etcd-2
+              mountPath: /etcd-tls/healthcheck-client.key
+              readOnly: true
+          - name: snapshot-permissions
+            image: registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170
+            imagePullPolicy: IfNotPresent
+            command:
+            - python
+            - -c
+            - import os; p='/backup/snapshot.db'; s=os.stat(p); assert s.st_uid==0
+              and s.st_gid==65532; os.chmod(p,0o640)
+            securityContext:
+              runAsNonRoot: false
+              runAsUser: 0
+              runAsGroup: 65532
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+              seccompProfile:
+                type: RuntimeDefault
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: '1'
+                memory: 512Mi
+            volumeMounts:
+            - name: snapshot
+              mountPath: /backup
+          - name: verify
+            image: registry.twinfra.example.com/registry.k8s.io/etcd:3.6.15-0@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1
+            imagePullPolicy: IfNotPresent
+            command:
+            - /usr/local/bin/etcdutl
+            - snapshot
+            - status
+            - /backup/snapshot.db
+            - --write-out=json
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 65532
+              runAsGroup: 65532
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+              seccompProfile:
+                type: RuntimeDefault
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: '1'
+                memory: 512Mi
+            volumeMounts:
+            - name: snapshot
+              mountPath: /backup
+          containers:
+          - name: encrypt-upload
+            image: registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:9f39f06b643ab0c096590ffaba0c81264ec8d4ff5d436982971a54186108c50d
+            imagePullPolicy: IfNotPresent
+            command:
+            - python
+            - /app/upload.py
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 65532
+              runAsGroup: 65532
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                - ALL
+              seccompProfile:
+                type: RuntimeDefault
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: '1'
+                memory: 1Gi
+            volumeMounts:
+            - name: snapshot
+              mountPath: /backup
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: recipient
+              mountPath: /recipient
+              readOnly: true
+            - name: api-token
+              mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              readOnly: true
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: twinfra-etcd-backup-network
+  namespace: kube-system
+  labels:
+    twinfra.io/environment: dev
+    twinfra.io/region: cairo-1
+    twinfra.io/component: etcd-backup-network
+    app.kubernetes.io/part-of: twinfra
+spec:
+  endpointSelector:
+    matchLabels:
+      app.kubernetes.io/name: twinfra-etcd-backup
+  ingress: []
+  egress:
+  - toEntities:
+    - host
+    toPorts:
+    - ports:
+      - port: '2379'
+        protocol: TCP
+  - toEntities:
+    - kube-apiserver
+    toPorts:
+    - ports:
+      - port: '443'
+        protocol: TCP
+      - port: '6443'
+        protocol: TCP
+  - toEndpoints:
+    - matchLabels:
+        k8s:io.kubernetes.pod.namespace: kube-system
+        k8s:k8s-app: kube-dns
+    toPorts:
+    - ports:
+      - port: '53'
+        protocol: ANY
+      rules:
+        dns:
+        - matchPattern: '*'
+  - toFQDNs:
+    - matchName: 481407e21f55c4bcc20def49989f03e2.r2.cloudflarestorage.com
+    toPorts:
+    - ports:
+      - port: '443'
+        protocol: TCP
