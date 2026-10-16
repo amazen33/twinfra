@@ -229,3 +229,8 @@ alert on missing observations, and install the generated PrometheusRule in
 `backups/observability/`. Rules include absent metrics, stale backups and explicit
 failure; `promtool test rules tests/backup-alerts.test.yaml` covers synthetic cases.
 Forced live failure/alert acceptance waits for WO-10. Local tests never sign it.
+
+An idle database may have an old last-archive timestamp because no new WAL was
+generated. Treat that conservative freshness alarm as a request to investigate,
+not proof of lost data. During the witnessed drill, use bounded committed fixture
+transactions to prove WAL progress; do not relax the approved age thresholds.

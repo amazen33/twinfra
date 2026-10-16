@@ -10476,6 +10476,7 @@
       "name": "attrs",
       "version": "26.1.0",
       "locations": [
+        "tools/ci/backup-requirements.txt",
         "tools/ci/requirements.txt"
       ],
       "spdx": "MIT",
@@ -10483,11 +10484,50 @@
       "licenceSource": "https://pypi.org/pypi/attrs/26.1.0/json",
       "verifiedOn": "2026-10-09",
       "recordedOn": "2026-10-09",
-      "integrities": [],
+      "integrities": [
+        "sha256:c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309"
+      ],
       "tier": 1,
       "enterpriseGrade": {
-        "status": "legacy-pending",
-        "due": "2027-04-16"
+        "status": "pending",
+        "criteria": {
+          "maturity": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/attrs/26.1.0/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "governance": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/attrs/26.1.0/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "activitySupport": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/attrs/26.1.0/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "securityProcess": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/attrs/26.1.0/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "supplyChain": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/attrs/26.1.0/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "adoption": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/attrs/26.1.0/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          }
+        }
       }
     },
     {
@@ -11427,6 +11467,7 @@
       "version": "4.17.3",
       "locations": [
         "tests/requirements.txt",
+        "tools/ci/backup-requirements.txt",
         "tools/ci/requirements.txt"
       ],
       "spdx": "MIT",
@@ -11434,11 +11475,50 @@
       "licenceSource": "https://pypi.org/pypi/jsonschema/4.17.3/json",
       "verifiedOn": "2026-10-09",
       "recordedOn": "2026-10-09",
-      "integrities": [],
+      "integrities": [
+        "sha256:a870ad254da1a8ca84b6a2905cac29d265f805acc57af304784962a2aa6508f6"
+      ],
       "tier": 1,
       "enterpriseGrade": {
-        "status": "legacy-pending",
-        "due": "2027-04-16"
+        "status": "pending",
+        "criteria": {
+          "maturity": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/jsonschema/4.17.3/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "governance": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/jsonschema/4.17.3/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "activitySupport": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/jsonschema/4.17.3/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "securityProcess": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/jsonschema/4.17.3/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "supplyChain": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/jsonschema/4.17.3/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "adoption": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/jsonschema/4.17.3/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          }
+        }
       }
     },
     {
@@ -12355,6 +12435,7 @@
       "name": "pyrsistent",
       "version": "0.20.0",
       "locations": [
+        "tools/ci/backup-requirements.txt",
         "tools/ci/requirements.txt"
       ],
       "spdx": "MIT",
@@ -12362,11 +12443,50 @@
       "licenceSource": "https://pypi.org/pypi/pyrsistent/0.20.0/json",
       "verifiedOn": "2026-10-09",
       "recordedOn": "2026-10-09",
-      "integrities": [],
+      "integrities": [
+        "sha256:c55acc4733aad6560a7f5f818466631f07efc001fd023f34a6c203f8b6df0f0b"
+      ],
       "tier": 1,
       "enterpriseGrade": {
-        "status": "legacy-pending",
-        "due": "2027-04-16"
+        "status": "pending",
+        "criteria": {
+          "maturity": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/pyrsistent/0.20.0/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "governance": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/pyrsistent/0.20.0/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "activitySupport": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/pyrsistent/0.20.0/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "securityProcess": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/pyrsistent/0.20.0/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "supplyChain": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/pyrsistent/0.20.0/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          },
+          "adoption": {
+            "result": "pending",
+            "evidence": "https://pypi.org/pypi/pyrsistent/0.20.0/json",
+            "date": "2026-10-16",
+            "notes": "Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred."
+          }
+        }
       }
     },
     {

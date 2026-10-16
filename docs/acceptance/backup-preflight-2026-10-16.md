@@ -142,6 +142,12 @@ equivalent disclosure-policy scope remains unproven. The five Barman-related
 enterprise records remain pending. The source/notice offer is present, but does
 not grant a commercial licence opinion or resolve their image findings.
 
+CI hardening subsequently hash-locks the same existing attrs/jsonschema/pyrsistent
+versions for the new workflow. Their changed wheel-integrity evidence requires
+full ADR-0054 qualification, recorded Pending (no automatic legacy approval).
+This adds three explicit readiness blockers; unchanged legacy backfill now has
+13 tier-3/4 entries and 509 tier-1/2 entries. No expiry or frozen approval is renewed.
+
 ## Tester sign-off
 
 Tester: Ahmed Mazen (@amazen33), enterprise and cloud tester; QoS tester.

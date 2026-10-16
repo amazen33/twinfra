@@ -262,7 +262,9 @@ class ApplicationStaging(unittest.TestCase):
     def test_fake_ssh_check_is_readonly(self):
         ctr = FakeCtr();ssh = FakeSSH(ctr)
         report = ssh_stage.stage_applications('twinfra-dev-cairo-1', 'operator@10.50.0.10', check=True, transport=ssh)
-        self.assertEqual(len(report['problems']), 10)
+        images=json.loads((dev.COMMON/'images.lock.json').read_text())['images']
+        self.assertEqual({p['name'] for p in report['problems']},set(images))
+        self.assertEqual(len(report['problems']),len(images))
         self.assertEqual(ssh.calls, [('agent', True)])
         self.assertTrue(all(c[4] == 'list' for c in ctr.commands))
 

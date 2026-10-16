@@ -19,6 +19,7 @@ import yaml
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
     'backups': ['tools/platform_backups.py','tools/platform_backup_image.py','tools/platform_backup_sources.py',
+        'tools/ci/backup-requirements.txt',
         'tools/platform_backup_actions.py','tools/platform_backup_validate.py','tools/platform_backup_secret.py',
         'deploy/common/backup-config.json','deploy/common/backup-artifacts.lock.json','deploy/common/backup-image.lock.json',
         'deploy/common/backup-node-exception.json','deploy/common/backup/restore-storage.py',

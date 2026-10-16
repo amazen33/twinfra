@@ -73,6 +73,13 @@ def register():
                 from licence_ladder import validate
                 validate(entries[key],json.loads((ROOT/'security/licence-policy.json').read_text()),['Apache-2.0'],__import__('datetime').date(2026,10,16))
                 actual['locations']=value['locations']
+            elif value['ecosystem']=='pip' and value['name'] in ('attrs','jsonschema','pyrsistent'):
+                from licence_inventory import enumerate_inputs
+                from check_licences import observed_integrities
+                component=enumerate_inputs(ROOT)[0][key]
+                if actual['integrities']!=observed_integrities(component) or grade['status']!='pending':
+                    raise AssertionError('CI wheel evidence/qualification changed')
+                actual['integrities']=value['integrities'];actual['locations']=value['locations']
             elif grade!={'status':'legacy-pending','due':legacy[key]['due']}:raise AssertionError('Legacy deadline changed')
         if actual!=value:raise AssertionError('Legacy approval, version, digest or expiry changed: '+key)
     return old(name)

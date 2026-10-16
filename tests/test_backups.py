@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 import importlib.util
 import io
 import json
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -34,6 +35,15 @@ NOW=datetime(2026,10,16,12,tzinfo=timezone.utc)
 
 
 class BackupManifests(unittest.TestCase):
+    def test_node_external_egress_is_only_exact_r2_tls(self):
+        policy=next(v for v in backup.node_objects() if v['kind']=='CiliumNetworkPolicy')['spec']
+        self.assertEqual(policy['ingress'],[])
+        external=[v for v in policy['egress'] if 'toFQDNs' in v]
+        self.assertEqual(len(external),1)
+        self.assertEqual(external[0]['toFQDNs'],[{'matchName':backup.config()['endpointURL'].removeprefix('https://')}])
+        self.assertEqual(external[0]['toPorts'],[{'ports':[{'port':'443','protocol':'TCP'}]}])
+        self.assertFalse(any('world' in v.get('toEntities',[]) for v in policy['egress']))
+
     def test_default_is_gated_and_existing_platform_stays_byte_identical(self):
         self.assertFalse(backup.config()['enabled'])
         for name in ('platform/workloads.yaml','services/workloads.yaml','root.yaml','apps/applications.yaml'):
@@ -240,6 +250,14 @@ class RestoreStorage(unittest.TestCase):
 
 
 class InputsAndSecrets(unittest.TestCase):
+    def test_ci_wheel_lock_keeps_existing_versions_and_requires_hashes(self):
+        pinned=(ROOT/'tools/ci/backup-requirements.txt').read_text()
+        pairs=lambda text:dict(re.findall(r'(?m)^([A-Za-z-]+)==([^\s]+)',text))
+        self.assertEqual(pairs(pinned),pairs((ROOT/'tools/ci/requirements.txt').read_text()))
+        self.assertEqual(len(re.findall(r'--hash=sha256:[a-f0-9]{64}',pinned)),4)
+        workflow=(ROOT/'.github/workflows/backup-build.yaml').read_text()
+        for flag in ('--require-hashes','--only-binary=:all:','--no-deps'):self.assertIn(flag,workflow)
+
     def test_wheel_hash_and_member_boundary(self):
         import hashlib
         for member,allowed in [('boto3/__init__.py',True),('../escape.py',False),('absolute.pth',False),('/absolute.py',False)]:

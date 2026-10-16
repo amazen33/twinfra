@@ -69,6 +69,14 @@ def render():
              'cert-manager/cert-manager/deploy/crds/cert-manager.io_certificates.yaml',
              'cert-manager/cert-manager/deploy/crds/cert-manager.io_issuers.yaml'}
     for key,value in components.items():
+        if value['ecosystem']=='pip' and value['name'] in ('attrs','jsonschema','pyrsistent'):
+            # Same versions, stronger CI wheel evidence. A changed integrity
+            # record cannot inherit the frozen legacy approval under ADR-0054.
+            entry=deepcopy(entries[key]);entry['integrities']=observed_integrities(value);entry['locations']=value['locations']
+            entry['enterpriseGrade']={'status':'pending','criteria':{k:{'result':'pending',
+                'evidence':entry['licenceSource'],'date':DATE,
+                'notes':'Existing CI library/version; newly hash-pinned wheel requires full qualification. No runtime upgrade or approval inferred.'} for k in CRITERIA}}
+            entries[key]=entry;continue
         if key in entries and value['name'] not in managed and not (value['ecosystem']=='pip' and value['name']=='boto3'):continue
         eco,name,version=value['ecosystem'],value['name'],value['version']
         if name=='boto3':

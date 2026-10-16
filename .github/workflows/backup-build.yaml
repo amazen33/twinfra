@@ -7,6 +7,7 @@ on:
       - tools/platform_backup*.py
       - tools/ci/backup_crypto_test.py
       - tools/ci/backup_scan.py
+      - tools/ci/backup-requirements.txt
       - .github/workflows/backup-build.yaml
   workflow_dispatch:
 permissions:
@@ -26,7 +27,7 @@ jobs:
       # Every direct/transitive version is pinned in this existing CI set.
       # Disable source builds and resolution of undeclared dependencies.
       - run: |
-          python -m pip install --only-binary=:all: --no-deps --disable-pip-version-check -r tools/ci/requirements.txt
+          python -m pip install --require-hashes --only-binary=:all: --no-deps --disable-pip-version-check -r tools/ci/backup-requirements.txt
       - name: Reproduce the pinned backup archive without running installers
         id: image
         run: python tools/platform_backup_image.py --download-inputs

@@ -103,6 +103,9 @@ class Ladder(unittest.TestCase):
             if entry['enterpriseGrade']['status']=='legacy-pending':
                 self.assertEqual(entry['enterpriseGrade'],{'status':'legacy-pending','due':expected})
                 self.assertEqual(gate.fingerprint(entry),self.policy['ladder']['legacy'][entry['id']]['sha256'])
+            elif entry['enterpriseGrade']['status']=='pending':
+                self.assertIn(entry['name'],('attrs','jsonschema','pyrsistent'))
+                with self.assertRaisesRegex(ValueError,'pending'):gate.validate(entry,self.policy,('MIT',),TODAY)
             else:gate.validate(entry,self.policy,('Apache-2.0',),TODAY)
 
 

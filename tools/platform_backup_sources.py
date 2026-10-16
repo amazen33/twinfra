@@ -30,6 +30,18 @@ def update_images():
     write(path,value)
 
 
+def upstream_project():
+    entry=json.loads((COMMON/'backup-artifacts.lock.json').read_text())['plugin']
+    compressed=(COMMON/'vendor/barman-cloud.yaml.gz').read_bytes()
+    if hashlib.sha256(compressed).hexdigest()!=entry['gzipSHA256']:raise ValueError('Barman vendor gzip differs')
+    raw=gzip.decompress(compressed)
+    if hashlib.sha256(raw).hexdigest()!=entry['sha256']:raise ValueError('Barman upstream source differs')
+    objects=[v for v in yaml.safe_load_all(raw) if v and v['kind']!='Secret']
+    return {'project':'cnpg-barman-cloud','version':entry['version'],'source':entry['url'],
+        'sources':[{'path':'deploy/common/vendor/barman-cloud.yaml.gz','format':'gzip','sha256':entry['gzipSHA256']}],
+        'names':[{'kind':v['kind'],'name':v['metadata']['name']} for v in objects]}
+
+
 def schemas():
     lock=json.loads((COMMON/'backup-schemas.lock.json').read_text())
     result={}
@@ -44,7 +56,14 @@ def schemas():
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('command',choices=['render','check']);args=parser.parse_args()
-    if args.command=='render':update_images()
+    if args.command=='render':
+        update_images()
+        path=ROOT/'deploy/upstream-names.json';registry=json.loads(path.read_text())
+        registry['projects']=[v for v in registry['projects'] if v['project']!='cnpg-barman-cloud']+[upstream_project()]
+        write(path,registry)
+    registry=json.loads((ROOT/'deploy/upstream-names.json').read_text())
+    if [v for v in registry['projects'] if v['project']=='cnpg-barman-cloud']!=[upstream_project()]:
+        raise ValueError('Barman upstream-name registration differs')
     current=json.loads((COMMON/'images.lock.json').read_text())['images']
     if any(current.get(k)!=v for k,v in image_entries().items()):raise ValueError('Backup source-derived image pin drift')
     for path,text in schemas().items():

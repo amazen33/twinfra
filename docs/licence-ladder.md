@@ -40,3 +40,10 @@ licences cannot be admitted through a runtime exception or a legacy baseline.
 Licence approval does not approve vulnerability exceptions. Supply-chain results,
 image-staging attestation and live restore acceptance remain independent gates.
 No certification or production-readiness claim follows from the records.
+
+WO-09's new CI workflow requires binary-only, hash-locked policy libraries. This
+strengthens the wheel pins for the existing `attrs`, `jsonschema` and `pyrsistent`
+versions; no version/class is changed. Under the strict transition, changed
+integrity evidence requires full qualification now. Their records therefore
+carry explicit pending criteria rather than silently retaining legacy approval.
+The other unchanged legacy approvals and all frozen fingerprints remain intact.

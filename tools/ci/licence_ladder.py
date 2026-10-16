@@ -94,6 +94,8 @@ def validate(entry, policy, identifiers, today):
     expected = tier_for(identifiers, policy)
     if entry.get('tier') != expected:
         raise ValueError('Missing/incorrect ADR-0054 runtime tier')
+    if grade.get('status')=='pending':
+        raise ValueError('Enterprise-grade qualification pending: '+', '.join(k for k,v in grade.get('criteria',{}).items() if v.get('result')!='pass'))
     if grade.get('status') != 'verified' or set(grade.get('criteria', {})) != set(CRITERIA):
         raise ValueError('Runtime entry requires all enterprise-grade criteria')
     for record in grade['criteria'].values():
