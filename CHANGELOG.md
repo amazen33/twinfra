@@ -15,6 +15,11 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
   Release workflow, VERSION, image pins and deployed manifests are unchanged.
 
 - Record the tester sign-off (Accepted, 2026-10-16) for the WO-36 and WO-36a host-network receipts: the first Dev-verified item on `twinfra-dev-cairo-1`.
+### Added
+
+- WO-09a: standalone licence ladder, enterprise qualification and dated legacy
+  backfill, plus package/fix-version toolchain-wave exception review. Existing
+  component pins and active vulnerability exceptions are unchanged.
 
 ### Removed
 

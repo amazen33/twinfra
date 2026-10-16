@@ -30,7 +30,7 @@ High availability, multi-tenancy, compliance and production readiness are not cl
 
 WSL is retired; see [ADR-0045](docs/adr/0045-wsl-retirement.md).
 
-[The ADR log](docs/adr/README.md) contains <!-- adr-count:start -->49 records<!-- adr-count:end -->,
+[The ADR log](docs/adr/README.md) contains <!-- adr-count:start -->50 records<!-- adr-count:end -->,
 including the 17 historical Module 1 component decisions. The count is generated
 from its index by `python tools/ci/check_capabilities.py --write`.
 The [Mermaid/ASCII topology](docs/module-1-topology.md) and
