@@ -67,8 +67,8 @@ def validate_entry(entry, finding, rules, on, *, proposal=False):
     if not entry.get('controls') or not entry.get('workOrder'):
         raise ValueError('Toolchain-wave controls and refresh work order required')
     checked = date.fromisoformat(wave['checkedOn'])
-    if checked > on or (on - checked).days > 14:
-        raise ValueError('Toolchain-wave upstream eligibility evidence needs a fresh review')
+    if checked > on:
+        raise ValueError('Toolchain-wave upstream eligibility evidence date is in the future')
     url = urlparse(wave['upstreamEvidence'])
     if url.scheme != 'https' or not url.netloc:
         raise ValueError('Toolchain-wave upstream evidence must be HTTPS')

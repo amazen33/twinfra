@@ -58,10 +58,10 @@ approval fails the existing gate. Only the owner sets `amazen33` after reviewing
 the batch, upstream release eligibility and isolation controls. Critical entries
 last at most 30 days; High entries at most 60. No eligible fixed upstream release
 may exist, and KEV always blocks. The normal gate checks a recorded wave entry
-against the current finding, pinned scanner, exact fixes and controls. Its
-upstream eligibility evidence needs review at least every 14 days; refresh
+against the current finding, pinned scanner, exact fixes and controls. Refresh
 within 14 days after a fixed release becomes eligible, or escalate immediately
-if KEV lists the advisory. No upstream binary is rebuilt by this policy.
+if KEV lists the advisory. The refresh duty does not shorten the approved
+30/60-day exception lifetimes or renew their original clocks. No upstream binary is rebuilt by this policy.
 
 The `requiredScanner` record identifies the admitted Linux scanner required by
 the PR scan job; it is not a claim that a proposal's preliminary scan ran on

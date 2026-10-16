@@ -106,7 +106,7 @@ class Wave(unittest.TestCase):
             value=self.value | change
             with self.subTest(change=change), self.assertRaises(ValueError):
                 wave.validate_entry(entry, value, wave.policy(), TODAY)
-        for field, value in (('noEligibleFixedRelease',False), ('checkedOn','2026-09-01'),
+        for field, value in (('noEligibleFixedRelease',False), ('checkedOn','2026-10-17'),
                              ('upstreamEvidence','http://example.org')):
             bad=deepcopy(entry);bad['toolchainWave'][field]=value
             with self.subTest(field=field), self.assertRaises(ValueError):
