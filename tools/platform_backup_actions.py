@@ -122,7 +122,7 @@ def restore_storage(args):
     return json.loads(raw)
 
 
-def action(args):
+def execute(args):
     if args.context!='twinfra-dev-cairo-1':raise ValueError('Use explicit --context twinfra-dev-cairo-1')
     if args.action=='restore-manifest':
         if not args.target_time:raise ValueError('restore-manifest needs --target-time with a timezone')
@@ -130,3 +130,10 @@ def action(args):
     report=restore_storage(args) if args.restore_drill else observe(args.context)
     print(prometheus(report) if args.prometheus else json.dumps(report,indent=2))
     return int(report['status']=='failed')
+
+
+def action(args):
+    try:return execute(args)
+    except (ValueError,OSError,KeyError,TypeError):
+        print(json.dumps({'status':'failed','reason':'Backup observation or restore precondition failed; inspect the owner runbook'}))
+        return 1

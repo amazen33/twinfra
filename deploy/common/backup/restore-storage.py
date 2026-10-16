@@ -97,6 +97,12 @@ def remove(state):
     for kind in ('namespace','pv'):
         if command(cli+[kind,NAME,'--ignore-not-found','-o','json']).strip():
             raise ValueError('Delete the restore namespace and its PV before removing the LV')
+    owned=state['receipt']
+    if (not owned.get('filesystemUuid') or
+            command(['blkid','-s','UUID','-o','value',DEVICE]).strip()!=owned['filesystemUuid'] or
+            command(['blkid','-s','TYPE','-o','value',DEVICE]).strip()!='ext4' or
+            command(['blkid','-s','LABEL','-o','value',DEVICE]).strip()!='twinfra-restore'):
+        raise ValueError('Restore filesystem identity changed; refusing deletion')
     used=mounts_for_device(state['mounts'])
     if any(v['target']!=str(MOUNT) for v in used):raise ValueError('Restore LV has a foreign mount')
     if used:command(['umount',str(MOUNT)])
@@ -130,6 +136,8 @@ def apply(state):
     current=inspect();validate(current,'apply')
     used=mounts_for_device(current['mounts'])
     if any(v['target']!=str(MOUNT) for v in used):raise ValueError('Foreign mount of restore LV')
+    if any(not {'nosuid','nodev','noexec','noatime'}.issubset(set(v.get('options','').split(','))) for v in used):
+        raise ValueError('Restore mount options changed')
     if not used:
         MOUNT.mkdir(parents=True,exist_ok=True)
         if any(MOUNT.iterdir()):raise ValueError('Restore mountpoint hides existing files')

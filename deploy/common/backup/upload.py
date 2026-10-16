@@ -45,13 +45,13 @@ def configuration(path):
 def credentials(site):
     value=api('/api/v1/namespaces/'+NS+'/secrets/'+site['credentialSecret'])['data']
     return {key:base64.b64decode(value[key],validate=True) for key in
-            ('ACCESS_KEY_ID','ACCESS_SECRET_KEY','CMS_CERTIFICATE')}
+            ('ACCESS_KEY_ID','ACCESS_SECRET_KEY')}
 
 
-def public_certificate(raw, path):
+def public_certificate(path):
+    raw=path.read_bytes()
     if len(raw)>65536 or b'PRIVATE KEY' in raw or not raw.startswith(b'-----BEGIN CERTIFICATE-----'):
         raise ValueError('Only a public CMS recipient certificate is permitted')
-    path.write_bytes(raw)
     checked([OPENSSL,'x509','-in',str(path),'-noout','-checkend','0'])
     public=checked([OPENSSL,'x509','-in',str(path),'-pubkey','-noout'])
     text=checked([OPENSSL,'pkey','-pubin','-text','-noout'],public).decode()
@@ -132,8 +132,8 @@ def upload(client, site, encrypted, manifest):
 
 def perform(site, directory=Path('/backup')):
     os.umask(0o077)
-    secret=credentials(site);certificate=directory/'recipient.pem'
-    public_certificate(secret['CMS_CERTIFICATE'],certificate)
+    secret=credentials(site);certificate=Path('/recipient/certificate.pem')
+    public_certificate(certificate)
     plain=directory/'snapshot.db';snapshot_time=datetime.fromtimestamp(plain.stat().st_mtime,timezone.utc)
     now=datetime.now(timezone.utc)
     if snapshot_time>now or now-snapshot_time>timedelta(minutes=30):raise ValueError('Snapshot time is stale or in the future')

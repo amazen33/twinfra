@@ -8,6 +8,7 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import sys
 
 CONTEXT='twinfra-dev-cairo-1'
 NAMESPACE='twinfra-platform-services'
@@ -24,14 +25,18 @@ def create(certificate):
     raw=certificate.read_bytes()
     if len(raw)>65536 or b'PRIVATE KEY' in raw or not raw.startswith(b'-----BEGIN CERTIFICATE-----'):
         raise ValueError('Provide only the public CMS certificate')
+    if not sys.stdin.isatty():raise ValueError('Hidden credential entry requires an interactive terminal')
     access=getpass.getpass('R2 access key ID (hidden): ')
     secret=getpass.getpass('R2 secret access key (hidden): ')
     if not access or not secret:raise ValueError('Empty credentials refused')
-    fields={'ACCESS_KEY_ID':access.encode(),'ACCESS_SECRET_KEY':secret.encode(),'CMS_CERTIFICATE':raw}
+    fields={'ACCESS_KEY_ID':access.encode(),'ACCESS_SECRET_KEY':secret.encode()}
     value={'apiVersion':'v1','kind':'Secret','metadata':{'name':NAME,'namespace':NAMESPACE},'type':'Opaque',
            'data':{k:base64.b64encode(v).decode() for k,v in fields.items()}}
     # create, not apply: no last-applied credential annotation; no silent rotation.
     kubectl(['create','-f','-'],json.dumps(value).encode())
+    recipient={'apiVersion':'v1','kind':'ConfigMap','metadata':{'name':'twinfra-backup-recipient','namespace':'kube-system'},
+               'data':{'certificate.pem':raw.decode('ascii')}}
+    kubectl(['create','-f','-'],json.dumps(recipient).encode())
     print('Created '+NAME+'; public certificate SHA-256 '+hashlib.sha256(raw).hexdigest())
 
 

@@ -1,9 +1,9 @@
 {
-  "digest": "sha256:0c93f3a3c81adf9f7394f4feb8121503e3667c28cefa5ec28b81602e0fd10b7a",
-  "canonical": "registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:0c93f3a3c81adf9f7394f4feb8121503e3667c28cefa5ec28b81602e0fd10b7a",
+  "digest": "sha256:5629abd59dd14029d5f174c0036940523d0a3c128af7ed51e51aabca3d4bd1ec",
+  "canonical": "registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:5629abd59dd14029d5f174c0036940523d0a3c128af7ed51e51aabca3d4bd1ec",
   "base": "registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
   "filesSHA256": {
-    "deploy/common/backup/upload.py": "1b93cfeef5539412bfdfffbd099fe019078e87a2e965080404cf6d932e115cb1",
+    "deploy/common/backup/upload.py": "2f69fab1bab401e6ecf416cd7b2fc5194eb87108ff933dcd74515df636d4905f",
     "deploy/common/backup/requirements.txt": "19ca2e9dcbb94fd926a7320d7cb01885f70a7227ecb60003528f11ff7911a8ae"
   },
   "wheels": {

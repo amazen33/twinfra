@@ -39,7 +39,10 @@ def validate(args):
     node=args.build/'node.yaml';node.write_text(yaml.safe_dump_all(node_objects(),sort_keys=False),encoding='utf-8')
     policy=args.build/'exception.json';policy.write_text(json.dumps(node_exception()),encoding='utf-8')
     node_report=audit_objects([v for v in node_objects() if podspec(v)],node_exception())
-    report=audit_objects([v for v in docs if podspec(v)],{'registry':'registry.twinfra.example.com'})
+    pv=next(v for v in restore if v['kind']=='PersistentVolume')
+    fields=('local','nodeAffinity','accessModes','volumeMode','storageClassName')
+    pod_policy={'registry':'registry.twinfra.example.com','localPVs':{pv['metadata']['name']:{k:pv['spec'][k] for k in fields}}}
+    report=audit_objects([v for v in docs if podspec(v) or v['kind']=='PersistentVolume' and v['metadata']['name']==pv['metadata']['name']],pod_policy)
     if node_report['violations'] or report['violations']:raise ValueError(str(node_report['violations']+report['violations']))
     run([args.conftest,'test','--namespace','twinfra_platform','--policy',ROOT/'tests/ci/policy/platform-restricted.rego',platform])
     run([args.conftest,'test','--namespace','twinfra_backup','--policy',ROOT/'tests/ci/policy/backup-node.rego','--data',policy,node])

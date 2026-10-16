@@ -148,7 +148,7 @@ class CMS(unittest.TestCase):
                 self.assertFalse(plain.exists());events.append('verified-upload')
                 if fail_upload:raise ValueError('Round trip failed')
                 return 'etcd/fixture.cms'
-            with (patch.object(upload,'credentials',return_value={'CMS_CERTIFICATE':b'public'}),
+            with (patch.object(upload,'credentials',return_value={}),
                   patch.object(upload,'public_certificate'),patch.object(upload,'encrypt',side_effect=encrypt),
                   patch.object(upload,'s3_client'),patch.object(upload,'upload',side_effect=upload_file),
                   patch.object(upload,'retain',side_effect=lambda *_:events.append('retention')),
@@ -174,7 +174,8 @@ class CMS(unittest.TestCase):
 
     def test_private_key_is_rejected_as_recipient(self):
         with tempfile.TemporaryDirectory() as directory:
-            with self.assertRaises(ValueError):upload.public_certificate(b'-----BEGIN PRIVATE KEY-----',Path(directory)/'recipient.pem')
+            path=Path(directory)/'recipient.pem';path.write_bytes(b'-----BEGIN PRIVATE KEY-----')
+            with self.assertRaises(ValueError):upload.public_certificate(path)
 
     def test_remote_round_trip_detects_corruption(self):
         class Client:
@@ -225,6 +226,12 @@ class RestoreStorage(unittest.TestCase):
     def test_foreign_mountpoint_refused(self):
         state=self.state();state['mounts']=[{'source':'/dev/foreign','target':str(storage.MOUNT)}]
         with self.assertRaisesRegex(ValueError,'Foreign filesystem'):storage.validate(state,'apply')
+
+    def test_filesystem_uuid_change_refuses_deletion(self):
+        state=self.state();state['receipt']={'filesystemUuid':'owned-fs'}
+        with patch.object(storage,'command',side_effect=['','','foreign-fs']) as command:
+            with self.assertRaisesRegex(ValueError,'identity changed'):storage.remove(state)
+            self.assertFalse(any(c.args[0][0]=='lvremove' for c in command.call_args_list))
 
 
 class InputsAndSecrets(unittest.TestCase):

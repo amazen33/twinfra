@@ -2,13 +2,43 @@
 # SPDX-License-Identifier: MIT
 """Disposable CI-only etcd fixture and CMS restore. Never connects to a cluster."""
 import argparse
+import gzip
+import hashlib
+import io
 import json
 from pathlib import Path
 import subprocess
+import sys
+import tarfile
 import time
 import uuid
 
 ROOT=Path(__file__).resolve().parents[2]
+
+
+def docker_archive(source, destination):
+    """Docker's classic store needs Docker-save metadata, not an OCI index.
+
+    Only verified layer decompression/metadata conversion; image bytes and diff
+    IDs are unchanged. No image code or installer executes during conversion.
+    """
+    sys.path.insert(0,str(ROOT/'tools'))
+    from platform_pg_image import Export
+    image=Export(source)
+    try:
+        config_raw=image.blob(image.manifest['config']);config=json.loads(config_raw)
+        contents={image.manifest['config']['digest'].split(':')[1]+'.json':config_raw};layers=[]
+        for descriptor,expected in zip(image.manifest['layers'],config['rootfs']['diff_ids'],strict=True):
+            raw=image.blob(descriptor)
+            if descriptor['mediaType'].endswith('+gzip') or descriptor['mediaType'].endswith('.gzip'):raw=gzip.decompress(raw)
+            if 'sha256:'+hashlib.sha256(raw).hexdigest()!=expected:raise ValueError('Docker fixture layer diff ID differs')
+            name=expected.split(':')[1]+'/layer.tar';contents[name]=raw;layers.append(name)
+        contents['manifest.json']=json.dumps([{'Config':next(iter(contents)),
+            'RepoTags':['registry.twinfra.example.com/docker.io/twinfra/twinfra-backup:1.0.0'],'Layers':layers}]).encode()
+        with tarfile.open(destination,'w') as archive:
+            for name,raw in contents.items():
+                member=tarfile.TarInfo(name);member.size=len(raw);member.mode=0o444;archive.addfile(member,io.BytesIO(raw))
+    finally:image.archive.close()
 
 
 def run(args, **kwargs):
@@ -25,7 +55,10 @@ def verify(output):
     name='twinfra-backup-fixture-'+uuid.uuid4().hex[:12]
     common=['--network','none','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges','--user','65532:65532']
     try:
-        run(['docker','load','--input',str(ROOT/'.build/dev-images/backups.oci.tar')])
+        converted=output/'backup-docker.tar'
+        docker_archive(ROOT/'.build/dev-images/backups.oci.tar',converted)
+        run(['docker','load','--input',str(converted)])
+        converted.unlink()
         sdk=json.loads(run(['docker','run','--rm',*common,'--entrypoint','python',
             'registry.twinfra.example.com/docker.io/twinfra/twinfra-backup:1.0.0','-c',
             'import boto3,botocore,json,ssl; print(json.dumps({"boto3":boto3.__version__,"botocore":botocore.__version__,"tls":ssl.OPENSSL_VERSION}))']))
@@ -64,7 +97,7 @@ with tempfile.TemporaryDirectory(dir='/tmp') as d:
               '-subj','/CN=WO09 synthetic CI fixture','-keyout',str(key),'-out',str(cert)]
         if algorithm=='ec':args+=['-pkeyopt','ec_paramgen_curve:P-256']
         command(args)
-        scope['public_certificate'](cert.read_bytes(),d/'recipient.pem')
+        scope['public_certificate'](cert)
         mode=scope['encrypt'](plain,cert,encrypted)
         assert mode=='AES-256-GCM', 'Pinned OpenSSL must support authenticated CMS'
         command(['/usr/bin/openssl','cms','-decrypt','-binary','-inform','DER','-in',str(encrypted),
@@ -85,6 +118,7 @@ print(json.dumps({'opensslVersion':version,'results':results,'privateKeysRetaine
     finally:
         subprocess.run(['docker','rm','-f',name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         (output/'snapshot.db').unlink(missing_ok=True)
+        (output/'backup-docker.tar').unlink(missing_ok=True)
 
 
 if __name__=='__main__':

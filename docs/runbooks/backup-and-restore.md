@@ -69,10 +69,14 @@ requires an in-country or owner-controlled choice under ADR-0041.
      --certificate /owner/public/twinfra-backup-recipient.pem
    ```
 
-   This creates `twinfra-backup-s3` in `twinfra-platform-services`. Keys are
-   `ACCESS_KEY_ID`, `ACCESS_SECRET_KEY`, `CMS_CERTIFICATE`. No command prints them.
+   This creates `twinfra-backup-s3` in `twinfra-platform-services` with only
+   `ACCESS_KEY_ID` and `ACCESS_SECRET_KEY`, and public ConfigMap
+   `kube-system/twinfra-backup-recipient` with `certificate.pem`. No command prints credentials.
    WO-08 later owns rotation through External Secrets. Existing Secret rotation
    must use the owner's approved secret workflow; this helper refuses replacement.
+   If the second create fails, the Secret may already exist: inspect names only
+   and create the public ConfigMap from the certificate with the owner workflow;
+   never dump the Secret. Certificate rotation updates that public ConfigMap.
 5. Build and stage **all** images using the current lock, not a copied digest:
 
    ```bash
@@ -127,7 +131,8 @@ Plaintext and encrypted files exist only in the 512 MiB memory emptyDir, which
 counts against node memory. The snapshot limit is 256 MiB. Only the uploader
 receives a short-lived projected SA token; it GETs the exact credential Secret
 and PATCHes the exact public status ConfigMap. S3 credentials stay in process
-memory, never environment variables or files. Public certificate only is written.
+memory, never environment variables or files. The public certificate is mounted
+read-only from its separately created ConfigMap and is never copied from a Secret.
 The uploader removes plaintext before upload, verifies downloaded SHA-256 for
 both ciphertext and manifest, then records success. Failed Jobs do not advance
 the freshness clock. Retention deletes only owned etcd filenames in its prefix.

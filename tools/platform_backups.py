@@ -130,6 +130,7 @@ def node_objects():
     upload=container('encrypt-upload',backup,['python','/app/upload.py'])
     upload['resources']['limits']['memory']='1Gi'
     upload['volumeMounts'].append({'name':'config','mountPath':'/config','readOnly':True})
+    upload['volumeMounts'].append({'name':'recipient','mountPath':'/recipient','readOnly':True})
     upload['volumeMounts'].append({'name':'api-token','mountPath':'/var/run/secrets/kubernetes.io/serviceaccount','readOnly':True})
     job=obj('CronJob',name,{'schedule':'0 */6 * * *','timeZone':'Etc/UTC','suspend':not site['enabled'],
         'concurrencyPolicy':'Forbid','startingDeadlineSeconds':300,'successfulJobsHistoryLimit':1,'failedJobsHistoryLimit':2,
@@ -140,6 +141,7 @@ def node_objects():
                 'securityContext':{'runAsNonRoot':True,'runAsUser':65532,'runAsGroup':65532,'fsGroup':65532,'seccompProfile':{'type':'RuntimeDefault'}},
                 'volumes':host_volumes+[{'name':'snapshot','emptyDir':{'medium':'Memory','sizeLimit':'512Mi'}},
                                       {'name':'config','configMap':{'name':cm['metadata']['name']}},
+                                      {'name':'recipient','configMap':{'name':'twinfra-backup-recipient'}},
                                       {'name':'api-token','projected':{'defaultMode':0o440,'sources':[
                                           {'serviceAccountToken':{'path':'token','expirationSeconds':3600}},
                                           {'configMap':{'name':'kube-root-ca.crt','items':[{'key':'ca.crt','path':'ca.crt'}]}}]}}],

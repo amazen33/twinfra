@@ -103,9 +103,9 @@
       "digestSource": "https://ghcr.io/v2/cloudnative-pg/plugin-barman-cloud-sidecar/manifests/v0.15.1"
     },
     "backup": {
-      "source": "docker.io/twinfra/twinfra-backup@sha256:0c93f3a3c81adf9f7394f4feb8121503e3667c28cefa5ec28b81602e0fd10b7a",
-      "canonical": "registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:0c93f3a3c81adf9f7394f4feb8121503e3667c28cefa5ec28b81602e0fd10b7a",
-      "digest": "sha256:0c93f3a3c81adf9f7394f4feb8121503e3667c28cefa5ec28b81602e0fd10b7a",
+      "source": "docker.io/twinfra/twinfra-backup@sha256:5629abd59dd14029d5f174c0036940523d0a3c128af7ed51e51aabca3d4bd1ec",
+      "canonical": "registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:5629abd59dd14029d5f174c0036940523d0a3c128af7ed51e51aabca3d4bd1ec",
+      "digest": "sha256:5629abd59dd14029d5f174c0036940523d0a3c128af7ed51e51aabca3d4bd1ec",
       "buildReceipt": "deploy/common/backup-image.lock.json"
     },
     "etcd-backup": {

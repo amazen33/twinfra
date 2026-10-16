@@ -97,6 +97,9 @@ spec:
           - name: config
             configMap:
               name: twinfra-backup-config
+          - name: recipient
+            configMap:
+              name: twinfra-backup-recipient
           - name: api-token
             projected:
               defaultMode: 288
@@ -213,7 +216,7 @@ spec:
               mountPath: /backup
           containers:
           - name: encrypt-upload
-            image: registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:0c93f3a3c81adf9f7394f4feb8121503e3667c28cefa5ec28b81602e0fd10b7a
+            image: registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:5629abd59dd14029d5f174c0036940523d0a3c128af7ed51e51aabca3d4bd1ec
             imagePullPolicy: IfNotPresent
             command:
             - python
@@ -241,6 +244,9 @@ spec:
               mountPath: /backup
             - name: config
               mountPath: /config
+              readOnly: true
+            - name: recipient
+              mountPath: /recipient
               readOnly: true
             - name: api-token
               mountPath: /var/run/secrets/kubernetes.io/serviceaccount
