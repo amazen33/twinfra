@@ -341,6 +341,16 @@ def cache_ok(state):
     return state['noAuthRejected'] and state['authenticatedPong'] and all(state['argoClientsConnected'].values())
 
 
+def normalized_lock(lock):
+    """Same tag-to-digest input normalization as stage_applications --check."""
+    for entry in lock['images'].values():
+        source, digest = entry['source'], entry['digest']
+        if '@' in source and source.rsplit('@', 1)[1] != digest:
+            raise ValueError('Upstream source differs from the locked digest')
+        entry['source'] = cri_reference(source if '@' in source else source + '@' + digest)
+    return lock
+
+
 def completion_status(checks):
     statuses = {c['status'] for c in checks.values()}
     if 'failed' in statuses:
@@ -420,7 +430,7 @@ class AcceptanceRun:
             self.check(action, value.get('status') == 'passed')
         self.lock = {'images': {}}
         for name in ('images.lock.json', 'bootstrap-images.lock.json'):
-            lock = json.loads((ROOT / 'deploy/common' / name).read_text(encoding='utf-8'))
+            lock = normalized_lock(json.loads((ROOT / 'deploy/common' / name).read_text(encoding='utf-8')))
             self.check('staging:' + name, self.transport.agent(lock, check=True).get('status') == 'passed')
             self.lock['images'].update({name + ':' + key: value for key, value in lock['images'].items()})
         self.cri_ids = cri_identities(self.transport, self.lock, self.pods)

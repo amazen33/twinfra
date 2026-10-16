@@ -2,6 +2,7 @@
 import copy
 import ast
 import base64
+import importlib.util
 from datetime import date, datetime, timedelta, timezone
 import io
 import json
@@ -88,6 +89,7 @@ class FakeSSH:
 
     def agent(self, lock, check=False):
         assert check is True
+        assert all(e['source'].endswith('@' + e['digest']) for e in lock['images'].values())
         self.calls.append(('agent', check))
         return {'status': self.status, 'problems': []}
 
@@ -104,7 +106,7 @@ class Acceptance(unittest.TestCase):
         self.root = Path(self.temp.name)
         common = self.root / 'deploy/common'
         common.mkdir(parents=True)
-        lock = {'images': {'fixture': {'canonical': REF, 'digest': DIGEST}}}
+        lock = {'images': {'fixture': {'source': REF, 'canonical': REF, 'digest': DIGEST}}}
         for filename in ('images.lock.json', 'bootstrap-images.lock.json'):
             (common / filename).write_text(json.dumps(lock))
         (self.root / 'security').mkdir()
@@ -222,6 +224,21 @@ class Acceptance(unittest.TestCase):
 
 
 class Contracts(unittest.TestCase):
+    def test_both_real_inventories_are_accepted_by_the_existing_check_agent(self):
+        spec = importlib.util.spec_from_file_location('offline_stage_contract', ROOT / 'deploy/common/stage-images.py')
+        agent = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(agent)
+        for name in ('images.lock.json', 'bootstrap-images.lock.json'):
+            path = ROOT / 'deploy/common' / name
+            before = path.read_bytes()
+            lock = json.loads(before)
+            actual = ac.normalized_lock(copy.deepcopy(lock))
+            self.assertEqual(set(agent.entries(actual)), set(lock['images']))
+            self.assertEqual(path.read_bytes(), before)
+            self.assertTrue(all(e['source'].endswith('@' + e['digest']) for e in actual['images'].values()))
+        bad = {'images': {'fixture': {'source': REF, 'canonical': REF, 'digest': 'sha256:' + 'f' * 64}}}
+        with self.assertRaises(ValueError):ac.normalized_lock(bad)
+
     def test_calendar_boundaries_and_expired_all_printed(self):
         today = date(2026, 10, 16)
         entries = [dict(target='fixture', package='p', version='1', vulnerability='CVE-fixture-' + str(n),
