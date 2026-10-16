@@ -1,0 +1,61 @@
+{
+  "workOrder": "WO-34e",
+  "date": "2026-10-16",
+  "scope": "Static Linux full scan; no live changes; normal ADR-0049 exceptions, not toolchain-wave.",
+  "mainRevision": "90c5e48da46c905c204a41bc261c2aa21ca510c4",
+  "scanRun": "https://github.com/amazen33/twinfra/actions/runs/38912626008",
+  "fullInventory": true,
+  "imagesScanned": 20,
+  "database": {
+    "built": "2026-10-16T06:29:51Z",
+    "from": "https://grype.anchore.io/databases/v6/vulnerability-db_v6.1.10_2026-10-16T00:28:12Z_1792132191.tar.zst?checksum=sha256%3A9985d2b30dc728eea2941d23e7d7a2e04daebd65c50a959c6136a858927516b9",
+    "path": "/home/runner/work/twinfra/twinfra/.build/supply-chain/database/6/vulnerability.db",
+    "schemaVersion": "v6.1.10",
+    "valid": true
+  },
+  "reportSHA256": "d4ff3f305c71bb85c2062bb487729c48409c460e32ea457cf334d03e23309a0d",
+  "blockingBefore": 1,
+  "nonArgoBlockingFindings": [],
+  "exceptionsAdded": [
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "github.com/argoproj/argo-cd/v3",
+      "version": "v3.5.3+dirty",
+      "vulnerability": "CVE-2026-55797",
+      "severity": "High",
+      "owner": "amazen33",
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-02",
+      "workOrder": "WO-34",
+      "controls": [
+        "AppProject sourceRepos is restricted to https://github.com/amazen33/twinfra.git; Application repository write access is owner-only (owner-approved control).",
+        "Every change to Application repositories merges only after owner review.",
+        "Argo CD UI/API access remains tunnel-only; no public exposure.",
+        "Refresh and remove these entries with the separate WO-34 Argo CD 3.5.5 promotion, eligible 2026-10-26; no extension beyond 2026-11-02."
+      ],
+      "reason": "CVE-2026-55797 is fixed in Argo CD 3.5.4. Interim normal ADR-0049 approval by amazen33 in chat on 2026-10-16 (WO-40 Amendment 1). Dev exposure is LAN-only APIs and tunnel-only UIs, with owner-only repository writes and reviewed merges; remediated by WO-34 promotion to 3.5.5 on or after 2026-10-26."
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "github.com/argoproj/argo-cd/v3",
+      "version": "v3.5.3+dirty",
+      "vulnerability": "CVE-2026-77459",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "approvedBy": "amazen33",
+      "createdOn": "2026-10-16",
+      "expires": "2026-11-02",
+      "workOrder": "WO-34",
+      "controls": [
+        "AppProject sourceRepos is restricted to https://github.com/amazen33/twinfra.git; Application repository write access is owner-only (owner-approved control).",
+        "Every change to Application repositories merges only after owner review.",
+        "Argo CD UI/API access remains tunnel-only; no public exposure.",
+        "Refresh and remove these entries with the separate WO-34 Argo CD 3.5.5 promotion, eligible 2026-10-26; no extension beyond 2026-11-02."
+      ],
+      "reason": "CVE-2026-77459 is fixed in Argo CD 3.5.4. Interim normal ADR-0049 approval by amazen33 in chat on 2026-10-16 (WO-40 Amendment 1). Dev exposure is LAN-only APIs and tunnel-only UIs, with owner-only repository writes and reviewed merges; remediated by WO-34 promotion to 3.5.5 on or after 2026-10-26."
+    }
+  ],
+  "existingExceptionsModified": 0,
+  "note": "The High entry is owner-approved before its grace period elapses. Scanner artifacts contain full package/SBOM evidence. Post-exception policy replay and PR CI are recorded in the PR."
+}

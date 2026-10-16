@@ -17,6 +17,10 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Security
 
+- Record two owner-approved, per-CVE interim Argo CD 3.5.3 exceptions through
+  2026-11-02 (WO-34e / WO-40 Amendment 1); preserve all other risk clocks and
+  require the scheduled 3.5.5 remediation. No image or live configuration changes.
+
 - Fix IPv4 DNS confirmation, adopt the exact owner-recovered legacy static
   profile, and refuse network transactions without a fallback retaining `.3`.
   Prove apply/refusal/rollback with real Ubuntu netplan in CI; document the
