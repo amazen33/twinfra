@@ -138,7 +138,7 @@ reservation unless it exists. AMT power/KVM acceptance is separately Pending und
 ## Tester sign-off
 
 Tester: Ahmed Mazen (@amazen33), enterprise and cloud tester; QoS tester
-Result: Pending
-Date (UTC):
-QoS targets checked:
-Notes:
+Result: Accepted
+Date (UTC): 2026-10-16
+QoS targets checked: netplan apply, refused confirmation and rollback on real Ubuntu 24.04; maximum reconfiguration gap 0.245504 s (limit 5 s) over 1,140 samples; no alternate IPv4 and no DHCP activity; fresh SSH and trusted /readyz passed.
+Notes: VM proof (CI). Live adoption on twinfra-dev-cairo-1 confirmed by host-network --check: static 192.168.1.3, owned files current. Recorded by the architect at the owner's instruction.
