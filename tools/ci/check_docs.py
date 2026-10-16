@@ -103,6 +103,9 @@ if canonical:
     if evidence_model:
         expected_orders.append('WO-37')
         assert {50, 51, 52, 53}.issubset(numbers), 'incomplete WO-37 ADR bundle'
+    if (root/'docs/work-orders/WO-40-twinfra-v0-1-0-release.md').is_file():
+        expected_orders.append('WO-40')
+        assert (root/'tools/platform_accept.py').is_file(), 'missing WO-40a acceptance suite'
     assert [re.match(r'WO-\d{2}[a-z]?(?=-)',file.name)[0] for file in orders] == sorted(expected_orders), orders
     assert (root / 'docs/work-orders/README.md').is_file()
     assert not (root / 'docs/work-orders/CODEX-PROMPTS.md').exists()

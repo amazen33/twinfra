@@ -18,6 +18,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'release-acceptance': ['tools/platform_accept.py','tests/test_platform_accept.py',
+                           'docs/work-orders/WO-40-twinfra-v0-1-0-release.md'],
     'host-network': ['deploy/common/host-network.py','deploy/common/dev-update-strategies.json',
                      'tools/ci/check_staging.py','tests/test_host_network.py',
                      '.github/workflows/staging-check.yaml','tests/wo36_receipts.py','docs/work-orders/WO-36-host-network-and-staging-safety.md'],
@@ -316,6 +318,8 @@ def main():
             run('dev-log-caps-shellcheck',[binaries['shellcheck'],'deploy/common/dev-log-caps.sh'])
         if report['modules']['host-network']=='present':
             run('host-network-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_host_network.py','-v'],unit=True)
+        if report['modules']['release-acceptance']=='present':
+            run('release-acceptance-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_platform_accept.py','-v'],unit=True)
         if report['modules']['dev-image-build']=='present':
             run('dev-image-build-tests',[python,'-m','unittest','discover','-s','tests','-p','test_build_images.py','-v'],unit=True)
         if report['modules']['lab/wsl'] == 'present':

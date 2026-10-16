@@ -354,12 +354,36 @@ def outputs():
     return result
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','build-images','stage-images','host-check','host-bootstrap','host-ssh','host-firewall','host-storage','host-network'])
+    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','accept','build-images','stage-images','host-check','host-bootstrap','host-ssh','host-firewall','host-storage','host-network'])
     parser.add_argument('--context');parser.add_argument('--ssh',default='twinfra-operator@192.168.1.3');parser.add_argument('--check',action='store_true');parser.add_argument('--apply',action='store_true');parser.add_argument('--rollback',action='store_true');parser.add_argument('--archive-dir',type=Path)
     parser.add_argument('--download-inputs',action='store_true',help='Owner-only pinned image/wheel download for build-images')
     parser.add_argument('--refresh-console',action='store_true',help='WO-34: propose a Python patch/base metadata refresh through the builders')
     parser.add_argument('--dhcp-reservation-confirmed',action='store_true',help='Owner confirms the router reserves .3 for the approved MAC; host-network apply/rollback only')
+    parser.add_argument('--expected-revision',help='accept: immutable 40-character Git commit expected on all three Applications')
+    parser.add_argument('--since',help='accept: UTC acceptance-window start; defaults to this invocation')
+    parser.add_argument('--ca-file',type=Path,help='accept: public dev CA certificate for the HTTPS tunnel')
+    parser.add_argument('--session-file',type=Path,help='accept: owner-only file outside Git containing only the twinfra_portal cookie')
+    parser.add_argument('--roleless-token-file',type=Path,help='accept: owner-only file outside Git containing a valid roleless user access token')
+    parser.add_argument('--receipt',type=Path,help='accept: new JSON fragment under .build (never overwrites a receipt)')
+    parser.add_argument('--with-restart',action='store_true',help='accept: explicitly authorize one Valkey cache Pod deletion and bounded reconnect checks')
+    parser.add_argument('--timeout',type=int,default=300,help='accept: bounded reconnect wait, 1..900 seconds')
     args=parser.parse_args()
+    if args.action!='accept' and any((args.expected_revision,args.since,args.ca_file,args.session_file,args.roleless_token_file,args.receipt,args.with_restart,args.timeout!=300)):
+        parser.error('Acceptance options require accept')
+    if args.action=='accept':
+        if any((args.check,args.apply,args.rollback,args.download_inputs,args.refresh_console,args.dhcp_reservation_confirmed,args.archive_dir)):
+            parser.error('accept refuses provisioning, staging and network mutation flags')
+        from platform_accept import accept,write_fragment,fragment_path,utc
+        path=args.receipt or ROOT/'.build/acceptance'/('accept-'+utc().strftime('%Y%m%dT%H%M%S%fZ')+'.json')
+        try:
+            path=fragment_path(path)  # Refuse an invalid receipt target before any owner-authorized restart.
+            report=accept(args)
+            report['receiptFragment']=path.relative_to(ROOT).as_posix()
+            write_fragment(path,report)
+        except (ValueError,OSError):
+            report={'status':'failed','testerSignOff':'Pending','error':'Cannot write a new fragment under .build; existing receipts are never overwritten.'}
+        print(json.dumps(report,indent=2))
+        return 0 if report['status']=='passed' else 2 if report['status']=='incomplete' else 1
     if args.dhcp_reservation_confirmed and (args.action!='host-network' or not (args.apply or args.rollback)):
         parser.error('--dhcp-reservation-confirmed requires host-network --apply or --rollback')
     if args.rollback and args.action!='host-network':parser.error('--rollback is only for host-network')
