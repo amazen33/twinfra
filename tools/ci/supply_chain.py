@@ -123,23 +123,37 @@ def inventory(root=ROOT,base=None,full=False):
         old=json.loads(git(root,'show',base+':'+filename))['images'] if base else {}
         for name,entry in current.items():
             ref=immutable(entry);identifier=filename+':'+name
-            introduced=name not in old or old[name]['digest']!=entry['digest'] if base else False
+            previous_entry=old.get(name)
+            if identifier=='deploy/common/images.lock.json:etcd-backup':
+                # WO-09 explicitly reuses the admitted etcd image. This one
+                # closed alias adds a CRI digest spelling, not a new image or
+                # exception clock. Never borrow identity for another component.
+                primary=read(root/LOCKS[0])['images']['etcd']
+                expected={'source':primary['source'],'canonical':primary['canonical']+'@'+primary['digest'],
+                          'digest':primary['digest'],'release':primary['release']}
+                if entry!=expected:raise ValueError('Backup etcd alias differs from the admitted bootstrap image')
+                identifier=LOCKS[0]+':etcd'
+                previous_entry=json.loads(git(root,'show',base+':'+LOCKS[0]))['images']['etcd'] if base else None
+            introduced=previous_entry is None or previous_entry['digest']!=entry['digest'] if base else False
             selected=full or introduced or filename in changes and old.get(name)!=entry
             if name=='console' and RECEIPTS[0] in changes:selected=True
             if name=='postgres' and RECEIPTS[1] in changes:selected=True
             if name=='backup' and RECEIPTS[2] in changes:selected=True
             mode,references=image_inputs(root,name,entry)
-            coverage.append(dict(entry=identifier,pinned=ref,mode=mode,selected=selected,
-                                 scannedInputs=[r[0] for r in references]))
+            row=dict(entry=filename+':'+name,pinned=ref,mode=mode,selected=selected,
+                     scannedInputs=[r[0] for r in references])
+            if identifier!=row['entry']:row['admissionIdentity']=identifier
+            coverage.append(row)
             if not selected:continue
             for target,source,digest in references:
                 if not SHA.fullmatch(digest):raise ValueError('Unpinned build input')
                 value=targets.setdefault(digest,dict(target=target,source=source,digest=digest,
                                                       platform='linux/amd64',origins=[],introduced=False,previousInputs=[],historicalTargets=[]))
-                value['origins'].append(identifier);value['introduced']|=introduced
+                if identifier not in value['origins']:value['origins'].append(identifier)
+                value['introduced']|=introduced
                 value['historicalTargets']=sorted(set(value['historicalTargets'])|set(lineage.get(identifier,[])))
-                if base and name in old:
-                    previous=image_inputs(root,name,old[name],base)[1] if introduced else references
+                if base and previous_entry:
+                    previous=image_inputs(root,name,previous_entry,base)[1] if introduced else references
                     for prior,prior_source,prior_digest in previous:
                         value['previousInputs'].append(dict(component=identifier,target=prior,source=prior_source,
                                                             digest=prior_digest,platform='linux/amd64'))

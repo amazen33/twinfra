@@ -64,8 +64,12 @@ def render():
     register_path=ROOT/'security/licence-register.json';register=json.loads(register_path.read_text())
     policy_path=ROOT/'security/licence-policy.json';policy=json.loads(policy_path.read_text())
     entries={v['id']:v for v in register['components']};components,_=enumerate_inputs(ROOT)
+    managed={'barman','psycopg2','openssl/openssl','cloudnative-pg/plugin-barman-cloud/manifest.yaml',
+             'ghcr.io/cloudnative-pg/plugin-barman-cloud','ghcr.io/cloudnative-pg/plugin-barman-cloud-sidecar',
+             'cert-manager/cert-manager/deploy/crds/cert-manager.io_certificates.yaml',
+             'cert-manager/cert-manager/deploy/crds/cert-manager.io_issuers.yaml'}
     for key,value in components.items():
-        if key in entries and not (value['ecosystem']=='pip' and value['name']=='boto3'):continue
+        if key in entries and value['name'] not in managed and not (value['ecosystem']=='pip' and value['name']=='boto3'):continue
         eco,name,version=value['ecosystem'],value['name'],value['version']
         if name=='boto3':
             entry=deepcopy(entries[key]);entry['enterpriseGrade']=grade('boto3');entry['locations']=value['locations'];entries[key]=entry
@@ -79,7 +83,7 @@ def render():
             project,spdx,tier='plugin','Apache-2.0',2;licence=PLUGIN+'/blob/v0.15.1/LICENSE'
             if name.endswith('sidecar'):project,spdx,tier='barman','Apache-2.0 AND GPL-3.0-only AND LGPL-3.0-or-later',4
         else:raise ValueError('Unreviewed WO-09 component: '+key)
-        pending=['supplyChain'] if project in ('plugin','barman','psycopg2') else []
+        pending=['supplyChain','securityProcess'] if project in ('plugin','barman','psycopg2') else []
         if project=='psycopg2':pending+=['governance','activitySupport','securityProcess','adoption']
         entry=dict(id=key,ecosystem=eco,name=name,version=version,spdx=spdx,
                    **{'class':'exception' if tier>=3 else 'allowed'},tier=tier,licenceSource=licence,

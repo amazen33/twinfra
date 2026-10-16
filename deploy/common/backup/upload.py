@@ -29,7 +29,10 @@ def api(path, method='GET', value=None):
     body=None if value is None else json.dumps(value).encode()
     request=urllib.request.Request('https://kubernetes.default.svc'+path,data=body,method=method,
         headers={'Authorization':'Bearer '+TOKEN.read_text().strip(),'Content-Type':'application/merge-patch+json'})
-    with urllib.request.urlopen(request,context=ssl.create_default_context(cafile=str(CA)),timeout=15) as response:
+    context=ssl.create_default_context(cafile=str(CA))
+    context.verify_mode=ssl.CERT_REQUIRED
+    context.check_hostname=True
+    with urllib.request.urlopen(request,context=context,timeout=15) as response:
         return json.load(response)
 
 

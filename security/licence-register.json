@@ -614,7 +614,7 @@
             "date": "2026-10-16"
           },
           "securityProcess": {
-            "result": "pass",
+            "result": "pending",
             "evidence": "https://github.com/cloudnative-pg/plugin-barman-cloud/security/policy",
             "date": "2026-10-16"
           },
@@ -9731,7 +9731,7 @@
             "date": "2026-10-16"
           },
           "securityProcess": {
-            "result": "pass",
+            "result": "pending",
             "evidence": "https://github.com/EnterpriseDB/barman/security/policy",
             "date": "2026-10-16"
           },
@@ -9813,7 +9813,7 @@
             "date": "2026-10-16"
           },
           "securityProcess": {
-            "result": "pass",
+            "result": "pending",
             "evidence": "https://github.com/cloudnative-pg/plugin-barman-cloud/security/policy",
             "date": "2026-10-16"
           },
@@ -10526,7 +10526,7 @@
             "date": "2026-10-16"
           },
           "securityProcess": {
-            "result": "pass",
+            "result": "pending",
             "evidence": "https://github.com/EnterpriseDB/barman/security/policy",
             "date": "2026-10-16"
           },

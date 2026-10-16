@@ -38,7 +38,7 @@
         {
           "name": "encrypt-upload",
           "category": "containers",
-          "image": "registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:5629abd59dd14029d5f174c0036940523d0a3c128af7ed51e51aabca3d4bd1ec",
+          "image": "registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:9f39f06b643ab0c096590ffaba0c81264ec8d4ff5d436982971a54186108c50d",
           "command": [
             "python",
             "/app/upload.py"
@@ -437,7 +437,7 @@
       "containers": [
         {
           "name": "encrypt-upload",
-          "image": "registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:5629abd59dd14029d5f174c0036940523d0a3c128af7ed51e51aabca3d4bd1ec",
+          "image": "registry.twinfra.example.com/docker.io/twinfra/twinfra-backup@sha256:9f39f06b643ab0c096590ffaba0c81264ec8d4ff5d436982971a54186108c50d",
           "imagePullPolicy": "IfNotPresent",
           "command": [
             "python",

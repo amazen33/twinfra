@@ -64,7 +64,7 @@ def validate(state, mode):
                 DEVICE,'/dev/mapper/ubuntu--vg-twinfra--restore--drill'):
             raise ValueError('Foreign filesystem occupies the restore mountpoint')
     if lv:
-        if not owned or 'twinfra-restore-'+owned['nonce'] not in lv['lv_tags'].split(','):
+        if not owned or owned_tag(owned) not in lv['lv_tags'].split(','):
             raise ValueError('Existing restore LV is not owned; refusing adoption')
         if int(float(lv['lv_size']))!=SIZE or owned.get('lvUuid',lv['lv_uuid'])!=lv['lv_uuid']:
             raise ValueError('Restore LV UUID/size changed')
@@ -72,6 +72,13 @@ def validate(state, mode):
     if not lv and state['free']<SIZE+20*1024**3:raise ValueError('Restore LV must preserve 20 GiB free VG reserve')
     if mode=='remove' and (not lv or not owned):raise ValueError('No owned restore LV to remove')
     return {'status':'planned','device':DEVICE,'mount':str(MOUNT),'bytes':SIZE,'existing':bool(lv),'mode':mode}
+
+
+def owned_tag(receipt):
+    value=receipt.get('nonce','')
+    if not isinstance(value,str) or not re.fullmatch(r'[a-f0-9]{32}',value):raise ValueError('Invalid restore ownership nonce')
+    # Reconstruct from an integer; no filesystem/user text reaches argv.
+    return 'twinfra-restore-'+format(int(value,16),'032x')
 
 
 def paths_safe():
@@ -120,7 +127,7 @@ def apply(state):
         owned={'owner':'WO-09','device':DEVICE,'mount':str(MOUNT),'nonce':uuid.uuid4().hex}
         save(owned)
     if not state['lv']:
-        command(['lvcreate','--yes','--size','20G','--name',NAME,'--addtag','twinfra-restore-'+owned['nonce'],VG])
+        command(['lvcreate','--yes','--size','20G','--name',NAME,'--addtag',owned_tag(owned),VG])
         state=inspect();validate(state,'apply');owned['lvUuid']=state['lv']['lv_uuid'];save(owned)
     existing_uuid=command(['blkid','-s','UUID','-o','value',DEVICE],optional=True).strip()
     if existing_uuid:

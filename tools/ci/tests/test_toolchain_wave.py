@@ -34,6 +34,9 @@ class Wave(unittest.TestCase):
         self.assertEqual(self.check([value])['status'],'owner-review-required')
         self.assertEqual(self.check([value|{'fixVersions':['0.55.0']}])['status'],'blocked')
 
+    def test_already_approved_findings_are_not_proposed_again(self):
+        self.assertEqual(self.check([self.value|{'blocked':False}])['status'],'no-exception-needed')
+
     def test_kev_eligible_fixed_release_or_missing_isolation_never_proposed(self):
         for values,kwargs in (([self.value|{'kev':True}],{}),([self.value],{'eligible':True}),
                               ([self.value],{'controls':self.controls|{'noExternalService':False}})):

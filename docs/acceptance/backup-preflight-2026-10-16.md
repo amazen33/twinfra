@@ -105,6 +105,43 @@ Owner/architect decision needed: resolve the package findings through eligible
 official artifacts or a separately reviewed vulnerability-triage/exception
 amendment. ADR-0054's Barman licence exception does not override ADR-0049.
 
+## Complete Linux scan follow-up
+
+[Initial full scan run](https://github.com/amazen33/twinfra/actions/runs/38845738797)
+used verified OCI images on Linux with the same pinned Syft/Grype versions and
+database v6.1.10 (built 2026-10-15T06:30:36Z). It supersedes the earlier partial
+image coverage, not the preserved preflight history above.
+
+| Official image | Blocking Critical | Blocking High | Admission |
+| --- | ---: | ---: | --- |
+| Barman manager 0.15.1 | 3 | 17 | Failed |
+| Barman sidecar 0.15.1 | 3 | 15 | Failed |
+
+These 38 package/advisory matches include fixable OS-library findings in
+`libssl3t64`, `pcre2` and `pcre2-syntax`, beyond the named Go wave. No exception
+entries were added, renewed or approved. Full SBOMs and exact package/fix details
+are public CI artifacts. This is package evidence, not exploitable-call analysis.
+
+The [second dedicated backup scan](https://github.com/amazen33/twinfra/actions/runs/38846249733)
+scanned the complete first-party Python/OpenSSL/SDK archive `sha256:5629abd5…`:
+161 reported findings, **zero blocked**. Later source-only hardening builds are
+verified separately by their own CI run; no pass is transferred to another digest.
+
+All six historical revisions completed their own regression suites in the first
+run: PR1 96 tests, PR2 96, PR3 282, PR4 418, PR5 282, PR6 286. Each job then failed
+the candidate's deliberate enterprise-admission gate. They are **not green jobs**;
+the distinction preserves blocking admission while exposing regression evidence.
+Candidate receipt-test and Docker fixture integration corrections are in the PR;
+the latest candidate result is reported there, not assumed from this initial run.
+
+Public OpenSSF evidence, queried 2026-10-16, is recorded in
+`security/licences/backups/qualification-sources.json`: boto3 7.4, OpenSSL 6.3,
+psycopg2 4.6 (observations dated 2026-10-12). No scorecard was available for the
+two Barman repositories. The plugin's GitHub security page reports no SECURITY.md;
+equivalent disclosure-policy scope remains unproven. The five Barman-related
+enterprise records remain pending. The source/notice offer is present, but does
+not grant a commercial licence opinion or resolve their image findings.
+
 ## Tester sign-off
 
 Tester: Ahmed Mazen (@amazen33), enterprise and cloud tester; QoS tester.

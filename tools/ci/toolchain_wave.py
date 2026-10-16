@@ -21,7 +21,7 @@ def review(findings, *, eligible_fixed_release, controls, on=None):
     into the x/net/crypto/text list because they share a language toolchain.
     WO-09 further limits both severities to 30 days.
     """
-    on=on or date.today();blocking=[v for v in findings if v.get('blockReason')]
+    on=on or date.today();blocking=[v for v in findings if v.get('blocked',bool(v.get('blockReason')))]
     reasons=[]
     if eligible_fixed_release:reasons.append('An eligible upstream release contains the fixes')
     if not controls.get('clusterOrLanOnly') or not controls.get('externalEgress') or not controls.get('noExternalService'):

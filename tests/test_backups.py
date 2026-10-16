@@ -203,6 +203,11 @@ class CMS(unittest.TestCase):
 class RestoreStorage(unittest.TestCase):
     def state(self):return {'lv':None,'receipt':None,'free':100*1024**3,'mounts':[]}
 
+    def test_nonce_is_canonical_not_an_argument_source(self):
+        self.assertEqual(storage.owned_tag({'nonce':'0'*32}),'twinfra-restore-'+'0'*32)
+        for value in ('--help', 'a'*31+' ', 123, 'a'*33):
+            with self.assertRaises(ValueError):storage.owned_tag({'nonce':value})
+
     def test_plan_preserves_pg_and_free_reserve(self):
         report=storage.validate(self.state(),'plan')
         self.assertEqual(report['device'],'/dev/ubuntu-vg/twinfra-restore-drill')

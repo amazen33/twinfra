@@ -6,6 +6,7 @@ import gzip
 import hashlib
 import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -63,7 +64,9 @@ def verify(output):
             'registry.twinfra.example.com/docker.io/twinfra/twinfra-backup:1.0.0','-c',
             'import boto3,botocore,json,ssl; print(json.dumps({"boto3":boto3.__version__,"botocore":botocore.__version__,"tls":ssl.OPENSSL_VERSION}))']))
         assert sdk['boto3']==sdk['botocore']=='1.43.108'
-        run(['docker','run','-d','--name',name,*common,'--tmpfs','/fixture:rw,nosuid,nodev,noexec,size=128m,mode=1777',
+        etcd_common=common[:-2]+['--user',str(os.getuid())+':'+str(os.getgid())]
+        run(['docker','run','-d','--name',name,*etcd_common,'--tmpfs','/fixture:rw,nosuid,nodev,noexec,size=128m,mode=1777',
+             '--mount','type=bind,source='+str(output.resolve())+',target=/export',
              '--entrypoint','/usr/local/bin/etcd',etcd,'--data-dir=/fixture/data','--listen-client-urls=http://127.0.0.1:2379',
              '--advertise-client-urls=http://127.0.0.1:2379'])
         for attempt in range(30):
@@ -72,9 +75,8 @@ def verify(output):
             time.sleep(1)
         else:raise ValueError('Disposable etcd fixture did not become ready')
         run(['docker','exec',name,'/usr/local/bin/etcdctl','put','wo09-public-fixture','synthetic-value'])
-        run(['docker','exec',name,'/usr/local/bin/etcdctl','snapshot','save','/fixture/snapshot.db'])
-        status=json.loads(run(['docker','exec',name,'/usr/local/bin/etcdutl','snapshot','status','/fixture/snapshot.db','--write-out=json']))
-        run(['docker','cp',name+':/fixture/snapshot.db',str(output/'snapshot.db')])
+        run(['docker','exec',name,'/usr/local/bin/etcdctl','snapshot','save','/export/snapshot.db'])
+        status=json.loads(run(['docker','exec',name,'/usr/local/bin/etcdutl','snapshot','status','/export/snapshot.db','--write-out=json']))
         (output/'snapshot.db').chmod(0o644)  # Public synthetic fixture; never a real snapshot.
         source=(ROOT/'deploy/common/backup/upload.py').read_text(encoding='utf-8')
         program='source='+repr(source)+'\nexpected='+repr(admitted)+'\n'+r'''
