@@ -159,7 +159,11 @@ class OperatorAndRenders(unittest.TestCase):
 
     def test_current_render_diff_only_operator_env_vendor_locks_and_production_unchanged(self):
         def base(path):return subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+path])
-        for path,raw in dev.outputs().items():
+        rendered=dev.outputs()
+        if (ROOT/'deploy/common/backup-config.json').is_file():
+            from wo09_receipts import prior_outputs
+            rendered=prior_outputs(rendered)
+        for path,raw in rendered.items():
             relative=path.relative_to(ROOT).as_posix();before=base(relative)
             # Preserve Amendment 13's original one-field receipt. Amendments
             # 10/11/14 independently bound today's outputs in test_platform_hygiene.

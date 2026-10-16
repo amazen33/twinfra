@@ -178,7 +178,11 @@ class Hygiene(unittest.TestCase):
         self.assertIn('before netfilter',text)
 
     def test_render_diffs_are_only_dev_app_annotations_and_openbao_configuration(self):
-        for path,raw in dev.outputs().items():
+        rendered=dev.outputs()
+        if (ROOT/'deploy/common/backup-config.json').is_file():
+            from wo09_receipts import prior_outputs
+            rendered=prior_outputs(rendered)
+        for path,raw in rendered.items():
             relative=path.relative_to(ROOT).as_posix()
             original=subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+relative])
             # Keep the original WO-31 receipt exact; WO-34 separately bounds

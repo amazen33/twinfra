@@ -70,6 +70,9 @@ def assert_current_seed(path):
 
 
 def receipt(path):
+    if path=='deploy/common/images.lock.json' and (ROOT/'deploy/common/backup-config.json').is_file():
+        from wo09_receipts import images
+        return images()
     if path in ('vcloud-ssot.yaml','deploy/common/host-admin.py','tools/platform_host.py') and (ROOT/'deploy/common/host-network.py').is_file():
         from wo36_receipts import receipt as network_receipt
         return network_receipt(path)

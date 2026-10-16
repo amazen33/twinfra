@@ -9,6 +9,22 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools/ci'))
 from licence_ladder import fingerprint, runtime
 BASE='09d56f3'
+NEW_OUTPUTS={'deploy/environments/dev/cairo-1/backups/node/workloads.yaml',
+    'deploy/environments/dev/cairo-1/backups/node/kustomization.yaml',
+    'deploy/environments/dev/cairo-1/backups/reference.yaml',
+    'deploy/environments/dev/cairo-1/backups/observability/prometheus-rule.yaml',
+    'deploy/common/backup-node-exception.json','deploy/common/backup/alerts.rules.yaml'}
+
+
+def prior_outputs(mapping):
+    if not (ROOT/'deploy/common/backup-config.json').is_file():return mapping
+    from platform_backups import outputs
+    additions=outputs()
+    if {p.relative_to(ROOT).as_posix() for p in additions}!=NEW_OUTPUTS:
+        raise AssertionError('WO-09 may add only the six named reference outputs')
+    for path,raw in additions.items():
+        if mapping[path]!=raw:raise AssertionError('Backup output drift: '+str(path))
+    return {p:v for p,v in mapping.items() if p not in additions}
 
 
 def old(name):return subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+name])

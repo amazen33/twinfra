@@ -78,13 +78,11 @@ class CNPGImage(unittest.TestCase):
     def test_render_diff_is_only_cluster_image_name_and_all_locks_production_unchanged(self):
         def base(path):
             return subprocess.check_output(['git','-C',str(ROOT),'show',CNPG_TAG_BASE+':'+Path(path).as_posix()])
-        backup_outputs={}
+        rendered=dev.outputs()
         if (ROOT/'deploy/common/backup-config.json').is_file():
-            from platform_backups import outputs
-            backup_outputs=outputs()
-        for path,raw in dev.outputs().items():
-            if path in backup_outputs:
-                self.assertEqual(raw,backup_outputs[path]);continue
+            from wo09_receipts import prior_outputs
+            rendered=prior_outputs(rendered)
+        for path,raw in rendered.items():
             relative=path.relative_to(ROOT).as_posix();before=base(relative)
             # Preserve Amendment 12's original one-field receipt; Amendment 13
             # independently bounds the current operator-env change.
