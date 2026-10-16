@@ -248,6 +248,9 @@ class Licences(unittest.TestCase):
 
     def fixture(self):
         self.write('requirements.txt', 'alpha==1.0\n')
+        self.entry.update(tier=1,enterpriseGrade={'status':'verified','criteria':{
+            name:{'result':'pass','evidence':'https://example.org/fixture/'+name,'date':'2026-10-09'}
+            for name in gate.licence_ladder.CRITERIA}})
         for path in ('licence-policy.json', 'licence-register.schema.json'):
             self.write('security/' + path, (ROOT / 'security' / path).read_text())
         self.write('security/licence-register.json', json.dumps(dict(version=1, components=[self.entry])))

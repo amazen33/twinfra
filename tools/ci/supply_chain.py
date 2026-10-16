@@ -17,6 +17,7 @@ import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
+import toolchain_wave
 
 from jsonschema import Draft202012Validator, FormatChecker
 
@@ -458,6 +459,8 @@ def evaluate(result,exceptions,kev,state=None,on=None,bootstrap=False,root=ROOT)
                 raise ValueError('Exception severity differs from finding: '+value['vulnerability'])
             if value['fixAvailable'] and not allowed.get('workOrder'):
                 raise ValueError('Fixable exception requires workOrder: '+value['vulnerability'])
+            if 'toolchainWave' in allowed:
+                toolchain_wave.validate_entry(allowed, value, toolchain_wave.policy(root), on)
         value['exception']=allowed;value['blocked']=bool(value['blockReason'] and not allowed)
         output.append(value)
     report=result|dict(findings=output,firstSeen=state,identityState=identities,kev=dict(catalogVersion=kev['catalogVersion'],sha256=sha(json.dumps(kev,sort_keys=True).encode())),
