@@ -119,11 +119,20 @@ in GitHub CI, not on this Windows host.
 
 ## Remaining owner acceptance
 
-After review/merge, use the [dev runbook](../dev-environment.md#wo-36-dell-address-plan-and-safe-network-changes):
-check/adopt (WARN for legacy), apply upgrade, check again; optionally rollback
-to the saved legacy static file and check `.3`. Do not assert a DHCP reservation
-unless it exists. Controlled router outage and no control-plane restarts remain
-Pending. AMT power/KVM acceptance is separately Pending under its
+The [owner-reported WO-36 live evidence](host-network-2026-10-15.md#owner-reported-observations--2026-10-1516-utc)
+now records a passed current-profile check, static `.3` with ordered IPv4 DNS,
+`accept-ra: false` / `link-local: []`, a 40-second router-cycle carrier outage
+with no address change or DHCP lease losses, no pod/control-plane restarts
+after the reported last boot, 20/20 pods Running and three Argo CD Applications
+Synced/Healthy. The owner also confirms `staging-check` is required as of
+2026-10-16. Those supplied observations await tester sign-off; Codex performed
+no new live checks or settings changes. Physical carrier downtime is distinct
+from the five-second netplan transaction-gap bound above.
+
+Use the [dev runbook](../dev-environment.md#wo-36-dell-address-plan-and-safe-network-changes)
+for any separately authorized transaction. No new Dell apply/rollback or
+blocked-rollout proof is supplied by this evidence update. Do not assert a DHCP
+reservation unless it exists. AMT power/KVM acceptance is separately Pending under its
 [owner runbook](../runbooks/intel-amt.md). No tool touches AMT.
 
 ## Tester sign-off

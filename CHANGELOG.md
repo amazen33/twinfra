@@ -41,6 +41,10 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Added
 
+- Record the owner's 2026-10-15/16 host-network check, router-cycle recovery,
+  platform health and required staging-check evidence; retain Pending tester
+  sign-off and distinguish carrier downtime from netplan transaction gaps.
+
 - Publish the evidence-first capability statement and ADR-0050–0053; downgrade
   retired WSL acceptance, defer AI/HPC/event references and enforce Accepted
   tester receipts for live capability claims in CI (WO-37).
