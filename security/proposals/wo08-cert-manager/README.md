@@ -20,7 +20,7 @@ Critical proposals expire **2026-11-15** (30 days); High proposals expire **2026
 
 ## Evidence and limits
 
-The upstream release was published 2026-09-11; these images were built September 10 with Go 1.26.8. The latest eligible semantic release remains v1.21.2, and no eligible release built with the fixed Go 1.26.9 toolchain exists at review time. Official [release history](https://github.com/cert-manager/cert-manager/releases) and [Go patch history](https://go.dev/doc/devel/release) supply the eligibility context.
+The captured `upstream-releases.json` records the official release inventory and its hash is in the assessment. The selected release was published 2026-09-11; these images were built September 10 with Go 1.26.8. The latest eligible semantic release remains v1.21.2, and no eligible release built with the fixed Go 1.26.9 toolchain exists at review time. Official [release history](https://github.com/cert-manager/cert-manager/releases) and [Go patch history](https://go.dev/doc/devel/release) supply the eligibility context.
 
 The actual preliminary scanners were the checksum-verified **Windows amd64** Syft 1.52.0 and Grype 0.119.0. They scanned hash-verified Linux-amd64 regular-file projections, with safe file-link copies, using the 2026-10-16 Grype database and Debian 13 identity from the verified os-release. Native Windows OCI scanning failed on colon-containing stereoscope cache filenames. **This is not a complete Linux OCI admission scan or a call-reachability result.** Full native Linux OCI matching may find additional blockers; it must run before admission.
 

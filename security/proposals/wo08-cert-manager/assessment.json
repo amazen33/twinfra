@@ -1,8 +1,8 @@
 {
   "date": "2026-10-16",
   "status": "owner-review-required; not admitted",
-  "policyCommit": "e4e0894f104f831c274ded0a46fdb3af7014a532",
-  "policySHA256": "d31cf7f4d81620b3f32044cd10bd129be68dc77de3528013f22171681293eca5",
+  "policyCommit": "bdc0d4817b913fdda8605d827c2f0915c3747175",
+  "policySHA256": "9bb668a14f06a9d662a7c606328e56a7833e5323cf7f573fb90260d2da88d13d",
   "rule": "ADR-0049 Amendments 1/1a",
   "release": {
     "version": "v1.21.2",
@@ -2458,5 +2458,6 @@
   "runtimeChanges": false,
   "ownerApprovalRecorded": false,
   "activeExceptionRegistryChanged": false,
-  "liveActions": false
+  "liveActions": false,
+  "upstreamReleaseInventorySHA256": "8e2d674826f3527677611d03948a84841eb5754949d7d6ed56d2e6364162af10"
 }
