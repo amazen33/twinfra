@@ -18,6 +18,17 @@ def version(value, go=False):
     return tuple(map(int, match.groups())) if match else None
 
 
+def module_version(value):
+    """SemVer ordering includes the pseudo-versions used by Go-team modules."""
+    match = re.fullmatch(r'v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?', value)
+    if not match:
+        return None
+    major, minor, patch = map(int, match.groups()[:3])
+    prerelease = match[4]
+    identifiers = tuple((0, int(v)) if v.isdigit() else (1, v) for v in (prerelease or '').split('.'))
+    return major, minor, patch, int(prerelease is None), identifiers
+
+
 def qualifies(finding, rules):
     """Match the affected package and scanner fix; advisory IDs grant nothing."""
     if finding.get('kev') is not False or finding['severity'] not in ('Critical', 'High'):
@@ -37,8 +48,8 @@ def qualifies(finding, rules):
                     and latest in [v.removeprefix('v') for v in fixes])
     if finding['package'] not in rules['goTeamModules']:
         return False
-    built = version(finding['version'])
-    parsed = [version(v) for v in fixes]
+    built = module_version(finding['version'])
+    parsed = [module_version(v) for v in fixes]
     return bool(built and all(v and v > built for v in parsed))
 
 

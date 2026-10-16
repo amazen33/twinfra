@@ -71,6 +71,18 @@ class Wave(unittest.TestCase):
             with self.subTest(module=module):
                 self.assertEqual(self.review([value])['status'], 'owner-review-required')
 
+    def test_go_team_pseudo_versions_compare_newer_fixes_without_id_lists(self):
+        value=self.value | dict(package='golang.org/x/exp',
+            version='v0.0.0-20260901000000-aaaaaaaaaaaa',
+            fixVersions=['v0.0.0-20261001000000-bbbbbbbbbbbb'])
+        self.assertEqual(self.review([value])['status'], 'owner-review-required')
+        value['fixVersions']=['v0.0.0-20260801000000-cccccccccccc']
+        self.assertEqual(self.review([value])['status'], 'blocked')
+
+    def test_refresh_duty_does_not_invent_an_earlier_exception_expiry(self):
+        entry=self.review()['proposedExceptions'][0] | dict(approvedBy='amazen33')
+        wave.validate_entry(entry, self.value, wave.policy(), date(2026,11,1))
+
     def test_kev_fixed_release_or_missing_controls_blocks_whole_batch(self):
         for values, opts in (([self.value | dict(kev=True)], {}), ([self.value], dict(eligible=True)),
             ([self.value], dict(eligible=None)), ([self.value], dict(controls=self.controls | dict(noExternalService=False)))):
