@@ -3,8 +3,11 @@
   "runURL": "https://github.com/amazen33/twinfra/actions/runs/38662896911",
   "base": "e92255278369a25f26bc694b38c33bfd2768c14d",
   "scope": "Static dev CoreDNS/etcd promotion; no application binaries built/executed",
-  "liveAcceptance": "Pending",
-  "testerSignOff": "Pending",
+  "liveAcceptance": "Passed",
+  "liveEvidence": "2026-10-17 on twinfra-dev-cairo-1: WO-40c maintenance applied; etcd 3.6.15 and CoreDNS 1.14.7 run with the locked digests; WO-40a baseline acceptance passed (docs/acceptance/release-0.1.0-2026-10-17.md)",
+  "testerSignOff": "Accepted",
+  "testerSignOffDate": "2026-10-17",
+  "testerSignOffNote": "Signed by the owner (@amazen33) in chat; recorded by the architect at the owner's instruction",
   "metadata": {
     "coredns": {
       "pin": {
