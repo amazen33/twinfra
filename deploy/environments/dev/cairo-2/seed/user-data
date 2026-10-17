@@ -87,6 +87,8 @@ write_files:
 
     IMAGE_STAGING=true
 
+    DISABLE_NOUVEAU=true
+
     PAUSE_IMAGE=registry.twinfra.example.com/registry.k8s.io/pause:3.10.2
 
     KUBEADM_DNS_IMAGE_TAG=v1.14.7
@@ -2119,6 +2121,149 @@ write_files:
     WantedBy=multi-user.target
 
     '
+- path: /etc/modprobe.d/twinfra-display-drivers.conf
+  permissions: '0644'
+  content: 'blacklist nouveau
+
+    options nouveau modeset=0
+
+    blacklist nvidiafb
+
+    '
+- path: /var/lib/twinfra/host-graphics/ownership.json
+  permissions: '0600'
+  content: '{"owner": "WO-31 display drivers v1", "sha256": "693d50d177e16f2c1bde42bb856e23059ea3c1d60cff13ff5df4e989a899da25",
+    "backup": null}
+
+    '
+- path: /usr/local/lib/twinfra/host-graphics.py
+  permissions: '0644'
+  content: "#!/usr/bin/env python3\n# SPDX-License-Identifier: MIT\n\"\"\"Owned display-driver\
+    \ configuration and count-only kernel health. No IO at import.\"\"\"\nfrom collections\
+    \ import deque\nfrom contextlib import contextmanager\nimport hashlib\nimport\
+    \ json\nimport os\nfrom pathlib import Path\nimport re\nimport shutil\nimport\
+    \ subprocess\nimport sys\nimport tempfile\nimport time\n\nROOT = Path('/')\nFILE\
+    \ = '/etc/modprobe.d/twinfra-display-drivers.conf'\nBODY = 'blacklist nouveau\\\
+    noptions nouveau modeset=0\\nblacklist nvidiafb\\n'\nSTATE = '/var/lib/twinfra/host-graphics'\n\
+    OWNER = 'WO-31 display drivers v1'\nSHA = hashlib.sha256(BODY.encode()).hexdigest()\n\
+    PATTERNS = {\n    'warningTraces': r'\\bWARNING:', 'bugTraces': r'\\bBUG(?: at|:)|\\\
+    bOops:',\n    'machineCheck': r'machine check (?:exception|events logged)|\\[Hardware\
+    \ Error\\]|mce:.*(?:error|uncorrected|bank\\s*\\d)',\n    'hungTask': r'\\btask\
+    \ .*blocked for more than \\d+ seconds',\n    'oom': r'out of memory:|oom-kill:|invoked\
+    \ oom-killer|killed process \\d+ .*total-vm:',\n    'ioErrors': r'I/O error|blk_update_request:.*error|EXT4-fs\
+    \ error|XFS.*(?:corruption|error)',\n}\n\n\ndef path(name):\n    return ROOT /\
+    \ name.lstrip('/')\n\n\ndef secure(p):\n    for item in (p, *p.parents):\n   \
+    \     if item == ROOT.parent:\n            break\n        if item.is_symlink():\n\
+    \            raise ValueError('Linked graphics path refused')\n        if item.exists()\
+    \ and (item.stat().st_uid != 0 or item.stat().st_mode & 0o022):\n            raise\
+    \ ValueError('Unowned/insecure graphics path')\n\n\ndef write(name, raw, mode=0o600):\n\
+    \    p = path(name)\n    secure(p)\n    p.parent.mkdir(parents=True, exist_ok=True)\n\
+    \    with tempfile.NamedTemporaryFile(dir=p.parent, delete=False) as stream:\n\
+    \        stream.write(raw)\n        candidate = stream.name\n    os.chmod(candidate,\
+    \ mode)\n    os.replace(candidate, p)\n\n\ndef run(args):\n    result = subprocess.run(args,\
+    \ capture_output=True, text=True, timeout=900)\n    if result.returncode:\n  \
+    \      raise ValueError('Graphics verification command failed: ' + args[0])\n\
+    \    return result.stdout\n\n\ndef kernel():\n    value = run(['uname', '-r']).strip()\n\
+    \    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._+-]{0,127}', value):\n     \
+    \   raise ValueError('Invalid running kernel')\n    return value\n\n\ndef loaded():\n\
+    \    return {name: path('/sys/module/' + name).exists() for name in ('nouveau',\
+    \ 'nvidiafb')}\n\n\ndef ownership():\n    p, receipt = path(FILE), path(STATE\
+    \ + '/ownership.json')\n    secure(p)\n    secure(receipt)\n    data = json.loads(receipt.read_text())\
+    \ if receipt.exists() else None\n    if data is not None:\n        if data !=\
+    \ {'owner': OWNER, 'sha256': SHA, 'backup': None}:\n            raise ValueError('Invalid\
+    \ graphics ownership or backup')\n        if p.exists() and (not p.is_file() or\
+    \ p.read_bytes() != BODY.encode()):\n            raise ValueError('Owned graphics\
+    \ file differs; no adoption')\n    elif p.exists():\n        raise ValueError('Unowned\
+    \ graphics file; no adoption')\n    return data\n\n\ndef initramfs_contains(version):\n\
+    \    image = '/boot/initrd.img-' + version\n    secure(path(image))\n    names\
+    \ = run(['lsinitramfs', image]).splitlines()\n    return any(name.removeprefix('./')\
+    \ == FILE.lstrip('/') for name in names)\n\n\ndef rebuild(version, present):\n\
+    \    run(['update-initramfs', '-u', '-k', version])\n    if initramfs_contains(version)\
+    \ != present:\n        raise ValueError('Initramfs graphics file presence differs')\n\
+    \    if present:\n        with tempfile.TemporaryDirectory(prefix='twinfra-initramfs-')\
+    \ as temp:\n            run(['unmkinitramfs', '/boot/initrd.img-' + version, temp])\n\
+    \            files = list(Path(temp).rglob(FILE.lstrip('/')))\n            if\
+    \ not files or any(p.is_symlink() or p.read_bytes() != BODY.encode() for p in\
+    \ files):\n                raise ValueError('Initramfs graphics file content differs')\n\
+    \n\n@contextmanager\ndef lock():\n    import fcntl\n    directory = path(STATE)\n\
+    \    secure(directory)\n    directory.mkdir(parents=True, exist_ok=True)\n   \
+    \ os.chmod(directory, 0o700)\n    file = directory / 'lock'\n    secure(file)\n\
+    \    with file.open('a') as stream:\n        try:\n            fcntl.flock(stream,\
+    \ fcntl.LOCK_EX | fcntl.LOCK_NB)\n        except BlockingIOError:\n          \
+    \  raise ValueError('Graphics action already active') from None\n        try:\n\
+    \            yield\n        finally:\n            fcntl.flock(stream, fcntl.LOCK_UN)\n\
+    \n\ndef check():\n    data = ownership()\n    version = kernel()\n    present\
+    \ = path(FILE).exists()\n    included = initramfs_contains(version)\n    modules\
+    \ = loaded()\n    return {'status': 'passed' if data and present and included\
+    \ and not any(modules.values()) else 'failed',\n            'loaded': modules,\
+    \ 'blacklistCurrent': bool(data and present), 'initramfsContainsFile': included,\n\
+    \            'runningKernel': version, 'kernelHealth': kernel_health()}\n\n\n\
+    def change(mode):\n    if mode not in ('apply', 'rollback'):\n        raise ValueError('Unknown\
+    \ graphics mutation')\n    ownership()  # Refuse foreign files before any lock/backup\
+    \ write.\n    version = kernel()\n    for name in ('update-initramfs', 'lsinitramfs',\
+    \ 'unmkinitramfs'):\n        if not shutil.which(name):\n            raise ValueError('Required\
+    \ Ubuntu initramfs tool unavailable')\n    with lock():\n        data = ownership()\n\
+    \        if mode == 'rollback' and data is None:\n            raise ValueError('No\
+    \ owned graphics backup to restore')\n        if data is None:\n            #\
+    \ The only permitted initial state is absence. This permanent backup\n       \
+    \     # is also the ownership receipt, kept across apply retries/rollback.\n \
+    \           data = {'owner': OWNER, 'sha256': SHA, 'backup': None}\n         \
+    \   write(STATE + '/ownership.json', (json.dumps(data) + '\\n').encode())\n  \
+    \      if mode == 'apply':\n            write(FILE, BODY.encode(), 0o644)\n  \
+    \      elif path(FILE).exists():\n            path(FILE).unlink()\n        rebuild(version,\
+    \ mode == 'apply')\n    return {'status': 'reboot-required', 'runningKernel':\
+    \ version,\n            'message': 'Owned display configuration and initramfs\
+    \ verified; owner must plan reboot. No reboot executed.'}\n\n\ndef kernel_status(counts,\
+    \ maximum):\n    if any(counts[k] for k in ('machineCheck', 'hungTask', 'oom'))\
+    \ or maximum > 100:\n        return 'BLOCK'\n    return 'WARN' if any(counts.values())\
+    \ else 'PASS'\n\n\ndef count_kernel(entries, now_us):\n    counts = dict.fromkeys(PATTERNS,\
+    \ 0)\n    window, maximum, last_hour, previous = deque(), 0, 0, -1\n    for row\
+    \ in entries:\n        message = row.get('MESSAGE', '')\n        if not isinstance(message,\
+    \ str):\n            continue\n        timestamp = int(row['__MONOTONIC_TIMESTAMP'])\n\
+    \        if timestamp < previous:\n            raise ValueError('Kernel journal\
+    \ timestamps out of order')\n        previous = timestamp\n        for key, pattern\
+    \ in PATTERNS.items():\n            counts[key] += int(bool(re.search(pattern,\
+    \ message, re.I)))\n        if re.search(PATTERNS['warningTraces'], message, re.I):\n\
+    \            while window and window[0] < timestamp - 3_600_000_000:\n       \
+    \         window.popleft()\n            window.append(timestamp)\n           \
+    \ maximum = max(maximum, len(window))\n            last_hour += int(timestamp\
+    \ >= now_us - 3_600_000_000)\n    return {'status': kernel_status(counts, maximum),\n\
+    \            'detail': {'counts': counts, 'maxWarningTracesPerHour': maximum,\
+    \ 'lastHourWarningTraces': last_hour}}\n\n\ndef kernel_health():\n    try:\n \
+    \       probe = subprocess.run(['journalctl', '-k', '-b', '-n', '1', '--no-pager',\
+    \ '--quiet', '-o', 'json'],\n                               capture_output=True,\
+    \ text=True, timeout=30)\n        if probe.returncode or not probe.stdout.strip():\n\
+    \            raise ValueError('Current-boot kernel journal unavailable')\n   \
+    \     int(json.loads(probe.stdout)['__MONOTONIC_TIMESTAMP'])\n        # Filter\
+    \ trace starts/events in journald, not millions of stack lines.\n        result\
+    \ = subprocess.run(['journalctl', '-k', '-b', '--no-pager', '--quiet', '-o', 'json',\n\
+    \            '--output-fields=MESSAGE,__MONOTONIC_TIMESTAMP', '--case-sensitive=no',\n\
+    \            '--grep=' + '|'.join(PATTERNS.values())], capture_output=True, text=True,\
+    \ timeout=120)\n        if result.returncode not in (0, 1) or getattr(result,\
+    \ 'stderr', '').strip():\n            raise ValueError('Kernel journal unavailable')\n\
+    \        value = count_kernel((json.loads(line) for line in result.stdout.splitlines()\
+    \ if line.strip()),\n                             int(time.monotonic() * 1_000_000))\n\
+    \        value['detail']['coverage'] = 'retained kernel journal since boot; rotated\
+    \ history may be missing'\n        return value\n    except (ValueError, OSError,\
+    \ KeyError, TypeError, subprocess.SubprocessError):\n        return {'status':\
+    \ 'BLOCK', 'detail': {'available': False}}\n\n\ndef health_checks():\n    value\
+    \ = kernel_health()\n    checks = [{'name': 'Kernel health', **value}]\n    try:\n\
+    \        owned = bool(ownership() and path(FILE).exists())\n        pending =\
+    \ owned and loaded()['nouveau']\n        checks.append({'name': 'Display driver\
+    \ reboot', 'status': 'WARN' if pending else 'PASS',\n                       'detail':\
+    \ {'nouveauLoadedWithBlacklist': pending}})\n    except (ValueError, OSError,\
+    \ TypeError):\n        checks.append({'name': 'Display driver ownership', 'status':\
+    \ 'BLOCK', 'detail': {'owned': False}})\n    return checks\n\n\ndef bootstrap():\n\
+    \    config = path('/etc/twinfra-host.env').read_text()\n    if not re.search(r'(?m)^PLATFORM_PROFILE=dev-cairo-[12]$',\
+    \ config) or not re.search(r'(?m)^DISABLE_NOUVEAU=true$', config):\n        raise\
+    \ ValueError('Graphics bootstrap requires explicit dev profile and DISABLE_NOUVEAU=true')\n\
+    \    return change('apply')\n\n\nif __name__ == '__main__':\n    try:\n      \
+    \  if os.geteuid() != 0 or sys.argv[1:] != ['--bootstrap']:\n            raise\
+    \ ValueError('Root dev bootstrap only')\n        report = bootstrap()\n    except\
+    \ (ValueError, OSError, KeyError, subprocess.SubprocessError):\n        report\
+    \ = {'status': 'failed', 'message': 'Graphics bootstrap failed; inspect owned\
+    \ state locally'}\n    print(json.dumps(report))\n    sys.exit(20 if report['status']\
+    \ == 'reboot-required' else 1)\n"
 runcmd:
 - - systemctl
   - daemon-reload
@@ -2137,6 +2282,10 @@ runcmd:
   - enable
   - --now
   - twinfra-dev-log-caps.service
+- - bash
+  - -c
+  - python3 /usr/local/lib/twinfra/host-graphics.py --bootstrap; rc=$?; if [ "$rc"
+    -eq 20 ]; then exit 0; fi; exit "$rc"
 power_state:
   mode: reboot
   delay: now

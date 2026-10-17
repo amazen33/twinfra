@@ -40,6 +40,22 @@ def receipt(name):
         if count!=1 or stripped.encode()!=old:raise AssertionError('SSoT changed beyond exact WO-36 site metadata')
         return old
     before=ast.parse(old);after=ast.parse(current)
+    # Amendment 15 adds exactly these graphics hooks; the remainder of each
+    # completed host/network receipt is still compared node-for-node below.
+    after.body=[n for n in after.body if getattr(n,'name',None)!='graphics_agent']
+    graphics_statements=[
+        "checks.extend(state.get('graphicsChecks', []))",
+        "graphics = None",
+        "if re.search('(?m)^DISABLE_NOUVEAU=true$', read('/etc/twinfra-host.env')):\n    graphics = graphics_agent().bootstrap()",
+        "if graphics:\n    return report | graphics",
+        "if action == 'check' or action.startswith('graphics-') or action == 'bootstrap-finish':\n    code = 'GRAPHICS_SOURCE=' + repr((COMMON / 'host-graphics.py').read_text()) + '\\n' + code",
+        "if action == 'host-graphics':\n    if sum((check, apply, rollback)) != 1:\n        raise ValueError('host-graphics requires exactly one of --check, --apply, --rollback')\n    return request(ssh, 'graphics-' + ('check' if check else 'apply' if apply else 'rollback'))",
+    ]
+    approved={ast.dump(ast.parse(s).body[0]) for s in graphics_statements}
+    for node in after.body:
+        if isinstance(node,ast.FunctionDef):
+            node.body=[n for n in node.body if ast.dump(n) not in approved and not (
+                isinstance(n,ast.If) and ast.unparse(n.test)=="action.startswith('graphics-')")]
     previous={n.name:n for n in before.body if isinstance(n,ast.FunctionDef)}
     if name=='deploy/common/host-admin.py':
         after.body=[n for n in after.body if getattr(n,'name',None) not in ('network_agent','network_warnings')]

@@ -669,3 +669,76 @@ The evidence is in `.build/wo-31/amendment9-constraints.json`. All 15 inputs mat
 - WSL render output: byte-identical before and after;
 - `image()` accepts the Twinfra `canonical` with the pinned digest;
 - `image()` rejects a changed digest or a changed console source hash.
+
+## Amendment 15 (2026-10-17, architect; option B accepted by the owner): the Dell's NVIDIA display card floods the kernel log
+
+**Status:** Accepted, option **B** (owner, 2026-10-17: "B"). Amendments 10 to 14 live in the repository copy of WO-31; renumber if 15 is taken.
+
+## Finding (read-only, 2026-10-17 19:34 UTC)
+
+- **Host:** `twinfra-dev-cairo-1`, booted 2026-10-16 16:13 UTC (27 hours up).
+- **Card:** NVIDIA GeForce GT 710 (GK208B, Kepler), driven by the open-source `nouveau` driver; `nvidiafb` is also available.
+- **Onset:** at 2026-10-17 18:07:58 UTC the kernel began logging warnings in a loop: `g84_bar_flush` in nouveau, `vblank wait timed out on crtc 0`, and `drm_crtc_wait_one_vblank`, all from the framebuffer console worker (`drm_fb_helper_damage_work`).
+- **Rate:** about 9,400 warning traces in the first hour and 19,854 in the next, or **about 1.17 million kernel log lines per hour**.
+- **Cost:** one kernel worker (`kworker/2:0`) is stuck in uninterruptible sleep using about 36% of one CPU core. The journal (486 MB) rotates useful logs out quickly.
+- **No damage found:** 0 machine-check, hung-task, OOM, I/O or filesystem errors since boot. Kubernetes is unaffected so far: the full acceptance passed at 17:08 UTC, before the onset.
+- The trigger is unknown. A monitor or KVM being switched off or unplugged around 21:07 local time is a typical cause for this nouveau failure.
+
+## Why it matters
+
+A wedged display driver on the only node can escalate: locks held in the graphics stack, a frozen console, or a kernel hang during the rc window. Twinfra does not use this card. Kepler is not supported by current NVIDIA compute drivers, so it cannot serve GPU workloads such as Omni inference. It exists only to drive the local console.
+
+## Options (owner decides)
+
+- **A (recommended): remove the GT 710.**
+  - The OptiPlex then uses its onboard Intel graphics (`i915`) for the local console, and nouveau never loads.
+  - It is a planned power-off of about 10 minutes. The node returns through the power-cut path that WO-36 already proved: static address, no DHCP, pods back, Argo CD healthy.
+- **B: keep the card and disable its drivers.**
+  - Blacklist `nouveau` and `nvidiafb` (a file under `/etc/modprobe.d/`), rebuild the initramfs, and reboot.
+  - The console falls back to the firmware framebuffer. This is a host configuration change, so it is owner-run, through a Codex-written procedure.
+
+**After either option:**
+1. `host-check` passes.
+2. `run-acceptance.ps1` passes again; the restart test is not needed.
+3. A fresh 24-hour soak runs with a clean kernel log.
+
+## Codex follow-up (after the owner's choice; one small PR, no live action)
+
+1. **Kernel-health check in `host-check`.** Since boot, count warning and bug traces, machine-check, hung-task, OOM and I/O errors.
+   - BLOCK on any machine-check, hung-task or OOM event, or on more than 100 warning traces in any hour.
+   - WARN if `nouveau` is loaded.
+   - Report counts only, never log lines.
+2. **If B is chosen:** the host bootstrap renders the driver blacklist for hosts with no supported compute GPU. It is generic host configuration and stays provider-neutral. Tests cover it, and the procedure includes a rollback.
+3. Record the finding and the result in the WO-31 receipt's record, without editing the sign-off.
+
+## WO-31 soak
+
+- **Clean window:** 2026-10-16 16:13 UTC to 2026-10-17 16:13 UTC, with no hardware or kernel errors and no nouveau warnings before 18:07 UTC. The full acceptance passed inside the following hour.
+- **Sign-off waits.** Because this defect appeared right after that window, the WO-31 soak sign-off waits for the fix and a fresh clean 24-hour window.
+- **Deadline:** before rc.1 (about 2026-11-02).
+
+## Decision (owner, 2026-10-17): option B, delivered as an owner-run host action
+
+1. **New host action `host-graphics`**, following the existing `host-network`, `host-ssh` and `host-firewall` pattern: SSH plus `host-admin.py`, owned files, backup and rollback.
+   - `platform_dev.py host-graphics --context twinfra-dev-cairo-1 --check` is read-only. It reports:
+     - whether `nouveau` and `nvidiafb` are loaded;
+     - whether Twinfra's blacklist file exists and is current;
+     - whether the initramfs contains it;
+     - counts of kernel warning traces in the last hour.
+   - `--apply` writes the owned file `/etc/modprobe.d/twinfra-display-drivers.conf` with `blacklist nouveau`, `options nouveau modeset=0` and `blacklist nvidiafb`. It keeps a backup of anything it replaces, runs `update-initramfs -u` for the running kernel, verifies that the initramfs contains the file, and returns `reboot-required` (exit 20). It never reboots by itself.
+   - `--rollback` restores the previous state (removes the owned file, rebuilds the initramfs) and also returns `reboot-required`.
+   - Refuse unless the host identity is verified, as `host-network` does. Change nothing else: no GRUB edits, no other modules, no package changes.
+2. **Kernel-health item in `host-check`.** Since boot, count warning and bug traces, machine-check, hung-task, OOM and I/O errors.
+   - BLOCK on any machine-check, hung-task or OOM event, or on more than 100 warning traces in any hour.
+   - WARN if `nouveau` is loaded while the owned blacklist is present.
+   - Report counts only, never log lines.
+3. **Bootstrap.** The host bootstrap renders the same owned file for the dev profiles when the configuration flag `DISABLE_NOUVEAU=true` is set (true for `dev-cairo-1` and `dev-cairo-2`), so `cairo-2` gets it too. This is generic host configuration and stays provider-neutral.
+4. **Tests, a CHANGELOG entry, and a short owner runbook section in `docs/dev-environment.md`.** The runbook steps:
+   1. `--check`
+   2. `--apply`
+   3. planned reboot (owner): `ssh twinfra-operator@192.168.1.3 sudo systemctl reboot`
+   4. wait for node Ready and Argo CD healthy
+   5. `--check` and `host-check`: no nouveau, 0 new warning traces
+   6. `run-acceptance.ps1`, without the restart test
+   7. a fresh 24-hour soak
+5. **No live action by Codex.** The owner runs the procedure after review and merge.

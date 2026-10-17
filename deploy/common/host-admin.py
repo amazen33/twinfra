@@ -123,6 +123,7 @@ def evaluate(state, expected):
     if 'networkIntegrity' in state:
         checks.append({'name':'Owned network files',**state['networkIntegrity']})
         checks.extend(state['networkWarnings'])
+    checks.extend(state.get('graphicsChecks',[]))
     result=state['result'];post=bool(result and result.get('status')=='ready')
     resume=bool(isinstance(result,dict) and isinstance(result.get('status'),str) and not post and state.get('adminConf'))
     mode='post-bootstrap' if post else 'resume' if resume else 'pre-bootstrap'
@@ -150,6 +151,14 @@ def network_agent():
     import types
     module=types.ModuleType('host_network')
     exec(NETWORK_SOURCE,module.__dict__)
+    module.ROOT=ROOT
+    return module
+
+
+def graphics_agent():
+    import types
+    module=types.ModuleType('host_graphics')
+    exec(GRAPHICS_SOURCE,module.__dict__)
     module.ROOT=ROOT
     return module
 
@@ -462,7 +471,11 @@ def bootstrap_complete(data,report):
     run(['/usr/local/lib/twinfra/dev-log-caps.sh'])
     run(['kubectl','--kubeconfig','/etc/kubernetes/admin.conf','label','node',data['node'],
          'topology.kubernetes.io/zone=cairo-1a','twinfra.io/environment=dev','twinfra.io/region=cairo-1','--overwrite'])
+    graphics=None
+    if re.search(r'(?m)^DISABLE_NOUVEAU=true$',read('/etc/twinfra-host.env')):
+        graphics=graphics_agent().bootstrap()
     write('/var/lib/twinfra/host-bootstrap/complete.json',json.dumps(data['hashes'])+'\n',0o600)
+    if graphics:return report|graphics
     return report|{'message':'Shared bootstrap, pinned staging and dev log caps completed. '+report['message']}
 
 
@@ -473,7 +486,16 @@ def dispatch(data):
     if action=='check':
         current=inventory(data)
         current.update(networkIntegrity=network_agent().integrity(),networkWarnings=network_warnings())
+        current['graphicsChecks']=graphics_agent().health_checks()
         return evaluate(current,data)
+    if action.startswith('graphics-'):
+        identity=evaluate(inventory(data),data)
+        if identity['status']!='passed' or identity['mode']!='post-bootstrap':
+            raise ValueError('Graphics action requires identity-verified ready WO-31 host')
+        module=graphics_agent()
+        if action=='graphics-check':return module.check()
+        if action in ('graphics-apply','graphics-rollback'):return module.change(action.removeprefix('graphics-'))
+        raise ValueError('Unknown graphics action')
     if action.startswith('network-'):
         module=network_agent()
         if action=='network-status':return module.poll(data)
