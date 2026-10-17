@@ -36,7 +36,7 @@ Cut **Twinfra v0.1.0 (Stable)**: the current single-node platform on the bare-me
 
 - **Argo CD 3.5.5** (on or after 2026-10-26): its own small PR (admission: the toolchain-wave rule), then the owner applies it. It removes the four critical Argo CD advisories from the stable.
 - **Renewal PR** for the Criticals expiring 2026-11-12, prepared by 2026-11-02 so the stable does not ship with exceptions that lapse within days. Individual proposals, 30 days each, `approvedBy` left for the owner.
-- The CoreDNS 1.14.7, etcd 3.6.15 and pause 3.10.2 maintenance is **optional** in the window; the release notes say what is actually running.
+- ~~The CoreDNS 1.14.7, etcd 3.6.15 and pause 3.10.2 maintenance is optional in the window.~~ **Superseded by Amendment 2:** the etcd and CoreDNS maintenance is mandatory before the baseline `accept`; the release notes say what is actually running.
 
 ## Owner actions, in order
 
@@ -78,3 +78,69 @@ Codex found three problems. Adding `release/**` to the PR gate triggers a full s
    - by 10-31: WO-40b merged. Freeze `main`.
    - about 11-02: cut `release/0.1`, tag `v0.1.0-rc.1`; 48-hour acceptance window; about 11-09: `v0.1.0`.
 5. PR #67 (WO-09a) stays as is. It merges after WO-34e is green and rebased, and before the Argo CD 3.5.5 PR.
+
+## Amendment 2 (2026-10-17, architect): the first baseline `accept` failed; the etcd and CoreDNS maintenance is mandatory, not optional
+
+**Finding (owner's run, 2026-10-17 00:27 UTC, 8 seconds).** Passed: exception calendar (2 warnings: the two interim Argo CD 3.5.3 exceptions, 16 days left), node, initial pods, GitOps (all applications at `b4c70e8`), `host-check`, `host-network`, `images.lock.json` (10 of 10). **Failed: `staging:bootstrap-images.lock.json`.** The read-only re-check names two images: `etcd:3.6.15-0` and `coredns:v1.14.7` are in the lock (WO-34 P2, promoted 2026-10-15) but are not staged on the Dell. The cluster still runs etcd `3.6.8-0` and CoreDNS `v1.14.2` (read from the pods). The suite stopped there, so the console, token, Valkey and restart checks are unproven.
+
+**My error.** Amendment 1's text above and the "Dated items" list said this maintenance is optional in the window. That is wrong: `accept` compares every running image with the lock, so the baseline cannot pass while the lock and the node disagree. The check is right and is not weakened. The alternative (reverting the promotion in the lock) would discard an approved, net-improving change (WO-34 Amendment 3 and 3a), so it is rejected.
+
+**Decision.** Do the maintenance that WO-34 Amendment 3 item 1 already approved and `docs/image-patch-refresh-p2.md` already outlines, **before** the baseline, one component at a time, never `kubeadm init`, `reset` or a full bootstrap rerun.
+
+1. **WO-40c (Codex, one small PR, no live action).** Turn the outline into an exact, reviewed, copy-paste runbook plus a generator, in `docs/maintenance/` and `tools/`:
+   - read-only preflight (versions, `kubectl get --raw=/readyz`, etcd health, free disk, current manifests and `kubeadm-config`);
+   - backups outside Git: the four static Pod manifests, the `kubeadm-config` ConfigMap, and a **verified etcd snapshot** (`etcdctl snapshot save`, then `etcdutl snapshot status`), kept on the Dell and copied to the laptop;
+   - staging with `stage-images.py --lock deploy/common/bootstrap-images.lock.json`, then `--check` (this part is safe to run first);
+   - a script that reads the live `kubeadm-config` and writes the v1beta4 `UpgradeConfiguration` changing **only** `dns.imageTag` and `etcd.local.imageTag`, with a diff the owner reviews;
+   - dry run, then etcd, then verify (etcd health, API ready, WAL latency, `Ready` node), then CoreDNS addon phase, then verify (DNS from a permitted workload, Cilium policy, GitOps healthy, pinned images);
+   - a rollback section per component (restore the saved manifest or the previous ConfigMap value; an etcd snapshot restore is the last resort and needs the owner);
+   - tests that the generated configuration changes exactly those two tags.
+   - **Stop rule:** if the pinned kubeadm cannot apply a same-version etcd or addon image change through `upgrade apply phase`, stop and report. Do not improvise by editing manifests live; the fallback (edit the etcd static Pod image and the CoreDNS Deployment, with `kubeadm-config` updated to match) needs my review first.
+2. **Owner maintenance window** (about 30 minutes, after WO-40c merges). Expect the API to be unreachable for about a minute while etcd restarts; running pods keep running. Nothing else changes. The owner pastes the check outputs and I review them between the two components.
+3. **Then the baseline again:** `run-acceptance.ps1` (it now reads the commit without `git`). The sign-offs for WO-04, WO-06, WO-25, WO-31, the WO-34 P2 live receipt and the consolidated receipt follow the green run.
+4. **Dates:** WO-40c PR by 2026-10-19; maintenance window and baseline by 2026-10-22, so Argo CD 3.5.5 (from 2026-10-26) reuses the same staging step. The 2026-10-31 and 2026-11-02 dates are unchanged.
+
+## Amendment 3 (2026-10-17, architect): WO-40c mechanism corrected after Codex's stop (kubeadm v1.36.5 source)
+
+Codex verified against the v1.36.5 source and stopped correctly: `UpgradeConfiguration` has no `dns.imageTag` or `etcd.local.imageTag` (they belong to `ClusterConfiguration`), the upgrade loader ignores supplied `ClusterConfiguration` documents, and `upgrade apply` reads the stored `kube-system/kubeadm-config`. **My Amendment 2 item 1 (the `UpgradeConfiguration` generator and the `upgrade apply phase` steps) is superseded by this amendment; its other parts (preflight, backups, staging, verification, rollback, dates) stand.** The error was mine.
+
+**Mechanism: kubeadm's documented reconfiguration route, one component at a time.** The stored `ClusterConfiguration` holds the intended tags; the node manifest and the CoreDNS Deployment are re-rendered from a candidate configuration. `upgrade apply` is not used, because it re-renders every control-plane component and needs a version argument.
+
+1. **Base configuration.** Locate the configuration file the bootstrap used on the Dell (WO-31's state directory, `kubeadm.yaml` and its patches directory, which carry the read-only etcd certificate mount and the other approved patches). Compare it with the `ClusterConfiguration` in `kube-system/kubeadm-config`. **They must agree on everything except possibly the two tags; otherwise stop and report the differences.**
+2. **Generator (tools/, with tests).** Reads that configuration and writes a candidate that changes **only** `dns.imageTag` (to `v1.14.7`) and `etcd.local.imageTag` (to `3.6.15-0`), prints the diff, and refuses any other difference. It also writes the candidate `ClusterConfiguration` document for the ConfigMap.
+3. **Previews, without touching the cluster.** `kubeadm init phase etcd local --config <candidate> --dry-run` (the cairo-2 seed already does this) and `kubeadm init phase addon coredns --config <candidate> --dry-run`. Acceptance for each preview, by diff against what is live:
+   - etcd: the rendered manifest differs from `/etc/kubernetes/manifests/etcd.yaml` **only in the image**; the patched read-only certificate mount, flags, data directory and node name are unchanged;
+   - CoreDNS: the Deployment differs only in the image, and the `coredns` ConfigMap (Corefile) is not changed by the phase.
+4. **Apply order and ConfigMap timing.** The ConfigMap is updated **after** each component is verified, never before, so a failure leaves the stored configuration matching the running state.
+   - etcd: `kubeadm init phase etcd local --config <candidate>` (writes only the etcd manifest; the kubelet restarts the static Pod), then verify (etcd health, `readyz`, the new image digest in the Pod, WAL latency, `Ready` node), then update the ConfigMap's `etcd.local.imageTag` from the saved candidate.
+   - CoreDNS: if the preview in item 3 shows an image-only change, run `kubeadm init phase addon coredns --config <candidate>`. **If the phase would change the Corefile or anything else, use the pre-approved fallback for CoreDNS only:** `kubectl -n kube-system set image deployment/coredns coredns=<pinned digest reference from the lock>`, which leaves the ConfigMap untouched. Verify DNS from a permitted workload, Cilium policies and GitOps health; then update `dns.imageTag` in the ConfigMap.
+   - **etcd has no fallback.** If the etcd preview shows any difference beyond the image, stop and report.
+5. **Rollback.** Per component: restore the saved manifest or the previous Deployment image, and leave the ConfigMap unchanged (it was not yet updated); an etcd snapshot restore is the last resort and needs the owner.
+6. **Unchanged:** staging first (`stage-images.py --lock deploy/common/bootstrap-images.lock.json`, then `--check`), a verified etcd snapshot and manifest backups before etcd, and the dates in Amendment 2. Never `kubeadm init`, `reset`, `upgrade apply`, or a full host-bootstrap rerun.
+
+## Amendment 4 (2026-10-17, architect): review of PR #70 (WO-40c), changes requested
+
+PR #70 is careful work: CAS-guarded ConfigMap patches, a strict etcd image-only guard proven with the pinned kubeadm in CI, new-only private outputs, and an honest list of unverified points. Four defects would stop or mislead the live window, and three smaller items should be fixed in the same push.
+
+**Blocking**
+
+1. **The strict host/stored comparison will stop every time.** `render_kubeadm` in `00-setup-ubuntu-host.sh` writes a minimal `ClusterConfiguration`. kubeadm's upload-config stores the *defaulted* object (for example `certificatesDir`, `etcd.local.dataDir`, `encryptionAlgorithm`, the certificate validity periods, empty component sections). Comparing raw files therefore always reports drift, which is exactly what `test_even_materialized_default_difference_is_not_silently_ignored` asserts. My Amendment 3 item 1 caused this; it is corrected here:
+   - Normalise **both** sides with the pinned kubeadm's own defaulting, offline: the `ClusterConfiguration` document of `kubeadm config migrate --old-config <file>` for the host file and for the stored document. Then compare strictly; only the two tags may differ. Any other remaining difference stops the window, and the owner pastes the diff for my decision.
+   - Verify from the v1.36.5 source (cite it) that `config migrate` applies the same static and dynamic defaults to `ClusterConfiguration` as init's upload-config. **CI proof:** the cairo-1 render, migrated, equals the `ClusterConfiguration` that `kubeadm init --dry-run` would upload, apart from the two tags. If that cannot be shown, stop and report.
+   - The migrate output may contain a generated bootstrap token. It is used only for the comparison, never applied, and deleted at cleanup.
+   - The etcd image-only manifest diff remains the binding gate for etcd.
+2. **The CoreDNS fallback image breaks acceptance.** `image coredns --digest` sets `…/coredns@sha256:…`. `platform_accept.image_problems` allows only `cri_reference(canonical)`, which for CoreDNS is the **tag** form `registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.7`. A digest reference would be reported as "unverified image". It also has no staged digest-only containerd record, so the kubelet may try to pull it from the non-existent dev registry. Fix: the fallback uses the canonical tag exactly as kubeadm renders it (staged, pinned and digest-verified by `stage-images` and `accept`); the documented `jq` assertion accepts only that form; add a test that the fallback reference is in `accept`'s allowed set.
+3. **Dell `kubectl` has no kubeconfig for the operator.** The bootstrap uses `KUBECONFIG=/etc/kubernetes/admin.conf` (root, 0600), and the repository's Dell procedures use `sudo kubectl --kubeconfig /etc/kubernetes/admin.conf` (`docs/service-access.md`, `docs/dev-environment.md`). The runbook's bare `kubectl` commands would fail at the first preflight call. Use that form throughout on the Dell, and `sudo env KUBECONFIG=/etc/kubernetes/admin.conf cilium status --wait` for Cilium.
+4. **The step after the etcd apply would trigger a needless rollback.** While etcd restarts, the API is down, so `kubectl wait` fails at once with "connection refused", and the runbook says to stop and roll back. First wait, with a bound, for `readyz` (for example `timeout 300 bash -c 'until sudo kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw=/readyz >/dev/null 2>&1; do sleep 5; done'`). Then do the Pod-level checks. State that one kube-apiserver restart during the etcd restart is expected, not a failure.
+
+**Also fix**
+
+5. **CoreDNS: one mutation only.** A live Deployment carries server-side defaults, so a strict diff against kubeadm's template can never be image-only. The phase path is therefore unreachable, and it invites a judgement call in the window. CoreDNS uses only the `set image` fallback with the canonical tag. Remove the CoreDNS dry-run, which also removes the copy of `admin.conf` into the maintenance directory.
+6. **WAL threshold.** The gate is WO-31's target, p99 under 10 ms. Report the value against the 2026-10-13 baseline (p99 at most 4 ms). A value between 4 and 10 ms is reported, not a stop.
+7. **Cleanup and laptop commit.**
+   - Add a cleanup section that runs after `accept` passes: remove `/var/lib/etcd/wo40c-before.db` from the etcd data directory (the copies in `$MAINT` and on the laptop remain), and delete the migrate outputs.
+   - Old images stay cached until acceptance.
+   - On the laptop, `git` is not on the owner's PATH: read the commit from `.git/HEAD`, as `run-acceptance.ps1` does.
+   - CI also runs `kubeadm config validate` and the etcd dry run on the exact `candidate.yaml` the generator writes (JSON documents separated by `---`), not only on the YAML re-dump.
+
+The stop rules, CAS patches, no-fallback rule for etcd, backups and dates stand.

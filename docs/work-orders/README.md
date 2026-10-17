@@ -20,6 +20,7 @@ Nothing in this pack has been written to the Twinfra repository. Codex adds it t
 | [WO-32](WO-32-supply-chain-scanning.md) | ADR-0049 supply-chain vulnerability gate, nightly re-scan and weekly upstream comparisons; owner exception approval and after-merge issue acceptance remain required |
 | [WO-34](WO-34-image-patch-refresh.md) | Prioritised patch refresh; Amendments 3/3a approve dev CoreDNS/etcd promotion, identity-based risk clocks and exact non-renewing exception carry |
 | [WO-40](WO-40-twinfra-v0-1-0-release.md) | Release-first dev acceptance; Amendment 1 splits acceptance (WO-40a) from final release readiness (WO-40b) |
+| [WO-40c](WO-40c-control-plane-maintenance.md) | Mandatory etcd/CoreDNS maintenance before baseline acceptance; WO-40 Amendments 2 and 3 |
 | [WO-37](WO-37-readme-capabilities-and-adr-status.md) | Evidence-first README/capabilities and ADR status cleanup; blocking Accepted-receipt checks |
 | [WO-36](WO-36-host-network-and-staging-safety.md) | Owned static host networking, since-boot warnings, safe stateless rollouts and the PR image-staging attestation gate; live owner acceptance Pending |
 | [WO-23](WO-23-dr-drill.md), [WO-24](WO-24-second-host-warm-dr.md), [WO-30](WO-30-dev-vm-disk-and-capacity-checks.md) | 2026-10-12 amendments: Dell primary; laptop cold standby; future DR, additional host and VM sizing work remain separate |
