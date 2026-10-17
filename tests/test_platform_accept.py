@@ -197,6 +197,44 @@ class Acceptance(unittest.TestCase):
         self.assertNotIn('PRIVATE-COOKIE-FIXTURE', json.dumps(result))
         self.assertNotIn(TOKEN, json.dumps(result))
 
+    def test_gone_import_name_with_locked_digest_never_looked_up(self):
+        for p in self.client.pods:
+            p['status']['containerStatuses'][0]['imageID'] = 'docker-pullable://docker.io/library/import-2026-10-15@' + DIGEST
+        original = self.ssh.run
+        def inspect(command):
+            if 'import-' in command[-1]:
+                raise ValueError('gone import name: ' + TOKEN)
+            return original(command)
+        self.ssh.run = inspect
+        result = self.run_accept()
+        self.assertNotIn('error', result)
+        self.assertEqual(result['checks']['deployedImages']['status'], 'passed')
+        self.assertEqual(result['checks']['deployedImagesFinal']['status'], 'passed')
+        self.assertNotIn(TOKEN, json.dumps(result))
+
+    def test_failed_runtime_lookup_is_a_deployed_image_problem_not_an_abort(self):
+        target = self.client.pods[0]
+        actual = 'docker.io/library/import-2026-10-15@sha256:' + 'd' * 64
+        target['status']['containerStatuses'][0]['imageID'] = actual
+        original = self.ssh.run
+        def inspect(command):
+            if command[-1] == actual:
+                raise subprocess.CalledProcessError(1, command, output=TOKEN, stderr=COOKIE)
+            return original(command)
+        self.ssh.run = inspect
+        with patch('sys.stdout', new_callable=io.StringIO) as stdout, \
+             patch('sys.stderr', new_callable=io.StringIO) as stderr:
+            result = self.run_accept()
+        self.assertNotIn('error', result)
+        self.assertEqual(result['status'], 'failed')
+        problems = result['checks']['deployedImages']['details']['problems']
+        self.assertTrue(any(target['metadata']['name'] + '/container' in p for p in problems), problems)
+        self.assertEqual(result['checks']['deployedImagesFinal']['status'], 'failed')
+        self.assertIn('versions', result)  # Remaining read-only checks still run.
+        serialized = json.dumps(result) + stdout.getvalue() + stderr.getvalue()
+        self.assertNotIn(TOKEN, serialized)
+        self.assertNotIn(COOKIE, serialized)
+
     def test_calendar_failure_refuses_restart_warning_is_reported(self):
         path = self.root / 'security/vulnerability-exceptions.json'
         entry = dict(target='fixture', package='p', version='1', vulnerability='CVE-fixture', expires='2026-10-23')
@@ -224,6 +262,61 @@ class Acceptance(unittest.TestCase):
 
 
 class Contracts(unittest.TestCase):
+    def test_runtime_lookup_uses_own_container_lock_for_all_container_kinds(self):
+        other_digest = 'sha256:' + 'e' * 64
+        other_ref = 'registry.twinfra.example.com/example/other@' + other_digest
+        lock = {'images': {'fixture': {'canonical': REF, 'digest': DIGEST},
+                           'other': {'canonical': other_ref, 'digest': other_digest}}}
+        for field, statuses in [('containers', 'containerStatuses'), ('initContainers', 'initContainerStatuses'),
+                                 ('ephemeralContainers', 'ephemeralContainerStatuses')]:
+            p = pod('fixture')
+            actual = 'docker.io/library/import-2026-10-15@' + other_digest
+            p['spec'] = {field: p['spec']['containers']}
+            p['status'] = {statuses: [{'name': 'container', 'imageID': actual}]}
+            ssh = MagicMock()
+            def inspect(command):
+                if command[-1] == actual:
+                    raise ValueError('gone import name')
+                digest = DIGEST if command[-1] == REF else other_digest
+                return json.dumps({'status': {'id': CONFIG, 'repoDigests': [command[-1].split('@')[0] + '@' + digest]}})
+            ssh.run.side_effect = inspect
+            with self.subTest(kind=field):
+                ids = ac.cri_identities(ssh, lock, [p])
+                self.assertTrue(any(c.args[0][-1] == actual for c in ssh.run.call_args_list))
+                self.assertTrue(ac.image_problems([p], lock, ids)[0])
+
+    def test_canonical_lookup_failure_is_sanitized_and_reported(self):
+        p = pod('fixture')
+        lock = {'images': {'fixture': {'canonical': REF, 'digest': DIGEST}}}
+        for reply in (ValueError(TOKEN), '{invalid:' + TOKEN, '{}',
+                      json.dumps({'status': {'id': CONFIG, 'repoDigests': ['repo@sha256:' + 'e' * 64]}})):
+            ssh = MagicMock()
+            if isinstance(reply, Exception):ssh.run.side_effect = reply
+            else:ssh.run.return_value = reply
+            with self.subTest(reply=type(reply).__name__):
+                ids = ac.cri_identities(ssh, lock, [p])
+                problems, _ = ac.image_problems([p], lock, ids)
+                self.assertTrue(problems)
+                self.assertNotIn(TOKEN, json.dumps(problems))
+
+    def test_failed_alias_for_other_image_cannot_fail_a_matching_locked_digest(self):
+        other_digest = 'sha256:' + 'e' * 64
+        other_ref = 'registry.twinfra.example.com/example/other@' + other_digest
+        lock = {'images': {'fixture': {'canonical': REF, 'digest': DIGEST},
+                           'other': {'canonical': other_ref, 'digest': other_digest}}}
+        first, second = pod('first'), pod('second')
+        second['spec']['containers'][0]['image'] = other_ref
+        actual = 'docker.io/library/import-2026-10-15@' + other_digest
+        for p in (first, second):p['status']['containerStatuses'][0]['imageID'] = actual
+        ssh = MagicMock()
+        def inspect(command):
+            if command[-1] == actual:raise ValueError(TOKEN)
+            return json.dumps({'status': {'id': CONFIG, 'repoDigests': [command[-1]]}})
+        ssh.run.side_effect = inspect
+        ids = ac.cri_identities(ssh, lock, [first, second])
+        problems, _ = ac.image_problems([first, second], lock, ids)
+        self.assertEqual(problems, ['first-pod/container: runtime CRI identity lookup failed'])
+
     def test_both_real_inventories_are_accepted_by_the_existing_check_agent(self):
         spec = importlib.util.spec_from_file_location('offline_stage_contract', ROOT / 'deploy/common/stage-images.py')
         agent = importlib.util.module_from_spec(spec)

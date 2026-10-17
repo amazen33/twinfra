@@ -2,12 +2,15 @@
 import contextlib
 import copy
 import io
+import importlib.util
 import json
 from pathlib import Path
 import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+
+import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
 import control_plane_candidate as guard
@@ -29,7 +32,7 @@ def fixtures():
             cluster, dict(apiVersion='kubelet.config.k8s.io/v1beta1',
                           kind='KubeletConfiguration', cgroupDriver='systemd')]
     cm = dict(kind='ConfigMap', metadata=dict(name='kubeadm-config', namespace='kube-system'),
-              data=dict(ClusterConfiguration=guard.encoded(cluster), unrelated='preserved'))
+              data=dict(ClusterConfiguration=yaml.safe_dump(cluster, sort_keys=True), unrelated='preserved'))
     return base, copy.deepcopy(cluster), cm, guard.read(ROOT / 'deploy/common/bootstrap-images.lock.json', ROOT)
 
 
@@ -164,8 +167,8 @@ class CandidateTests(unittest.TestCase):
             second = guard.read(out / 'dns-configmap.patch.json', out)
             self.assertEqual(first[0]['value'], cm['data']['ClusterConfiguration'])
             self.assertEqual(second[0]['value'], first[1]['value'])
-            etcd_cluster = json.loads(first[1]['value'])
-            final_cluster = json.loads(second[1]['value'])
+            etcd_cluster = yaml.safe_load(first[1]['value'])
+            final_cluster = yaml.safe_load(second[1]['value'])
             self.assertEqual(guard.changes(stored, etcd_cluster), {('etcd', 'local', 'imageTag')})
             self.assertEqual(guard.changes(etcd_cluster, final_cluster), {('dns', 'imageTag')})
             for component, forward in [('etcd', first), ('dns', second)]:
@@ -174,6 +177,38 @@ class CandidateTests(unittest.TestCase):
                 self.assertEqual(backward[1]['value'], forward[0]['value'])
             with self.assertRaisesRegex(ValueError, 'already exists'):
                 guard.write_candidate(base, stored, cm, lock, out, Path(temp))
+
+    def test_every_generated_configmap_value_is_yaml_readable_by_host_admin(self):
+        spec = importlib.util.spec_from_file_location('maintenance_host_admin', ROOT / 'deploy/common/host-admin.py')
+        host = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(host)
+        base, stored, cm, lock = fixtures()
+        with tempfile.TemporaryDirectory() as temp, contextlib.redirect_stdout(io.StringIO()):
+            out = Path(temp) / 'candidate'
+            guard.write_candidate(base, stored, cm, lock, out, Path(temp))
+            values = [(out / 'cluster.yaml').read_text()]
+            for path in out.glob('*configmap.patch.json'):
+                values.extend(op['value'] for op in json.loads(path.read_text()))
+            for value in values:
+                with self.subTest(value=value):
+                    self.assertFalse(value.lstrip().startswith('{'))
+                    self.assertEqual(host.config_value(value, 'clusterName'), stored['clusterName'])
+                    self.assertEqual(host.config_value(value, 'controlPlaneEndpoint'), stored['controlPlaneEndpoint'])
+                    keys = list(yaml.safe_load(value))
+                    self.assertEqual(keys, sorted(keys))
+
+    def test_json_input_cas_is_exact_but_rollback_replacement_is_yaml(self):
+        base, stored, cm, lock = fixtures()
+        cm['data']['ClusterConfiguration'] = guard.encoded(stored)
+        with tempfile.TemporaryDirectory() as temp, contextlib.redirect_stdout(io.StringIO()):
+            out = Path(temp) / 'candidate'
+            guard.write_candidate(base, stored, cm, lock, out, Path(temp))
+            first = json.loads((out / 'etcd-configmap.patch.json').read_text())
+            rollback = json.loads((out / 'rollback-etcd-configmap.patch.json').read_text())
+            self.assertEqual(first[0]['value'], cm['data']['ClusterConfiguration'])
+            self.assertEqual(rollback[0]['value'], first[1]['value'])
+            self.assertFalse(rollback[1]['value'].lstrip().startswith('{'))
+            self.assertEqual(yaml.safe_load(rollback[1]['value']), stored)
 
     def test_saved_configmap_and_parsed_export_must_match(self):
         base, stored, cm, lock = fixtures()
