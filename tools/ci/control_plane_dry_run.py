@@ -75,8 +75,9 @@ def upload_preview(binary, config, work):
             server.shutdown()
             thread.join(timeout=5)
             (preview / 'admin.conf').unlink()
-    if not calls or set(calls) != {'GET'}:
+    if set(calls) - {'GET'}:
         raise ValueError('Dry-run upload must use only the loopback read-only API stub')
+    (work / 'loopback-requests.json').write_text(json.dumps(calls) + '\n')
     return uploaded_cluster(log)
 
 
@@ -144,7 +145,7 @@ def maintenance_preview(source, binary, config, directory):
         'scope': 'isolated renderer/upload-config proof, not Dell acceptance',
         'normalisation': 'migrate equals init upload-config dry-run apart from two tags',
         'etcdDiff': 'image only', 'candidateSHA256': digest,
-        'exactCandidateValidatedAndDryRun': True, 'loopbackAPI': 'read-only GET stub'}) + '\n')
+        'exactCandidateValidatedAndDryRun': True, 'loopbackAPI': 'zero requests or read-only GET stub'}) + '\n')
 
 
 def main():

@@ -50,6 +50,36 @@ class KubeadmGuardTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Cannot prove'):
                 preview_guard.uploaded_cluster(invalid)
 
+    def test_upload_fake_client_needs_no_http_and_any_write_is_refused(self):
+        from unittest.mock import MagicMock
+        spec = importlib.util.spec_from_file_location('maintenance_preview', ROOT / 'control_plane_dry_run.py')
+        preview_guard = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(preview_guard)
+        log = '[dryrun] Attached object:\n' + yaml.safe_dump(dict(kind='ConfigMap',
+            metadata=dict(name='kubeadm-config'), data=dict(ClusterConfiguration='kind: ClusterConfiguration\n')))
+        for write in (False, True):
+            with self.subTest(write=write), tempfile.TemporaryDirectory() as temp:
+                def server(address, handler):
+                    mock = MagicMock()
+                    mock.__enter__.return_value = mock
+                    mock.server_port = 12345
+                    if write:
+                        request = handler.__new__(handler)
+                        request.send_error = MagicMock()
+                        request.do_POST()
+                    return mock
+                work = Path(temp)
+                with patch('http.server.HTTPServer', side_effect=server), \
+                     patch.object(preview_guard, 'execute', return_value=log):
+                    if write:
+                        with self.assertRaisesRegex(ValueError, 'read-only'):
+                            preview_guard.upload_preview(work / 'binary', work / 'config', work)
+                    else:
+                        self.assertEqual(preview_guard.upload_preview(work / 'binary', work / 'config', work),
+                                         {'kind': 'ClusterConfiguration'})
+                        self.assertEqual(json.loads((work / 'loopback-requests.json').read_text()), [])
+                self.assertFalse((work / 'upload-preview/admin.conf').exists())
+
     def test_migrate_token_outputs_are_removed_even_if_proof_fails(self):
         spec = importlib.util.spec_from_file_location('maintenance_preview', ROOT / 'control_plane_dry_run.py')
         preview_guard = importlib.util.module_from_spec(spec)

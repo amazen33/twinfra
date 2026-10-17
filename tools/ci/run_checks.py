@@ -201,6 +201,11 @@ def main():
         run('candidate-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
                                   '--report', report_dir / 'licences.json'])
         run('candidate-capability-evidence', [python, ROOT / 'check_capabilities.py', '--root', ROOT.parents[1]])
+        if report['modules']['control-plane-maintenance']=='present':
+            run('control-plane-maintenance-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_control_plane_candidate.py','-v'],unit=True)
+            run('control-plane-maintenance-real-preview',[python,ROOT/'control_plane_dry_run.py',
+                '--source',source,'--assets',assets,'--config',report_dir/'kubeadm-dry-run/dev-cairo-1/kubeadm.yaml',
+                '--out',report_dir/'control-plane-maintenance'])
         if (ROOT.parents[1]/'tools/check_grafana_removal.py').is_file():
             run('candidate-grafana-removal',[python,ROOT.parents[1]/'tools/check_grafana_removal.py','--root',ROOT.parents[1]])
             if sha==control_sha:
@@ -322,11 +327,6 @@ def main():
             run('host-network-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_host_network.py','-v'],unit=True)
         if report['modules']['release-acceptance']=='present':
             run('release-acceptance-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_platform_accept.py','-v'],unit=True)
-        if report['modules']['control-plane-maintenance']=='present':
-            run('control-plane-maintenance-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_control_plane_candidate.py','-v'],unit=True)
-            run('control-plane-maintenance-real-preview',[python,ROOT/'control_plane_dry_run.py',
-                '--source',source,'--assets',assets,'--config',report_dir/'kubeadm-dry-run/dev-cairo-1/kubeadm.yaml',
-                '--out',report_dir/'control-plane-maintenance'])
         if report['modules']['dev-image-build']=='present':
             run('dev-image-build-tests',[python,'-m','unittest','discover','-s','tests','-p','test_build_images.py','-v'],unit=True)
         if report['modules']['lab/wsl'] == 'present':
