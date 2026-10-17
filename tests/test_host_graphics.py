@@ -57,6 +57,8 @@ class OwnedGraphics(unittest.TestCase):
         return ''
 
     def test_apply_backup_retry_rollback_only_named_file_and_running_kernel(self):
+        self.assertEqual(graphics.FILE,'/etc/modprobe.d/twinfra-display-drivers.conf')
+        self.assertEqual(graphics.BODY,'blacklist nouveau\noptions nouveau modeset=0\nblacklist nvidiafb\n')
         foreign = self.root / 'etc/modprobe.d/foreign.conf'; foreign.parent.mkdir(parents=True)
         foreign.write_text('options i915 example=1\n')
         with patch.object(graphics, 'run', self.fake_run):
@@ -235,15 +237,19 @@ class Integration(unittest.TestCase):
             else:
                 staging=load('graphics_staging_guard','tools/ci/check_staging.py')
                 self.assertEqual(staging.references(raw),staging.references(old(name)))
-                data=yaml.safe_load(raw)
-                selected=[f for f in data['write_files'] if f['path'] in (graphics.FILE,graphics.STATE+'/ownership.json','/usr/local/lib/twinfra/host-graphics.py')]
-                self.assertEqual(len(selected),3)
-                self.assertEqual(next(f['content'] for f in selected if f['path']==graphics.FILE),graphics.BODY)
-                data['write_files']=[f for f in data['write_files'] if f not in selected]
-                env=next(f for f in data['write_files'] if f['path']=='/etc/twinfra-host.env')
-                self.assertIn('DISABLE_NOUVEAU=true',env['content']);env['content']=env['content'].replace('DISABLE_NOUVEAU=true\n','')
-                data['runcmd']=[c for c in data['runcmd'] if not (isinstance(c,list) and any(isinstance(x,str) and 'host-graphics.py --bootstrap' in x for x in c))]
-                self.assertEqual(data,yaml.safe_load(old(name)))
+                from graphics_receipts import seed_before_graphics
+                self.assertEqual(seed_before_graphics(yaml.safe_load(raw)),yaml.safe_load(old(name)))
+
+    def test_older_receipt_projection_refuses_changed_graphics_files_or_command(self):
+        from graphics_receipts import seed_before_graphics
+        original=yaml.safe_load((ROOT/'deploy/environments/dev/cairo-2/seed/user-data').read_text(encoding='utf-8'))
+        for target in (graphics.FILE,graphics.STATE+'/ownership.json','/usr/local/lib/twinfra/host-graphics.py'):
+            data=copy.deepcopy(original)
+            next(f for f in data['write_files'] if f['path']==target)['content']+='tampered'
+            with self.subTest(target=target),self.assertRaises(AssertionError):seed_before_graphics(data)
+        data=copy.deepcopy(original)
+        data['runcmd'][-1]=['reboot']
+        with self.assertRaises(AssertionError):seed_before_graphics(data)
 
 
 if __name__=='__main__':unittest.main()

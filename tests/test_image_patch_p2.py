@@ -75,6 +75,9 @@ class Promotion(unittest.TestCase):
     def test_current_seed_changes_only_embedded_dev_source_env_and_inventory(self):
         path='deploy/environments/dev/cairo-2/seed/user-data'
         current=yaml.safe_load((ROOT/path).read_text());before=yaml.safe_load(old(path))
+        if (ROOT/'deploy/common/host-graphics.py').is_file():
+            from graphics_receipts import seed_before_graphics
+            current=seed_before_graphics(current)
         for file in current['write_files']:
             original=next(v for v in before['write_files'] if v['path']==file['path'])
             if file['path']=='/etc/twinfra-host.env':

@@ -18,7 +18,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
-    'host-graphics': ['deploy/common/host-graphics.py','tests/test_host_graphics.py'],
+    'host-graphics': ['deploy/common/host-graphics.py','tests/test_host_graphics.py','tests/graphics_receipts.py'],
     'control-plane-maintenance': ['tools/control_plane_candidate.py', 'tools/ci/control_plane_dry_run.py', 'tests/test_control_plane_candidate.py',
         'docs/work-orders/WO-40c-control-plane-maintenance.md', 'docs/maintenance/etcd-coredns-2026-10.md'],
     'release-acceptance': ['tools/platform_accept.py','tests/test_platform_accept.py',
