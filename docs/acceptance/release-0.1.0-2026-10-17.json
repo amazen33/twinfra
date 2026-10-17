@@ -1,0 +1,1254 @@
+{
+  "workOrder": "WO-40a",
+  "environment": "twinfra-dev-cairo-1",
+  "startedAt": "2026-10-17T17:08:56.535253+00:00",
+  "expectedRevision": "a89de0a6a4e7dc023037bc640fbfd6cd6c7afbcf",
+  "status": "passed",
+  "testerSignOff": "Pending",
+  "checks": {
+    "exceptionCalendar": {
+      "status": "passed"
+    },
+    "node": {
+      "status": "passed"
+    },
+    "podsInitial": {
+      "status": "passed",
+      "details": []
+    },
+    "gitops": {
+      "status": "passed",
+      "details": []
+    },
+    "host-check": {
+      "status": "passed"
+    },
+    "host-network": {
+      "status": "passed"
+    },
+    "staging:images.lock.json": {
+      "status": "passed"
+    },
+    "staging:bootstrap-images.lock.json": {
+      "status": "passed"
+    },
+    "deployedImages": {
+      "status": "passed",
+      "details": {
+        "problems": [],
+        "images": [
+          {
+            "pod": "cilium-envoy-j6rrf",
+            "container": "cilium-envoy",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+            "manifestDigest": "sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/cilium-envoy:v1.37.6-1789133542-cbec91f666af0bf742da986d43832932dbb26b82@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463"
+          },
+          {
+            "pod": "cilium-gqblx",
+            "container": "cilium-agent",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "manifestDigest": "sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01"
+          },
+          {
+            "pod": "cilium-gqblx",
+            "container": "config",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "manifestDigest": "sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01"
+          },
+          {
+            "pod": "cilium-gqblx",
+            "container": "apply-sysctl-overwrites",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "manifestDigest": "sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01"
+          },
+          {
+            "pod": "cilium-gqblx",
+            "container": "clean-cilium-state",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "manifestDigest": "sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01"
+          },
+          {
+            "pod": "cilium-gqblx",
+            "container": "install-cni-binaries",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "manifestDigest": "sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01"
+          },
+          {
+            "pod": "cilium-operator-6565fc76d-jc8xd",
+            "container": "cilium-operator",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+            "manifestDigest": "sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/operator-generic:v1.20.2@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc"
+          },
+          {
+            "pod": "coredns-bb8f644c4-4tqg4",
+            "container": "coredns",
+            "reference": "registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.7",
+            "manifestDigest": "sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+            "runtimeImageID": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286"
+          },
+          {
+            "pod": "coredns-bb8f644c4-68zzg",
+            "container": "coredns",
+            "reference": "registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.7",
+            "manifestDigest": "sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+            "runtimeImageID": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286"
+          },
+          {
+            "pod": "etcd-twinfra-dev-cairo-1",
+            "container": "etcd",
+            "reference": "registry.twinfra.example.com/registry.k8s.io/etcd:3.6.15-0",
+            "manifestDigest": "sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+            "runtimeImageID": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1"
+          },
+          {
+            "pod": "kube-apiserver-twinfra-dev-cairo-1",
+            "container": "kube-apiserver",
+            "reference": "registry.twinfra.example.com/registry.k8s.io/kube-apiserver:v1.36.5",
+            "manifestDigest": "sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+            "runtimeImageID": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48"
+          },
+          {
+            "pod": "kube-controller-manager-twinfra-dev-cairo-1",
+            "container": "kube-controller-manager",
+            "reference": "registry.twinfra.example.com/registry.k8s.io/kube-controller-manager:v1.36.5",
+            "manifestDigest": "sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+            "runtimeImageID": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d"
+          },
+          {
+            "pod": "kube-scheduler-twinfra-dev-cairo-1",
+            "container": "kube-scheduler",
+            "reference": "registry.twinfra.example.com/registry.k8s.io/kube-scheduler:v1.36.5",
+            "manifestDigest": "sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+            "runtimeImageID": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f"
+          },
+          {
+            "pod": "argocd-application-controller-0",
+            "container": "argocd-application-controller",
+            "reference": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "manifestDigest": "sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "runtimeImageID": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa"
+          },
+          {
+            "pod": "argocd-redis-785b896458-x8wq2",
+            "container": "redis",
+            "reference": "registry.twinfra.example.com/docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+            "manifestDigest": "sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+            "runtimeImageID": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507"
+          },
+          {
+            "pod": "argocd-repo-server-8d99d8974-txttg",
+            "container": "argocd-repo-server",
+            "reference": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "manifestDigest": "sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "runtimeImageID": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa"
+          },
+          {
+            "pod": "argocd-repo-server-8d99d8974-txttg",
+            "container": "copyutil",
+            "reference": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "manifestDigest": "sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "runtimeImageID": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa"
+          },
+          {
+            "pod": "argocd-server-d464f6f47-qn7qp",
+            "container": "argocd-server",
+            "reference": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "manifestDigest": "sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "runtimeImageID": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa"
+          },
+          {
+            "pod": "cnpg-controller-manager-764db98545-27txk",
+            "container": "manager",
+            "reference": "registry.twinfra.example.com/ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+            "manifestDigest": "sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+            "runtimeImageID": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07"
+          },
+          {
+            "pod": "twinfra-console-5c9bd66d56-57s6d",
+            "container": "console",
+            "reference": "registry.twinfra.example.com/docker.io/twinfra/twinfra-console@sha256:ec1eebc9b51a1e7e019b501039f8c822eee5751b6322b205ec0b5eea9f30cd54",
+            "manifestDigest": "sha256:ec1eebc9b51a1e7e019b501039f8c822eee5751b6322b205ec0b5eea9f30cd54",
+            "runtimeImageID": "docker.io/library/import-2026-10-15@sha256:ec1eebc9b51a1e7e019b501039f8c822eee5751b6322b205ec0b5eea9f30cd54"
+          },
+          {
+            "pod": "twinfra-gateway-7cb7d79998-qsh9j",
+            "container": "gateway",
+            "reference": "registry.twinfra.example.com/docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+            "manifestDigest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+            "runtimeImageID": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141"
+          },
+          {
+            "pod": "twinfra-gateway-7cb7d79998-qsh9j",
+            "container": "prepare",
+            "reference": "registry.twinfra.example.com/docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+            "manifestDigest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+            "runtimeImageID": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141"
+          },
+          {
+            "pod": "twinfra-gateway-7cb7d79998-qsh9j",
+            "container": "config",
+            "reference": "registry.twinfra.example.com/docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+            "manifestDigest": "sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+            "runtimeImageID": "registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170"
+          },
+          {
+            "pod": "twinfra-keycloak-6888d6b665-nj27f",
+            "container": "keycloak",
+            "reference": "registry.twinfra.example.com/quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+            "manifestDigest": "sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+            "runtimeImageID": "quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc"
+          },
+          {
+            "pod": "twinfra-keycloak-6888d6b665-nj27f",
+            "container": "prepare",
+            "reference": "registry.twinfra.example.com/quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+            "manifestDigest": "sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+            "runtimeImageID": "quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc"
+          },
+          {
+            "pod": "twinfra-keycloak-6888d6b665-nj27f",
+            "container": "config",
+            "reference": "registry.twinfra.example.com/docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+            "manifestDigest": "sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+            "runtimeImageID": "registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170"
+          },
+          {
+            "pod": "twinfra-ministack-7c9ccbc5d8-r9hqg",
+            "container": "ministack",
+            "reference": "registry.twinfra.example.com/docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+            "manifestDigest": "sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+            "runtimeImageID": "docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c"
+          },
+          {
+            "pod": "twinfra-openbao-765d5f7ff6-srjhb",
+            "container": "openbao",
+            "reference": "registry.twinfra.example.com/docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+            "manifestDigest": "sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+            "runtimeImageID": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf"
+          },
+          {
+            "pod": "twinfra-openbao-765d5f7ff6-srjhb",
+            "container": "config",
+            "reference": "registry.twinfra.example.com/docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+            "manifestDigest": "sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+            "runtimeImageID": "registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170"
+          },
+          {
+            "pod": "twinfra-postgres-1",
+            "container": "postgres",
+            "reference": "registry.twinfra.example.com/docker.io/twinfra/twinfra-postgresql-pgvector@sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6",
+            "manifestDigest": "sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6",
+            "runtimeImageID": "docker.io/library/import-2026-10-13@sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6"
+          },
+          {
+            "pod": "twinfra-postgres-1",
+            "container": "bootstrap-controller",
+            "reference": "registry.twinfra.example.com/ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+            "manifestDigest": "sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+            "runtimeImageID": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07"
+          }
+        ]
+      }
+    },
+    "consoleHTTPS": {
+      "status": "passed"
+    },
+    "tokenNegatives": {
+      "status": "passed",
+      "details": {
+        "missing": 401,
+        "unsigned": 401,
+        "duplicate": 401,
+        "roleless": 403
+      }
+    },
+    "valkey": {
+      "status": "passed",
+      "details": {
+        "noAuthRejected": true,
+        "authenticatedPong": true,
+        "argoClientsConnected": {
+          "argocd-application-controller": true,
+          "argocd-repo-server": true,
+          "argocd-server": true
+        }
+      }
+    },
+    "versions": {
+      "status": "passed",
+      "details": []
+    },
+    "valkeyRestart": {
+      "status": "passed"
+    },
+    "podsFinal": {
+      "status": "passed",
+      "details": []
+    },
+    "deployedImagesFinal": {
+      "status": "passed",
+      "details": {
+        "problems": [],
+        "images": [
+          {
+            "pod": "cilium-envoy-j6rrf",
+            "container": "cilium-envoy",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+            "manifestDigest": "sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/cilium-envoy:v1.37.6-1789133542-cbec91f666af0bf742da986d43832932dbb26b82@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463"
+          },
+          {
+            "pod": "cilium-gqblx",
+            "container": "cilium-agent",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "manifestDigest": "sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01"
+          },
+          {
+            "pod": "cilium-gqblx",
+            "container": "config",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "manifestDigest": "sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01"
+          },
+          {
+            "pod": "cilium-gqblx",
+            "container": "apply-sysctl-overwrites",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "manifestDigest": "sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01"
+          },
+          {
+            "pod": "cilium-gqblx",
+            "container": "clean-cilium-state",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "manifestDigest": "sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01"
+          },
+          {
+            "pod": "cilium-gqblx",
+            "container": "install-cni-binaries",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "manifestDigest": "sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/cilium:v1.20.2@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01"
+          },
+          {
+            "pod": "cilium-operator-6565fc76d-jc8xd",
+            "container": "cilium-operator",
+            "reference": "registry.twinfra.example.com/quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+            "manifestDigest": "sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+            "runtimeImageID": "registry.twinfra.example.com/quay.io/cilium/operator-generic:v1.20.2@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc"
+          },
+          {
+            "pod": "coredns-bb8f644c4-4tqg4",
+            "container": "coredns",
+            "reference": "registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.7",
+            "manifestDigest": "sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+            "runtimeImageID": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286"
+          },
+          {
+            "pod": "coredns-bb8f644c4-68zzg",
+            "container": "coredns",
+            "reference": "registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.7",
+            "manifestDigest": "sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+            "runtimeImageID": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286"
+          },
+          {
+            "pod": "etcd-twinfra-dev-cairo-1",
+            "container": "etcd",
+            "reference": "registry.twinfra.example.com/registry.k8s.io/etcd:3.6.15-0",
+            "manifestDigest": "sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+            "runtimeImageID": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1"
+          },
+          {
+            "pod": "kube-apiserver-twinfra-dev-cairo-1",
+            "container": "kube-apiserver",
+            "reference": "registry.twinfra.example.com/registry.k8s.io/kube-apiserver:v1.36.5",
+            "manifestDigest": "sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+            "runtimeImageID": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48"
+          },
+          {
+            "pod": "kube-controller-manager-twinfra-dev-cairo-1",
+            "container": "kube-controller-manager",
+            "reference": "registry.twinfra.example.com/registry.k8s.io/kube-controller-manager:v1.36.5",
+            "manifestDigest": "sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+            "runtimeImageID": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d"
+          },
+          {
+            "pod": "kube-scheduler-twinfra-dev-cairo-1",
+            "container": "kube-scheduler",
+            "reference": "registry.twinfra.example.com/registry.k8s.io/kube-scheduler:v1.36.5",
+            "manifestDigest": "sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+            "runtimeImageID": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f"
+          },
+          {
+            "pod": "argocd-application-controller-0",
+            "container": "argocd-application-controller",
+            "reference": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "manifestDigest": "sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "runtimeImageID": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa"
+          },
+          {
+            "pod": "argocd-redis-785b896458-jbdbm",
+            "container": "redis",
+            "reference": "registry.twinfra.example.com/docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+            "manifestDigest": "sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+            "runtimeImageID": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507"
+          },
+          {
+            "pod": "argocd-repo-server-8d99d8974-txttg",
+            "container": "argocd-repo-server",
+            "reference": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "manifestDigest": "sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "runtimeImageID": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa"
+          },
+          {
+            "pod": "argocd-repo-server-8d99d8974-txttg",
+            "container": "copyutil",
+            "reference": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "manifestDigest": "sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "runtimeImageID": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa"
+          },
+          {
+            "pod": "argocd-server-d464f6f47-qn7qp",
+            "container": "argocd-server",
+            "reference": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "manifestDigest": "sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+            "runtimeImageID": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa"
+          },
+          {
+            "pod": "cnpg-controller-manager-764db98545-27txk",
+            "container": "manager",
+            "reference": "registry.twinfra.example.com/ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+            "manifestDigest": "sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+            "runtimeImageID": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07"
+          },
+          {
+            "pod": "twinfra-console-5c9bd66d56-57s6d",
+            "container": "console",
+            "reference": "registry.twinfra.example.com/docker.io/twinfra/twinfra-console@sha256:ec1eebc9b51a1e7e019b501039f8c822eee5751b6322b205ec0b5eea9f30cd54",
+            "manifestDigest": "sha256:ec1eebc9b51a1e7e019b501039f8c822eee5751b6322b205ec0b5eea9f30cd54",
+            "runtimeImageID": "docker.io/library/import-2026-10-15@sha256:ec1eebc9b51a1e7e019b501039f8c822eee5751b6322b205ec0b5eea9f30cd54"
+          },
+          {
+            "pod": "twinfra-gateway-7cb7d79998-qsh9j",
+            "container": "gateway",
+            "reference": "registry.twinfra.example.com/docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+            "manifestDigest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+            "runtimeImageID": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141"
+          },
+          {
+            "pod": "twinfra-gateway-7cb7d79998-qsh9j",
+            "container": "prepare",
+            "reference": "registry.twinfra.example.com/docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+            "manifestDigest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+            "runtimeImageID": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141"
+          },
+          {
+            "pod": "twinfra-gateway-7cb7d79998-qsh9j",
+            "container": "config",
+            "reference": "registry.twinfra.example.com/docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+            "manifestDigest": "sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+            "runtimeImageID": "registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170"
+          },
+          {
+            "pod": "twinfra-keycloak-6888d6b665-nj27f",
+            "container": "keycloak",
+            "reference": "registry.twinfra.example.com/quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+            "manifestDigest": "sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+            "runtimeImageID": "quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc"
+          },
+          {
+            "pod": "twinfra-keycloak-6888d6b665-nj27f",
+            "container": "prepare",
+            "reference": "registry.twinfra.example.com/quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+            "manifestDigest": "sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+            "runtimeImageID": "quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc"
+          },
+          {
+            "pod": "twinfra-keycloak-6888d6b665-nj27f",
+            "container": "config",
+            "reference": "registry.twinfra.example.com/docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+            "manifestDigest": "sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+            "runtimeImageID": "registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170"
+          },
+          {
+            "pod": "twinfra-ministack-7c9ccbc5d8-r9hqg",
+            "container": "ministack",
+            "reference": "registry.twinfra.example.com/docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+            "manifestDigest": "sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+            "runtimeImageID": "docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c"
+          },
+          {
+            "pod": "twinfra-openbao-765d5f7ff6-srjhb",
+            "container": "openbao",
+            "reference": "registry.twinfra.example.com/docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+            "manifestDigest": "sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+            "runtimeImageID": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf"
+          },
+          {
+            "pod": "twinfra-openbao-765d5f7ff6-srjhb",
+            "container": "config",
+            "reference": "registry.twinfra.example.com/docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+            "manifestDigest": "sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+            "runtimeImageID": "registry.twinfra.example.com/docker.io/library/python:3.14.8-slim-trixie@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170"
+          },
+          {
+            "pod": "twinfra-postgres-1",
+            "container": "postgres",
+            "reference": "registry.twinfra.example.com/docker.io/twinfra/twinfra-postgresql-pgvector@sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6",
+            "manifestDigest": "sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6",
+            "runtimeImageID": "docker.io/library/import-2026-10-13@sha256:baea2bf7f829393ef2d43eae67242fed561f8532fbb1a7c6bbdbacf583a643f6"
+          },
+          {
+            "pod": "twinfra-postgres-1",
+            "container": "bootstrap-controller",
+            "reference": "registry.twinfra.example.com/ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+            "manifestDigest": "sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+            "runtimeImageID": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07"
+          }
+        ]
+      }
+    },
+    "gitopsFinal": {
+      "status": "passed",
+      "details": []
+    }
+  },
+  "exceptionCalendar": [
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "github.com/argoproj/argo-cd/v3",
+      "version": "v3.5.3+dirty",
+      "vulnerability": "CVE-2026-55797",
+      "expires": "2026-11-02",
+      "daysLeft": 16,
+      "status": "warning"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "github.com/argoproj/argo-cd/v3",
+      "version": "v3.5.3+dirty",
+      "vulnerability": "CVE-2026-77459",
+      "expires": "2026-11-02",
+      "daysLeft": 16,
+      "status": "warning"
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-12087",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-13221",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-42496",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-57433",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-8376",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+      "package": "python",
+      "version": "3.13.15",
+      "vulnerability": "CVE-2026-19445",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "stdlib",
+      "version": "go1.24.0",
+      "vulnerability": "CVE-2025-22871",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "stdlib",
+      "version": "go1.24.0",
+      "vulnerability": "CVE-2025-68121",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "stdlib",
+      "version": "go1.25.3",
+      "vulnerability": "CVE-2025-68121",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39830",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39831",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39832",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39833",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39834",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-42508",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-46595",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "stdlib",
+      "version": "go1.24.0",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "stdlib",
+      "version": "go1.25.3",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "stdlib",
+      "version": "go1.26.2",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "stdlib",
+      "version": "go1.26.4",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "golang.org/x/net",
+      "version": "v0.38.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "golang.org/x/net",
+      "version": "v0.40.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "golang.org/x/net",
+      "version": "v0.55.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "stdlib",
+      "version": "go1.24.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "stdlib",
+      "version": "go1.25.3",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "stdlib",
+      "version": "go1.26.2",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "package": "stdlib",
+      "version": "go1.26.4",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "stdlib",
+      "version": "go1.26.5",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "stdlib",
+      "version": "go1.26.5",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "package": "stdlib",
+      "version": "go1.26.6",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "package": "golang.org/x/net",
+      "version": "v0.57.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "package": "stdlib",
+      "version": "go1.26.6",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    },
+    {
+      "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "expires": "2026-11-12",
+      "daysLeft": 26,
+      "status": "passed"
+    }
+  ],
+  "since": "2026-10-17T17:08:56.535253+00:00",
+  "podSnapshots": {
+    "initial": {
+      "21421f02-eb35-4dfe-90be-a809027a5cc7": {
+        "cilium-envoy": 6
+      },
+      "34674a6c-18d4-40f0-81e6-b089b6f9eb88": {
+        "cilium-agent": 6,
+        "config": 6,
+        "apply-sysctl-overwrites": 6,
+        "clean-cilium-state": 6,
+        "install-cni-binaries": 6
+      },
+      "af2e6553-01df-47d9-970a-bce77ec27ccf": {
+        "cilium-operator": 46
+      },
+      "9cf34b71-5697-48a9-94a2-6144c08ff7a2": {
+        "coredns": 0
+      },
+      "918debdd-de64-4352-a3ea-5793ef1b76d0": {
+        "coredns": 0
+      },
+      "e6f5cbec-900b-473b-af52-4ea45f2518b5": {
+        "etcd": 0
+      },
+      "29e33307-b874-487f-aa2c-00c755d9d85b": {
+        "kube-apiserver": 34
+      },
+      "cda17bc1-6ca1-411a-9caf-974e9f372e92": {
+        "kube-controller-manager": 11
+      },
+      "e9c28f6e-71dc-40ed-baf2-57848e75c5a0": {
+        "kube-scheduler": 11
+      },
+      "c1e6e9ca-f27f-4854-ac99-15610f497cfc": {
+        "argocd-application-controller": 5
+      },
+      "16b266e0-61a2-4e7b-96f3-d7ee8465ce8c": {
+        "redis": 5
+      },
+      "b94bb78d-2d02-4fc2-a076-165776bbb76d": {
+        "argocd-repo-server": 5,
+        "copyutil": 5
+      },
+      "124dbb00-3123-4cba-9464-d256f861e8a5": {
+        "argocd-server": 5
+      },
+      "66eccb94-5db7-4ea6-843d-7311a1f73b24": {
+        "manager": 78
+      },
+      "799c56ea-f29f-41c6-8682-0a5c93929900": {
+        "console": 5
+      },
+      "e7aa2286-4fb0-456d-a313-0be6ff9442f0": {
+        "gateway": 5,
+        "prepare": 5,
+        "config": 5
+      },
+      "76455c3c-ad26-4976-ac61-dd7473785049": {
+        "keycloak": 5,
+        "prepare": 5,
+        "config": 5
+      },
+      "0f93cefc-b730-4ac2-8aa7-c765168d99dc": {
+        "ministack": 5
+      },
+      "aa6e476c-9285-4472-9753-6354dcb05359": {
+        "openbao": 10,
+        "config": 5
+      },
+      "f9c20a6f-f05d-4bbc-9ed1-7318d2ea0cf9": {
+        "postgres": 5,
+        "bootstrap-controller": 5
+      }
+    },
+    "final": {
+      "21421f02-eb35-4dfe-90be-a809027a5cc7": {
+        "cilium-envoy": 6
+      },
+      "34674a6c-18d4-40f0-81e6-b089b6f9eb88": {
+        "cilium-agent": 6,
+        "config": 6,
+        "apply-sysctl-overwrites": 6,
+        "clean-cilium-state": 6,
+        "install-cni-binaries": 6
+      },
+      "af2e6553-01df-47d9-970a-bce77ec27ccf": {
+        "cilium-operator": 46
+      },
+      "9cf34b71-5697-48a9-94a2-6144c08ff7a2": {
+        "coredns": 0
+      },
+      "918debdd-de64-4352-a3ea-5793ef1b76d0": {
+        "coredns": 0
+      },
+      "e6f5cbec-900b-473b-af52-4ea45f2518b5": {
+        "etcd": 0
+      },
+      "29e33307-b874-487f-aa2c-00c755d9d85b": {
+        "kube-apiserver": 34
+      },
+      "cda17bc1-6ca1-411a-9caf-974e9f372e92": {
+        "kube-controller-manager": 11
+      },
+      "e9c28f6e-71dc-40ed-baf2-57848e75c5a0": {
+        "kube-scheduler": 11
+      },
+      "c1e6e9ca-f27f-4854-ac99-15610f497cfc": {
+        "argocd-application-controller": 5
+      },
+      "08ec1e4a-a177-438b-8bae-814e69d3183a": {
+        "redis": 0
+      },
+      "b94bb78d-2d02-4fc2-a076-165776bbb76d": {
+        "argocd-repo-server": 5,
+        "copyutil": 5
+      },
+      "124dbb00-3123-4cba-9464-d256f861e8a5": {
+        "argocd-server": 5
+      },
+      "66eccb94-5db7-4ea6-843d-7311a1f73b24": {
+        "manager": 78
+      },
+      "799c56ea-f29f-41c6-8682-0a5c93929900": {
+        "console": 5
+      },
+      "e7aa2286-4fb0-456d-a313-0be6ff9442f0": {
+        "gateway": 5,
+        "prepare": 5,
+        "config": 5
+      },
+      "76455c3c-ad26-4976-ac61-dd7473785049": {
+        "keycloak": 5,
+        "prepare": 5,
+        "config": 5
+      },
+      "0f93cefc-b730-4ac2-8aa7-c765168d99dc": {
+        "ministack": 5
+      },
+      "aa6e476c-9285-4472-9753-6354dcb05359": {
+        "openbao": 10,
+        "config": 5
+      },
+      "f9c20a6f-f05d-4bbc-9ed1-7318d2ea0cf9": {
+        "postgres": 5,
+        "bootstrap-controller": 5
+      }
+    }
+  },
+  "versions": {
+    "kubernetes": "v1.36.5",
+    "containerd": "containerd://2.2.1",
+    "cilium": "1.20.2",
+    "etcd": "3.6.15",
+    "coredns": "1.14.7",
+    "argocd": "3.5.3",
+    "cnpg": "1.30.1",
+    "postgresql": "18.6",
+    "keycloak": "26.8.0",
+    "openbao": "2.7.1",
+    "valkey": "8.1.10",
+    "console": {
+      "image": "registry.twinfra.example.com/docker.io/twinfra/twinfra-console@sha256:ec1eebc9b51a1e7e019b501039f8c822eee5751b6322b205ec0b5eea9f30cd54",
+      "versioning": "Content-addressed image; no embedded release-version claim"
+    }
+  },
+  "finishedAt": "2026-10-17T17:10:35.456792+00:00",
+  "warnings": 2,
+  "receiptFragment": ".build/acceptance/accept-20261017T170856534963Z.json"
+}
