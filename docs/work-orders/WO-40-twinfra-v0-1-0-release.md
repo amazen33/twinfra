@@ -117,3 +117,30 @@ Codex verified against the v1.36.5 source and stopped correctly: `UpgradeConfigu
    - **etcd has no fallback.** If the etcd preview shows any difference beyond the image, stop and report.
 5. **Rollback.** Per component: restore the saved manifest or the previous Deployment image, and leave the ConfigMap unchanged (it was not yet updated); an etcd snapshot restore is the last resort and needs the owner.
 6. **Unchanged:** staging first (`stage-images.py --lock deploy/common/bootstrap-images.lock.json`, then `--check`), a verified etcd snapshot and manifest backups before etcd, and the dates in Amendment 2. Never `kubeadm init`, `reset`, `upgrade apply`, or a full host-bootstrap rerun.
+
+## Amendment 4 (2026-10-17, architect): review of PR #70 (WO-40c), changes requested
+
+PR #70 is careful work: CAS-guarded ConfigMap patches, a strict etcd image-only guard proven with the pinned kubeadm in CI, new-only private outputs, and an honest list of unverified points. Four defects would stop or mislead the live window, and three smaller items should be fixed in the same push.
+
+**Blocking**
+
+1. **The strict host/stored comparison will stop every time.** `render_kubeadm` in `00-setup-ubuntu-host.sh` writes a minimal `ClusterConfiguration`. kubeadm's upload-config stores the *defaulted* object (for example `certificatesDir`, `etcd.local.dataDir`, `encryptionAlgorithm`, the certificate validity periods, empty component sections). Comparing raw files therefore always reports drift, which is exactly what `test_even_materialized_default_difference_is_not_silently_ignored` asserts. My Amendment 3 item 1 caused this; it is corrected here:
+   - Normalise **both** sides with the pinned kubeadm's own defaulting, offline: the `ClusterConfiguration` document of `kubeadm config migrate --old-config <file>` for the host file and for the stored document. Then compare strictly; only the two tags may differ. Any other remaining difference stops the window, and the owner pastes the diff for my decision.
+   - Verify from the v1.36.5 source (cite it) that `config migrate` applies the same static and dynamic defaults to `ClusterConfiguration` as init's upload-config. **CI proof:** the cairo-1 render, migrated, equals the `ClusterConfiguration` that `kubeadm init --dry-run` would upload, apart from the two tags. If that cannot be shown, stop and report.
+   - The migrate output may contain a generated bootstrap token. It is used only for the comparison, never applied, and deleted at cleanup.
+   - The etcd image-only manifest diff remains the binding gate for etcd.
+2. **The CoreDNS fallback image breaks acceptance.** `image coredns --digest` sets `…/coredns@sha256:…`. `platform_accept.image_problems` allows only `cri_reference(canonical)`, which for CoreDNS is the **tag** form `registry.twinfra.example.com/registry.k8s.io/coredns:v1.14.7`. A digest reference would be reported as "unverified image". It also has no staged digest-only containerd record, so the kubelet may try to pull it from the non-existent dev registry. Fix: the fallback uses the canonical tag exactly as kubeadm renders it (staged, pinned and digest-verified by `stage-images` and `accept`); the documented `jq` assertion accepts only that form; add a test that the fallback reference is in `accept`'s allowed set.
+3. **Dell `kubectl` has no kubeconfig for the operator.** The bootstrap uses `KUBECONFIG=/etc/kubernetes/admin.conf` (root, 0600), and the repository's Dell procedures use `sudo kubectl --kubeconfig /etc/kubernetes/admin.conf` (`docs/service-access.md`, `docs/dev-environment.md`). The runbook's bare `kubectl` commands would fail at the first preflight call. Use that form throughout on the Dell, and `sudo env KUBECONFIG=/etc/kubernetes/admin.conf cilium status --wait` for Cilium.
+4. **The step after the etcd apply would trigger a needless rollback.** While etcd restarts, the API is down, so `kubectl wait` fails at once with "connection refused", and the runbook says to stop and roll back. First wait, with a bound, for `readyz` (for example `timeout 300 bash -c 'until sudo kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw=/readyz >/dev/null 2>&1; do sleep 5; done'`). Then do the Pod-level checks. State that one kube-apiserver restart during the etcd restart is expected, not a failure.
+
+**Also fix**
+
+5. **CoreDNS: one mutation only.** A live Deployment carries server-side defaults, so a strict diff against kubeadm's template can never be image-only. The phase path is therefore unreachable, and it invites a judgement call in the window. CoreDNS uses only the `set image` fallback with the canonical tag. Remove the CoreDNS dry-run, which also removes the copy of `admin.conf` into the maintenance directory.
+6. **WAL threshold.** The gate is WO-31's target, p99 under 10 ms. Report the value against the 2026-10-13 baseline (p99 at most 4 ms). A value between 4 and 10 ms is reported, not a stop.
+7. **Cleanup and laptop commit.**
+   - Add a cleanup section that runs after `accept` passes: remove `/var/lib/etcd/wo40c-before.db` from the etcd data directory (the copies in `$MAINT` and on the laptop remain), and delete the migrate outputs.
+   - Old images stay cached until acceptance.
+   - On the laptop, `git` is not on the owner's PATH: read the commit from `.git/HEAD`, as `run-acceptance.ps1` does.
+   - CI also runs `kubeadm config validate` and the etcd dry run on the exact `candidate.yaml` the generator writes (JSON documents separated by `---`), not only on the YAML re-dump.
+
+The stop rules, CAS patches, no-fallback rule for etcd, backups and dates stand.

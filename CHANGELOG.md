@@ -17,9 +17,11 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 - Record the tester sign-off (Accepted, 2026-10-16) for the WO-36 and WO-36a host-network receipts: the first Dev-verified item on `twinfra-dev-cairo-1`.
 ### Added
 
-- WO-40c: offline two-tag maintenance candidate, strict etcd image-only preview
-  guard and owner-run etcd/CoreDNS maintenance and rollback procedure. No lock,
-  acceptance-suite, deployed resource or live receipt changes.
+- WO-40c: pinned-kubeadm default normalisation before the strict two-tag
+  comparison, exact-candidate validation and image-only etcd preview; canonical
+  staged CoreDNS tag, bounded API recovery and explicit root kubeconfig. Add
+  owner-only backup/rollback/cleanup and WAL p99 < 10 ms verification against
+  the 4 ms baseline. No lock, acceptance-suite or live receipt changes.
 
 - WO-09a: standalone licence ladder, enterprise qualification and dated legacy
   backfill, plus package/fix-version toolchain-wave exception review. Existing

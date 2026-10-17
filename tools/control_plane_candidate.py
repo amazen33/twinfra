@@ -8,15 +8,18 @@ are also valid YAML; no new Python dependency is needed on the host.
 import argparse
 import copy
 import difflib
+import hashlib
 import json
 from pathlib import Path
 import subprocess
+import shutil
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 API = 'kubeadm.k8s.io/v1beta4'
 TAGS = {'coredns': 'v1.14.7', 'etcd': '3.6.15-0'}
 TAG_PATHS = {('dns', 'imageTag'), ('etcd', 'local', 'imageTag')}
+KUBEADM_SHA256 = 'be2f2c73cd6d3414b37aafb05016bc3a1da3e17c8393aa75c34636198fefa77c'
 
 
 def checked_path(path, directory):
@@ -85,16 +88,37 @@ def set_tag(value, component, tag):
     node['imageTag'] = tag
 
 
-def image(lock, component, digest=False):
+def image(lock, component):
     row = lock['images'][component]
     canonical = row['canonical']
     expected = 'registry.twinfra.example.com/registry.k8s.io/' + component + ':' + TAGS[component]
     if canonical != expected or lock['versions']['kubernetes'] != 'v1.36.5':
         raise ValueError('Maintenance lock identity/version differs')
-    return canonical.rsplit(':', 1)[0] + '@' + row['digest'] if digest else canonical
+    return canonical
 
 
-def base_documents(base):
+def normalise(documents, kubeadm, workspace, label):
+    """Use only the admitted kubeadm; retain potentially secret output privately."""
+    with Path(kubeadm).open('rb') as stream:
+        if hashlib.file_digest(stream, 'sha256').hexdigest() != KUBEADM_SHA256:
+            raise ValueError('Pinned kubeadm checksum differs')
+    source = checked_path(Path(workspace) / ('.migrate-' + label + '-input.yaml'), workspace)
+    output = checked_path(Path(workspace) / ('.migrate-' + label + '.yaml'), workspace)
+    if source.exists() or output.exists():
+        raise ValueError('Existing migrate outputs; preserve evidence and review cleanup')
+    private_write(source, '---\n'.join(encoded(doc) for doc in documents))
+    result = subprocess.run([str(kubeadm), 'config', 'migrate', '--old-config', str(source)],
+                            capture_output=True, text=True, timeout=60, check=True)
+    private_write(output, result.stdout)
+    parsed = subprocess.run(['yq', 'eval-all', '-o=json', '-I=0', '[.]', '-'],
+                            input=result.stdout, capture_output=True, text=True, timeout=30, check=True)
+    clusters = [doc for doc in json.loads(parsed.stdout) if doc.get('kind') == 'ClusterConfiguration']
+    if len(clusters) != 1 or clusters[0].get('apiVersion') != API:
+        raise ValueError('Migrated output lacks one v1beta4 ClusterConfiguration')
+    return clusters[0]
+
+
+def base_documents(base, patches_directory='/var/lib/vcloud-host/kubeadm-patches'):
     if not isinstance(base, list) or any(not isinstance(doc, dict) for doc in base):
         raise ValueError('Base must be an array of configuration documents')
     kinds = [doc.get('kind') for doc in base]
@@ -112,15 +136,19 @@ def base_documents(base):
         raise ValueError('Unexpected cluster identity/version/registry')
     if init.get('nodeRegistration', {}).get('name') != 'twinfra-dev-cairo-1':
         raise ValueError('Unexpected node identity')
-    if init.get('patches', {}).get('directory') != '/var/lib/vcloud-host/kubeadm-patches':
+    if init.get('patches', {}).get('directory') != patches_directory:
         raise ValueError('Require original host patches directory')
     return cluster, kinds
 
 
-def candidate(base, stored, lock):
-    cluster, kinds = base_documents(base)
-    drift = changes(without_tags(cluster), without_tags(one(stored)))
+def candidate(base, stored, lock, normalised_host, normalised_stored,
+              patches_directory='/var/lib/vcloud-host/kubeadm-patches'):
+    cluster, kinds = base_documents(base, patches_directory)
+    drift = changes(without_tags(one(normalised_host)), without_tags(one(normalised_stored)))
     if drift:
+        print(''.join(difflib.unified_diff(encoded(normalised_host).splitlines(True),
+            encoded(normalised_stored).splitlines(True), fromfile='migrated host ClusterConfiguration',
+            tofile='migrated stored ClusterConfiguration')), file=sys.stderr, end='')
         raise ValueError('Stored ClusterConfiguration differs outside tags: ' +
                          ', '.join('.'.join(path) for path in sorted(drift)))
     result = copy.deepcopy(base)
@@ -137,6 +165,12 @@ def candidate(base, stored, lock):
 
 def encoded(value):
     return json.dumps(value, indent=2, sort_keys=True) + '\n'
+
+
+def private_write(path, text):
+    with Path(path).open('x', encoding='utf-8') as stream:
+        stream.write(text)
+    Path(path).chmod(0o600)
 
 
 def config_patch(before, after):
@@ -159,16 +193,20 @@ def stored_document(configmap):
         return one(json.loads(parsed.stdout))
 
 
-def write_candidate(base, stored, configmap, lock, output, workspace):
+def write_candidate(base, stored, configmap, lock, output, workspace, kubeadm=None,
+                    patches_directory='/var/lib/vcloud-host/kubeadm-patches'):
     if stored != stored_document(configmap):
         raise ValueError('Stored export differs from saved ConfigMap')
-    result, target = candidate(base, stored, lock)
-    original = configmap['data']['ClusterConfiguration']
-    # The stored JSON export must be bound to this exact saved ConfigMap, not
-    # a separately edited object. JSON is used for the equality check via yq.
     output = checked_path(output, workspace)
     if output.exists():
         raise ValueError('Output directory already exists; preserve prior candidates')
+    kubeadm = kubeadm or shutil.which('kubeadm') or '/usr/bin/kubeadm'
+    host = normalise(base, kubeadm, workspace, 'host')
+    saved = normalise([stored], kubeadm, workspace, 'stored')
+    result, target = candidate(base, stored, lock, host, saved, patches_directory)
+    original = configmap['data']['ClusterConfiguration']
+    # The stored JSON export must be bound to this exact saved ConfigMap, not
+    # a separately edited object. JSON is used for the equality check via yq.
     after_etcd = copy.deepcopy(stored)
     set_tag(after_etcd, 'etcd', TAGS['etcd'])
     after_both = copy.deepcopy(after_etcd)
@@ -182,9 +220,7 @@ def write_candidate(base, stored, configmap, lock, output, workspace):
              'rollback-dns-configmap.patch.json': encoded(config_patch(final_text, etcd_text))}
     output.mkdir(mode=0o700)
     for name, text in files.items():
-        with (output / name).open('x', encoding='utf-8') as stream:
-            stream.write(text)
-        (output / name).chmod(0o600)
+        private_write(output / name, text)
     print(''.join(difflib.unified_diff(encoded(base).splitlines(True),
           encoded(result).splitlines(True), fromfile='host bootstrap', tofile='candidate')), end='')
     print('PASS: candidate differs only in approved image tags; no cluster writes')
@@ -222,7 +258,6 @@ def parser():
         verify.add_argument('--' + name, required=True, type=Path)
     show = actions.add_parser('image')
     show.add_argument('component', choices=sorted(TAGS))
-    show.add_argument('--digest', action='store_true')
     return cli
 
 
@@ -238,7 +273,7 @@ def main(argv=None):
         elif args.action == 'verify-etcd':
             verify_etcd(read(args.live, workspace), read(args.preview, workspace), image(lock, 'etcd'))
         else:
-            print(image(lock, args.component, args.digest))
+            print(image(lock, args.component))
         return 0
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
         print('STOP: ' + str(error), file=sys.stderr)

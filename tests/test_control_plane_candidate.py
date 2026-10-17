@@ -39,11 +39,31 @@ def etcd():
                                  volumeMounts=[dict(name='etcd-certs', mountPath='/etc/kubernetes/pki/etcd', readOnly=True)])]))
 
 
+def defaulted(value):
+    value = copy.deepcopy(value)
+    value.setdefault('certificatesDir', '/etc/kubernetes/pki')
+    value.setdefault('etcd', {}).setdefault('local', {}).setdefault('dataDir', '/var/lib/etcd')
+    return value
+
+
+def make_candidate(base, stored, lock):
+    cluster = next(doc for doc in base if doc.get('kind') == 'ClusterConfiguration')
+    return guard.candidate(base, stored, lock, defaulted(cluster), defaulted(stored))
+
+
 class CandidateTests(unittest.TestCase):
+    def setUp(self):
+        def normalise(documents, kubeadm, workspace, label):
+            cluster = next(doc for doc in documents if doc['kind'] == 'ClusterConfiguration')
+            return defaulted(cluster)
+        mocked = patch.object(guard, 'normalise', side_effect=normalise)
+        mocked.start()
+        self.addCleanup(mocked.stop)
+
     def test_exactly_two_tags_and_all_other_documents_unchanged(self):
         base, stored, _, lock = fixtures()
         saved = copy.deepcopy(base)
-        result, cluster = guard.candidate(base, stored, lock)
+        result, cluster = make_candidate(base, stored, lock)
         self.assertEqual(guard.changes(base[1], cluster), guard.TAG_PATHS)
         self.assertEqual(result[0], base[0])
         self.assertEqual(result[2], base[2])
@@ -57,7 +77,7 @@ class CandidateTests(unittest.TestCase):
             value['networking']['podSubnet'] = '10.0.0.0/8'
         with patch.object(guard, 'set_tag', side_effect=tamper):
             with self.assertRaisesRegex(ValueError, 'unapproved field'):
-                guard.candidate(base, stored, lock)
+                make_candidate(base, stored, lock)
 
     def test_stored_and_base_differ_elsewhere_refused(self):
         for path in [('networking', 'podSubnet'), ('etcd', 'local', 'dataDir'),
@@ -69,26 +89,26 @@ class CandidateTests(unittest.TestCase):
                     node = node.setdefault(part, {})
                 node[path[-1]] = 'different'
                 with self.assertRaisesRegex(ValueError, 'outside tags'):
-                    guard.candidate(base, stored, lock)
+                    make_candidate(base, stored, lock)
 
-    def test_even_materialized_default_difference_is_not_silently_ignored(self):
+    def test_materialized_defaults_match_after_normalisation(self):
         base, stored, _, lock = fixtures()
         stored['certificatesDir'] = '/etc/kubernetes/pki'
-        with self.assertRaisesRegex(ValueError, 'certificatesDir'):
-            guard.candidate(base, stored, lock)
+        result, _ = make_candidate(base, stored, lock)
+        self.assertNotIn('certificatesDir', result[1])
 
     def test_host_tags_may_already_be_newer_than_stored(self):
         base, stored, _, lock = fixtures()
         for key, tag in guard.TAGS.items():
             guard.set_tag(base[1], key, tag)
-        result, _ = guard.candidate(base, stored, lock)
+        result, _ = make_candidate(base, stored, lock)
         self.assertEqual(result, base)
 
     def test_missing_tags_are_added_without_ignoring_other_nested_fields(self):
         base, stored, _, lock = fixtures()
         del base[1]['dns']
         del stored['etcd']['local']['imageTag']
-        result, cluster = guard.candidate(base, stored, lock)
+        result, cluster = make_candidate(base, stored, lock)
         self.assertEqual(cluster['dns']['imageTag'], 'v1.14.7')
         self.assertEqual(result[1]['etcd']['local']['dataDir'], '/var/lib/etcd')
 
@@ -97,25 +117,41 @@ class CandidateTests(unittest.TestCase):
             base, stored, _, lock = fixtures()
             mutate(base)
             with self.assertRaises(ValueError):
-                guard.candidate(base, stored, lock)
+                make_candidate(base, stored, lock)
 
     def test_foreign_identity_and_patch_directory_refused(self):
         for field in ('clusterName', 'kubernetesVersion', 'controlPlaneEndpoint', 'imageRepository'):
             base, stored, _, lock = fixtures()
             base[1][field] = 'foreign'
             with self.assertRaises(ValueError):
-                guard.candidate(base, stored, lock)
+                make_candidate(base, stored, lock)
         base, stored, _, lock = fixtures()
         base[0]['patches']['directory'] = '/other'
         with self.assertRaisesRegex(ValueError, 'patches'):
-            guard.candidate(base, stored, lock)
+            make_candidate(base, stored, lock)
 
     def test_image_selection_comes_from_unchanged_lock(self):
         _, _, _, lock = fixtures()
-        self.assertTrue(guard.image(lock, 'coredns', True).endswith('@' + lock['images']['coredns']['digest']))
+        self.assertEqual(guard.image(lock, 'coredns'), lock['images']['coredns']['canonical'])
         lock['images']['etcd']['canonical'] = 'upstream:latest'
         with self.assertRaisesRegex(ValueError, 'lock'):
             guard.image(lock, 'etcd')
+
+    def test_coredns_canonical_tag_is_accepted_but_digest_form_is_not(self):
+        import platform_accept
+        lock = fixtures()[3]
+        reference = guard.image(lock, 'coredns')
+        allowed = {platform_accept.cri_reference(row['canonical']) for row in lock['images'].values()}
+        self.assertIn(reference, allowed)
+        digest_only = reference.rsplit(':', 1)[0] + '@' + lock['images']['coredns']['digest']
+        self.assertNotIn(platform_accept.cri_reference(digest_only), allowed)
+        pod = {'metadata': {'name': 'coredns-proof'},
+               'spec': {'containers': [{'name': 'coredns', 'image': reference}]},
+               'status': {'containerStatuses': [{'name': 'coredns',
+                          'imageID': 'containerd://' + lock['images']['coredns']['digest']}]}}
+        self.assertEqual(platform_accept.image_problems([pod], lock, {})[0], [])
+        pod['spec']['containers'][0]['image'] = digest_only
+        self.assertIn('unverified image', platform_accept.image_problems([pod], lock, {})[0][0])
 
     def test_candidate_diff_and_per_component_cas_and_rollback(self):
         base, stored, cm, lock = fixtures()
@@ -235,6 +271,21 @@ class PreviewTests(unittest.TestCase):
             self.assertNotRegex(block, r'kubeadm (?:reset|upgrade|init(?! phase))\b')
         self.assertIn('set image deployment/coredns', text)
         self.assertIn('base-configuration', text)
+        self.assertNotIn('init phase addon', text)
+        self.assertNotIn('dns-preview/admin.conf', text)
+        self.assertNotIn('git rev-parse', text)
+        self.assertNotIn('image coredns --digest', text)
+        for command in re.findall(r'```bash\n(.*?)\n```', text, re.S):
+            for position in re.finditer(r'\bkubectl\b', command):
+                self.assertEqual(command[position.start()-5:position.start()], 'sudo ')
+                self.assertTrue(command[position.start():].startswith('kubectl --kubeconfig /etc/kubernetes/admin.conf'))
+        self.assertIn('sudo env KUBECONFIG=/etc/kubernetes/admin.conf cilium status --wait', text)
+        apply = text.index('sudo kubeadm init phase etcd local --config "$MAINT/candidate/candidate.yaml"\n')
+        wait = text.index("timeout 300 bash -c", apply)
+        pod = text.index('wait --for=condition=Ready pod/etcd-', apply)
+        self.assertLess(wait, pod)
+        self.assertIn('p99 < 10 ms', text)
+        self.assertIn('2026-10-13 baseline', text)
 
     def test_documented_jq_digest_and_image_assertions_execute(self):
         import re
@@ -264,6 +315,46 @@ class PreviewTests(unittest.TestCase):
             argv[0] = shutil.which('jq') or str(ROOT / '.tools/jq/jq.exe')
             bad = subprocess.run(argv, text=True, capture_output=True, check=False)
             self.assertNotEqual(bad.returncode, 0)
+            dns = pod('coredns')
+            dns['spec']['containers'][0]['image'] = lock['images']['coredns']['canonical'].rsplit(':', 1)[0] + '@' + lock['images']['coredns']['digest']
+            (directory / 'dns.after.json').write_text(json.dumps(dict(items=[dns])))
+            argv = shlex.split(commands[2].replace('$MAINT', directory.as_posix()))
+            argv[0] = shutil.which('jq') or str(ROOT / '.tools/jq/jq.exe')
+            bad = subprocess.run(argv, text=True, capture_output=True, check=False)
+            self.assertNotEqual(bad.returncode, 0)
+
+
+class NormalisationTests(unittest.TestCase):
+    def test_pinned_migrate_of_each_input_is_private_and_only_cluster_is_returned(self):
+        import hashlib
+        with tempfile.TemporaryDirectory() as temp, contextlib.redirect_stdout(io.StringIO()) as log:
+            root = Path(temp)
+            binary = root / 'kubeadm'
+            binary.write_bytes(b'pinned fixture')
+            token = 'generated-token-not-for-output'
+            docs = [dict(kind='InitConfiguration', bootstrapTokens=[dict(token=token)]),
+                    dict(apiVersion=guard.API, kind='ClusterConfiguration', certificatesDir='/etc/kubernetes/pki')]
+            replies = [guard.subprocess.CompletedProcess([], 0, token, ''),
+                       guard.subprocess.CompletedProcess([], 0, json.dumps(docs), '')]
+            with patch.object(guard, 'KUBEADM_SHA256', hashlib.sha256(binary.read_bytes()).hexdigest()), \
+                 patch.object(guard.subprocess, 'run', side_effect=replies) as run:
+                cluster = guard.normalise([docs[1]], binary, root, 'host')
+            self.assertEqual(cluster, docs[1])
+            self.assertNotIn(token, log.getvalue())
+            self.assertEqual((root / '.migrate-host.yaml').read_text(), token)
+            self.assertEqual(run.call_args_list[0].args[0][:4], [str(binary), 'config', 'migrate', '--old-config'])
+            self.assertTrue(all(call.kwargs['capture_output'] for call in run.call_args_list))
+
+    def test_wrong_binary_refused_before_any_migrate_file_or_command(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            binary = root / 'kubeadm'
+            binary.write_bytes(b'unreviewed')
+            with patch.object(guard.subprocess, 'run') as run:
+                with self.assertRaisesRegex(ValueError, 'checksum'):
+                    guard.normalise([], binary, root, 'host')
+                run.assert_not_called()
+            self.assertFalse((root / '.migrate-host-input.yaml').exists())
 
 
 if __name__ == '__main__':

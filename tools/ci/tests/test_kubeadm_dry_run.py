@@ -17,43 +17,54 @@ spec.loader.exec_module(guard)
 
 
 class KubeadmGuardTests(unittest.TestCase):
-    def test_maintenance_preview_uses_config_patch_directory_without_mixed_flags(self):
-        repo = ROOT.parents[1]
+    def test_maintenance_preview_keeps_exact_config_path_without_mixed_flags(self):
         spec = importlib.util.spec_from_file_location('maintenance_preview', ROOT / 'control_plane_dry_run.py')
         preview_guard = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(preview_guard)
         with tempfile.TemporaryDirectory() as temp:
             work = Path(temp)
-            config = work / 'base.yaml'
-            docs = [dict(apiVersion='kubeadm.k8s.io/v1beta4', kind='InitConfiguration',
-                         nodeRegistration=dict(name='twinfra-dev-cairo-1'),
-                         patches=dict(directory='/private-ci-patches')),
-                    dict(apiVersion='kubeadm.k8s.io/v1beta4', kind='ClusterConfiguration',
-                         clusterName='twinfra-dev-cairo-1', kubernetesVersion='v1.36.5',
-                         controlPlaneEndpoint='api.dev.cairo-1.twinfra.example.com:6443',
-                         imageRepository='registry.twinfra.example.com/registry.k8s.io'),
-                    dict(kind='KubeletConfiguration')]
-            config.write_text(yaml.safe_dump_all(docs))
+            config = work / 'candidate.yaml'
+            config.write_text('{"kind":"InitConfiguration"}\n---\n{"kind":"ClusterConfiguration"}\n')
+            exact = config.read_bytes()
             def execute(command, log):
-                if '--help' in command:
-                    return '--config --dry-run'
                 if '--dry-run' in command:
                     self.assertNotIn('--patches', command)
-                    path = Path(command[command.index('--config') + 1])
-                    inputs = list(yaml.safe_load_all(path.read_text()))
-                    self.assertEqual(inputs[0]['patches']['directory'], '/private-ci-patches')
+                    self.assertEqual(command[command.index('--config') + 1], str(config))
+                    self.assertEqual(config.read_bytes(), exact)
                     preview = Path(command[3].split('=', 1)[1])
-                    pod = dict(kind='Pod', metadata=dict(name='etcd'), spec=dict(containers=[
-                        dict(name='etcd', image='registry.twinfra.example.com/registry.k8s.io/etcd:' +
-                             inputs[1]['etcd']['local']['imageTag'],
-                             volumeMounts=[dict(name='etcd-certs', readOnly=True)])]))
-                    (preview / 'etcd.yaml').write_text(yaml.safe_dump(pod))
+                    (preview / 'etcd.yaml').write_text('kind: Pod\n')
                 return ''
             with patch.object(preview_guard, 'execute', side_effect=execute), \
                  patch.object(guard.os, 'getuid', return_value=1001, create=True), \
                  patch.object(guard.os, 'getgid', return_value=1001, create=True):
-                preview_guard.maintenance_preview(repo, work / 'binary', config, work)
-            self.assertEqual(json.loads((work / 'maintenance/summary.json').read_text())['etcdDiff'], 'image only')
+                self.assertEqual(preview_guard.etcd_preview(work / 'binary', config, work, 'after'), {'kind': 'Pod'})
+
+    def test_upload_proof_refuses_missing_or_ambiguous_configmap(self):
+        spec = importlib.util.spec_from_file_location('maintenance_preview', ROOT / 'control_plane_dry_run.py')
+        preview_guard = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(preview_guard)
+        log = '[dryrun] Attached object:\n' + yaml.safe_dump(dict(kind='ConfigMap',
+            metadata=dict(name='kubeadm-config'), data=dict(ClusterConfiguration='kind: ClusterConfiguration\n')))
+        self.assertEqual(preview_guard.uploaded_cluster(log), {'kind': 'ClusterConfiguration'})
+        for invalid in ('no attached object', log + log):
+            with self.assertRaisesRegex(ValueError, 'Cannot prove'):
+                preview_guard.uploaded_cluster(invalid)
+
+    def test_migrate_token_outputs_are_removed_even_if_proof_fails(self):
+        spec = importlib.util.spec_from_file_location('maintenance_preview', ROOT / 'control_plane_dry_run.py')
+        preview_guard = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(preview_guard)
+        def fail(source, binary, config, work, helper):
+            (work / '.migrate-host.yaml').write_text('fixture bootstrap token')
+            raise ValueError('proof failed')
+        with tempfile.TemporaryDirectory() as temp, patch.object(preview_guard, 'prove_candidate', side_effect=fail):
+            work = Path(temp)
+            repo = ROOT.parents[1]
+            binary, config = work / 'binary', work / 'config'
+            with self.assertRaisesRegex(ValueError, 'proof failed'):
+                preview_guard.maintenance_preview(repo, binary, config, work)
+            self.assertFalse((work / 'maintenance/.migrate-host.yaml').exists())
+            self.assertFalse((work / 'maintenance/summary.json').exists())
 
     def test_cli_validation_clears_environment_and_uses_script_home_default(self):
         command=guard.cli_command(PurePosixPath('/ci/host.sh'),

@@ -2,8 +2,8 @@
 
 Owner-run procedure for **twinfra-operator@192.168.1.3**, after this PR merges.
 Scope: etcd **3.6.8-0 → 3.6.15-0**, CoreDNS **v1.14.2 → v1.14.7**,
-Kubernetes/kubeadm remain **v1.36.5**. Authority:
-[WO-40 Amendments 2 and 3](../work-orders/WO-40-twinfra-v0-1-0-release.md).
+Kubernetes/kubeadm remain **v1.36.5**. Amendment 4 governs the corrected procedure. Authority:
+[WO-40 Amendments 2–4](../work-orders/WO-40-twinfra-v0-1-0-release.md).
 Reserve 30 minutes; expect an API interruption during the etcd restart, not a
 guaranteed duration. Stop on any unexpected result. The architect reviews owner
 outputs after previews and between components. These commands have **not run on
@@ -11,7 +11,7 @@ the Dell**; live paths, state, timing and results remain unverified until the
 owner checks them. Do not edit or sign receipts as part of this procedure.
 
 There is no full initialization, reset, upgrade apply or bootstrap rerun here.
-The two explicitly named `init phase` commands render only their named component.
+Only the named etcd-local phase renders a live manifest; CoreDNS uses set-image.
 No automatic etcd snapshot restore is authorized. Keep the same SSH session for
 the Dell commands; each block is one command. Never paste kubeconfigs, snapshots,
 private keys or unredacted dry-run API logs into Git, chat or receipts.
@@ -28,7 +28,7 @@ Set-Location E:/twinfra-live
 Expected: the reviewed commit (record it outside Git with the maintenance notes).
 
 ```powershell
-git rev-parse HEAD
+& { $head = (Get-Content .git/HEAD -Raw).Trim(); if ($head.StartsWith('ref: ')) { $ref = $head.Substring(5); $file = Join-Path .git $ref; if (Test-Path $file) { $head = (Get-Content $file -Raw).Trim() } else { $line = Get-Content .git/packed-refs | Where-Object { $_ -match ('^[0-9a-f]{40} ' + [regex]::Escape($ref) + '$') }; if (@($line).Count -ne 1) { throw 'Cannot resolve HEAD' }; $head = ($line -split ' ')[0] } }; if ($head -notmatch '^[0-9a-f]{40}$') { throw 'Invalid HEAD' }; $head }
 ```
 
 Expected: a newly created private directory; **existing directory is a stop**,
@@ -87,20 +87,20 @@ yq --version
 Expected: this node is Ready, address 192.168.1.3, Kubernetes v1.36.5.
 
 ```bash
-kubectl get node twinfra-dev-cairo-1 -o wide
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf get node twinfra-dev-cairo-1 -o wide
 ```
 
 Expected: `ok`, with no TLS bypass.
 
 ```bash
-kubectl get --raw=/readyz
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw=/readyz
 ```
 
 Expected: etcd currently 3.6.8-0 and CoreDNS v1.14.2; if already changed, stop
 and reconcile the procedure against the architect's last reviewed state.
 
 ```bash
-kubectl -n kube-system get pods -l 'k8s-app=kube-dns' -o wide
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system get pods -l 'k8s-app=kube-dns' -o wide
 ```
 
 Expected: the saved manifest displays the current canonical etcd image,
@@ -113,14 +113,14 @@ sudo yq '.spec.containers[] | select(.name == "etcd")' /etc/kubernetes/manifests
 Expected: the current CoreDNS container reference, no extra containers.
 
 ```bash
-kubectl -n kube-system get deployment coredns -o jsonpath='{.spec.template.spec.containers[*].image}{"\n"}'
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system get deployment coredns -o jsonpath='{.spec.template.spec.containers[*].image}{"\n"}'
 ```
 
 Expected: the stored cluster identity, registry and current image tags. This is
 read-only; the strict comparison in section 4 decides whether they match the host.
 
 ```bash
-kubectl -n kube-system get configmap kubeadm-config -o jsonpath='{.data.ClusterConfiguration}'
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system get configmap kubeadm-config -o jsonpath='{.data.ClusterConfiguration}'
 ```
 
 Expected: enough free space for a snapshot and a second copy of the etcd data;
@@ -153,21 +153,21 @@ sudo cat /var/lib/vcloud-host/kubeadm-patches/etcd+strategic.yaml
 Expected: all three Argo Applications Synced/Healthy before maintenance.
 
 ```bash
-kubectl -n twinfra-platform-services get applications -o custom-columns=NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status,REVISION:.status.sync.revision
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n twinfra-platform-services get applications -o custom-columns=NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status,REVISION:.status.sync.revision
 ```
 
 Expected: healthy etcd endpoint, success exit; the explicit paths below must
 match the inspected manifest. A non-default certificate path is a stop for review.
 
 ```bash
-kubectl -n kube-system exec etcd-twinfra-dev-cairo-1 -- etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key endpoint health
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-twinfra-dev-cairo-1 -- etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key endpoint health
 ```
 
 Expected: etcdutl 3.6.8; if the existing image lacks this binary, stop. Do not
 download an unreviewed tool to work around a missing snapshot verifier.
 
 ```bash
-kubectl -n kube-system exec etcd-twinfra-dev-cairo-1 -- etcdutl version
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-twinfra-dev-cairo-1 -- etcdutl version
 ```
 
 ## 2. Backups outside Git, verified snapshot and laptop copy
@@ -183,13 +183,13 @@ Expected: a full saved kubeadm-config ConfigMap (including resourceVersion),
 not a newly generated replacement.
 
 ```bash
-kubectl -n kube-system get configmap kubeadm-config -o json > "$MAINT/kubeadm-config.before.json"
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system get configmap kubeadm-config -o json > "$MAINT/kubeadm-config.before.json"
 ```
 
 Expected: original CoreDNS Deployment and Corefile saved for comparison/rollback.
 
 ```bash
-kubectl -n kube-system get deployment/coredns configmap/coredns -o json > "$MAINT/dns.before.json"
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system get deployment/coredns configmap/coredns -o json > "$MAINT/dns.before.json"
 ```
 
 Expected: snapshot saved inside the existing data-volume mount. The filename
@@ -197,14 +197,14 @@ must not already exist; etcdctl refuses overwriting it. Only this snapshot is
 created; the service remains running.
 
 ```bash
-kubectl -n kube-system exec etcd-twinfra-dev-cairo-1 -- etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key snapshot save /var/lib/etcd/wo40c-before.db
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-twinfra-dev-cairo-1 -- etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key snapshot save /var/lib/etcd/wo40c-before.db
 ```
 
 Expected: nonzero revision, total keys/size and a snapshot hash; exit 0.
 Record the output privately. Failure blocks every mutation below.
 
 ```bash
-kubectl -n kube-system exec etcd-twinfra-dev-cairo-1 -- etcdutl snapshot status /var/lib/etcd/wo40c-before.db -w json > "$MAINT/snapshot-status.json"
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-twinfra-dev-cairo-1 -- etcdutl snapshot status /var/lib/etcd/wo40c-before.db -w json > "$MAINT/snapshot-status.json"
 ```
 
 Expected: the verified snapshot copied from the data volume into MAINT, owned
@@ -285,15 +285,17 @@ Expected: the ClusterConfiguration parsed from the exact saved ConfigMap.
 jq -r '.data.ClusterConfiguration' "$MAINT/kubeadm-config.before.json" | yq -o=json '.' > "$MAINT/stored.json"
 ```
 
-Expected: diff showing **only** `dns.imageTag` and `etcd.local.imageTag`, or no
-diff for tags already present in the host file. Both the base/stored comparison
-and candidate validation run before output creation. Every other difference
-fails, including explicit-vs-omitted default fields: **do not auto-normalize,
-merge, remove fields or overwrite the host file to bypass this stop**. The live
-equivalence of the two configurations is unverified; report any refusal to the
-architect. Output is private, new-only and contains no cluster writes. Inputs and output
-are confined to the copied helper's maintenance directory; path traversal or
-symlink files are refused.
+Expected: the generator first checksum-verifies kubeadm v1.36.5, then runs
+`kubeadm config migrate --old-config` on **both** the host and saved stored
+configuration, offline. It selects only their defaulted ClusterConfiguration
+documents for strict comparison. Only the two tags may differ after this
+normalisation; all other remaining differences stop the window for architect
+review. The applied candidate preserves the original minimal host configuration
+and changes only the two tags; migrated InitConfiguration is **never applied**.
+The diff prints the two candidate tag changes, or no diff if the host tags were
+already current. Migrate outputs may contain a generated bootstrap token; they
+stay private, are never printed or copied to Git, and are deleted at cleanup.
+Inputs/output stay within the copied helper's private maintenance directory.
 
 ```bash
 python3 "$MAINT/control_plane_candidate.py" --lock "$MAINT/bootstrap-images.lock.json" generate --base "$MAINT/base.json" --stored "$MAINT/stored.json" --configmap "$MAINT/kubeadm-config.before.json" --out "$MAINT/candidate"
@@ -311,7 +313,7 @@ sudo kubeadm config validate --config "$MAINT/candidate/candidate.yaml"
 Expected: separate private preview directories (no prior output overwritten).
 
 ```bash
-mkdir -m 700 "$MAINT/etcd-preview" "$MAINT/dns-preview"
+mkdir -m 700 "$MAINT/etcd-preview"
 ```
 
 Expected: only etcd.yaml written **under MAINT**, not the live manifest directory.
@@ -343,62 +345,9 @@ a pass. CI proves this property for the renderer, not for the uninspected Dell.
 python3 "$MAINT/control_plane_candidate.py" --lock "$MAINT/bootstrap-images.lock.json" verify-etcd --live "$MAINT/etcd.live.json" --preview "$MAINT/etcd.preview.json"
 ```
 
-Expected: a private copy of admin.conf solely to allow the dry-run fake client
-to read the existing cluster. It remains root-only and is never logged/copied to Git.
-
-```bash
-sudo install -m 600 /etc/kubernetes/admin.conf "$MAINT/dns-preview/admin.conf"
-```
-
-Expected: CoreDNS dry-run actions printed, no API mutations. Inspect every
-proposed ConfigMap/Deployment and supporting resource write in this private log.
-An unreadable kubeconfig/API failure is a stop, not proof of image-only behavior.
-
-```bash
-sudo env KUBEADM_INIT_DRYRUN_DIR="$MAINT/dns-preview" kubeadm init phase addon coredns --config "$MAINT/candidate/candidate.yaml" --dry-run > "$MAINT/dns-preview.log"
-```
-
-Expected: deterministic desired addon YAML, including its Corefile. This second
-preview is template output with default replicas, **not** a live-merge simulator.
-
-```bash
-sudo kubeadm init phase addon coredns --config "$MAINT/candidate/candidate.yaml" --dry-run --print-manifest > "$MAINT/dns-template.yaml"
-```
-
-Expected: two review files: the live and proposed Deployment **specs** (image
-will differ). Compare all defaulted fields, labels and annotations separately;
-do not ignore admission mutations. A non-image difference selects the fallback.
-
-```bash
-jq -S '.items[] | select(.kind=="Deployment") | .spec' "$MAINT/dns.before.json" > "$MAINT/dns-live-spec.json"
-```
-
-Expected: the proposed Deployment spec for the same comparison.
-
-```bash
-yq eval-all -o=json 'select(.kind == "Deployment") | .spec' "$MAINT/dns-template.yaml" | jq -S . > "$MAINT/dns-proposed-spec.json"
-```
-
-Expected: image-only diff, otherwise use fallback. `diff` returns 1 for expected
-differences; review it, rather than treating its exit code as an apply gate.
-
-```bash
-diff -u "$MAINT/dns-live-spec.json" "$MAINT/dns-proposed-spec.json"
-```
-
-Expected: equality of live and proposed Corefile for phase eligibility. A
-different/default/migrated Corefile, any supporting-resource change, uncertainty
-or an inconclusive dry run selects the pre-approved **CoreDNS-only fallback**.
-The source proves the phase does not unconditionally retain an existing Corefile.
-
-```bash
-diff -u <(jq -r '.items[] | select(.kind=="ConfigMap") | .data.Corefile' "$MAINT/dns.before.json") <(yq eval-all -r 'select(.kind=="ConfigMap") | .data.Corefile' "$MAINT/dns-template.yaml")
-```
-
-Architect reviews these outputs **before proceeding**. There is no automatic
-claim that the phase is safe just because the preview command returned zero.
-The fallback is the default choice whenever complete image-only behavior is not
-demonstrated; it changes no Corefile, RBAC, Service or ServiceAccount.
+The architect reviews the successful etcd image-only guard before proceeding.
+There is **no CoreDNS phase or dry run**, and no admin.conf copy. CoreDNS uses
+only the canonical staged tag through `set image` in section 7.
 
 ## 6. Apply etcd only, verify, then record its tag
 
@@ -416,36 +365,45 @@ restarts that static Pod. This is the sole etcd mutation command, not full init.
 sudo kubeadm init phase etcd local --config "$MAINT/candidate/candidate.yaml"
 ```
 
+Expected: the API returns ready within 300 seconds. **One kube-apiserver
+restart while etcd restarts is expected**, not a maintenance failure. Wait for
+API recovery before any Pod check; failure of this bounded loop stops the
+window for diagnosis/rollback review. Each request also has a five-second bound.
+
+```bash
+timeout 300 bash -c 'until sudo kubectl --kubeconfig /etc/kubernetes/admin.conf --request-timeout=5s get --raw=/readyz >/dev/null 2>&1; do sleep 5; done'
+```
+
 Expected within 180 seconds: the replacement etcd Pod Ready. Stop on failure;
 consult rollback, and do not continue with CoreDNS or the ConfigMap tag.
 
 ```bash
-kubectl -n kube-system wait --for=condition=Ready pod/etcd-twinfra-dev-cairo-1 --timeout=180s
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system wait --for=condition=Ready pod/etcd-twinfra-dev-cairo-1 --timeout=180s
 ```
 
 Expected: healthy endpoint after restart.
 
 ```bash
-kubectl -n kube-system exec etcd-twinfra-dev-cairo-1 -- etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key endpoint health
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system exec etcd-twinfra-dev-cairo-1 -- etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key endpoint health
 ```
 
 Expected: `ok` and node Ready.
 
 ```bash
-kubectl get --raw=/readyz
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf get --raw=/readyz
 ```
 
 Expected: Ready, InternalIP 192.168.1.3.
 
 ```bash
-kubectl get node twinfra-dev-cairo-1 -o wide
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf get node twinfra-dev-cairo-1 -o wide
 ```
 
 Expected: desired etcd image from the unchanged lock. This and the runtime
 check below are both required; Pod Ready alone may still describe the old Pod.
 
 ```bash
-kubectl -n kube-system get pod etcd-twinfra-dev-cairo-1 -o json > "$MAINT/etcd.after.json"
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system get pod etcd-twinfra-dev-cairo-1 -o json > "$MAINT/etcd.after.json"
 ```
 
 Expected: true; actual etcd Pod image equals the approved canonical tag.
@@ -462,12 +420,15 @@ inspect `crictl inspecti`; do not relax the digest assertion.
 jq -e --slurpfile lock "$MAINT/bootstrap-images.lock.json" '.status.containerStatuses[] | select(.name=="etcd") | .imageID | split("@")[-1] as $id | [$lock[0].images.etcd | .digest,.amd64Digest,.configDigest] | index($id)!=null' "$MAINT/etcd.after.json"
 ```
 
-Expected: etcd histogram samples available. Use the existing monitoring view
-if available to verify WAL fsync p99 **<= 4 ms**, matching the last owner baseline;
-otherwise review cumulative histogram buckets below (first bucket reaching
-99% of count must be <= 0.004 seconds). Insufficient fresh samples or an unclear
-histogram is **unverified**, not a pass: pause for the architect. Do not deploy
-monitoring as part of this maintenance.
+Expected: fresh etcd WAL fsync histogram samples. The binding gate is
+**p99 < 10 ms** (WO-31); report the value against the **2026-10-13 baseline
+p99 <= 4 ms**. A value above 4 ms but below 10 ms is reported, not a stop.
+Use the existing monitoring view, or review the buckets below: the first bucket
+reaching 99% of the fresh count must establish p99 below 0.010 seconds. A bucket
+boundary of exactly 0.010 is inconclusive for the strict inequality; obtain the
+existing quantile view or wait for enough fresh samples, rather than claiming
+a pass. Insufficient/unclear samples remain unverified; pause for the architect.
+Do not deploy monitoring during this maintenance.
 
 ```bash
 curl --fail --silent --show-error http://127.0.0.1:2381/metrics | grep -E '^etcd_disk_wal_fsync_duration_seconds_(bucket|count)'
@@ -485,54 +446,46 @@ The JSON Patch tests the exact original value first and refuses concurrent
 changes. It does not replace other ConfigMap keys or the host bootstrap file.
 
 ```bash
-kubectl -n kube-system patch configmap kubeadm-config --type=json --patch-file "$MAINT/candidate/etcd-configmap.patch.json"
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system patch configmap kubeadm-config --type=json --patch-file "$MAINT/candidate/etcd-configmap.patch.json"
 ```
 
 ## 7. CoreDNS only, verify, then record its tag
 
-Use **one** of the following two mutation commands, never both. The phase is
-eligible only after the architect accepts all preview diffs as image-only and
-confirms Corefile/supporting resources are unchanged. Otherwise use the already
-approved `set image` fallback. Do not use addon/all or kube-proxy.
+Only `set image` is authorized for CoreDNS. It preserves the Corefile and all
+other Deployment settings. Do not run an addon phase, addon/all or kube-proxy.
 
-Expected for the fully accepted phase path: only the CoreDNS image changes;
-verify Corefile equality immediately afterwards.
-
-```bash
-sudo kubeadm init phase addon coredns --config "$MAINT/candidate/candidate.yaml"
-```
-
-Expected for the fallback path: only the named container image is patched,
-using the exact canonical repository and locked digest (not a floating tag).
+Expected: only the named container image is patched, using the **canonical tag
+exactly as in the lock**. Its containerd record is staged and digest-pinned;
+`stage-images --check` and `accept` verify identity. Do not substitute repo@digest.
 
 ```bash
-kubectl -n kube-system set image deployment/coredns "coredns=$(python3 "$MAINT/control_plane_candidate.py" --lock "$MAINT/bootstrap-images.lock.json" image coredns --digest)"
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system set image deployment/coredns "coredns=$(python3 "$MAINT/control_plane_candidate.py" --lock "$MAINT/bootstrap-images.lock.json" image coredns)"
 ```
 
 Expected: successfully rolled out within 180 seconds.
 
 ```bash
-kubectl -n kube-system rollout status deployment/coredns --timeout=180s
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system rollout status deployment/coredns --timeout=180s
 ```
 
 Expected: no Corefile change. Any change triggers the CoreDNS rollback section
 and architect review; do not update the stored DNS tag.
 
 ```bash
-diff -u <(jq -r '.items[] | select(.kind=="ConfigMap") | .data.Corefile' "$MAINT/dns.before.json") <(kubectl -n kube-system get configmap coredns -o json | jq -r '.data.Corefile')
+diff -u <(jq -r '.items[] | select(.kind=="ConfigMap") | .data.Corefile' "$MAINT/dns.before.json") <(sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system get configmap coredns -o json | jq -r '.data.Corefile')
 ```
 
-Expected: all Ready DNS pods use the lock's tag (phase path) or repo@digest
-(fallback), and runtime imageIDs match the locked identity set as for etcd above.
+Expected: all Ready DNS pods use **only the exact canonical tag** from the
+lock; runtime imageIDs match the locked identity set as for etcd above.
 
 ```bash
-kubectl -n kube-system get pods -l k8s-app=kube-dns -o json > "$MAINT/dns.after.json"
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system get pods -l k8s-app=kube-dns -o json > "$MAINT/dns.after.json"
 ```
 
 Expected: true for every CoreDNS container, at least one pod, and no old image.
 
 ```bash
-jq -e --slurpfile lock "$MAINT/bootstrap-images.lock.json" '.items | length>0 and all(.[]; all(.spec.containers[]; .image==$lock[0].images.coredns.canonical or .image==($lock[0].images.coredns.canonical | sub(":[^/:]+$"; ""))+"@"+$lock[0].images.coredns.digest))' "$MAINT/dns.after.json"
+jq -e --slurpfile lock "$MAINT/bootstrap-images.lock.json" '.items | length>0 and all(.[]; all(.spec.containers[]; .image==$lock[0].images.coredns.canonical))' "$MAINT/dns.after.json"
 ```
 
 Expected: true for every running DNS container ID (locked index/amd64/config).
@@ -547,7 +500,7 @@ Python runtime already provides `socket`; no new pod, image or tool is installed
 Live workload readiness remains an owner preflight check.
 
 ```bash
-kubectl -n twinfra-platform-services exec deployment/twinfra-console -c console -- python -c 'import socket; print(socket.gethostbyname("kubernetes.default.svc.cluster.local"))'
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n twinfra-platform-services exec deployment/twinfra-console -c console -- python -c 'import socket; print(socket.gethostbyname("kubernetes.default.svc.cluster.local"))'
 ```
 
 Expected: existing Cilium policies still present, with default-deny and explicit
@@ -555,27 +508,27 @@ DNS permission; the successful workload query is positive evidence, not a new
 negative isolation test or proof of every Cilium policy.
 
 ```bash
-kubectl get ciliumnetworkpolicies -A
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf get ciliumnetworkpolicies -A
 ```
 
 Expected: Cilium reports healthy, all three Argo Applications Synced/Healthy;
 if either fails, stop before recording the DNS tag.
 
 ```bash
-cilium status --wait
+sudo env KUBECONFIG=/etc/kubernetes/admin.conf cilium status --wait
 ```
 
 Expected: all three Synced/Healthy at the reviewed revision.
 
 ```bash
-kubectl -n twinfra-platform-services get applications -o custom-columns=NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status,REVISION:.status.sync.revision
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n twinfra-platform-services get applications -o custom-columns=NAME:.metadata.name,SYNC:.status.sync.status,HEALTH:.status.health.status,REVISION:.status.sync.revision
 ```
 
 Expected: only `dns.imageTag` now changes; the CAS test requires the exact
 post-etcd ClusterConfiguration. Architect reviews the CoreDNS evidence first.
 
 ```bash
-kubectl -n kube-system patch configmap kubeadm-config --type=json --patch-file "$MAINT/candidate/dns-configmap.patch.json"
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system patch configmap kubeadm-config --type=json --patch-file "$MAINT/candidate/dns-configmap.patch.json"
 ```
 
 Expected: `status: passed`, `images: 11`, `problems: []`, then the owner reruns the unchanged baseline through
@@ -625,35 +578,52 @@ ConfigMap unchanged**. If the etcd tag had already been recorded and DNS had not
 or after the DNS rollback below, restore only its previous stored value:
 
 ```bash
-kubectl -n kube-system patch configmap kubeadm-config --type=json --patch-file "$MAINT/candidate/rollback-etcd-configmap.patch.json"
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system patch configmap kubeadm-config --type=json --patch-file "$MAINT/candidate/rollback-etcd-configmap.patch.json"
 ```
 
 **CoreDNS:** expected: restore only the saved Deployment image, leaving the
 Corefile alone. Confirm the saved Deployment has exactly one `coredns` container.
 
 ```bash
-kubectl -n kube-system set image deployment/coredns "coredns=$(jq -r '.items[] | select(.kind=="Deployment") | .spec.template.spec.containers[] | select(.name=="coredns") | .image' "$MAINT/dns.before.json")"
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system set image deployment/coredns "coredns=$(jq -r '.items[] | select(.kind=="Deployment") | .spec.template.spec.containers[] | select(.name=="coredns") | .image' "$MAINT/dns.before.json")"
 ```
 
 Expected: old image rollout completes; repeat Corefile equality, permitted
-workload DNS, Cilium and GitOps verification. If the phase unexpectedly changed
-the Corefile, stop and have the architect review the saved ConfigMap before
+workload DNS, Cilium and GitOps verification. If the Corefile changed unexpectedly, stop and have the architect review the saved ConfigMap before
 restoring it; no blind whole-ConfigMap apply is prescribed.
 
 ```bash
-kubectl -n kube-system rollout status deployment/coredns --timeout=180s
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system rollout status deployment/coredns --timeout=180s
 ```
 
 If DNS failed before tag recording, **leave the stored DNS tag unchanged**. Only
 if its tag was recorded, restore the previous DNS value after old-image health:
 
 ```bash
-kubectl -n kube-system patch configmap kubeadm-config --type=json --patch-file "$MAINT/candidate/rollback-dns-configmap.patch.json"
+sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system patch configmap kubeadm-config --type=json --patch-file "$MAINT/candidate/rollback-dns-configmap.patch.json"
 ```
 
 An etcd snapshot restore is a **last resort requiring a separate reviewed owner
 decision**, not another command in this runbook. Preserve the verified snapshot,
 original manifests and PKI; do not reset/init or overwrite a live data directory.
+
+## 9. Cleanup only after the unchanged accept suite passes
+
+Keep the verified snapshot/backups in MAINT and on the laptop. Keep old images
+cached until acceptance; this runbook never prunes them. After `accept` passes,
+remove **only the scratch snapshot in the live data directory**:
+
+```bash
+sudo rm -- /var/lib/etcd/wo40c-before.db
+```
+
+Expected: no scratch snapshot remains; etcd data, member directories and backup
+copies remain untouched. Delete only the four private migrate temporary files
+(they may contain generated tokens); no recursive cleanup is prescribed.
+
+```bash
+rm -- "$MAINT/.migrate-host-input.yaml" "$MAINT/.migrate-host.yaml" "$MAINT/.migrate-stored-input.yaml" "$MAINT/.migrate-stored.yaml"
+```
 
 ## Source verification and limits
 
@@ -664,16 +634,26 @@ branch. Source review and the isolated CI preview are static evidence only.
   `getEtcdPhaseFlags` includes config, dry-run and patches; only the local etcd
   manifest is generated. The non-dry-run path also ensures its existing data
   directory exists. It does not initialize/reset the existing etcd database.
-- [addon flags and init data](https://github.com/kubernetes/kubernetes/blob/v1.36.5/cmd/kubeadm/app/cmd/phases/init/addons.go):
-  CoreDNS accepts config/dry-run/print-manifest. It has no inherited `--patches`
-  flag; it still receives `data.PatchesDir()` from InitConfiguration.
-- [init configuration, patches and dry-run client](https://github.com/kubernetes/kubernetes/blob/v1.36.5/cmd/kubeadm/app/cmd/init.go):
-  `PatchesDir()` reads `cfg.Patches.Directory` when using `--config`; the
-  general accessor also supports a flag, but mixed config/patches flags are
-  rejected by command validation (the runbook never combines them);
-  `ManifestDir()` uses the dry-run directory; `KubeConfigPath()` uses admin.conf
-  inside that directory in dry-run. Fake-client writes are printed, not applied;
-  reads can use the supplied existing cluster credentials.
+- [MigrateOldConfig](https://github.com/kubernetes/kubernetes/blob/v1.36.5/cmd/kubeadm/app/util/config/common.go):
+  migration calls `documentMapToInitConfiguration`, then marshals the external
+  v1beta4 configuration. It is not a hand-maintained defaults table.
+- [Shared init loader/defaults](https://github.com/kubernetes/kubernetes/blob/v1.36.5/cmd/kubeadm/app/util/config/initconfiguration.go):
+  init and migrate both decode through the registered scheme (static defaults),
+  then call `SetInitDynamicDefaults` / `SetClusterDynamicDefaults` (dynamic
+  defaults), validate, and marshal the same ClusterConfiguration type.
+- [Init setup and patches](https://github.com/kubernetes/kubernetes/blob/v1.36.5/cmd/kubeadm/app/cmd/init.go):
+  init uses that same loader. `PatchesDir()` reads `cfg.Patches.Directory` with
+  `--config`; `ManifestDir()` redirects dry-run output. Never mix config/patch flags.
+- [Upload-config phase](https://github.com/kubernetes/kubernetes/blob/v1.36.5/cmd/kubeadm/app/cmd/phases/init/uploadconfig.go)
+  and [upload serialization](https://github.com/kubernetes/kubernetes/blob/v1.36.5/cmd/kubeadm/app/phases/uploadconfig/uploadconfig.go):
+  the phase receives init's defaulted configuration, copies ClusterConfiguration,
+  clears separately stored component configs and serializes v1beta4 for the
+  kubeadm-config ConfigMap. CI executes **only this phase with --dry-run** against
+  a loopback GET-only stub and compares its attached would-upload object with
+  the migrated cairo-1 render, apart from the two tags. It never initializes a
+  cluster. CI also validates and dry-runs the **exact generator-written
+  candidate.yaml bytes**, with an image-only etcd comparison and temporary-token
+  cleanup even on failure. Failure of either proof blocks this PR.
 - [etcd rendering and patch application](https://github.com/kubernetes/kubernetes/blob/v1.36.5/cmd/kubeadm/app/phases/etcd/local.go):
   patches are applied before writing/printing. The strict file comparison is
   required because an identical config alone cannot prove an unchanged live Pod.
@@ -688,7 +668,7 @@ branch. Source review and the isolated CI preview are static evidence only.
   `/var/lib/twinfra/host-bootstrap` contains the provisioner inputs, **not** the
   authoritative rendered kubeadm configuration. This runbook never reruns it.
 
-Open live questions: do the host/stored configurations agree strictly (including
-materialized defaults), does the actual etcd preview pass image-only comparison,
-is the existing console ready for its permitted DNS query, and are fresh WAL
-samples sufficient? Each is a stop/checkpoint, never a presumed successful result.
+Open live questions: do the migrated host/stored configurations agree apart
+from the two tags, does the actual etcd preview pass image-only comparison,
+is the existing console ready for its permitted DNS query, and does fresh WAL
+p99 remain below 10 ms (reported against the 4 ms baseline)? Each is a stop/checkpoint, never a presumed successful result.

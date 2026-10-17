@@ -11,7 +11,9 @@ apply phases; the backup, staging, verification, rollback and date requirements 
 Deliver the [owner-run maintenance procedure](../maintenance/etcd-coredns-2026-10.md),
 offline candidate/preview guards and tests. Do not change image locks, acceptance
 logic or receipts. No live execution, full bootstrap, reset or upgrade apply.
-Only the named etcd-local and CoreDNS-addon rendering phases are in scope.
+Under Amendment 4, only the named etcd-local phase and canonical-tag CoreDNS set-image are in scope.
 
 Live acceptance remains Pending for `twinfra-dev-cairo-1`. The owner runs the
 maintenance after review/merge and supplies the evidence; Codex does not sign it.
+
+[Amendment 4](WO-40-twinfra-v0-1-0-release.md#amendment-4-2026-10-17-architect-review-of-pr-70-wo-40c-changes-requested) supersedes raw comparison and all CoreDNS phase/digest instructions: use pinned migrate normalisation and the canonical-tag set-image path only.
