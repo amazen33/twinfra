@@ -19,7 +19,17 @@ TAGS = {'coredns': 'v1.14.7', 'etcd': '3.6.15-0'}
 TAG_PATHS = {('dns', 'imageTag'), ('etcd', 'local', 'imageTag')}
 
 
-def read(path):
+def checked_path(path, directory):
+    path, directory = Path(path), Path(directory).resolve()
+    if '..' in path.parts or path.is_symlink():
+        raise ValueError('Unsafe maintenance path')
+    resolved = path.resolve()
+    if not resolved.is_relative_to(directory):
+        raise ValueError('Path must stay in the maintenance directory')
+    return resolved
+
+
+def read(path, directory):
     def unique(pairs):
         result = {}
         for key, value in pairs:
@@ -27,7 +37,7 @@ def read(path):
                 raise ValueError('Duplicate JSON key: ' + key)
             result[key] = value
         return result
-    return json.loads(Path(path).read_text(encoding='utf-8'), object_pairs_hook=unique)
+    return json.loads(checked_path(path, directory).read_text(encoding='utf-8'), object_pairs_hook=unique)
 
 
 def one(value):
@@ -95,9 +105,9 @@ def base_documents(base):
     init = base[kinds.index('InitConfiguration')]
     if cluster.get('apiVersion') != API or init.get('apiVersion') != API:
         raise ValueError('Require v1beta4 bootstrap configuration')
-    expected = dict(kubernetesVersion='v1.36.5', clusterName='twinfra-dev-cairo-1',
-                    controlPlaneEndpoint='api.dev.cairo-1.twinfra.example.com:6443',
-                    imageRepository='registry.twinfra.example.com/registry.k8s.io')
+    expected = {'kubernetesVersion': 'v1.36.5', 'clusterName': 'twinfra-dev-cairo-1',
+                'controlPlaneEndpoint': 'api.dev.cairo-1.twinfra.example.com:6443',
+                'imageRepository': 'registry.twinfra.example.com/registry.k8s.io'}
     if any(cluster.get(key) != value for key, value in expected.items()):
         raise ValueError('Unexpected cluster identity/version/registry')
     if init.get('nodeRegistration', {}).get('name') != 'twinfra-dev-cairo-1':
@@ -130,8 +140,8 @@ def encoded(value):
 
 
 def config_patch(before, after):
-    return [dict(op='test', path='/data/ClusterConfiguration', value=before),
-            dict(op='replace', path='/data/ClusterConfiguration', value=after)]
+    return [{'op': 'test', 'path': '/data/ClusterConfiguration', 'value': before},
+            {'op': 'replace', 'path': '/data/ClusterConfiguration', 'value': after}]
 
 
 def stored_document(configmap):
@@ -149,14 +159,14 @@ def stored_document(configmap):
         return one(json.loads(parsed.stdout))
 
 
-def write_candidate(base, stored, configmap, lock, output):
+def write_candidate(base, stored, configmap, lock, output, workspace):
     if stored != stored_document(configmap):
         raise ValueError('Stored export differs from saved ConfigMap')
     result, target = candidate(base, stored, lock)
     original = configmap['data']['ClusterConfiguration']
     # The stored JSON export must be bound to this exact saved ConfigMap, not
     # a separately edited object. JSON is used for the equality check via yq.
-    output = Path(output)
+    output = checked_path(output, workspace)
     if output.exists():
         raise ValueError('Output directory already exists; preserve prior candidates')
     after_etcd = copy.deepcopy(stored)
@@ -219,11 +229,14 @@ def parser():
 def main(argv=None):
     args = parser().parse_args(argv)
     try:
-        lock = read(args.lock)
+        workspace = Path(__file__).resolve().parent
+        lock_root = ROOT if args.lock == ROOT / 'deploy/common/bootstrap-images.lock.json' else workspace
+        lock = read(args.lock, lock_root)
         if args.action == 'generate':
-            write_candidate(read(args.base), read(args.stored), read(args.configmap), lock, args.out)
+            write_candidate(read(args.base, workspace), read(args.stored, workspace),
+                            read(args.configmap, workspace), lock, args.out, workspace)
         elif args.action == 'verify-etcd':
-            verify_etcd(read(args.live), read(args.preview), image(lock, 'etcd'))
+            verify_etcd(read(args.live, workspace), read(args.preview, workspace), image(lock, 'etcd'))
         else:
             print(image(lock, args.component, args.digest))
         return 0

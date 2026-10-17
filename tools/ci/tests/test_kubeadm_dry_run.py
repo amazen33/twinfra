@@ -17,6 +17,41 @@ spec.loader.exec_module(guard)
 
 
 class KubeadmGuardTests(unittest.TestCase):
+    def test_maintenance_preview_uses_config_patch_directory_without_mixed_flags(self):
+        repo = ROOT.parents[1]
+        with tempfile.TemporaryDirectory() as temp:
+            work = Path(temp)
+            config = work / 'base.yaml'
+            docs = [dict(apiVersion='kubeadm.k8s.io/v1beta4', kind='InitConfiguration',
+                         nodeRegistration=dict(name='twinfra-dev-cairo-1'),
+                         patches=dict(directory='/private-ci-patches')),
+                    dict(apiVersion='kubeadm.k8s.io/v1beta4', kind='ClusterConfiguration',
+                         clusterName='twinfra-dev-cairo-1', kubernetesVersion='v1.36.5',
+                         controlPlaneEndpoint='api.dev.cairo-1.twinfra.example.com:6443',
+                         imageRepository='registry.twinfra.example.com/registry.k8s.io'),
+                    dict(kind='KubeletConfiguration')]
+            config.write_text(yaml.safe_dump_all(docs))
+            def execute(command, log):
+                if '--help' in command:
+                    return '--config --dry-run'
+                if '--dry-run' in command:
+                    self.assertNotIn('--patches', command)
+                    path = Path(command[command.index('--config') + 1])
+                    inputs = list(yaml.safe_load_all(path.read_text()))
+                    self.assertEqual(inputs[0]['patches']['directory'], '/private-ci-patches')
+                    preview = Path(command[3].split('=', 1)[1])
+                    pod = dict(kind='Pod', metadata=dict(name='etcd'), spec=dict(containers=[
+                        dict(name='etcd', image='registry.twinfra.example.com/registry.k8s.io/etcd:' +
+                             inputs[1]['etcd']['local']['imageTag'],
+                             volumeMounts=[dict(name='etcd-certs', readOnly=True)])]))
+                    (preview / 'etcd.yaml').write_text(yaml.safe_dump(pod))
+                return ''
+            with patch.object(guard, 'execute', side_effect=execute), \
+                 patch.object(guard.os, 'getuid', return_value=1001, create=True), \
+                 patch.object(guard.os, 'getgid', return_value=1001, create=True):
+                guard.maintenance_preview(repo, work / 'binary', config, work)
+            self.assertEqual(json.loads((work / 'maintenance/summary.json').read_text())['etcdDiff'], 'image only')
+
     def test_cli_validation_clears_environment_and_uses_script_home_default(self):
         command=guard.cli_command(PurePosixPath('/ci/host.sh'),
             [PurePosixPath('/ci/pinned'),PurePosixPath('/ci/assets/bin')],['argocd','version','--client'])

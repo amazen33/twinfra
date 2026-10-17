@@ -30,7 +30,7 @@ def fixtures():
                           kind='KubeletConfiguration', cgroupDriver='systemd')]
     cm = dict(kind='ConfigMap', metadata=dict(name='kubeadm-config', namespace='kube-system'),
               data=dict(ClusterConfiguration=guard.encoded(cluster), unrelated='preserved'))
-    return base, copy.deepcopy(cluster), cm, guard.read(ROOT / 'deploy/common/bootstrap-images.lock.json')
+    return base, copy.deepcopy(cluster), cm, guard.read(ROOT / 'deploy/common/bootstrap-images.lock.json', ROOT)
 
 
 def etcd():
@@ -121,11 +121,11 @@ class CandidateTests(unittest.TestCase):
         base, stored, cm, lock = fixtures()
         with tempfile.TemporaryDirectory() as temp, contextlib.redirect_stdout(io.StringIO()) as log:
             out = Path(temp) / 'candidate'
-            guard.write_candidate(base, stored, cm, lock, out)
+            guard.write_candidate(base, stored, cm, lock, out, Path(temp))
             self.assertIn('3.6.15-0', log.getvalue())
             self.assertIn('v1.14.7', log.getvalue())
-            first = guard.read(out / 'etcd-configmap.patch.json')
-            second = guard.read(out / 'dns-configmap.patch.json')
+            first = guard.read(out / 'etcd-configmap.patch.json', out)
+            second = guard.read(out / 'dns-configmap.patch.json', out)
             self.assertEqual(first[0]['value'], cm['data']['ClusterConfiguration'])
             self.assertEqual(second[0]['value'], first[1]['value'])
             etcd_cluster = json.loads(first[1]['value'])
@@ -133,18 +133,18 @@ class CandidateTests(unittest.TestCase):
             self.assertEqual(guard.changes(stored, etcd_cluster), {('etcd', 'local', 'imageTag')})
             self.assertEqual(guard.changes(etcd_cluster, final_cluster), {('dns', 'imageTag')})
             for component, forward in [('etcd', first), ('dns', second)]:
-                backward = guard.read(out / ('rollback-' + component + '-configmap.patch.json'))
+                backward = guard.read(out / ('rollback-' + component + '-configmap.patch.json'), out)
                 self.assertEqual(backward[0]['value'], forward[1]['value'])
                 self.assertEqual(backward[1]['value'], forward[0]['value'])
             with self.assertRaisesRegex(ValueError, 'already exists'):
-                guard.write_candidate(base, stored, cm, lock, out)
+                guard.write_candidate(base, stored, cm, lock, out, Path(temp))
 
     def test_saved_configmap_and_parsed_export_must_match(self):
         base, stored, cm, lock = fixtures()
         stored['clusterName'] = 'edited'
         with tempfile.TemporaryDirectory() as temp:
             with self.assertRaisesRegex(ValueError, 'saved ConfigMap'):
-                guard.write_candidate(base, stored, cm, lock, Path(temp) / 'out')
+                guard.write_candidate(base, stored, cm, lock, Path(temp) / 'out', Path(temp))
             self.assertFalse((Path(temp) / 'out').exists())
 
     def test_yaml_stored_config_uses_existing_yq_read_only(self):
@@ -161,7 +161,24 @@ class CandidateTests(unittest.TestCase):
             file = Path(temp) / 'input.json'
             file.write_text('{"kind":"a","kind":"b"}')
             with self.assertRaisesRegex(ValueError, 'Duplicate'):
-                guard.read(file)
+                guard.read(file, Path(temp))
+
+    def test_inputs_and_output_cannot_escape_maintenance_directory(self):
+        with tempfile.TemporaryDirectory() as temp:
+            work = Path(temp) / 'work'
+            work.mkdir()
+            outside = Path(temp) / 'outside.json'
+            outside.write_text('{}')
+            with self.assertRaisesRegex(ValueError, 'maintenance directory'):
+                guard.read(outside, work)
+            traversal = work / '..' / 'outside.json'
+            with self.assertRaisesRegex(ValueError, 'Unsafe maintenance path'):
+                guard.read(traversal, work)
+            base, stored, cm, lock = fixtures()
+            out = Path(temp) / 'outside-output'
+            with self.assertRaisesRegex(ValueError, 'maintenance directory'):
+                guard.write_candidate(base, stored, cm, lock, out, work)
+            self.assertFalse(out.exists())
 
     def test_cli_failure_is_nonzero_and_creates_no_candidate(self):
         with tempfile.TemporaryDirectory() as temp, contextlib.redirect_stderr(io.StringIO()) as errors:
@@ -197,8 +214,9 @@ class PreviewTests(unittest.TestCase):
         live['spec']['containers'][0]['volumeMounts'] = []
         with self.assertRaisesRegex(ValueError, 'certificate mount'):
             guard.verify_etcd(live, live, 'old')
+        first, second = etcd(), etcd()
         with self.assertRaisesRegex(ValueError, 'image/container'):
-            guard.verify_etcd(etcd(), etcd(), 'other')
+            guard.verify_etcd(first, second, 'other')
 
     def test_api_mirror_pod_runtime_metadata_is_not_ignored(self):
         live = etcd()

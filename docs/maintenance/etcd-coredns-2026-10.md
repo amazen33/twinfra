@@ -257,14 +257,14 @@ conditional permits only inspection of the expected pre-staging failure.
 if sudo python3 "$MAINT/stage-images.py" --lock "$MAINT/bootstrap-images.lock.json" --check > "$MAINT/staging.before.json"; then cat "$MAINT/staging.before.json"; else cat "$MAINT/staging.before.json"; fi
 ```
 
-Expected: staged-verified with no problems; this imports/tag-pins images only,
+Expected: `status: passed`, `images: 11`, `problems: []` with no problems; this imports/tag-pins images only,
 and does not restart pods or reconfigure kubeadm.
 
 ```bash
 sudo python3 "$MAINT/stage-images.py" --lock "$MAINT/bootstrap-images.lock.json"
 ```
 
-Expected: staged-verified, exit 0. A failed check blocks all component changes.
+Expected: `status: passed`, `images: 11`, `problems: []`, exit 0. A failed check blocks all component changes.
 
 ```bash
 sudo python3 "$MAINT/stage-images.py" --lock "$MAINT/bootstrap-images.lock.json" --check
@@ -291,7 +291,9 @@ and candidate validation run before output creation. Every other difference
 fails, including explicit-vs-omitted default fields: **do not auto-normalize,
 merge, remove fields or overwrite the host file to bypass this stop**. The live
 equivalence of the two configurations is unverified; report any refusal to the
-architect. Output is private, new-only and contains no cluster writes.
+architect. Output is private, new-only and contains no cluster writes. Inputs and output
+are confined to the copied helper's maintenance directory; path traversal or
+symlink files are refused.
 
 ```bash
 python3 "$MAINT/control_plane_candidate.py" --lock "$MAINT/bootstrap-images.lock.json" generate --base "$MAINT/base.json" --stored "$MAINT/stored.json" --configmap "$MAINT/kubeadm-config.before.json" --out "$MAINT/candidate"
@@ -471,7 +473,7 @@ monitoring as part of this maintenance.
 curl --fail --silent --show-error http://127.0.0.1:2381/metrics | grep -E '^etcd_disk_wal_fsync_duration_seconds_(bucket|count)'
 ```
 
-Expected: staged-verified again. Owner supplies all preceding evidence for the
+Expected: `status: passed`, `images: 11`, `problems: []` again. Owner supplies all preceding evidence for the
 architect's etcd approval before the following ConfigMap command.
 
 ```bash
@@ -576,7 +578,7 @@ post-etcd ClusterConfiguration. Architect reviews the CoreDNS evidence first.
 kubectl -n kube-system patch configmap kubeadm-config --type=json --patch-file "$MAINT/candidate/dns-configmap.patch.json"
 ```
 
-Expected: staged-verified, then the owner reruns the unchanged baseline through
+Expected: `status: passed`, `images: 11`, `problems: []`, then the owner reruns the unchanged baseline through
 the existing [release acceptance runbook](../runbooks/release-acceptance.md).
 No receipt is signed until that complete acceptance run passes.
 
@@ -666,7 +668,9 @@ branch. Source review and the isolated CI preview are static evidence only.
   CoreDNS accepts config/dry-run/print-manifest. It has no inherited `--patches`
   flag; it still receives `data.PatchesDir()` from InitConfiguration.
 - [init configuration, patches and dry-run client](https://github.com/kubernetes/kubernetes/blob/v1.36.5/cmd/kubeadm/app/cmd/init.go):
-  `PatchesDir()` prefers an available CLI override, then `cfg.Patches.Directory`;
+  `PatchesDir()` reads `cfg.Patches.Directory` when using `--config`; the
+  general accessor also supports a flag, but mixed config/patches flags are
+  rejected by command validation (the runbook never combines them);
   `ManifestDir()` uses the dry-run directory; `KubeConfigPath()` uses admin.conf
   inside that directory in dry-run. Fake-client writes are printed, not applied;
   reads can use the supplied existing cluster credentials.

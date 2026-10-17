@@ -6,6 +6,7 @@ Sudo generates manifests with --dry-run, then returns only those four public
 Pod YAML files to the runner user for assertion and artifact upload.
 """
 import argparse
+import copy
 import hashlib
 import json
 import os
@@ -24,7 +25,8 @@ from platform_image_references import require as require_images, audit as audit_
 VERSION = 'v1.36.5'
 URL = 'https://dl.k8s.io/release/' + VERSION + '/bin/linux/amd64/kubeadm'
 SHA256 = 'be2f2c73cd6d3414b37aafb05016bc3a1da3e17c8393aa75c34636198fefa77c'
-MANIFESTS = ('kube-apiserver.yaml', 'kube-controller-manager.yaml', 'kube-scheduler.yaml', 'etcd.yaml')
+ETCD_MANIFEST = 'etcd.yaml'
+MANIFESTS = ('kube-apiserver.yaml', 'kube-controller-manager.yaml', 'kube-scheduler.yaml', ETCD_MANIFEST)
 
 
 def verify_binary(binary, published, expected=None):
@@ -164,23 +166,28 @@ def maintenance_preview(source, binary, config, directory):
         preview = work / name
         preview.mkdir()
         cfg = work / (name + '.yaml')
-        cfg.write_text(yaml.safe_dump_all(docs))
+        # Redirect only the private patch path in these disposable CI inputs.
+        # kubeadm forbids mixing --config and --patches; the host uses its
+        # unchanged original InitConfiguration path, as documented.
+        isolated = copy.deepcopy(docs)
+        isolated[0]['patches']['directory'] = patches
+        cfg.write_text(yaml.safe_dump_all(isolated))
         command = ['sudo', '-n', 'env', 'KUBEADM_INIT_DRYRUN_DIR=' + str(preview),
                    str(binary), 'init', 'phase', 'etcd', 'local', '--config', str(cfg),
-                   '--patches', patches, '--dry-run']
+                   '--dry-run']
         execute(command, work / (name + '.log'))
         execute(['sudo', '-n', 'chown', str(os.getuid()) + ':' + str(os.getgid()),
-                 str(preview / 'etcd.yaml')], work / (name + '-owner.log'))
-        objects.append(yaml.safe_load((preview / 'etcd.yaml').read_text()))
+                 str(preview / ETCD_MANIFEST)], work / (name + '-owner.log'))
+        objects.append(yaml.safe_load((preview / ETCD_MANIFEST).read_text()))
     guard.verify_etcd(*objects, guard.image(lock, 'etcd'))
     for phase in [('etcd', 'local'), ('addon', 'coredns')]:
         output = execute([str(binary), 'init', 'phase', *phase, '--help'],
                          work / ('-'.join(phase) + '-help.log'))
         if '--config' not in output or '--dry-run' not in output:
             raise ValueError('Required maintenance phase flags unavailable')
-    (work / 'summary.json').write_text(json.dumps(dict(status='passed',
-        scope='isolated renderer comparison, not Dell acceptance',
-        etcdDiff='image only', flags='both phases accept config/dry-run')) + '\n')
+    (work / 'summary.json').write_text(json.dumps({'status': 'passed',
+        'scope': 'isolated renderer comparison, not Dell acceptance',
+        'etcdDiff': 'image only', 'flags': 'both phases accept config/dry-run'}) + '\n')
 
 
 def run(source, assets, report):
