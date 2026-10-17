@@ -233,6 +233,8 @@ class Integration(unittest.TestCase):
             if name.endswith('host.env'):
                 self.assertEqual(raw.replace('DISABLE_NOUVEAU=true\n',''),old(name))
             else:
+                staging=load('graphics_staging_guard','tools/ci/check_staging.py')
+                self.assertEqual(staging.references(raw),staging.references(old(name)))
                 data=yaml.safe_load(raw)
                 selected=[f for f in data['write_files'] if f['path'] in (graphics.FILE,graphics.STATE+'/ownership.json','/usr/local/lib/twinfra/host-graphics.py')]
                 self.assertEqual(len(selected),3)

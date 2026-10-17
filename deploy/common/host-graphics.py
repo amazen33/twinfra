@@ -88,9 +88,9 @@ def ownership():
 
 
 def initramfs_contains(version):
-    image = '/boot/initrd.img-' + version
-    secure(path(image))
-    names = run(['lsinitramfs', image]).splitlines()
+    initrd = '/boot/initrd.img-' + version
+    secure(path(initrd))
+    names = run(['lsinitramfs', initrd]).splitlines()
     return any(name.removeprefix('./') == FILE.lstrip('/') for name in names)
 
 

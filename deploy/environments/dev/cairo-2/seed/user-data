@@ -2175,8 +2175,8 @@ write_files:
     \ p.read_bytes() != BODY.encode()):\n            raise ValueError('Owned graphics\
     \ file differs; no adoption')\n    elif p.exists():\n        raise ValueError('Unowned\
     \ graphics file; no adoption')\n    return data\n\n\ndef initramfs_contains(version):\n\
-    \    image = '/boot/initrd.img-' + version\n    secure(path(image))\n    names\
-    \ = run(['lsinitramfs', image]).splitlines()\n    return any(name.removeprefix('./')\
+    \    initrd = '/boot/initrd.img-' + version\n    secure(path(initrd))\n    names\
+    \ = run(['lsinitramfs', initrd]).splitlines()\n    return any(name.removeprefix('./')\
     \ == FILE.lstrip('/') for name in names)\n\n\ndef rebuild(version, present):\n\
     \    run(['update-initramfs', '-u', '-k', version])\n    if initramfs_contains(version)\
     \ != present:\n        raise ValueError('Initramfs graphics file presence differs')\n\
