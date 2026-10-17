@@ -138,6 +138,22 @@ Application comparison and OpenBao configuration through normal GitOps sync.
 | Amendment 14 reconciliation | Pending | twinfra-platform Synced/Healthy after Server-Side Diff; unsupported-field warning absent from OpenBao logs |
 | 24-hour hardware/platform soak | Pending | Start 2026-10-13T14:43:38Z; completion and kernel-log verdict not supplied |
 
+## Owner-reported display-driver incident (2026-10-17; Amendment 15)
+
+Read-only owner finding: nouveau on the GeForce GT 710 began a framebuffer
+warning loop at **2026-10-17 18:07:58 UTC**, after the prior clean window.
+Reported approximately 9,400 warning traces in the first hour and 19,854 in the
+next, about 1.17 million kernel-log lines/hour. No machine-check, hung-task,
+OOM, I/O or filesystem errors were reported. The prior full acceptance passed
+at 17:08 UTC, before the onset; that does not accept the subsequent soak.
+
+The owner selected option B: keep the card, disable nouveau/nvidiafb using the
+reviewed owned-file/initramfs action, then schedule the reboot. **Remediation,
+post-reboot acceptance and a fresh clean 24-hour soak remain Pending.** No live
+remediation or reboot was performed for this PR. Trigger remains unknown.
+See the [owner procedure](../dev-environment.md#owner-display-driver-recovery-wo-31-amendment-15).
+This adds the finding only; the tester sign-off below is unchanged.
+
 ## Tester sign-off
 
 Tester: Ahmed Mazen (@amazen33), enterprise and cloud tester; QoS tester

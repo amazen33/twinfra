@@ -60,6 +60,8 @@ def request(ssh, action, **values):
     code=(COMMON/'host-admin.py').read_text()
     if action=='check' or action.startswith('network-'):
         code='NETWORK_SOURCE='+repr((COMMON/'host-network.py').read_text())+'\n'+code
+    if action=='check' or action.startswith('graphics-') or action=='bootstrap-finish':
+        code='GRAPHICS_SOURCE='+repr((COMMON/'host-graphics.py').read_text())+'\n'+code
     if action=='bootstrap-preflight':
         # Source the exact Module -1 helpers in memory; --check writes no files.
         code='BOOTSTRAP_SOURCE='+repr((ROOT/'00-setup-ubuntu-host.sh').read_text())+'\n'+code
@@ -126,6 +128,9 @@ def network(ssh, mode, sleeper=time.sleep, dhcp_reservation_confirmed=False):
 
 
 def execute(action, ssh, check=False, apply=False, rollback=False, dhcp_reservation_confirmed=False):
+    if action=='host-graphics':
+        if sum((check,apply,rollback))!=1:raise ValueError('host-graphics requires exactly one of --check, --apply, --rollback')
+        return request(ssh,'graphics-'+('check' if check else 'apply' if apply else 'rollback'))
     if action=='host-network':
         if sum((check,apply,rollback))!=1:raise ValueError('host-network requires exactly one of --check, --apply, --rollback')
         return network(ssh,'check' if check else 'apply' if apply else 'rollback',dhcp_reservation_confirmed=dhcp_reservation_confirmed)

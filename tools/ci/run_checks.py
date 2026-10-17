@@ -18,6 +18,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'host-graphics': ['deploy/common/host-graphics.py','tests/test_host_graphics.py','tests/graphics_receipts.py'],
     'control-plane-maintenance': ['tools/control_plane_candidate.py', 'tools/ci/control_plane_dry_run.py', 'tests/test_control_plane_candidate.py',
         'docs/work-orders/WO-40c-control-plane-maintenance.md', 'docs/maintenance/etcd-coredns-2026-10.md'],
     'release-acceptance': ['tools/platform_accept.py','tests/test_platform_accept.py',
@@ -201,6 +202,8 @@ def main():
         run('candidate-licences', [python, ROOT / 'check_licences.py', '--root', ROOT.parents[1],
                                   '--report', report_dir / 'licences.json'])
         run('candidate-capability-evidence', [python, ROOT / 'check_capabilities.py', '--root', ROOT.parents[1]])
+        if report['modules']['host-graphics']=='present':
+            run('host-graphics-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_host_graphics.py','-v'],unit=True)
         if report['modules']['control-plane-maintenance']=='present':
             run('control-plane-maintenance-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_control_plane_candidate.py','-v'],unit=True)
             run('control-plane-maintenance-real-preview',[python,ROOT/'control_plane_dry_run.py',

@@ -775,6 +775,115 @@ blocks. Since-boot carrier/DHCP losses and retained CRI control-plane restart
 attempts warn. Counts are lower bounds because CRI garbage collection removes
 history; unavailable history warns. The link-loss alert remains a WO-10 follow-up.
 
+### Owner display-driver recovery (WO-31 Amendment 15)
+
+Option B keeps the GeForce GT 710 but disables only `nouveau` and `nvidiafb`.
+This is pending live verification; Codex does not connect, apply or reboot.
+Use the reviewed checkout after merge. First inspect (read-only):
+
+```powershell
+python tools/platform_dev.py host-graphics --context twinfra-dev-cairo-1 --check
+```
+
+The report contains loaded-module booleans, ownership/current-file status,
+initramfs inclusion and count-only kernel health (including last-hour warning
+traces). Before the fix/reboot it can report failed. A journal failure blocks
+kernel-health verification; raw journal messages never enter the JSON report.
+The health gate counts retained kernel-journal events since boot, not stack
+lines. It blocks any machine-check, hung-task or OOM event, or **>100 warning
+trace starts in any rolling hour**; BUG/I/O counts warn. Rotated history is
+explicitly incomplete and cannot establish a clean soak.
+
+Apply requires the existing identity-verified, ready WO-31 host. A warning flood
+does not prevent this scoped repair: identity verification is separate from the
+new kernel-health gate. No supported compute-driver provisioning is changed.
+
+```powershell
+python tools/platform_dev.py host-graphics --context twinfra-dev-cairo-1 --apply
+```
+
+Expected **exit 20**, `status: reboot-required`. The root-owned file
+`/etc/modprobe.d/twinfra-display-drivers.conf` contains exactly:
+
+```text
+blacklist nouveau
+options nouveau modeset=0
+blacklist nvidiafb
+```
+
+The permanent root-only backup/ownership record is
+`/var/lib/twinfra/host-graphics/ownership.json`. First apply requires absence;
+an existing foreign file or modified owned file is refused without adoption.
+The saved previous state is absence; retries preserve that backup. Apply and
+rollback use `update-initramfs -u -k <running-kernel>`, check inclusion with
+`lsinitramfs`, and verify the extracted file's bytes after apply using
+`unmkinitramfs`. Missing Ubuntu initramfs tools or verification failures stop
+the action; no package is installed. Inspect locally before retry/rollback,
+and do not reboot after a failed action. No GRUB edit, module unload, unrelated
+module configuration or automatic reboot occurs. Ubuntu's
+[update-initramfs](https://manpages.ubuntu.com/manpages/noble/man8/update-initramfs.8.html)
+and [unmkinitramfs](https://manpages.ubuntu.com/manpages/noble/man8/unmkinitramfs.8.html)
+describe the running-kernel rebuild and extraction interfaces.
+
+Only after successful verification, the owner schedules the interruption and
+reboots (firmware framebuffer access must be checked locally by the owner):
+
+```powershell
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes twinfra-operator@192.168.1.3 sudo systemctl reboot
+```
+
+Reconnect using the existing key/known_hosts; do not bypass host-key checks.
+Wait for node Ready, then require all three Argo Applications Synced/Healthy:
+
+```powershell
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes twinfra-operator@192.168.1.3 sudo kubectl --kubeconfig /etc/kubernetes/admin.conf wait --for=condition=Ready node/twinfra-dev-cairo-1 --timeout=300s
+```
+
+```powershell
+ssh -o BatchMode=yes -o StrictHostKeyChecking=yes twinfra-operator@192.168.1.3 sudo kubectl --kubeconfig /etc/kubernetes/admin.conf -n twinfra-platform-services get applications -o wide
+```
+
+```powershell
+python tools/platform_dev.py host-graphics --context twinfra-dev-cairo-1 --check
+```
+
+```powershell
+python tools/platform_dev.py host-check --context twinfra-dev-cairo-1
+```
+
+Expected: blacklist current/included, neither display module loaded, no new
+warning/BUG/MCE/hung-task/OOM/I/O events after the new boot, host-check passed.
+If the blacklist is owned but nouveau remains loaded, host-check explicitly
+warns that reboot/verification is pending. Do not infer success from exit 20.
+Then run the owner's private `run-acceptance.ps1` wrapper as in the previous
+baseline, **without** the restart test; refresh the existing tunnel/session and
+roleless token using the [acceptance runbook](runbooks/release-acceptance.md).
+The private wrapper is owner-managed, not a new repository script. Preserve the
+JSON fragment; no signed receipt is overwritten by these tools.
+
+Start a **fresh 24-hour soak** at the successful reboot/verification timestamp.
+Record start/end UTC and count-only host-check results, node/GitOps health and
+acceptance outcome; only the tester signs. The earlier clean window does not
+cover the subsequent display failure. Trigger cause and firmware-console
+behavior remain unverified; loss of complete journal coverage cannot prove a
+clean 24-hour window. No new clean-soak result is claimed here.
+
+If the owner chooses to undo the change after inspection:
+
+```powershell
+python tools/platform_dev.py host-graphics --context twinfra-dev-cairo-1 --rollback
+```
+
+Expected exit 20: only the owned blacklist is removed, the saved absence is
+restored, and the running-kernel initramfs is rebuilt and checked for absence.
+The ownership/backup record is retained for audit/retry. The owner plans any
+subsequent reboot separately; rollback can re-enable the faulty display driver.
+
+Both generated dev profiles set `DISABLE_NOUVEAU=true`. The bare-metal wrapper
+applies the same owned configuration after the shared bootstrap succeeds;
+cairo-2's seed includes the identical file/receipt and a gated initramfs step.
+Production and the shared Module -1 source are unchanged.
+
 ### Dev update strategies
 
 | Workload | Strategy | Reason |

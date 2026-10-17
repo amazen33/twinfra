@@ -286,7 +286,7 @@ def host_environment(row):
     values={'PLATFORM_PROFILE':'dev-'+row['region'],'CLUSTER_NAME':'twinfra-dev-'+row['region'],'CLUSTER_DNS_NAME':'twinfra-dev-'+row['region'],
         'BASE_DOMAIN':'twinfra.example.com','IMAGE_REGISTRY':'registry.twinfra.example.com','REGISTRY_MIRROR':'https://registry.twinfra.example.com',
         'POD_CIDR':row['podCidr'],'SERVICE_CIDR':row['serviceCidr'],'NODE_IP':row['ipAddress'],'NODE_NAME':'twinfra-node',
-        'CONTROL_PLANE_ENDPOINT':'api.dev.'+row['region']+'.twinfra.example.com:6443','BOOTSTRAP_K8S':'true','INSTALL_HPC':'false','ENABLE_GPU':'false','GPU_SMOKE_TEST':'false','RUN_SMOKE_TESTS':'false','IMAGE_STAGING':'true'}
+        'CONTROL_PLANE_ENDPOINT':'api.dev.'+row['region']+'.twinfra.example.com:6443','BOOTSTRAP_K8S':'true','INSTALL_HPC':'false','ENABLE_GPU':'false','GPU_SMOKE_TEST':'false','RUN_SMOKE_TESTS':'false','IMAGE_STAGING':'true','DISABLE_NOUVEAU':'true'}
     values['PAUSE_IMAGE']=json.loads((COMMON/'bootstrap-images.lock.json').read_text())['images']['pause']['canonical']
     boot=json.loads((COMMON/'bootstrap-images.lock.json').read_text())['images']
     values['KUBEADM_DNS_IMAGE_TAG']=boot['coredns']['canonical'].rsplit(':',1)[1]
@@ -329,6 +329,15 @@ def seed(row):
         {'path':'/etc/systemd/journald.conf.d/10-twinfra-dev.conf','permissions':'0644','content':'[Journal]\nSystemMaxUse=500M\n'},
         {'path':'/etc/systemd/system/twinfra-dev-log-caps.service','permissions':'0644','content':'[Unit]\nAfter=vcloud-host-bootstrap.service kubelet.service\nStartLimitIntervalSec=0\n[Service]\nType=oneshot\nRemainAfterExit=yes\nExecStart=/usr/local/lib/twinfra/dev-log-caps.sh\nRestart=on-failure\nRestartSec=30\n[Install]\nWantedBy=multi-user.target\n'}]
     data['runcmd'] += [['systemctl','enable','--now','twinfra-dev-log-caps.service']]
+    if re.search(r'(?m)^DISABLE_NOUVEAU=true$',env['content']):
+        import importlib.util
+        spec=importlib.util.spec_from_file_location('graphics_render',COMMON/'host-graphics.py')
+        graphics=importlib.util.module_from_spec(spec);spec.loader.exec_module(graphics)
+        data['write_files'] += [
+            {'path':graphics.FILE,'permissions':'0644','content':graphics.BODY},
+            {'path':graphics.STATE+'/ownership.json','permissions':'0600','content':json.dumps({'owner':graphics.OWNER,'sha256':graphics.SHA,'backup':None})+'\n'},
+            {'path':'/usr/local/lib/twinfra/host-graphics.py','permissions':'0644','content':(COMMON/'host-graphics.py').read_text()}]
+        data['runcmd'] += [['bash','-c','python3 /usr/local/lib/twinfra/host-graphics.py --bootstrap; rc=$?; if [ "$rc" -eq 20 ]; then exit 0; fi; exit "$rc"']]
     network={'version':2,'ethernets':{'eth0':{'match':{'name':'e*'},'set-name':'eth0','dhcp4':False,'addresses':[row['ipAddress']+'/24'],
         'routes':[{'to':'default','via':'10.50.0.1'}],'nameservers':{'addresses':['1.1.1.1','9.9.9.9']}}}}
     return {'user-data':'#cloud-config\n'+yaml.safe_dump(data,sort_keys=False),'meta-data':yaml.safe_dump({'instance-id':'twinfra-dev-'+row['region'],'local-hostname':'twinfra-dev-'+row['region']}),
@@ -354,7 +363,7 @@ def outputs():
     return result
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','accept','build-images','stage-images','host-check','host-bootstrap','host-ssh','host-firewall','host-storage','host-network'])
+    parser=argparse.ArgumentParser();parser.add_argument('action',choices=['render','check','accept','build-images','stage-images','host-check','host-bootstrap','host-ssh','host-firewall','host-storage','host-network','host-graphics'])
     parser.add_argument('--context');parser.add_argument('--ssh',default='twinfra-operator@192.168.1.3');parser.add_argument('--check',action='store_true');parser.add_argument('--apply',action='store_true');parser.add_argument('--rollback',action='store_true');parser.add_argument('--archive-dir',type=Path)
     parser.add_argument('--download-inputs',action='store_true',help='Owner-only pinned image/wheel download for build-images')
     parser.add_argument('--refresh-console',action='store_true',help='WO-34: propose a Python patch/base metadata refresh through the builders')
@@ -388,7 +397,7 @@ def main():
         return 1
     if args.dhcp_reservation_confirmed and (args.action!='host-network' or not (args.apply or args.rollback)):
         parser.error('--dhcp-reservation-confirmed requires host-network --apply or --rollback')
-    if args.rollback and args.action!='host-network':parser.error('--rollback is only for host-network')
+    if args.rollback and args.action not in ('host-network','host-graphics'):parser.error('--rollback is only for host-network or host-graphics')
     if sum((args.check,args.apply,args.rollback))>1:parser.error('--check, --apply and --rollback are mutually exclusive')
     if args.download_inputs and args.action!='build-images':parser.error('--download-inputs is only for build-images')
     if args.refresh_console and args.action!='build-images':parser.error('--refresh-console is only for build-images')
