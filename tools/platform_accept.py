@@ -272,7 +272,12 @@ def image_problems(pods, lock, cri_ids):
             errors.append(label + ': unverified image')
             continue
         try:
-            if not runtime_matches(actual, digest, cri_ids, ref):
+            reported = runtime_reference(actual)
+            if ref in cri_ids and cri_ids[ref] is None:
+                errors.append(label + ': canonical CRI identity unavailable or differs from lock')
+            elif reported.rsplit('@', 1)[-1] != digest and reported in cri_ids and cri_ids[reported] is None:
+                errors.append(label + ': runtime CRI identity lookup failed')
+            elif not runtime_matches(actual, digest, cri_ids, ref):
                 errors.append(label + ': runtime image digest/CRI ID mismatch')
         except ValueError:
             errors.append(label + ': malformed runtime image ID')
@@ -322,18 +327,41 @@ def versions(client, pods, node):
     return result
 
 
+def cri_identity(transport, ref, digest=None):
+    try:
+        info = json.loads(transport.run(['sudo', '-n', 'crictl', 'inspecti', ref]))['status']
+        if digest and not any(d.endswith('@' + digest) for d in info.get('repoDigests', [])):
+            return None
+        identity = info['id']
+        if not isinstance(identity, str) or not re.fullmatch(r'sha256:[a-f0-9]{64}', identity):
+            return None
+        return identity
+    except (ValueError, OSError, KeyError, TypeError, AttributeError, subprocess.SubprocessError):
+        # A failed lookup is evidence of an unverified image, never a reason to
+        # abort or serialize command/exception output into the receipt.
+        return None
+
+
 def cri_identities(transport, lock, pods):
     identities = {}
+    allowed = {}
     for entry in lock['images'].values():
         ref = cri_reference(entry['canonical'])
-        info = json.loads(transport.run(['sudo', '-n', 'crictl', 'inspecti', ref]))['status']
-        if not any(d.endswith('@' + entry['digest']) for d in info.get('repoDigests', [])):
-            raise ValueError('CRI manifest identity differs from lock')
-        identities[ref] = info['id']
-    for status in [c for pod in pods for c in container_statuses(pod)]:
-        ref = runtime_reference(status.get('imageID', ''))
+        allowed[ref] = entry['digest']
+        identities[ref] = cri_identity(transport, ref, entry['digest'])
+    for _, container, status in container_images(pods):
+        canonical = cri_reference(container['image'])
+        digest = allowed.get(canonical)
+        if not digest:
+            continue  # image_problems reports unlocked container references.
+        try:
+            ref = runtime_reference(status.get('imageID', ''))
+        except ValueError:
+            continue  # image_problems reports missing/malformed runtime IDs.
+        if ref.rsplit('@', 1)[-1] == digest:
+            continue  # A matching manifest digest needs no temporary-name lookup.
         if ref not in identities and ref not in identities.values():
-            identities[ref] = json.loads(transport.run(['sudo', '-n', 'crictl', 'inspecti', ref]))['status']['id']
+            identities[ref] = cri_identity(transport, ref)
     return identities
 
 

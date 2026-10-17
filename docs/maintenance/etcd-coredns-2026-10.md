@@ -442,6 +442,10 @@ sudo python3 "$MAINT/stage-images.py" --lock "$MAINT/bootstrap-images.lock.json"
 ```
 
 Expected: only `etcd.local.imageTag` changes in the stored ClusterConfiguration.
+The replacement is sorted YAML, as kubeadm uploads it, so the existing host
+identity reader can resolve `clusterName` and `controlPlaneEndpoint`. The JSON
+Patch envelope remains JSON; its ClusterConfiguration string is YAML. Reverse
+patches use the same YAML format and retain their exact prior-value CAS tests.
 The JSON Patch tests the exact original value first and refuses concurrent
 changes. It does not replace other ConfigMap keys or the host bootstrap file.
 
@@ -624,6 +628,49 @@ copies remain untouched. Delete only the four private migrate temporary files
 ```bash
 rm -- "$MAINT/.migrate-host-input.yaml" "$MAINT/.migrate-host.yaml" "$MAINT/.migrate-stored-input.yaml" "$MAINT/.migrate-stored.yaml"
 ```
+
+## Owner-reported maintenance record, 2026-10-17
+
+The owner reported successful live maintenance through the private wrapper of
+this runbook: backups and the verified etcd snapshot (revision **988107**) are on
+the Dell and laptop with matching hashes; **11/11** images were staged. Migrated
+host/stored configurations agreed apart from the tags, and the etcd preview was
+image-only. etcd **3.6.15-0** runs with its locked digest, endpoint healthy, WAL
+fsync p99 **<= 4 ms over 1,224 samples**. CoreDNS **v1.14.7** runs with its locked
+digest; Corefile unchanged, console DNS resolves, Cilium and Argo CD healthy.
+Both tags were recorded in kubeadm-config.
+
+The first generator wrote JSON inside ClusterConfiguration, which broke the
+line-based host identity reader. The owner restored kubeadm YAML with identical
+content using CAS; WO-40d fixes future forward/rollback generation. The baseline
+at **05:38 UTC, b92dd20** then passed host/network and both staging locks but
+aborted while resolving vanished `import-*` image names before deployedImages.
+WO-40d skips that unnecessary lookup for an exact locked manifest digest and
+records any other failed lookup as a sanitized deployed-image problem. The owner
+must rerun acceptance after merge. This is owner-reported operational context,
+not a signed acceptance receipt; no receipt is changed here.
+
+## Import-name investigation (static, report only)
+
+Repository `stage_applications` imports the verified, fully named OCI archive,
+tags the canonical reference and labels canonical/normalized references managed
+and pinned. Neither it, `pin_canonical`, nor the shared staging agent removes
+import names; a repository search found no active image-removal/prune command.
+This does **not** identify what removed the two names on the Dell: no host or
+daemon logs were inspected. Their removal cause remains unverified.
+
+In the pinned [containerd v2.2.1 import command](https://github.com/containerd/containerd/blob/v2.2.1/cmd/ctr/commands/images/import.go),
+`--digests` adds digest aliases using the date-based default prefix. The
+[client importer](https://github.com/containerd/containerd/blob/v2.2.1/client/import.go)
+also retains named OCI descriptors independently of that option; the
+[reference translator](https://github.com/containerd/containerd/blob/v2.2.1/core/images/archive/reference.go)
+leaves full references intact. Both builders supply a full
+`org.opencontainers.image.ref.name`, which `validate_archive` reads and staging
+uses as the tagging source. Therefore **the extra date-based aliases are not
+required by the current named-archive staging algorithm**; canonical digest
+references are explicitly created and verified separately. That is a source
+analysis conclusion, not a live import-without-the-flag test. Import naming and
+`--digests` remain unchanged pending architect review.
 
 ## Source verification and limits
 

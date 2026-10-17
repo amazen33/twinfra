@@ -144,3 +144,31 @@ PR #70 is careful work: CAS-guarded ConfigMap patches, a strict etcd image-only 
    - CI also runs `kubeadm config validate` and the etcd dry run on the exact `candidate.yaml` the generator writes (JSON documents separated by `---`), not only on the YAML re-dump.
 
 The stop rules, CAS patches, no-fallback rule for etcd, backups and dates stand.
+
+## Amendment 5 (2026-10-17, architect): live maintenance result and one generator defect
+
+**Live result (owner, 2026-10-17, through the owner-private wrapper of the reviewed runbook).** Backups and the verified snapshot (revision 988107) are on the Dell and the laptop with matching hashes. The two images were staged (11 of 11). The migrated host and stored configurations agreed apart from the tags, and the etcd preview was image-only. etcd runs 3.6.15-0 with the locked digest: healthy, WAL p99 at most 4 ms over 1,224 samples. CoreDNS runs v1.14.7 with the locked digest; the Corefile is unchanged, DNS resolves from the console, and Cilium and Argo CD are healthy. Both tags are recorded in `kubeadm-config`.
+
+**Defect (WO-40c generator; missed in my review of PR #70).** `control_plane_candidate.py` writes the ConfigMap's `ClusterConfiguration` as **JSON** text. kubeadm writes YAML, and the WO-31 host check (`host-admin.py` `config_value`) reads `clusterName:` and `controlPlaneEndpoint:` line by line. After the patches, `host-check` blocks with "bootstrap identity/version/listener verification failed", and `host-network` refuses with "requires identity-verified ready WO-31 host". The live ConfigMap was restored to kubeadm's YAML format, with identical content, by a compare-and-swap patch (the saved original YAML plus the two tags).
+
+**Codex follow-up (small PR, WO-40d):**
+- The generator writes YAML in kubeadm's format (sorted keys, as uploaded), never JSON.
+- A test runs `host-admin.config_value` on every generated ConfigMap value, so both identity keys resolve.
+- The rollback patches are regenerated to match.
+- Add the live result above to the runbook's record, without editing any receipt.
+
+## Amendment 6 (2026-10-17, architect): the acceptance suite aborts on locally built images; WO-40d scope
+
+**Third baseline run (05:38 UTC, `b92dd20`).** Passed: calendar (2 warnings), node, initial pods, GitOps, `host-check`, `host-network`, both staging locks. Then the run aborted inside `cri_identities`, before `deployedImages`.
+
+**Cause (reproduced read-only).** For `twinfra-console` and `twinfra-postgres` (locally built, imported by `stage_applications` with `ctr images import --digests`), the kubelet reports `imageID` as `docker.io/library/import-2026-10-15@sha256:ec1eebc9…` and `docker.io/library/import-2026-10-13@sha256:baea2bf7…`. Those temporary import names no longer exist in containerd, so `crictl inspecti` exits non-zero, `SSH.run` raises, and the whole suite stops. The reported digests are **exactly the locked digests**, and `image_problems` returns **no problems** with the same data. The platform is correct; the suite's lookup is unnecessary and fragile.
+
+**WO-40d (one small Codex PR, no live action) now contains:**
+1. **Suite fix (`platform_accept.py`).**
+   - `cri_identities` looks up a runtime reference only when its digest is not the locked digest of the canonical reference that container runs. A reference whose digest equals the lock is verified by digest, as `runtime_matches` already does first.
+   - A lookup that still fails becomes a recorded `deployedImages` problem for that container, never an exception that aborts the run.
+   - Tests: an imported image whose `import-*` name is gone passes when its digest matches; a digest mismatch whose lookup fails is reported as a problem; the suite still never prints command output.
+2. **Generator fix (Amendment 5).** YAML in kubeadm's format, the `config_value` test, regenerated rollback patches.
+3. **Report only, no change:** whether `stage_applications` (or anything else) removes the `import-*` digest names after tagging, and whether `--digests` is still needed. Any change to import naming waits for my review.
+
+Then the owner updates `E:\twinfra-live` to the merge commit and reruns `run-acceptance.ps1`.

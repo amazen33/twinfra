@@ -167,6 +167,14 @@ def encoded(value):
     return json.dumps(value, indent=2, sort_keys=True) + '\n'
 
 
+def cluster_yaml(value):
+    # Module -1 already installs pinned yq. Keep kubeadm's sorted YAML mapping
+    # format so the host identity reader can resolve its top-level fields.
+    result = subprocess.run(['yq', 'eval', '-p=json', '-o=yaml', '-P', 'sort_keys(..)', '-'],
+                            input=encoded(value), capture_output=True, text=True, timeout=30, check=True)
+    return result.stdout
+
+
 def private_write(path, text):
     with Path(path).open('x', encoding='utf-8') as stream:
         stream.write(text)
@@ -211,12 +219,13 @@ def write_candidate(base, stored, configmap, lock, output, workspace, kubeadm=No
     set_tag(after_etcd, 'etcd', TAGS['etcd'])
     after_both = copy.deepcopy(after_etcd)
     set_tag(after_both, 'coredns', TAGS['coredns'])
-    etcd_text, final_text = encoded(after_etcd), encoded(after_both)
+    etcd_text, final_text = cluster_yaml(after_etcd), cluster_yaml(after_both)
+    rollback_text = cluster_yaml(stored)
     files = {'candidate.yaml': '---\n'.join(encoded(doc) for doc in result),
-             'cluster.yaml': encoded(target),
+             'cluster.yaml': cluster_yaml(target),
              'etcd-configmap.patch.json': encoded(config_patch(original, etcd_text)),
              'dns-configmap.patch.json': encoded(config_patch(etcd_text, final_text)),
-             'rollback-etcd-configmap.patch.json': encoded(config_patch(etcd_text, original)),
+             'rollback-etcd-configmap.patch.json': encoded(config_patch(etcd_text, rollback_text)),
              'rollback-dns-configmap.patch.json': encoded(config_patch(final_text, etcd_text))}
     output.mkdir(mode=0o700)
     for name, text in files.items():

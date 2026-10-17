@@ -9,6 +9,11 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Changed
 
+- WO-40d: accept locked runtime digests without resolving expired import names;
+  report failed CRI lookups as sanitized deployed-image problems. Emit sorted
+  kubeadm YAML in maintenance ConfigMap replacements and rollback patches so
+  host identity checks continue to read the cluster name and API endpoint.
+
 - Add the owner-run WO-40a dev acceptance suite, sanitized receipt fragments and
   consolidated Pending receipt; reflect only the signed WO-36/36a network scope
   as Dev-verified. Fail exception expiry within 7 days and warn within 21 days.
