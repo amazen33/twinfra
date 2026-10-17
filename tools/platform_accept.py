@@ -299,7 +299,26 @@ def valkey(client, pods):
             'argoClientsConnected': connected}
 
 
+def replica_version(client, pods, label, name, container, command):
+    values = []
+    for pod in pods:
+        if (pod['metadata'].get('labels', {}).get(label) != name or not ready(pod) or
+                pod['metadata'].get('deletionTimestamp')):
+            continue
+        try:
+            # System components are outside NS; no credentials on argv.
+            raw = client.call('-n', pod['metadata']['namespace'], 'exec', pod['metadata']['name'], '-c', container, '--', *command)
+            version = re.search(r'\bv?(\d+\.\d+(?:\.\d+)?(?:-(?:alpha|beta|rc)\.?\d+)?)\b', raw)
+            if not version or len(raw) > 4096:
+                raise ValueError('Invalid version response')
+            values.append(version[1])  # Only the version, never command output.
+        except (ValueError, OSError, KeyError, TypeError, AttributeError, subprocess.SubprocessError):
+            values.append(None)  # Still query every other Ready replica.
+    return values[0] if values and None not in values and len(set(values)) == 1 else None
+
+
 def versions(client, pods, node):
+    problems = []
     result = {'kubernetes': node['status']['nodeInfo']['kubeletVersion'],
               'containerd': node['status']['nodeInfo']['containerRuntimeVersion']}
     commands = {'cilium': ('k8s-app', 'cilium', 'cilium-agent', ['cilium-dbg', 'version']),
@@ -312,19 +331,15 @@ def versions(client, pods, node):
                 'openbao': (NAME_LABEL, 'twinfra-openbao', 'openbao', ['bao', 'version']),
                 'valkey': (NAME_LABEL, 'argocd-redis', 'redis', ['valkey-server', '--version'])}
     for key, (label, name, container, command) in commands.items():
-        matches = [p for p in pods if p['metadata'].get('labels', {}).get(label) == name]
-        if len(matches) != 1:
-            raise ValueError('Version workload missing/ambiguous: ' + key)
-        pod = matches[0]
-        # System components are outside NS; no credentials on argv.
-        raw = client.call('-n', pod['metadata']['namespace'], 'exec', pod['metadata']['name'], '-c', container, '--', *command)
-        if not raw.strip() or len(raw) > 4096:
-            raise ValueError('Invalid version response: ' + key)
-        result[key] = raw.strip()
+        version = replica_version(client, pods, label, name, container, command)
+        if version is None:
+            problems.append(key + ': Ready-pod versions unavailable or unequal')
+        else:
+            result[key] = version
     console = one_pod(pods, 'twinfra-console')
     result['console'] = {'image': console['spec']['containers'][0]['image'],
                          'versioning': 'Content-addressed image; no embedded release-version claim'}
-    return result
+    return result, problems
 
 
 def cri_identity(transport, ref, digest=None):
@@ -473,7 +488,13 @@ class AcceptanceRun:
               'unsigned': statuses[1], 'duplicate': statuses[2], 'roleless': statuses[3]})
         cache = valkey(self.client, self.pods)
         self.check('valkey', cache_ok(cache), cache)
-        self.report['versions'] = versions(self.client, self.pods, self.node)
+        self.report['versions'] = {}
+        try:
+            self.report['versions'], problems = versions(self.client, self.pods, self.node)
+        except (ValueError, OSError, KeyError, IndexError, TypeError, AttributeError,
+                subprocess.SubprocessError, http.client.HTTPException):
+            problems = ['Version report unavailable']  # Never serialize exception/output.
+        self.check('versions', not problems, problems)
 
     def reconnected(self, current, restarted):
         new = one_pod(current, 'argocd-redis')
@@ -505,7 +526,9 @@ class AcceptanceRun:
             self.report['checks']['valkeyRestart'] = {'status': 'pending',
                 'details': 'Owner must run --with-restart to prove reconnect'}
             return
-        if any(c['status'] == 'failed' for c in self.report['checks'].values()):
+        # Informational version failures do not block the explicitly requested
+        # restart test; health/security/image failures still refuse mutation.
+        if any(c['status'] == 'failed' for name, c in self.report['checks'].items() if name != 'versions'):
             raise ValueError('Cache restart refused because pre-restart acceptance failed')
         cache = one_pod(self.pods, 'argocd-redis')
         self.replaced = cache['metadata']['uid']

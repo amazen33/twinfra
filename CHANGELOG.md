@@ -9,6 +9,10 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Changed
 
+- WO-40e: query every Ready replica for component-version consensus; record
+  sanitized version failures while continuing the requested restart and final
+  checks. Reports retain parsed versions only, never raw probe output.
+
 - WO-40d: accept locked runtime digests without resolving expired import names;
   report failed CRI lookups as sanitized deployed-image problems. Emit sorted
   kubeadm YAML in maintenance ConfigMap replacements and rollback patches so
