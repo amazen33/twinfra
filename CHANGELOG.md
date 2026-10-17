@@ -9,6 +9,10 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Changed
 
+- Record the WO-40a v0.1.0 baseline acceptance evidence for `twinfra-dev-cairo-1`
+  (2026-10-17, commit a89de0a, status passed with the owner-authorized restart).
+  The tester sign-off stays Pending; the template is unchanged.
+
 - WO-40e: query every Ready replica for component-version consensus; record
   sanitized version failures while continuing the requested restart and final
   checks. Reports retain parsed versions only, never raw probe output.
