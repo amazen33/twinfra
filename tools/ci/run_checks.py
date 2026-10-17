@@ -18,6 +18,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
+    'control-plane-maintenance': ['tools/control_plane_candidate.py', 'tests/test_control_plane_candidate.py',
+        'docs/work-orders/WO-40c-control-plane-maintenance.md', 'docs/maintenance/etcd-coredns-2026-10.md'],
     'release-acceptance': ['tools/platform_accept.py','tests/test_platform_accept.py',
                            'docs/work-orders/WO-40-twinfra-v0-1-0-release.md'],
     'host-network': ['deploy/common/host-network.py','deploy/common/dev-update-strategies.json',
@@ -320,6 +322,8 @@ def main():
             run('host-network-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_host_network.py','-v'],unit=True)
         if report['modules']['release-acceptance']=='present':
             run('release-acceptance-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_platform_accept.py','-v'],unit=True)
+        if report['modules']['control-plane-maintenance']=='present':
+            run('control-plane-maintenance-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_control_plane_candidate.py','-v'],unit=True)
         if report['modules']['dev-image-build']=='present':
             run('dev-image-build-tests',[python,'-m','unittest','discover','-s','tests','-p','test_build_images.py','-v'],unit=True)
         if report['modules']['lab/wsl'] == 'present':
