@@ -18,7 +18,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent
 OPTIONAL = {
-    'control-plane-maintenance': ['tools/control_plane_candidate.py', 'tests/test_control_plane_candidate.py',
+    'control-plane-maintenance': ['tools/control_plane_candidate.py', 'tools/ci/control_plane_dry_run.py', 'tests/test_control_plane_candidate.py',
         'docs/work-orders/WO-40c-control-plane-maintenance.md', 'docs/maintenance/etcd-coredns-2026-10.md'],
     'release-acceptance': ['tools/platform_accept.py','tests/test_platform_accept.py',
                            'docs/work-orders/WO-40-twinfra-v0-1-0-release.md'],
@@ -324,6 +324,9 @@ def main():
             run('release-acceptance-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_platform_accept.py','-v'],unit=True)
         if report['modules']['control-plane-maintenance']=='present':
             run('control-plane-maintenance-offline-tests',[python,'-m','unittest','discover','-s','tests','-p','test_control_plane_candidate.py','-v'],unit=True)
+            run('control-plane-maintenance-real-preview',[python,ROOT/'control_plane_dry_run.py',
+                '--source',source,'--assets',assets,'--config',report_dir/'kubeadm-dry-run/dev-cairo-1/kubeadm.yaml',
+                '--out',report_dir/'control-plane-maintenance'])
         if report['modules']['dev-image-build']=='present':
             run('dev-image-build-tests',[python,'-m','unittest','discover','-s','tests','-p','test_build_images.py','-v'],unit=True)
         if report['modules']['lab/wsl'] == 'present':

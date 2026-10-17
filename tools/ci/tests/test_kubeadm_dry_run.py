@@ -19,6 +19,9 @@ spec.loader.exec_module(guard)
 class KubeadmGuardTests(unittest.TestCase):
     def test_maintenance_preview_uses_config_patch_directory_without_mixed_flags(self):
         repo = ROOT.parents[1]
+        spec = importlib.util.spec_from_file_location('maintenance_preview', ROOT / 'control_plane_dry_run.py')
+        preview_guard = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(preview_guard)
         with tempfile.TemporaryDirectory() as temp:
             work = Path(temp)
             config = work / 'base.yaml'
@@ -46,10 +49,10 @@ class KubeadmGuardTests(unittest.TestCase):
                              volumeMounts=[dict(name='etcd-certs', readOnly=True)])]))
                     (preview / 'etcd.yaml').write_text(yaml.safe_dump(pod))
                 return ''
-            with patch.object(guard, 'execute', side_effect=execute), \
+            with patch.object(preview_guard, 'execute', side_effect=execute), \
                  patch.object(guard.os, 'getuid', return_value=1001, create=True), \
                  patch.object(guard.os, 'getgid', return_value=1001, create=True):
-                guard.maintenance_preview(repo, work / 'binary', config, work)
+                preview_guard.maintenance_preview(repo, work / 'binary', config, work)
             self.assertEqual(json.loads((work / 'maintenance/summary.json').read_text())['etcdDiff'], 'image only')
 
     def test_cli_validation_clears_environment_and_uses_script_home_default(self):

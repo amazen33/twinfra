@@ -6,7 +6,6 @@ Sudo generates manifests with --dry-run, then returns only those four public
 Pod YAML files to the runner user for assertion and artifact upload.
 """
 import argparse
-import copy
 import hashlib
 import json
 import os
@@ -25,8 +24,7 @@ from platform_image_references import require as require_images, audit as audit_
 VERSION = 'v1.36.5'
 URL = 'https://dl.k8s.io/release/' + VERSION + '/bin/linux/amd64/kubeadm'
 SHA256 = 'be2f2c73cd6d3414b37aafb05016bc3a1da3e17c8393aa75c34636198fefa77c'
-ETCD_MANIFEST = 'etcd.yaml'
-MANIFESTS = ('kube-apiserver.yaml', 'kube-controller-manager.yaml', 'kube-scheduler.yaml', ETCD_MANIFEST)
+MANIFESTS = ('kube-apiserver.yaml', 'kube-controller-manager.yaml', 'kube-scheduler.yaml', 'etcd.yaml')
 
 
 def verify_binary(binary, published, expected=None):
@@ -142,54 +140,6 @@ install_tooling
     return results
 
 
-def maintenance_preview(source, binary, config, directory):
-    """Prove image-only etcd re-render with the pinned binary, without a cluster."""
-    helper = source / 'tools/control_plane_candidate.py'
-    if not helper.is_file():
-        return
-    import importlib.util
-    spec = importlib.util.spec_from_file_location('maintenance_candidate', helper)
-    guard = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(guard)
-    work = directory / 'maintenance'
-    work.mkdir()
-    base = list(yaml.safe_load_all(config.read_text()))
-    patches = base[0]['patches']['directory']
-    base[0]['patches']['directory'] = '/var/lib/vcloud-host/kubeadm-patches'
-    cluster = next(doc for doc in base if doc['kind'] == 'ClusterConfiguration')
-    guard.set_tag(cluster, 'etcd', '3.6.8-0')
-    guard.set_tag(cluster, 'coredns', 'v1.14.2')
-    lock = json.loads((source / 'deploy/common/bootstrap-images.lock.json').read_text())
-    candidate, _ = guard.candidate(base, cluster, lock)
-    objects = []
-    for name, docs in [('before', base), ('after', candidate)]:
-        preview = work / name
-        preview.mkdir()
-        cfg = work / (name + '.yaml')
-        # Redirect only the private patch path in these disposable CI inputs.
-        # kubeadm forbids mixing --config and --patches; the host uses its
-        # unchanged original InitConfiguration path, as documented.
-        isolated = copy.deepcopy(docs)
-        isolated[0]['patches']['directory'] = patches
-        cfg.write_text(yaml.safe_dump_all(isolated))
-        command = ['sudo', '-n', 'env', 'KUBEADM_INIT_DRYRUN_DIR=' + str(preview),
-                   str(binary), 'init', 'phase', 'etcd', 'local', '--config', str(cfg),
-                   '--dry-run']
-        execute(command, work / (name + '.log'))
-        execute(['sudo', '-n', 'chown', str(os.getuid()) + ':' + str(os.getgid()),
-                 str(preview / ETCD_MANIFEST)], work / (name + '-owner.log'))
-        objects.append(yaml.safe_load((preview / ETCD_MANIFEST).read_text()))
-    guard.verify_etcd(*objects, guard.image(lock, 'etcd'))
-    for phase in [('etcd', 'local'), ('addon', 'coredns')]:
-        output = execute([str(binary), 'init', 'phase', *phase, '--help'],
-                         work / ('-'.join(phase) + '-help.log'))
-        if '--config' not in output or '--dry-run' not in output:
-            raise ValueError('Required maintenance phase flags unavailable')
-    (work / 'summary.json').write_text(json.dumps({'status': 'passed',
-        'scope': 'isolated renderer comparison, not Dell acceptance',
-        'etcdDiff': 'image only', 'flags': 'both phases accept config/dry-run'}) + '\n')
-
-
 def run(source, assets, report):
     source, assets, report = (p.resolve() for p in (source, assets, report))
     report.mkdir(parents=True, exist_ok=True)
@@ -230,9 +180,7 @@ def run(source, assets, report):
                     directory / 'assert-etcd.log', env=env)
             objects=[yaml.safe_load((preview/file).read_text()) for file in MANIFESTS]
             image_lock=json.loads((source/'deploy/common/bootstrap-images.lock.json').read_text())
-            if name=='dev-cairo-1':
-                require_images(objects,image_lock,'B','kubeadm')
-                maintenance_preview(source,binary,config,directory)
+            if name=='dev-cairo-1':require_images(objects,image_lock,'B','kubeadm')
             else:
                 debt=audit_images(objects,image_lock,'B','kubeadm')
                 (directory/'production-image-reference-debt.txt').write_text(production_report(debt),encoding='utf-8')
