@@ -79,7 +79,7 @@ class FakeClient:
             ac.one_pod(self.pods, 'argocd-redis')['metadata']['uid'] = 'replacement-cache'
             for app in self.apps:
                 app['status']['reconciledAt'] = (NOW + timedelta(seconds=1)).isoformat()
-        return 'fixture-version\n'
+        return 'fixture 1.2.3\n'
 
 
 class FakeSSH:
@@ -141,6 +141,83 @@ class Acceptance(unittest.TestCase):
         deletes = [c for c in self.client.calls if 'delete' in c]
         self.assertEqual(len(deletes), 1)
         self.assertEqual(deletes[0], ('-n', ac.NS, 'delete', 'pod', 'argocd-redis-pod', '--wait=false'))
+
+    def version_replicas(self, outputs):
+        first = next(p for p in self.client.pods if p['metadata']['labels'].get('k8s-app') == 'kube-dns')
+        second = copy.deepcopy(first)
+        second['metadata'].update(name='kube-dns-second', uid='kube-dns-second')
+        self.client.pods.append(second)
+        original = self.client.call
+        def call(*args, **kwargs):
+            if '/coredns' in args:
+                self.client.calls.append(args)
+                value = outputs[args[3]]
+                if isinstance(value, Exception):raise value
+                return value
+            return original(*args, **kwargs)
+        self.client.call = call
+        return first['metadata']['name'], second['metadata']['name']
+
+    def test_equal_ready_coredns_replicas_record_one_version_and_probe_both(self):
+        names = self.version_replicas({'kube-dns-pod': 'CoreDNS-1.14.7\n',
+                                      'kube-dns-second': 'CoreDNS-1.14.7\n'})
+        result = self.run_accept()
+        self.assertEqual(result['checks']['versions']['status'], 'passed', result)
+        self.assertEqual(result['versions']['coredns'], '1.14.7')
+        self.assertEqual({c[3] for c in self.client.calls if '/coredns' in c}, set(names))
+        self.assertIn('podsFinal', result['checks'])
+
+    def test_unequal_coredns_versions_fail_but_restart_and_final_checks_continue(self):
+        self.version_replicas({'kube-dns-pod': 'CoreDNS-1.14.7\n',
+                               'kube-dns-second': 'CoreDNS-1.14.6\n'})
+        self.args.with_restart = True
+        result = self.run_accept()
+        self.assertEqual(result['status'], 'failed')
+        self.assertEqual(result['checks']['versions']['status'], 'failed')
+        self.assertNotIn('coredns', result['versions'])
+        self.assertNotIn('error', result)
+        self.assertTrue(self.client.restarted)
+        for check in ('valkeyRestart', 'podsFinal', 'deployedImagesFinal', 'gitopsFinal'):
+            self.assertEqual(result['checks'][check]['status'], 'passed')
+
+    def test_failed_exec_is_sanitized_and_does_not_skip_other_replica_or_later_steps(self):
+        names = self.version_replicas({'kube-dns-pod': subprocess.CalledProcessError(
+            1, ['private-command'], output=TOKEN, stderr=COOKIE),
+            'kube-dns-second': 'CoreDNS-1.14.7\n' + TOKEN + COOKIE})
+        self.args.with_restart = True
+        with patch('sys.stdout', new_callable=io.StringIO) as stdout, \
+             patch('sys.stderr', new_callable=io.StringIO) as stderr:
+            result = self.run_accept()
+        self.assertEqual(result['checks']['versions']['status'], 'failed')
+        self.assertEqual({c[3] for c in self.client.calls if '/coredns' in c}, set(names))
+        self.assertNotIn('error', result)
+        self.assertTrue(self.client.restarted)
+        self.assertIn('gitopsFinal', result['checks'])
+        serialized = json.dumps(result) + stdout.getvalue() + stderr.getvalue()
+        for private in (TOKEN, COOKIE, 'private-command', 'CoreDNS-1.14.7'):
+            self.assertNotIn(private, serialized)
+
+    def test_success_records_only_version_not_command_output(self):
+        self.version_replicas({'kube-dns-pod': 'CoreDNS-1.14.7\n' + TOKEN,
+                               'kube-dns-second': 'CoreDNS-1.14.7\n' + COOKIE})
+        result = self.run_accept()
+        self.assertEqual(result['checks']['versions']['status'], 'passed')
+        self.assertEqual(result['versions']['coredns'], '1.14.7')
+        for private in (TOKEN, COOKIE, 'CoreDNS-1.14.7'):
+            self.assertNotIn(private, json.dumps(result))
+
+    def test_no_ready_version_pod_fails_and_unready_replicas_are_not_probed(self):
+        self.version_replicas({'kube-dns-pod': 'CoreDNS-1.14.7\n'})
+        second = self.client.pods[-1]
+        second['status']['conditions'][0]['status'] = 'False'
+        result = self.run_accept()
+        self.assertEqual(result['checks']['versions']['status'], 'passed')
+        self.assertEqual(len([c for c in self.client.calls if '/coredns' in c]), 1)
+        first = next(p for p in self.client.pods if p['metadata']['name'] == 'kube-dns-pod')
+        first['status']['conditions'][0]['status'] = 'False'
+        result = self.run_accept()
+        self.assertEqual(result['checks']['versions']['status'], 'failed')
+        self.assertIn('gitopsFinal', result['checks'])
 
     def test_restart_is_refused_after_any_failed_precheck(self):
         self.args.with_restart = True

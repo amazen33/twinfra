@@ -172,3 +172,33 @@ The stop rules, CAS patches, no-fallback rule for etcd, backups and dates stand.
 3. **Report only, no change:** whether `stage_applications` (or anything else) removes the `import-*` digest names after tagging, and whether `--digests` is still needed. Any change to import naming waits for my review.
 
 Then the owner updates `E:\twinfra-live` to the merge commit and reruns `run-acceptance.ps1`.
+
+## Amendment 8 (2026-10-17, architect): fifth baseline; WO-40e (versions step)
+
+**Run at 15:03 UTC on `d9c81f2`.** Every acceptance check passed:
+- calendar (2 warnings), node, pods, GitOps, `host-check`, `host-network`, both staging locks;
+- `deployedImages` (0 problems);
+- `consoleHTTPS`;
+- `tokenNegatives` (401, 401, 401, 403);
+- `valkey` (authentication enforced; all three Argo CD clients connected).
+
+The run then aborted in the informational `versions` step. Owner-side fixes made this run possible: a hidden console tunnel with an end-to-end probe, and a forced Keycloak login for the roleless user.
+
+**Cause (reproduced read-only).** `versions()` requires exactly one Pod per component. CoreDNS runs two replicas (`k8s-app=kube-dns`), so it raises "ambiguous". Every other probe succeeds:
+
+| Component | Version |
+|---|---|
+| Cilium | 1.20.2 |
+| etcd | 3.6.15 |
+| CoreDNS | 1.14.7 |
+| Argo CD | v3.5.3 |
+| CNPG | 1.30.1 |
+| PostgreSQL | 18.6 |
+| Keycloak | 26.8.0 |
+| OpenBao | v2.7.1 |
+| Valkey | 8.1.10 |
+
+**WO-40e (one tiny Codex PR, no live action):**
+1. For a component with several replicas, query **every** matching Ready Pod and require them to report the same version. Record it once; disagreement is a failure.
+2. A version probe that fails becomes a recorded, sanitized `versions` check failure, never an exception that aborts the run. The remaining steps (the restart test, the final checks) still run.
+3. Tests: two CoreDNS replicas with equal versions pass, unequal versions fail, a failing exec is recorded and does not abort, and no command output is serialized.
