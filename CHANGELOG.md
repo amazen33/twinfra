@@ -9,6 +9,9 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Changed
 
+- Record the tester sign-off (Accepted, 2026-10-17) for WO-25 (Valkey cache) and the
+  WO-34 P2 live part (etcd 3.6.15, CoreDNS 1.14.7) on `twinfra-dev-cairo-1`.
+
 - Record the WO-40a v0.1.0 baseline acceptance evidence for `twinfra-dev-cairo-1`
   (2026-10-17, commit a89de0a, status passed with the owner-authorized restart).
   The tester sign-off stays Pending; the template is unchanged.
