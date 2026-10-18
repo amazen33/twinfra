@@ -4,22 +4,31 @@ Twinfra (pronounced *twin-infra*) — *your AWS twin, on your own infrastructure
 
 ## Current capability and readiness
 
-**v0.1.0 is an acceptance candidate for dev use, not a published release.**
-The current environment is `twinfra-dev-cairo-1`: one Ubuntu 24.04 bare-metal
-Dell node. [WO-31 observations](docs/acceptance/dev-environment-2026-10-13.md)
-record a Ready node, healthy PostgreSQL, Argo CD reconciliation and trusted
-HTTPS sign-in; its tester sign-off and soak verdict remain Pending.
+**v0.1.0 is the drafted dev release; no candidate tag or stable release is published.**
+The accepted environment is `twinfra-dev-cairo-1`: one Ubuntu 24.04 bare-metal
+Dell node. The [release notes](docs/release-notes/0.1.0.md) distinguish actual
+running versions, Accepted scope, known limitations and the remaining rc gates.
 
 | Dev-verified item | Accepted evidence and exact scope |
 | --- | --- |
-| Static node address / router-loss resilience | [WO-36](docs/acceptance/host-network-2026-10-15.md): `.3` retained through a 40-second router outage; zero DHCP lease losses or post-boot pod/control-plane restarts |
+| Single-node host and platform baseline | [WO-31](docs/acceptance/dev-environment-2026-10-13.md): bootstrap, host/manifest checks, two full acceptance passes and the owner-approved 12-hour post-reboot soak; no production or HA claim |
+| Console signed tokens and browser access | [WO-04](docs/acceptance/console-token-verification-2026-10-10.md): TOTP sign-in/out, emulator read views, role denial and token negatives 401/401/401/403 |
+| LocalStack removal / sole MiniStack emulator | [WO-06](docs/acceptance/localstack-removal-2026-10-10.md): no LocalStack resources/images, MiniStack health and S3/EC2/DynamoDB read views; APIs remain emulated |
+| Argo CD / Valkey cache | [WO-25](docs/acceptance/valkey-2026-10-09.md): authentication, measured cache hits, all three clients reconnect after the authorized restart, fresh healthy reconciliation |
+| CoreDNS / etcd maintenance | [Accepted WO-34 P2 live receipt](docs/acceptance/wo34-p2-2026-10-15.json) and [WO-31 runtime acceptance](docs/acceptance/dev-environment-2026-10-13.md): CoreDNS 1.14.7 / etcd 3.6.15 and their locked digests |
+| Static node address / router-loss resilience | [WO-36](docs/acceptance/host-network-2026-10-15.md): .3 retained through a 40-second router outage; zero DHCP lease losses or post-boot pod/control-plane restarts |
 | Safe static-netplan transaction qualification | [WO-36a](docs/acceptance/host-network-fix-2026-10-15.md): real Ubuntu VM apply/refusal/rollback, maximum gap 0.245504 s; current owned profile adoption checked on cairo-1 |
 
 These signed results do not establish Dell rollback, staging-failure recovery,
-Foundation 1.0 or whole-platform acceptance. The owner-run
-[`accept` suite](docs/runbooks/release-acceptance.md) writes sanitized JSON;
-the [consolidated v0.1.0 receipt](docs/acceptance/release-0.1.0-2026-10-16.md)
-remains Pending. No live suite was run by this PR.
+Foundation 1.0 or whole-platform/production acceptance. WO-31 accepts a
+**12-hour dev soak by owner exception**, not a 24-hour or rc-window soak.
+The subsequent eno1 link-flap warning is tracked separately in that receipt.
+The [17:08 UTC baseline](docs/acceptance/release-0.1.0-2026-10-17.md) and
+[22:24 UTC post-reboot pass](docs/acceptance/dev-environment-2026-10-13.md#live-verification-and-soak-2026-10-17-and-2026-10-18-recorded-by-the-architect)
+are distinct from the still-Pending
+[consolidated rc receipt](docs/acceptance/release-0.1.0-2026-10-16.md).
+The owner-run [acceptance procedure](docs/runbooks/release-acceptance.md) governs
+that window. This release-readiness PR runs no live suite.
 
 [ADR-0052](docs/adr/0052-evidence-first-foundation-1-0.md) gates Foundation 1.0
 on signed live evidence. Static implementation and owner observations are
