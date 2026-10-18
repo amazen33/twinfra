@@ -9,6 +9,9 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Changed
 
+- Record the tester sign-off (Accepted, 2026-10-18) for WO-04 (console token verification) and
+  WO-06 (LocalStack removal) on `twinfra-dev-cairo-1`.
+
 - Record the tester sign-off (Accepted, 2026-10-18) for WO-31 on `twinfra-dev-cairo-1`: all
   live gates verified, the Amendment 15 remediation confirmed and a 12-hour soak by owner decision.
 

@@ -21,15 +21,15 @@
 
 | Check | Expected outcome | Observed outcome | Evidence reference / UTC timestamp |
 | --- | --- | --- | --- |
-| Dev environment state before removal | Inventory any remaining LocalStack deployment, service, route and forwarding | Not observed; Pending | No live access authorized |
-| Owner-approved cleanup, if resources exist | Remove only obsolete LocalStack resources and forwarding | Pending | Owner authorization required |
-| Dev environment state after deployment | MiniStack is the only emulator | Pending | Deploy and inspect the PR revision in the dev environment |
-| Port 4566 forwarding | MiniStack health endpoint responds | Pending | See [service access](../service-access.md) |
-| Console storage, AWS and DynamoDB tabs | S3, EC2 and DynamoDB read views succeed against MiniStack | Pending | Tester browser acceptance in the dev environment |
+| Dev environment state before removal | Inventory any remaining LocalStack deployment, service, route and forwarding | Passed: 0 LocalStack objects of any kind in any namespace | Read-only by the architect, 2026-10-18 |
+| Owner-approved cleanup, if resources exist | Remove only obsolete LocalStack resources and forwarding | Not needed: nothing to remove | 2026-10-18 |
+| Dev environment state after deployment | MiniStack is the only emulator | Passed: `twinfra-ministack` is the only emulator Deployment; no LocalStack image among the 31 running containers | WO-40a `deployedImages`, 2026-10-17; read-only check 2026-10-18 |
+| Port 4566 forwarding | MiniStack health endpoint responds | Passed: `/_ministack/health` returned HTTP 200 through a loopback port-forward to `svc/twinfra-ministack` port 4566 | Read-only by the architect, 2026-10-18; the temporary tunnel was closed afterwards |
+| Console storage, AWS and DynamoDB tabs | S3, EC2 and DynamoDB read views succeed against MiniStack | Passed: all three views listed without errors | Tester browser witness, 2026-10-18 |
 
 ## Pending gates, deviations and owner actions
 
-- No live changes or browser acceptance were attempted. WSL material is retained until WO-28, except the LocalStack module explicitly removed by WO-06.
+- The live checks were completed on 2026-10-17 and 2026-10-18; no live change or cleanup was needed. WSL material is retained until WO-28, except the LocalStack module explicitly removed by WO-06.
 - Lost features: the LocalStack backend, its selector choice, proxy/health endpoints and `/console/localstack` tab. The MiniStack AWS tab moves to `/console/cloud`; its S3, EC2 and DynamoDB read capabilities remain covered by unit fixtures.
 - MiniStack image SBOM review remains an open licence-baseline finding, with its original expiry of 2027-01-07. Updating the pin does not assert image-level licence clearance or extend the deadline.
 - Deviations: None; references to the old lab are interpreted as the dev environment under the owner's instruction and ADR-0046.
@@ -37,7 +37,7 @@
 
 ## Tester sign-off
 Tester: Ahmed Mazen (@amazen33), enterprise and cloud tester; QoS tester
-Result: Pending
-Date (UTC):
-QoS targets checked:
-Notes:
+Result: Accepted
+Date (UTC): 2026-10-18
+QoS targets checked: no LocalStack resource remains, MiniStack is the only emulator, its health endpoint responds on port 4566, and the console S3, EC2 and DynamoDB views work against it.
+Notes: Dev-verified on twinfra-dev-cairo-1. The MiniStack image SBOM review stays open until 2027-01-07. Signed by the owner in chat ("sign WO-04 and WO-06"); recorded by the architect at the owner's instruction.
