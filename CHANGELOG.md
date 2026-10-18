@@ -9,6 +9,9 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Changed
 
+- Record the tester sign-off (Accepted, 2026-10-18) for WO-31 on `twinfra-dev-cairo-1`: all
+  live gates verified, the Amendment 15 remediation confirmed and a 12-hour soak by owner decision.
+
 - WO-31 Amendment 15: owned, reversible nouveau/nvidiafb display-driver blacklist
   and running-kernel initramfs verification, gated dev bootstrap integration and
   count-only kernel health checks. Reboot and fresh soak remain owner actions.
