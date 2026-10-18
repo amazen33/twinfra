@@ -27,7 +27,8 @@ class WorkflowScope(unittest.TestCase):
         self.assertNotIn('compare_p3_images.py', raw)
         self.assertNotIn('.build/wo34-p3', raw)
         triggers = self.required.get('on', self.required.get(True))
-        self.assertEqual(triggers['pull_request']['branches'], ['main'])
+        for event in ('pull_request', 'push'):
+            self.assertEqual(triggers[event]['branches'], ['main', 'release/**'])
         self.assertNotIn('inventory --full', raw)
         self.assertIn('supply_chain.py inventory', raw)
         self.assertIn('supply_chain.py evaluate', raw)

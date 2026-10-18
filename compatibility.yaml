@@ -1,10 +1,16 @@
-# What this Twinfra release requires and provides (release-streams standard, section 5).
+# Requirements for the single-node dev profile; not a production support matrix.
+# Running patch versions and their evidence: docs/release-notes/0.1.0.md.
 product: twinfra
 version_source: VERSION
 requires:
-  kubernetes: "1.36.x"   # kubeadm on cairo-1 (ADR-0048)
-  cilium: "1.20.x"
+  kubernetes: "1.36.x"   # kubeadm; baseline runs v1.36.5
+  cilium: "1.20.x"       # baseline runs 1.20.2
 provides:
-  # The AWS-compatible API (ADR-0029, decision D1). 0.x: a development operation set, emulated
-  # services marked Emulated in the console; real S3/EC2 arrive with WO-22.
-  twinfra-aws-api: "v0 (dev)"
+  # Console read views backed by MiniStack with persistence disabled.
+  # These operations do not provision persistent AWS-equivalent infrastructure.
+  twinfra-aws-api: "v0 (dev, emulated subset)"
+  emulated-operations:
+    s3: [ListBuckets, ListObjectsV2]
+    ec2: [DescribeInstances]
+    dynamodb: [ListTables, DescribeTable]
+# Real backends require WO-22 after Foundation 1.0; parity requires ADR-0033.
