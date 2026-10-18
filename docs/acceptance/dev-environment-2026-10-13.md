@@ -129,14 +129,14 @@ Application comparison and OpenBao configuration through normal GitOps sync.
 
 | Gate | Result | Evidence to record |
 | --- | --- | --- |
-| Direct kubectl List passes the installed checker | Pending | Cilium controller input reports passed / 0 findings; no traceback |
-| Module -1 and host-bootstrap complete | Owner reported passed; sign-off Pending | 2026-10-13, main `3b6ec82`: host-bootstrap passed, log caps applied, node Ready in cairo-1a |
-| Disabled smoke step is successful | Pending | Updated main changes 00-setup-ubuntu-host.sh; RUN_SMOKE_TESTS=false reaches ready/complete without smoke calls or an ERR-trap failure |
-| Final host-check | Owner reported passed; sign-off Pending | 2026-10-13: post-bootstrap / passed |
-| Rebuilt archives staged on the Dell | Owner reported PASS; sign-off Pending | 2026-10-14: both locked digests reproduced; stage-images PASS |
-| Platform and browser continuation | Owner observations recorded; sign-off Pending | 11 pods Running, CNPG healthy, Databases applied, trusted HTTPS and Keycloak/TOTP console.admin sign-in; platform remains Healthy/OutOfSync |
-| Amendment 14 reconciliation | Pending | twinfra-platform Synced/Healthy after Server-Side Diff; unsupported-field warning absent from OpenBao logs |
-| 24-hour hardware/platform soak | Pending | Start 2026-10-13T14:43:38Z; completion and kernel-log verdict not supplied |
+| Direct kubectl List passes the installed checker | Passed | 2026-10-18, read-only on the Dell: `kubectl get daemonset/cilium daemonset/cilium-envoy deployment/cilium-operator -o json` piped to the installed checker with the dev node-exception policy: `SSoT contract: passed; 0 findings`, exit 0, no traceback |
+| Module -1 and host-bootstrap complete | Passed | 2026-10-13, main `3b6ec82`: host-bootstrap passed, log caps applied, node Ready in cairo-1a; bootstrap result on 2026-10-18: `ready`, Kubernetes v1.36.5, mirror `staged-verified` |
+| Disabled smoke step is successful | Passed | With `RUN_SMOKE_TESTS=false` in the dev profile the bootstrap result is `ready` (phase validation): it completed without smoke calls or an ERR-trap failure |
+| Final host-check | Passed | 2026-10-13: post-bootstrap / passed; 2026-10-18 after the Amendment 15 reboot: `host-check` passed (kernel health WARN only for six ACPI boot messages) |
+| Rebuilt archives staged on the Dell | Passed | 2026-10-14: both locked digests reproduced; stage-images PASS. Both staging locks and all running digests passed in the WO-40a acceptance runs of 2026-10-17 |
+| Platform and browser continuation | Passed | Full WO-40a acceptance passed twice on 2026-10-17 (17:08 UTC at `a89de0a`, 22:24 UTC at `bfab46c`, both with the authorized restart): console over verified HTTPS, token negatives 401/401/401/403, Valkey, all three Applications Synced/Healthy; Keycloak TOTP sign-ins used for both runs |
+| Amendment 14 reconciliation | Passed | `twinfra-platform` Synced/Healthy; OpenBao log on 2026-10-18: 0 "unsupported field" lines |
+| 24-hour hardware/platform soak | Passed (12-hour window, owner decision) | 2026-10-17 21:46:57 to 2026-10-18 09:46:57 UTC, after the Amendment 15 reboot. See "Live verification and soak" below |
 
 ## Owner-reported display-driver incident (2026-10-17; Amendment 15)
 
@@ -154,10 +154,30 @@ remediation or reboot was performed for this PR. Trigger remains unknown.
 See the [owner procedure](../dev-environment.md#owner-display-driver-recovery-wo-31-amendment-15).
 This adds the finding only; the tester sign-off below is unchanged.
 
+**Update 2026-10-18:** the remediation was applied and verified; see the next section.
+
+## Live verification and soak (2026-10-17 and 2026-10-18; recorded by the architect)
+
+Owner-run actions, verified read-only by the architect. No credential or raw log line is recorded.
+
+| Check | Result |
+| --- | --- |
+| Amendment 15 remediation | `host-graphics --apply`, then the owner's planned reboot at 2026-10-17 21:46:57 UTC. `host-graphics --check`: passed; `nouveau` and `nvidiafb` not loaded; the owned blacklist is current and inside the initramfs; kernel `7.0.0-38-generic` |
+| Post-reboot acceptance | WO-40a `accept --with-restart` passed at 2026-10-17 22:24 UTC on `bfab46c`, all 17 checks |
+| Soak window | 12 hours, 2026-10-17 21:46:57 to 2026-10-18 09:46:57 UTC (checked at 12:03 UTC: up 14 h 16 min, no reboot) |
+| Kernel | 0 machine-check, hung-task, OOM, I/O or BUG events since boot; six ACPI boot messages only; 1,059 kernel lines in total |
+| Workloads | 20/20 pods Running; no container restart after boot except the authorized cache replacement in the acceptance run; node Ready; all three Applications Synced/Healthy at `bfab46c` |
+| etcd | WAL fsync p99 <= 4 ms over 161,183 samples |
+| Host | CPU package 43 °C; memory 4.3 of 31 GiB used |
+
+**Soak duration.** WO-31 asks for 24 hours. On 2026-10-18 the owner decided that 12 hours is sufficient for this dev host ("12 hours soak test will be fine"). The previous boot ran clean of hardware and kernel errors until the display-driver onset at 2026-10-17 18:07:58 UTC, the failing driver no longer loads, and the kernel-health gate in every later `host-check` and in the rc.1 acceptance counts events since boot. The 24-hour rule stays for WO-33 and any production profile.
+
+**After the window (not part of the accepted soak).** Between 2026-10-18 09:53:02 and 09:59:51 UTC, `eno1` lost its link 15 times (driver `e1000e`, Energy-Efficient Ethernet enabled). No pod restarted, and the static address held. The cause is being checked with the owner (router, cable or EEE); `host-check` reports it as a WARN.
+
 ## Tester sign-off
 
 Tester: Ahmed Mazen (@amazen33), enterprise and cloud tester; QoS tester
-Result: Pending
-Date (UTC):
-QoS targets checked:
-Notes:
+Result: Accepted
+Date (UTC): 2026-10-18
+QoS targets checked: bootstrap ready with staged-verified images; manifest contract 0 findings; host-check passed; two full WO-40a acceptance passes including the restart test; 12-hour soak with no reboot, 0 hardware or kernel errors, no unplanned restarts and etcd WAL fsync p99 <= 4 ms; Amendment 15 display-driver remediation verified.
+Notes: Dev-verified on twinfra-dev-cairo-1. Soak shortened to 12 hours by owner decision (2026-10-18). The eno1 link-flap burst after the window is tracked separately. Signed by the owner in chat ("sign WO-31"); recorded by the architect at the owner's instruction.
