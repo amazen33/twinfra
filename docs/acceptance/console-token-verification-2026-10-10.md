@@ -10,6 +10,8 @@
   `lab-1` after WO-21. This receipt does not authorize that deployment.
 - Tested revision: the WO-04 PR head; immutable SHA is recorded in its CI artifacts.
 - Tester / witness: Ahmed Mazen; live witness and QoS targets Pending.
+- Environment (live): `twinfra-dev-cairo-1` on the Dell (ADR-0048 replaced the planned VM `lab-1`).
+  Live evidence 2026-10-17 (WO-40a acceptance) and 2026-10-18 (tester browser witness).
 
 ## Static evidence
 
@@ -66,15 +68,17 @@ Static evidence is distinct from the unexecuted live gates below.
 
 | Check | Expected outcome | Observed outcome | Environment / evidence |
 | --- | --- | --- | --- |
-| `console/browser-acceptance.mjs`: login | Authenticated console access | Pending | VM `lab-1`, after WO-21 |
-| Both emulator reads | Read-only views work | Pending | VM `lab-1`, after WO-21 |
-| Logout | Session no longer accesses console | Pending | VM `lab-1`, after WO-21 |
-| Roleless login | Portal denied | Pending | VM `lab-1`, after WO-21 |
-| Direct BFF request with hand-made unsigned header | 401 | Pending | VM `lab-1`, after WO-21 |
+| `console/browser-acceptance.mjs`: login | Authenticated console access | Passed: the tester signed in as `amazen` (password and TOTP) and reached the console | `twinfra-dev-cairo-1`, tester browser witness 2026-10-18; automated `consoleHTTPS` identity 200 in the WO-40a runs of 2026-10-17 |
+| Both emulator reads | Read-only views work | Passed: the S3, EC2 and DynamoDB read views listed without errors | `twinfra-dev-cairo-1`, tester browser witness 2026-10-18 |
+| Logout | Session no longer accesses console | Passed: after sign-out the console required a new sign-in | `twinfra-dev-cairo-1`, tester browser witness 2026-10-18 |
+| Roleless login | Portal denied | Passed: `accept-roleless` was refused at the gateway (401 Authorization Required; the OIDC claim check requires a console role) | `twinfra-dev-cairo-1`, tester browser witness 2026-10-18; a roleless token at the BFF returns 403 (WO-40a `tokenNegatives`) |
+| Direct BFF request with hand-made unsigned header | 401 | Passed: 401 (missing 401, unsigned 401, duplicate 401, roleless 403) | WO-40a `tokenNegatives`, runs 2026-10-17 17:08 and 22:24 UTC; [baseline receipt](release-0.1.0-2026-10-17.md) |
 
 ## Pending gates, deviations and owner actions
 
-- Live redeployment and the browser/direct-backend tests were **not attempted**.
+- The live gates were completed on `twinfra-dev-cairo-1` on 2026-10-17 and 2026-10-18. The VM `lab-1` plan was
+  superseded by the Dell (ADR-0048). The tester witnessed the browser cases manually instead of running
+  `console/browser-acceptance.mjs`; the direct-backend cases come from the WO-40a acceptance suite.
 - Owner: complete WO-21, approve the VM deployment scope and establish its
   reviewed issuer, public CA and gateway profile, then run the live acceptance.
 - Claude: review this PR against WO-04 before the owner merges.
@@ -83,7 +87,7 @@ Static evidence is distinct from the unexecuted live gates below.
 
 ## Tester sign-off
 Tester: Ahmed Mazen (@amazen33), enterprise and cloud tester; QoS tester
-Result: Pending
-Date (UTC):
-QoS targets checked:
-Notes:
+Result: Accepted
+Date (UTC): 2026-10-18
+QoS targets checked: interactive sign-in with TOTP, the S3, EC2 and DynamoDB read views, sign-out ends access, a roleless user is refused, and missing, unsigned and duplicate tokens return 401 while a roleless token returns 403.
+Notes: Dev-verified on twinfra-dev-cairo-1. Signed by the owner in chat ("sign WO-04 and WO-06"); recorded by the architect at the owner's instruction.
