@@ -47,7 +47,7 @@ The SBOM and scan reports from the supply-chain gate will be attached in a later
 - **Tags are immutable.**
 - **Every change goes through a PR.**
   - `main` requires the `vCloud PR gate` (licence, supply chain, historical baselines) and `release-checks`.
-  - `release/*` requires `release-checks`. The PR gate will cover `release/**` before the first release branch is cut.
+  - `release/*` requires `release-checks`. The `vCloud PR gate` also runs on pull requests targeting `release/**` and pushes to those branches before the first release branch is cut.
 - **Every PR updates `CHANGELOG.md` under `[Unreleased]`**, or carries the label `changelog:skip` with a reason.
 
 The rulesets are in `.github/rulesets/`. The existing `vcloud-main-governance` ruleset stays until WO-35 renames it.
