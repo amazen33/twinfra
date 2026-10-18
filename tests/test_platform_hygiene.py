@@ -205,14 +205,21 @@ class Hygiene(unittest.TestCase):
             if not path.endswith('.gz'):current=current.replace(b'\r\n',b'\n')
             self.assertEqual(current,original,path)
 
-    def test_owner_evidence_is_attributed_and_soak_and_tester_stay_pending(self):
+    def test_owner_evidence_is_attributed_and_only_the_tester_signs(self):
         text=(ROOT/'docs/acceptance/dev-environment-2026-10-13.md').read_text()
         self.assertIn('Owner-reported live evidence',text)
         for value in ('3b6ec82','11/11','92k','cairo-1a','9c33d0c','9404906','2026-10-13T14:43:38Z',
                       'Healthy/OutOfSync','console.admin','ePSA'):
             self.assertIn(value,text)
-        self.assertIn('Soak verdict: Pending',text);self.assertIn('Result: Pending',text)
-        self.assertNotIn('Result: Accepted',text)
+        # The historical 2026-10-13 observation keeps its own verdict line.
+        self.assertIn('Soak verdict: Pending',text)
+        signoff=text.split('## Tester sign-off',1)[1]
+        self.assertIn('Tester: Ahmed Mazen (@amazen33)',signoff)
+        results=[line for line in signoff.splitlines() if line.startswith('Result:')]
+        self.assertEqual(len(results),1)
+        # Only the tester signs: an Accepted result must record the owner's own instruction.
+        if results[0]=='Result: Accepted':self.assertIn('Signed by the owner in chat',signoff)
+        else:self.assertEqual(results[0],'Result: Pending')
 
 
 if __name__=='__main__':unittest.main()
