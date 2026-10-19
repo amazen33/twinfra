@@ -321,7 +321,7 @@ def classify_image_findings(findings,previous,images,has_base):
     return findings
 
 
-def scan(plan,tools,cache,out,root=ROOT):
+def scan(plan,tools,cache,out,root=ROOT,database=None):
     out.mkdir(parents=True,exist_ok=True)
     baseline={}
     current_targets={i['target'] for i in plan['images']}
@@ -330,9 +330,13 @@ def scan(plan,tools,cache,out,root=ROOT):
             if previous['target'] not in current_targets:
                 baseline[previous['target']]={k:v for k,v in previous.items() if k!='component'}
     items=sboms(plan|{'images':plan['images']+list(baseline.values())},tools,cache,out)
-    env=dict(os.environ,GRYPE_DB_CACHE_DIR=str((out/'database').resolve()),GRYPE_DB_AUTO_UPDATE='false')
+    # Weekly comparisons reuse the successful pinned scan's database snapshot.
+    # Isolation must not download a new database for every candidate/retry.
+    database_out=out if database is None else database
+    env=dict(os.environ,GRYPE_DB_CACHE_DIR=str((database_out/'database').resolve()),GRYPE_DB_AUTO_UPDATE='false')
     target=plan['images'][0]['target'] if len(plan['images'])==1 else None
-    run([tools['grype'],'db','update'],out/'database-update.log',env=env,target=target)
+    if database is None:
+        run([tools['grype'],'db','update'],out/'database-update.log',env=env,target=target)
     run([tools['grype'],'db','status','-o','json'],out/'database.json',env=env,target=target)
     findings=[];previous=[]
     for item in items:

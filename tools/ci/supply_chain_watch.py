@@ -173,7 +173,7 @@ def watch(root,tools,out,cache):
                              platform='linux/amd64',origins=[],introduced=False,tool=name))
     # Pinned tools, like pinned images above, are the blocking security baseline.
     pinned_tools=existing[len(plan['images']):]
-    more=sc.scan(dict(images=pinned_tools,lockfiles=[],coverage=[],base=None),tools,cache,out/'watch-inputs',root) if pinned_tools else {'findings':[]}
+    more=sc.scan(dict(images=pinned_tools,lockfiles=[],coverage=[],base=None),tools,cache,out/'watch-inputs',root,database=out) if pinned_tools else {'findings':[]}
     all_findings=current['findings']+more['findings']
     for item in existing:
         try:
@@ -192,7 +192,7 @@ def watch(root,tools,out,cache):
         for attempt in range(2):
             try:
                 scanned=sc.scan(dict(images=[candidate],lockfiles=[],coverage=[],base=None),tools,cache,
-                                out/'watch-candidates'/str(index)/str(attempt+1),root)
+                                out/'watch-candidates'/str(index)/str(attempt+1),root,database=out)
             except sc.ScannerCommandError as error:
                 if attempt==0:
                     time.sleep(2)

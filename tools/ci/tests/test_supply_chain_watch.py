@@ -39,7 +39,7 @@ class WatchResilience(unittest.TestCase):
                 calls=[]
                 old=dict(target=image('first','a')['target'],package='pkg',version='1',
                          vulnerability='CVE-fixture',severity='High',fixAvailable=True)
-                def scan(plan,*args):
+                def scan(plan,*args,**kwargs):
                     calls.append(plan)
                     if plan['images'][0]['digest']=='sha256:'+'c'*64:
                         raise sc.ScannerCommandError(tool,1,plan['images'][0]['target'])
@@ -58,7 +58,7 @@ class WatchResilience(unittest.TestCase):
         for tool_input in (False,True):
             with self.subTest(tool_input=tool_input),tempfile.TemporaryDirectory() as tmp:
                 calls=[]
-                def scan(plan,*args):
+                def scan(plan,*args,**kwargs):
                     calls.append(plan)
                     if not tool_input or plan['images'][0]['target'].startswith('tool:'):
                         raise sc.ScannerCommandError('syft',1,plan['images'][0]['target'])
@@ -69,7 +69,7 @@ class WatchResilience(unittest.TestCase):
 
     def test_retry_success_and_remaining_candidates_scan_individually(self):
         calls=[];attempts=0
-        def scan(plan,*args):
+        def scan(plan,*args,**kwargs):
             nonlocal attempts
             calls.append(plan)
             if len(plan['images'])==1 and plan['images'][0]['digest']=='sha256:'+'c'*64:
@@ -84,7 +84,7 @@ class WatchResilience(unittest.TestCase):
         self.assertIn('## Failed candidate scans\n\nNone.',report['markdown'])
 
     def test_non_scanner_errors_are_not_softened(self):
-        def scan(plan,*args):
+        def scan(plan,*args,**kwargs):
             if len(plan['images'])==1:raise ValueError('Cached SBOM integrity/binding mismatch')
             return {'findings':[]}
         with tempfile.TemporaryDirectory() as tmp,self.assertRaisesRegex(ValueError,'integrity'):
@@ -117,6 +117,16 @@ class WatchResilience(unittest.TestCase):
     def test_candidate_evidence_is_retained_by_the_weekly_workflow(self):
         workflow=Path(__file__).resolve().parents[3]/'.github/workflows/supply-chain.yaml'
         self.assertIn('.build/supply-chain/watch-candidates/',workflow.read_text(encoding='utf-8'))
+
+    def test_candidates_share_pinned_database_without_repeated_downloads(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);database=root/'pinned';calls=[]
+            def run(command,output,**kwargs):
+                calls.append((command,kwargs));Path(output).write_text('{}')
+            with patch.object(sc,'sboms',return_value=[]),patch.object(sc,'run',side_effect=run):
+                sc.scan(dict(images=[],lockfiles=[]),{'grype':'grype'},root/'cache',root/'candidate',database=database)
+            self.assertEqual([v[0][1:3] for v in calls],[['db','status']])
+            self.assertEqual(calls[0][1]['env']['GRYPE_DB_CACHE_DIR'],str((database/'database').resolve()))
 
     def test_scanner_failures_name_safe_target_without_serializing_output_or_credentials(self):
         secret='DO-NOT-LEAK'
