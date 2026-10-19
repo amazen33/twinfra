@@ -158,13 +158,29 @@ def verify_tools(directory,root=ROOT):
     return result
 
 
-def run(command,output=None,allowed=(0,),env=None):
+def scanner_target(target,fallback):
+    """Accept only an immutable image identity or a tool name, never a URL/path."""
+    if re.fullmatch(r'tool:[a-z0-9-]+@sha256:[a-f0-9]{64}',str(target)):
+        return target.split('@')[0].removeprefix('tool:')
+    if re.fullmatch(r'[a-z0-9.-]+(?::[0-9]+)?/(?:[a-z0-9._-]+/)*[a-z0-9._-]+(?::[A-Za-z0-9._-]+)?@sha256:[a-f0-9]{64}',str(target)):
+        return target
+    return fallback
+
+
+class ScannerCommandError(ValueError):
+    def __init__(self,tool,code,target=None):
+        self.tool=tool if tool in TOOLS else 'scanner'
+        self.code=int(code)
+        self.target=scanner_target(target,self.tool)
+        super().__init__('Scanner command failed: '+self.tool+' (exit '+str(self.code)+'), target '+self.target)
+
+
+def run(command,output=None,allowed=(0,),env=None,target=None):
     result=subprocess.run([str(x) for x in command],stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                           env=env,text=True,encoding='utf-8')
     if result.returncode not in allowed:
-        # Commands contain no auth credentials. Scanner diagnostic text stays in the run artifact.
-        if output:Path(str(output)+'.error.log').write_text(result.stderr,encoding='utf-8')
-        raise ValueError('Scanner command failed: '+Path(command[0]).name+' (exit '+str(result.returncode)+')')
+        # Neither command arguments nor raw diagnostic output belong in errors/artifacts.
+        raise ScannerCommandError(Path(command[0]).name,result.returncode,target)
     if output:Path(output).write_text(result.stdout,encoding='utf-8',newline='\n')
     return result.stdout
 
@@ -182,11 +198,11 @@ def sboms(plan,tools,cache,out):
             read(syft)  # Refuse truncated/invalid cached documents.
         else:
             temp=syft.with_suffix('.part')
-            run([tools['syft'],'scan',item['source'],'--platform','linux/amd64','-o','syft-json'],temp)
+            run([tools['syft'],'scan',item['source'],'--platform','linux/amd64','-o','syft-json'],temp,target=item['target'])
             read(temp);temp.replace(syft)
             write(meta,dict(digest=item['digest'],platform='linux/amd64',scannerSHA256=config,sbomSHA256=sha(syft.read_bytes())))
         copy=out/'sboms'/syft.name;copy.write_bytes(syft.read_bytes())
-        run([tools['syft'],'convert',syft,'-o','cyclonedx-json'],out/'sboms'/(key+'.cdx.json'))
+        run([tools['syft'],'convert',syft,'-o','cyclonedx-json'],out/'sboms'/(key+'.cdx.json'),target=item['target'])
         result.append(item|{'sbom':str(copy),'sbomSHA256':sha(copy.read_bytes())})
     write(out/'sbom-inventory.json',result);return result
 
@@ -315,12 +331,13 @@ def scan(plan,tools,cache,out,root=ROOT):
                 baseline[previous['target']]={k:v for k,v in previous.items() if k!='component'}
     items=sboms(plan|{'images':plan['images']+list(baseline.values())},tools,cache,out)
     env=dict(os.environ,GRYPE_DB_CACHE_DIR=str((out/'database').resolve()),GRYPE_DB_AUTO_UPDATE='false')
-    run([tools['grype'],'db','update'],out/'database-update.log',env=env)
-    run([tools['grype'],'db','status','-o','json'],out/'database.json',env=env)
+    target=plan['images'][0]['target'] if len(plan['images'])==1 else None
+    run([tools['grype'],'db','update'],out/'database-update.log',env=env,target=target)
+    run([tools['grype'],'db','status','-o','json'],out/'database.json',env=env,target=target)
     findings=[];previous=[]
     for item in items:
         raw=out/(item['digest'].split(':')[1]+'.grype.json')
-        run([tools['grype'],'sbom:'+item['sbom'],'-o','json'],raw,env=env)
+        run([tools['grype'],'sbom:'+item['sbom'],'-o','json'],raw,env=env,target=item['target'])
         values=grype_findings(read(raw),item)
         (previous if item['target'] in baseline else findings).extend(values)
     classify_image_findings(findings,previous,plan['images'],bool(plan.get('base')))
