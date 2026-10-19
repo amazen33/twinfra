@@ -120,6 +120,7 @@ jobs:
             .build/supply-chain/reporter.py
             .build/supply-chain/watch-inputs/*.json
             .build/supply-chain/watch-inputs/sboms/
+            .build/supply-chain/watch-candidates/
             .build/supply-chain/sboms/
           retention-days: 14
 

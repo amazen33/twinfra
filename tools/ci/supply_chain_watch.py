@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import re
 import tarfile
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -162,7 +163,7 @@ def watch(root,tools,out,cache):
     lock=sc.read(root/'tools/ci/toolchain.lock.json')['artifacts']
     binary_names={name for name,value in lock.items() if value['output'].startswith('bin/') or value.get('runtimeArchive')}
     if binary_names-set(TOOL_RULES):raise ValueError('Unmapped CI tools: '+str(sorted(binary_names-set(TOOL_RULES))))
-    candidates=[];existing=list(plan['images'])
+    existing=list(plan['images'])
     for name in sorted(binary_names):
         item=lock[name];raw=verified(sc.fetch(item['url']),item['sha256'])
         archive=out/(name+'-current.download');archive.write_bytes(raw)
@@ -170,6 +171,10 @@ def watch(root,tools,out,cache):
         path=out/(name+'-current.binary');path.write_bytes(binary);digest='sha256:'+sc.sha(binary)
         existing.append(dict(target='tool:'+name+'@'+digest,source='file:'+path.as_posix(),digest=digest,
                              platform='linux/amd64',origins=[],introduced=False,tool=name))
+    # Pinned tools, like pinned images above, are the blocking security baseline.
+    pinned_tools=existing[len(plan['images']):]
+    more=sc.scan(dict(images=pinned_tools,lockfiles=[],coverage=[],base=None),tools,cache,out/'watch-inputs',root,database=out) if pinned_tools else {'findings':[]}
+    all_findings=current['findings']+more['findings']
     for item in existing:
         try:
             repository=item['target'].split('@')[0]
@@ -178,27 +183,44 @@ def watch(root,tools,out,cache):
             reason=None if candidate else 'No verifiable aged published upstream candidate; locks unchanged.'
         except (ValueError,KeyError,OSError) as error:
             candidate=None;reason='Candidate unavailable: '+str(error)
-        if candidate:candidates.append(candidate)
         comparisons.append(dict(current=item,candidate=candidate,unavailableReason=reason))
-    # Candidate binaries are data inputs, never subprocess executables.
-    more=sc.scan(dict(images=existing[len(plan['images']):]+candidates,lockfiles=[],coverage=[],base=None),tools,cache,out/'watch-inputs',root) if candidates or binary_names else {'findings':[]}
-    all_findings=current['findings']+more['findings']
+    # Candidates are isolated data inputs, never subprocess executables. Only
+    # scanner exit failures are optional; integrity/programming errors still fail.
+    for index,value in enumerate(comparisons):
+        candidate=value['candidate']
+        if not candidate:continue
+        for attempt in range(2):
+            try:
+                scanned=sc.scan(dict(images=[candidate],lockfiles=[],coverage=[],base=None),tools,cache,
+                                out/'watch-candidates'/str(index)/str(attempt+1),root,database=out)
+            except sc.ScannerCommandError as error:
+                if attempt==0:
+                    time.sleep(2)
+                    continue
+                value['unavailableReason']='Candidate scan failed: '+sc.scanner_target(candidate['target'],error.tool)+' ('+error.tool+' exit '+str(error.code)+')'
+            else:
+                all_findings.extend(scanned['findings'])
+            break
     lines=['# Upstream updates available','',
            'Newest verifiable published releases at least 14 days old; no lock writes or update PRs.','',
            '| Current pinned input | Candidate | Published | Current findings | Candidate findings | Detail |',
            '| --- | --- | --- | ---: | ---: | --- |']
     for value in comparisons:
         a=value['current'];b=value['candidate'];old=[f for f in all_findings if f['target']==a['target']]
-        new=[f for f in all_findings if b and f['target']==b['target']]
+        available=b is not None and value['unavailableReason'] is None
+        new=[f for f in all_findings if available and f['target']==b['target']]
         previous={(f['package'],f['vulnerability']) for f in old}
         future={(f['package'],f['vulnerability']) for f in new}
         added=[f for f in new if (f['package'],f['vulnerability']) not in previous]
-        resolved=[f for f in old if (f['package'],f['vulnerability']) not in future] if b else []
-        value.update(currentFindings=old,candidateFindings=new,newFindings=added,resolvedFindings=resolved)
+        resolved=[f for f in old if (f['package'],f['vulnerability']) not in future] if available else []
+        value.update(currentFindings=old,candidateFindings=new if available else None,newFindings=added,resolvedFindings=resolved)
         lines.append('| '+' | '.join(sc.safe(x) for x in (a['target'],b['target'] if b else 'Unavailable',
-                      b['publishedAt'] if b else '',len(old),len(new) if b else '',value['unavailableReason'] or b['release']))+' |')
+                      b['publishedAt'] if b else '',len(old),len(new) if available else '',value['unavailableReason'] or b['release']))+' |')
+    lines.extend(['','## Failed candidate scans',''])
+    failed=[v['unavailableReason'] for v in comparisons if (v['unavailableReason'] or '').startswith('Candidate scan failed:')]
+    lines.extend(['- '+sc.safe(reason) for reason in failed] or ['None.'])
     for value in comparisons:
-        if not value['candidate']:continue
+        if not value['candidate'] or value['unavailableReason']:continue
         lines.extend(['','## '+sc.safe(value['current']['target']),
                       'Candidate: `'+sc.safe(value['candidate']['target'])+'`','',
                       '| Change | Package/version | Vulnerability | Severity | Fix available |',

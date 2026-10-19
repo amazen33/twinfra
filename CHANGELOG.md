@@ -9,6 +9,10 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Changed
 
+- Isolate weekly upstream candidate scans, retry scanner failures once, and report
+  unavailable candidates with sanitized target/tool identities; pinned-input scans
+  remain blocking and failed candidates cannot claim vulnerability resolutions.
+
 - Record the tester sign-off (Accepted, 2026-10-18) for WO-04 (console token verification) and
   WO-06 (LocalStack removal) on `twinfra-dev-cairo-1`.
 
