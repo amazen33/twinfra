@@ -194,9 +194,10 @@ class WatchResilience(unittest.TestCase):
             completed=subprocess.CompletedProcess([],1,stdout='unused',stderr=(
                 'ERROR unable to catalog local file\nhttps://user:DO-NOT-LEAK@example.com/path?token=hidden '
                 'token=DO-NOT-LEAK environment-token-value'))
+            command=['syft','scan','file:'+binary.as_posix()]
             with patch.dict(sc.os.environ,{'CI_TEST_TOKEN':'environment-token-value'}),\
                  patch.object(sc.subprocess,'run',return_value=completed),self.assertRaises(sc.ScannerCommandError) as caught:
-                sc.run(['syft','scan','file:'+binary.as_posix()],target=target,diagnostic=diagnostic)
+                sc.run(command,target=target,diagnostic=diagnostic)
             value=diagnostic.read_text(encoding='utf-8')
             self.assertIn('unable to catalog local file',value)
             for secret in ('DO-NOT-LEAK','https://','hidden','environment-token-value'):
@@ -229,6 +230,14 @@ class WatchResilience(unittest.TestCase):
                     sc.run(['syft','scan',source],target=target,diagnostic=root/'diagnostic.log')
                 run.assert_not_called()
             self.assertFalse((root/'diagnostic.log').exists())
+
+    def test_real_tool_regression_has_no_pip_dependency_install(self):
+        script=Path(__file__).resolve().parents[1]/'check_tool_sbom.py'
+        env=sc.os.environ|{'PYTHONPATH':str(script.parent),'PYTHONNOUSERSITE':'1'}
+        value=subprocess.run([sys.executable,'-S',str(script),'--help'],env=env,capture_output=True,text=True,check=True)
+        self.assertIn('--staged',value.stdout)
+        workflow=script.parents[2]/'.github/workflows/supply-chain-tools.yaml'
+        self.assertNotIn('pip install',workflow.read_text(encoding='utf-8'))
 
 
 if __name__=='__main__':unittest.main()

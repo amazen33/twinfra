@@ -19,10 +19,9 @@ import urllib.parse
 import urllib.request
 import toolchain_wave
 
-from jsonschema import Draft202012Validator, FormatChecker
-
 ROOT=Path(__file__).resolve().parents[2]
 TOOLS=('syft','grype','osv-scanner')
+FILE_SOURCE='file:'
 REPOSITORY='amazen33/twinfra'
 TITLE='Supply-chain scan: open findings'
 WATCH_TITLE='Upstream updates available'
@@ -178,10 +177,10 @@ class ScannerCommandError(ValueError):
 def local_tool_diagnostic(command,target):
     """Diagnostics are allowed only for digest-bound, local public tool bytes."""
     if (Path(command[0]).name!='syft' or len(command)<3 or command[1]!='scan' or
-        not str(command[2]).startswith('file:') or
+        not str(command[2]).startswith(FILE_SOURCE) or
         not re.fullmatch(r'tool:[a-z0-9-]+@sha256:[a-f0-9]{64}',str(target))):
         raise ValueError('Diagnostics require a verified local tool input')
-    path=Path(str(command[2]).removeprefix('file:'))
+    path=Path(str(command[2]).removeprefix(FILE_SOURCE))
     if sha(path.read_bytes())!=target.split('@sha256:')[1]:
         raise ValueError('Local tool digest mismatch')
 
@@ -224,8 +223,8 @@ def sboms(plan,tools,cache,out):
             read(syft)  # Refuse truncated/invalid cached documents.
         else:
             temp=syft.with_suffix('.part')
-            diagnostic=out/'diagnostics'/(key+'.syft.stderr.log') if item['source'].startswith('file:') else None
-            platform=[] if item['source'].startswith('file:') else ['--platform','linux/amd64']
+            diagnostic=out/'diagnostics'/(key+'.syft.stderr.log') if item['source'].startswith(FILE_SOURCE) else None
+            platform=[] if item['source'].startswith(FILE_SOURCE) else ['--platform','linux/amd64']
             run([tools['syft'],'scan',item['source'],*platform,'-o','syft-json'],temp,target=item['target'],diagnostic=diagnostic)
             read(temp);temp.replace(syft)
             write(meta,dict(digest=item['digest'],platform='linux/amd64',scannerSHA256=config,sbomSHA256=sha(syft.read_bytes())))
@@ -448,6 +447,7 @@ def bootstrap_context():
 
 
 def validate_exceptions(value,root=ROOT,on=None,bootstrap=False):
+    from jsonschema import Draft202012Validator, FormatChecker
     on=on or today()
     validator=Draft202012Validator(read(root/'security/vulnerability-exceptions.schema.json'),format_checker=FormatChecker())
     errors=list(validator.iter_errors(value))

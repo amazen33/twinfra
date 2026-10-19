@@ -15,7 +15,7 @@ def check(root,staged,out):
     if (len(binary)<64 or binary[:6]!=b'\x7fELF\x02\x01' or
         int.from_bytes(binary[18:20],'little')!=62):
         raise ValueError('Pinned actionlint input is not an ELF64 Linux amd64 binary')
-    plan=dict(images=[item],lockfiles=[],coverage=[],base=None)
+    plan={'images':[item],'lockfiles':[],'coverage':[],'base':None}
     sc.scan(plan,tools,out/'cache',out,root)
     key=item['digest'].split(':')[1]
     sbom=sc.read(out/'sboms'/(key+'.syft.json'))
@@ -25,8 +25,8 @@ def check(root,staged,out):
     grype=sc.read(out/(key+'.grype.json'))
     if not isinstance(grype.get('matches'),list):
         raise ValueError('Pinned actionlint Grype result is missing matches')
-    result=dict(status='passed',target=item['target'],archiveSHA256=artifact['sha256'],
-                binarySHA256=key,goModuleCount=len(modules),grypeMatchCount=len(grype['matches']))
+    result={'status':'passed','target':item['target'],'archiveSHA256':artifact['sha256'],
+            'binarySHA256':key,'goModuleCount':len(modules),'grypeMatchCount':len(grype['matches'])}
     sc.write(out/'tool-regression.json',result)
     print('Pinned actionlint: verified ELF64; Syft Go modules '+str(len(modules))+
           '; valid Grype result ('+str(len(grype['matches']))+' matches).')

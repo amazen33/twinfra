@@ -162,8 +162,8 @@ def pinned_tool(name,item,raw,out):
     archive=out/(name+'-current.download');archive.write_bytes(verified(raw,item['sha256']))
     binary=extract_member(archive,item['member']) if item.get('member') else (member(archive,'pwsh') if item.get('runtimeArchive') else raw)
     path=out/(name+'-current.binary');path.write_bytes(binary);digest='sha256:'+sc.sha(binary)
-    return dict(target='tool:'+name+'@'+digest,source='file:'+path.resolve().as_posix(),digest=digest,
-                platform='linux/amd64',origins=[],introduced=False,tool=name)
+    return {'target':'tool:'+name+'@'+digest,'source':sc.FILE_SOURCE+path.resolve().as_posix(),'digest':digest,
+            'platform':'linux/amd64','origins':[],'introduced':False,'tool':name}
 
 
 def watch(root,tools,out,cache):
