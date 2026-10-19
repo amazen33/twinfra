@@ -201,7 +201,8 @@ def run(command,output=None,allowed=(0,),env=None,target=None,diagnostic=None):
     result=subprocess.run([str(x) for x in command],stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                           env=env,text=True,encoding='utf-8')
     if result.returncode not in allowed:
-        # Neither command arguments nor raw diagnostic output belong in errors/artifacts.
+        # Messages never contain command/output text; local public-tool diagnostics
+        # are separately verified, redacted and retained only in CI artifacts.
         if diagnostic is not None:
             diagnostic.parent.mkdir(parents=True,exist_ok=True)
             diagnostic.write_text(diagnostic_text(result.stderr),encoding='utf-8')
@@ -224,7 +225,8 @@ def sboms(plan,tools,cache,out):
         else:
             temp=syft.with_suffix('.part')
             diagnostic=out/'diagnostics'/(key+'.syft.stderr.log') if item['source'].startswith('file:') else None
-            run([tools['syft'],'scan',item['source'],'--platform','linux/amd64','-o','syft-json'],temp,target=item['target'],diagnostic=diagnostic)
+            platform=[] if item['source'].startswith('file:') else ['--platform','linux/amd64']
+            run([tools['syft'],'scan',item['source'],*platform,'-o','syft-json'],temp,target=item['target'],diagnostic=diagnostic)
             read(temp);temp.replace(syft)
             write(meta,dict(digest=item['digest'],platform='linux/amd64',scannerSHA256=config,sbomSHA256=sha(syft.read_bytes())))
         copy=out/'sboms'/syft.name;copy.write_bytes(syft.read_bytes())
