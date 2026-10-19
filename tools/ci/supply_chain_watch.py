@@ -157,6 +157,15 @@ def tool_candidate(name,root,out,on,memo):
                 origins=[],introduced=False)
 
 
+def pinned_tool(name,item,raw,out):
+    """Use the exact checksum/member path for both the watch and CI regression."""
+    archive=out/(name+'-current.download');archive.write_bytes(verified(raw,item['sha256']))
+    binary=extract_member(archive,item['member']) if item.get('member') else (member(archive,'pwsh') if item.get('runtimeArchive') else raw)
+    path=out/(name+'-current.binary');path.write_bytes(binary);digest='sha256:'+sc.sha(binary)
+    return {'target':'tool:'+name+'@'+digest,'source':sc.FILE_SOURCE+path.resolve().as_posix(),'digest':digest,
+            'platform':'linux/amd64','origins':[],'introduced':False,'tool':name}
+
+
 def watch(root,tools,out,cache):
     plan=sc.inventory(root,full=True);current=sc.scan(plan,tools,cache,out,root)
     memo={};comparisons=[];on=sc.today()
@@ -165,12 +174,8 @@ def watch(root,tools,out,cache):
     if binary_names-set(TOOL_RULES):raise ValueError('Unmapped CI tools: '+str(sorted(binary_names-set(TOOL_RULES))))
     existing=list(plan['images'])
     for name in sorted(binary_names):
-        item=lock[name];raw=verified(sc.fetch(item['url']),item['sha256'])
-        archive=out/(name+'-current.download');archive.write_bytes(raw)
-        binary=extract_member(archive,item['member']) if item.get('member') else (member(archive,'pwsh') if item.get('runtimeArchive') else raw)
-        path=out/(name+'-current.binary');path.write_bytes(binary);digest='sha256:'+sc.sha(binary)
-        existing.append(dict(target='tool:'+name+'@'+digest,source='file:'+path.as_posix(),digest=digest,
-                             platform='linux/amd64',origins=[],introduced=False,tool=name))
+        item=lock[name]
+        existing.append(pinned_tool(name,item,sc.fetch(item['url']),out))
     # Pinned tools, like pinned images above, are the blocking security baseline.
     pinned_tools=existing[len(plan['images']):]
     more=sc.scan(dict(images=pinned_tools,lockfiles=[],coverage=[],base=None),tools,cache,out/'watch-inputs',root,database=out) if pinned_tools else {'findings':[]}

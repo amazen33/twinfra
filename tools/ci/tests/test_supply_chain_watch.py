@@ -1,8 +1,10 @@
 """Offline weekly-watch resilience and sanitized scanner failure fixtures."""
 import json
+import io
 from pathlib import Path
 import subprocess
 import sys
+import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -10,6 +12,7 @@ from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import supply_chain as sc
 import supply_chain_watch as watch
+import check_tool_sbom
 
 
 def image(name,letter):
@@ -100,6 +103,43 @@ class WatchResilience(unittest.TestCase):
                 sc.sboms({'images':[item]},{'syft':str(binary)},root/'cache',root/'out')
             self.assertEqual([v[0][1] for v in calls],['scan','convert'])
             self.assertEqual([v[1]['target'] for v in calls],[item['target']]*2)
+            self.assertIn('--platform',calls[0][0])
+
+    def test_local_tool_scan_omits_image_platform_and_binds_diagnostics(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);binary=root/'actionlint';binary.write_bytes(b'fixture');calls=[]
+            item=dict(target='tool:actionlint@sha256:'+sc.sha(binary.read_bytes()),
+                      source='file:'+binary.as_posix(),digest='sha256:'+sc.sha(binary.read_bytes()))
+            syft=root/'syft';syft.write_bytes(b'pinned scanner')
+            def run(command,output,**kwargs):
+                calls.append((command,kwargs));Path(output).write_text('{}')
+            with patch.object(sc,'run',side_effect=run):
+                sc.sboms({'images':[item]},{'syft':str(syft)},root/'cache',root/'out')
+            self.assertNotIn('--platform',calls[0][0])
+            self.assertEqual(calls[0][1]['diagnostic'].parent,root/'out'/'diagnostics')
+
+    def test_integration_check_uses_pinned_member_and_rejects_empty_sbom_or_missing_grype(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);staged=root/'staged';(staged/'downloads').mkdir(parents=True)
+            binary=bytearray(64);binary[:6]=b'\x7fELF\x02\x01';binary[18:20]=(62).to_bytes(2,'little')
+            buffer=io.BytesIO()
+            with tarfile.open(fileobj=buffer,mode='w:gz') as archive:
+                info=tarfile.TarInfo('actionlint');info.size=len(binary);archive.addfile(info,io.BytesIO(binary))
+            raw=buffer.getvalue();(staged/'downloads/actionlint').write_bytes(raw)
+            sc.write(root/'tools/ci/toolchain.lock.json',{'artifacts':{'actionlint':dict(sha256=sc.sha(raw),member='actionlint')}})
+            for source,artifacts,matches,passes in [('file',[{'type':'go-module'}],[],True),
+                                                    ('file',[],[],False),('image',[{'type':'go-module'}],[],False),
+                                                    ('file',[{'type':'go-module'}],None,False)]:
+                with self.subTest(source=source,artifacts=artifacts,matches=matches):
+                    def scan(plan,tools,cache,out,*args):
+                        self.assertEqual(plan['images'][0]['digest'],'sha256:'+sc.sha(binary))
+                        key=sc.sha(binary)
+                        sc.write(out/'sboms'/(key+'.syft.json'),dict(source={'type':source},artifacts=artifacts))
+                        sc.write(out/(key+'.grype.json'),{'matches':matches})
+                    with patch.object(sc,'verify_tools',return_value={}),patch.object(sc,'scan',side_effect=scan):
+                        if passes:self.assertEqual(check_tool_sbom.check(root,staged,root/'out')['status'],'passed')
+                        else:
+                            with self.assertRaises(ValueError):check_tool_sbom.check(root,staged,root/'out')
 
     def test_grype_database_and_sbom_failures_receive_the_item_identity(self):
         for fail_at in ('update','status','sbom'):
@@ -145,6 +185,59 @@ class WatchResilience(unittest.TestCase):
                     self.assertIn(target if target==targets[0] else ('jq' if target==targets[1] else tool),message)
                     self.assertEqual(list(Path(tmp).iterdir()),[])
                     self.assertNotIn(secret,json.dumps(vars(caught.exception)))
+
+    def test_verified_local_file_diagnostics_preserve_error_but_redact_credentials(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);binary=root/'actionlint';binary.write_bytes(b'public verified ELF fixture')
+            target='tool:actionlint@sha256:'+sc.sha(binary.read_bytes())
+            diagnostic=root/'diagnostics'/'syft.stderr.log'
+            completed=subprocess.CompletedProcess([],1,stdout='unused',stderr=(
+                'ERROR unable to catalog local file\nhttps://user:DO-NOT-LEAK@example.com/path?token=hidden '
+                'token=DO-NOT-LEAK environment-token-value'))
+            command=['syft','scan','file:'+binary.as_posix()]
+            with patch.dict(sc.os.environ,{'CI_TEST_TOKEN':'environment-token-value'}),\
+                 patch.object(sc.subprocess,'run',return_value=completed),self.assertRaises(sc.ScannerCommandError) as caught:
+                sc.run(command,target=target,diagnostic=diagnostic)
+            value=diagnostic.read_text(encoding='utf-8')
+            self.assertIn('unable to catalog local file',value)
+            for secret in ('DO-NOT-LEAK','https://','hidden','environment-token-value'):
+                self.assertNotIn(secret,value);self.assertNotIn(secret,str(caught.exception))
+
+    def test_real_pinned_extraction_path_checks_archive_and_selects_regular_member(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out=Path(tmp);data=b'\x7fELF fixture actionlint bytes';buffer=io.BytesIO()
+            with tarfile.open(fileobj=buffer,mode='w:gz') as archive:
+                info=tarfile.TarInfo('actionlint');info.size=len(data);info.mode=0o755
+                archive.addfile(info,io.BytesIO(data))
+                info=tarfile.TarInfo('README.md');info.size=5
+                archive.addfile(info,io.BytesIO(b'wrong'))
+            raw=buffer.getvalue();item=dict(sha256=sc.sha(raw),member='actionlint')
+            value=watch.pinned_tool('actionlint',item,raw,out)
+            self.assertEqual(Path(value['source'].removeprefix('file:')).read_bytes(),data)
+            self.assertEqual(value['digest'],'sha256:'+sc.sha(data))
+            self.assertEqual(value['target'],'tool:actionlint@sha256:'+sc.sha(data))
+            with self.assertRaisesRegex(ValueError,'SHA256 mismatch'):
+                watch.pinned_tool('actionlint',item,raw+b'truncated-or-wrong',out)
+            with self.assertRaises(KeyError):
+                watch.pinned_tool('actionlint',item|{'member':'not-actionlint'},raw,out)
+
+    def test_diagnostics_refuse_remote_or_unbound_local_inputs_before_execution(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);binary=root/'actionlint';binary.write_bytes(b'fixture')
+            target='tool:actionlint@sha256:'+'f'*64
+            for source in ('registry:'+image('first','a')['target'],'file:'+binary.as_posix()):
+                with self.subTest(source=source),patch.object(sc.subprocess,'run') as run,self.assertRaises(ValueError):
+                    sc.run(['syft','scan',source],target=target,diagnostic=root/'diagnostic.log')
+                run.assert_not_called()
+            self.assertFalse((root/'diagnostic.log').exists())
+
+    def test_real_tool_regression_has_no_pip_dependency_install(self):
+        script=Path(__file__).resolve().parents[1]/'check_tool_sbom.py'
+        env=sc.os.environ|{'PYTHONPATH':str(script.parent),'PYTHONNOUSERSITE':'1'}
+        value=subprocess.run([sys.executable,'-S',str(script),'--help'],env=env,capture_output=True,text=True,check=True)
+        self.assertIn('--staged',value.stdout)
+        workflow=script.parents[2]/'.github/workflows/supply-chain-tools.yaml'
+        self.assertNotIn('pip install',workflow.read_text(encoding='utf-8'))
 
 
 if __name__=='__main__':unittest.main()

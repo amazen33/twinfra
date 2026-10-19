@@ -9,6 +9,11 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Changed
 
+- Fix Syft cataloging of pinned CI binaries by applying platform selection only
+  to image sources. Add a real actionlint extraction/SBOM/Grype CI regression
+  and restricted, redacted diagnostics for verified local tool files; pinned-tool
+  failures remain blocking.
+
 - Isolate weekly upstream candidate scans, retry scanner failures once, and report
   unavailable candidates with sanitized target/tool identities; pinned-input scans
   remain blocking and failed candidates cannot claim vulnerability resolutions.
