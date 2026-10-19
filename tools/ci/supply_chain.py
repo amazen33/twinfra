@@ -175,11 +175,36 @@ class ScannerCommandError(ValueError):
         super().__init__('Scanner command failed: '+self.tool+' (exit '+str(self.code)+'), target '+self.target)
 
 
-def run(command,output=None,allowed=(0,),env=None,target=None):
+def local_tool_diagnostic(command,target):
+    """Diagnostics are allowed only for digest-bound, local public tool bytes."""
+    if (Path(command[0]).name!='syft' or len(command)<3 or command[1]!='scan' or
+        not str(command[2]).startswith('file:') or
+        not re.fullmatch(r'tool:[a-z0-9-]+@sha256:[a-f0-9]{64}',str(target))):
+        raise ValueError('Diagnostics require a verified local tool input')
+    path=Path(str(command[2]).removeprefix('file:'))
+    if sha(path.read_bytes())!=target.split('@sha256:')[1]:
+        raise ValueError('Local tool digest mismatch')
+
+
+def diagnostic_text(value):
+    # Never copy environment data, credentials or URL query strings into artifacts.
+    value=re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]','',value)
+    for name,secret in os.environ.items():
+        if re.search(r'token|password|secret|credential|api_?key',name,re.I) and secret:
+            value=value.replace(secret,'[redacted]')
+    value=re.sub(r'(?i)\b(?:https?|ftp)://[^\s<>"\']+','[URL redacted]',value)
+    return re.sub(r'(?i)((?:token|password|secret|authorization|api_?key)\s*[:=]\s*)(?:Bearer\s+)?[^\s,;]+',r'\1[redacted]',value)
+
+
+def run(command,output=None,allowed=(0,),env=None,target=None,diagnostic=None):
+    if diagnostic is not None:local_tool_diagnostic(command,target)
     result=subprocess.run([str(x) for x in command],stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                           env=env,text=True,encoding='utf-8')
     if result.returncode not in allowed:
         # Neither command arguments nor raw diagnostic output belong in errors/artifacts.
+        if diagnostic is not None:
+            diagnostic.parent.mkdir(parents=True,exist_ok=True)
+            diagnostic.write_text(diagnostic_text(result.stderr),encoding='utf-8')
         raise ScannerCommandError(Path(command[0]).name,result.returncode,target)
     if output:Path(output).write_text(result.stdout,encoding='utf-8',newline='\n')
     return result.stdout
@@ -198,7 +223,8 @@ def sboms(plan,tools,cache,out):
             read(syft)  # Refuse truncated/invalid cached documents.
         else:
             temp=syft.with_suffix('.part')
-            run([tools['syft'],'scan',item['source'],'--platform','linux/amd64','-o','syft-json'],temp,target=item['target'])
+            diagnostic=out/'diagnostics'/(key+'.syft.stderr.log') if item['source'].startswith('file:') else None
+            run([tools['syft'],'scan',item['source'],'--platform','linux/amd64','-o','syft-json'],temp,target=item['target'],diagnostic=diagnostic)
             read(temp);temp.replace(syft)
             write(meta,dict(digest=item['digest'],platform='linux/amd64',scannerSHA256=config,sbomSHA256=sha(syft.read_bytes())))
         copy=out/'sboms'/syft.name;copy.write_bytes(syft.read_bytes())
