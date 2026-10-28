@@ -139,6 +139,8 @@ def make_entry(value, component, evidence, upstream, *, merge, on=ON):
 
 
 def generate(before_path, after_path, merge):
+    if (ROOT/'security/security-wave-2026-10-approval.json').exists():
+        raise ValueError('R12 is owner-approved; preparation cannot overwrite the batch')
     before,after=read(before_path),read(after_path)
     if before['date']!='2026-10-28' or after['date']!='2026-10-28':
         raise ValueError('Refresh dates and evidence explicitly before generating another batch')
@@ -339,9 +341,20 @@ def documentation(report,proposal):
         'and real staging attestation exist. Static validation is separate from live acceptance. '
         'Local Windows cannot execute the Linux-only shell/systemd/CRI fixture suites faithfully; the six historical Linux legs remain required.', '']
     path=ROOT/'docs/maintenance/security-wave-2026-10.md'
+    if report['ownerApproval']=='Approved':
+        lines=[lines[0],'',
+            '**Activated:** Ahmed Mazen approved O-2/O-4b/O-5 on 2026-10-29 (Africa/Cairo) for the exact batch at `86d4318`. '
+            'The active registry contains 420 approved rows. Three carry approvals preserve the original deadlines. '
+            'See the [owner decision record](../../security/security-wave-2026-10-approval.json) for immutable proposal/log hashes, '
+            'the UTC recording time and the separate owner decision date. Gate approvalDate uses the actual UTC recording date; no future date or gate exception is introduced. '
+            'Local re-evaluation of the full final PR scan passes with zero blockers. CI is rerun independently; staging, merge and live acceptance remain Pending.', '',
+            '**The proposal review snapshot below is preserved for audit. Its references to pending batch approval describe the pre-activation state at `86d4318`, '
+            'not the current active approval. Original proposed JSON remains unchanged with blank approval fields; the active '
+            '[exception registry](../../security/vulnerability-exceptions.json) differs only by approvedBy.**','',*lines[1:]]
     path.write_text('\n'.join(lines),encoding='utf-8',newline='\n')
     ledger=['# R12: exact exception review ledger','',
-        'Generated from the full candidate scan. Every approval is Pending. '
+        ('Generated from the full candidate scan. The exact batch is owner-approved (2026-10-29, PR #82 at 86d4318). '
+         if report['ownerApproval']=='Approved' else 'Generated from the full candidate scan. Every approval is Pending. ')+
         'See the [review and owner runbook](security-wave-2026-10.md).', '',
         '## Every qualifying and non-qualifying High, grouped by image/package','']
     groups=defaultdict(list)

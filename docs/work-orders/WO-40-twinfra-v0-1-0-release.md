@@ -401,3 +401,50 @@ Neither O-1 nor O-2/O-4b changes ADR-0054.
 The two modelling issues it records (CI-only and disabled-module components treated as runtime, and the `OR` tier) are post-release follow-ups. They do not block R12.
   - The running Argo CD 3.5.3 already carries the same package, so promoting 3.5.5 adds no risk and removes 9 other identities.
   - The alternative is holding v0.1.0 until upstream ships a fixed image, on an unknown date.
+
+## Amendment 10d (2026-10-29, architect): review of PR #82 (R12) at `86d4318`
+
+**Verdict: the batch matches Amendments 10 to 10c. The architect recommends that the owner approve the exact batch.** No agent approves its own work: Codex built it, the architect reviewed it, and the owner approves.
+
+**Checked against the PR's files:**
+
+| Item | Proposed | Within the rules |
+| --- | --- | --- |
+| High rows | 360, per image and per CVE (none grouped), all expiring 2026-12-27, `workOrder` WO-46 | ≤ 60 days, and not later than WO-46's due date |
+| Critical renewals | 59, individual, all expiring 2026-11-27, each with the package fix and a reachability statement | ≤ 30 days |
+| Argo CD brotli KEV | 1 Medium row on the 3.5.5 digest, expiring 2026-11-24, with reachability evidence | Amendment 10b |
+| Calendar | Earliest expiry 11-24 | Nothing expired, and nothing within 7 days of expiry, through 11-16 |
+| Approval | Every row has `approvedBy` empty | O-2 not yet given |
+| Images | Only Keycloak 26.8.1, MiniStack 1.5.33 and Argo CD 3.5.5 change | Scope of decision 2 |
+| Lockfiles | `certifi` 2026.10.23 (hash-pinned, both files); DOMPurify 3.4.17 through an npm `overrides` entry | O-1 |
+| Carry-forwards | 3, each keeping its original due date (O-5) | ADR-0054 Amendment 1 |
+
+- **KEV row's reachability:** `libcurl-gnutls` imports `libbrotlidec`; the git HTTP helpers in the repo server use it. The controls match `main`.
+- **Carry-forwards:**
+
+  | Component | Change | Due date kept |
+  | --- | --- | --- |
+  | MiniStack | 1.5.17 → 1.5.33 | 2027-04-16 |
+  | `certifi` | 2026.7.22 → 2026.10.23 | 2027-01-14 |
+  | DOMPurify | 3.4.16 → 3.4.17 | 2027-01-14 |
+
+- **Gate code and tests: only stricter.**
+  - `licence_ladder.py` and `check_licences.py` gain the carry-log and approval checks.
+  - Tests cover: due date equals the original; a second carry can't move it; never licences and class or tier changes are refused; approval is required.
+  - Two historical P2 tests now read the P2 receipt snapshot instead of the moving lock.
+  - One isolated licence fixture drops the carry log, which is tested separately.
+  - None of this weakens a gate.
+- **The new comparison workflow** runs only on pushes to the R12 branch and by manual dispatch, with actions pinned by SHA.
+
+**CI is red as expected before activation:**
+- The supply-chain scan and the licence candidate fail until the approved rows and carry approvals are activated.
+- `staging-check` fails until the owner stages the images.
+
+**After activation, every check must be green.** That includes the six `prior-pr` compatibility tests and the vCloud PR gate. If any fails for another reason, Codex stops and reports.
+
+**Schedule consequence for WO-46:**
+- The 59 Critical renewals expire **2026-11-27**.
+- So WO-46 has a first milestone: promote Kubernetes 1.36.6 (eligible 11-11), Cilium 1.20.4 (eligible 11-06) and every other release that fixes a Critical row **before 11-27**.
+- Any Critical row still open on 11-27 needs a new, individually justified renewal decided by the owner.
+  - The running Argo CD 3.5.3 already carries the same package, so promoting 3.5.5 adds no risk and removes 9 other identities.
+  - The alternative is holding v0.1.0 until upstream ships a fixed image, on an unknown date.

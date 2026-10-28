@@ -1,5 +1,10 @@
 # R12: October security wave review
 
+**Activated:** Ahmed Mazen approved O-2/O-4b/O-5 on 2026-10-29 (Africa/Cairo) for the exact batch at `86d4318`. The active registry contains 420 approved rows. Three carry approvals preserve the original deadlines. See the [owner decision record](../../security/security-wave-2026-10-approval.json) for immutable proposal/log hashes, the UTC recording time and the separate owner decision date. Gate approvalDate uses the actual UTC recording date; no future date or gate exception is introduced. Local re-evaluation of the full final PR scan passes with zero blockers. CI is rerun independently; staging, merge and live acceptance remain Pending.
+
+**The proposal review snapshot below is preserved for audit. Its references to pending batch approval describe the pre-activation state at `86d4318`, not the current active approval. Original proposed JSON remains unchanged with blank approval fields; the active [exception registry](../../security/vulnerability-exceptions.json) differs only by approvedBy.**
+
+
 Static work only. Owner batch approval, staging, merge and live acceptance are Pending. No image was rebuilt or run.
 
 Authority: [WO-40 Amendments 10–10c](../work-orders/WO-40-twinfra-v0-1-0-release.md), [ADR-0054 Amendment 1](../adr/amendments/0054-amendment-1-security-fix-carry-forward.md) and [WO-46](../work-orders/WO-46-post-release-image-refresh-wave.md).

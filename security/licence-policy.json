@@ -2777,8 +2777,8 @@
           "CVE-2026-111497",
           "GHSA-6q48-6c7w-9gw2"
         ],
-        "approvalDate": "",
-        "approvedBy": "",
+        "approvalDate": "2026-10-28",
+        "approvedBy": "amazen33",
         "authorisedOn": "2026-10-28",
         "decision": "ADR-0054 Amendment1 / O-5"
       },
@@ -2790,8 +2790,8 @@
         "advisoriesCleared": [
           "GHSA-6q48-6c7w-9gw2"
         ],
-        "approvalDate": "",
-        "approvedBy": "",
+        "approvalDate": "2026-10-28",
+        "approvedBy": "amazen33",
         "authorisedOn": "2026-10-28",
         "decision": "ADR-0054 Amendment1 / O-5"
       },
@@ -2803,8 +2803,8 @@
         "advisoriesCleared": [
           "CVE-2026-116804"
         ],
-        "approvalDate": "",
-        "approvedBy": "",
+        "approvalDate": "2026-10-28",
+        "approvedBy": "amazen33",
         "authorisedOn": "2026-10-28",
         "decision": "ADR-0054 Amendment1 / O-5"
       }

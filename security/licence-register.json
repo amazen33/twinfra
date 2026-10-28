@@ -9696,7 +9696,7 @@
       ],
       "tier": 2,
       "enterpriseGrade": {
-        "status": "pending",
+        "status": "verified",
         "criteria": {
           "maturity": {
             "result": "pass",
@@ -9719,9 +9719,9 @@
             "date": "2026-10-28"
           },
           "supplyChain": {
-            "result": "pending",
-            "evidence": "https://github.com/amazen33/twinfra/actions/runs/40754061462",
-            "date": "2026-10-28"
+            "result": "pass",
+            "date": "2026-10-28",
+            "evidence": "https://github.com/amazen33/twinfra/pull/82"
           },
           "adoption": {
             "result": "pass",
@@ -9855,7 +9855,7 @@
       ],
       "tier": 2,
       "enterpriseGrade": {
-        "status": "pending",
+        "status": "verified",
         "criteria": {
           "maturity": {
             "result": "pass",
@@ -9878,9 +9878,9 @@
             "date": "2026-10-28"
           },
           "supplyChain": {
-            "result": "pending",
-            "evidence": "https://github.com/amazen33/twinfra/actions/runs/40754061462",
-            "date": "2026-10-28"
+            "result": "pass",
+            "date": "2026-10-28",
+            "evidence": "https://github.com/amazen33/twinfra/pull/82"
           },
           "adoption": {
             "result": "pass",

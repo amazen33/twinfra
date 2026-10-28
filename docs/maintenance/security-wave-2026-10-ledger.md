@@ -1,6 +1,6 @@
 # R12: exact exception review ledger
 
-Generated from the full candidate scan. Every approval is Pending. See the [review and owner runbook](security-wave-2026-10.md).
+Generated from the full candidate scan. The exact batch is owner-approved (2026-10-29, PR #82 at 86d4318). See the [review and owner runbook](security-wave-2026-10.md).
 
 ## Every qualifying and non-qualifying High, grouped by image/package
 

@@ -1,7 +1,7 @@
 {
   "date": "2026-10-28",
   "expectedMergeDate": "2026-10-30",
-  "ownerApproval": "Pending",
+  "ownerApproval": "Approved",
   "baselineRun": "https://github.com/amazen33/twinfra/actions/runs/40659063932",
   "candidateRun": "https://github.com/amazen33/twinfra/actions/runs/40767198838",
   "baselineSHA256": "1faad0c10b0662ae56b18c671affc9131601bf234ca978bbbb13de79d28bc6d1",
@@ -15759,5 +15759,13 @@
       "expired": 0,
       "withinSevenDays": 0
     }
-  ]
+  ],
+  "approvalRecord": "security/security-wave-2026-10-approval.json",
+  "activeLocalEvaluation": {
+    "status": "passed",
+    "blocking": 0,
+    "scanRun": "https://github.com/amazen33/twinfra/actions/runs/40771506747",
+    "scanReportSHA256": "91716853319fc563d2354fe3ecef9f49d747b9c36572c39279b1af8bd283dd21",
+    "scope": "Local re-evaluation of the complete final PR scan with the owner-approved exact batch; CI rerun and live staging separate"
+  }
 }

@@ -1,0 +1,31 @@
+{
+  "approvedBy": "amazen33",
+  "ownerDecisionDate": "2026-10-29",
+  "ownerTimezone": "Africa/Cairo",
+  "recordedAtUTC": "2026-10-28T21:32:22.046065Z",
+  "approvedCommit": "86d43189972f8cb8248ce518a1ccabc09187b41b",
+  "decisions": [
+    "O-2",
+    "O-4b",
+    "O-5"
+  ],
+  "proposalSHA256": "46229f85c1bf7d29920ea8bcaf770b42d44ee014a8d3f4d19966db8c0db27052",
+  "carryLogSHA256": "1d74aaa10ea615b905808c1383212cd9d0808b12022afd6d95e3b670dc0c18ba",
+  "evidence": "https://github.com/amazen33/twinfra/pull/82",
+  "scanRun": "https://github.com/amazen33/twinfra/actions/runs/40771506747",
+  "authority": "Direct owner instruction in this task: exact batch at 86d4318 approved on 2026-10-29; WO-40 Amendment 10d architect review.",
+  "approvedScope": {
+    "vulnerabilityRows": 420,
+    "High": 360,
+    "HighExpires": "2026-12-27",
+    "Critical": 59,
+    "CriticalExpires": "2026-11-27",
+    "kevRows": 1,
+    "kevExpires": "2026-11-24",
+    "carries": 3,
+    "dueDatesUnchanged": true
+  },
+  "dateNote": "The owner decision date is Africa/Cairo. Gate approvalDate uses recordedAtUTC date, which is still 2026-10-28 at this instant; no future-date waiver or backfill extension.",
+  "staging": "Pending",
+  "prMustRemainDraftUntil": "All checks except staging-check are green"
+}

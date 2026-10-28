@@ -45,5 +45,8 @@
       "proposedOn": "2026-10-28"
     }
   ],
-  "ownerBatchApproval": "Pending"
+  "ownerBatchApproval": "Approved",
+  "approvedBy": "amazen33",
+  "ownerDecisionDate": "2026-10-29",
+  "approvalRecord": "security/security-wave-2026-10-approval.json"
 }

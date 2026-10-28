@@ -273,6 +273,8 @@ if __name__=='__main__':
     parser.add_argument('command',choices=['pins','dependencies','register','upstream'])
     parser.add_argument('--evidence',type=Path)
     args=parser.parse_args()
+    if (ROOT/'security/security-wave-2026-10-approval.json').exists():
+        raise ValueError('R12 is owner-approved; preparation cannot overwrite approved records')
     if args.command=='pins':
         if not args.evidence:parser.error('--evidence is required')
         pins(args.evidence.resolve())
