@@ -1,5 +1,6 @@
 """WO-31 10/11/14 offline contracts; no host, cluster or credential access."""
 import importlib.util
+import json
 from pathlib import Path
 import re
 import subprocess
@@ -178,6 +179,7 @@ class Hygiene(unittest.TestCase):
         self.assertIn('before netfilter',text)
 
     def test_render_diffs_are_only_dev_app_annotations_and_openbao_configuration(self):
+        image_changes=json.loads((ROOT/'security/security-wave-2026-10-images.json').read_text())['images']
         for path,raw in dev.outputs().items():
             relative=path.relative_to(ROOT).as_posix()
             original=subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+relative])
@@ -195,6 +197,16 @@ class Hygiene(unittest.TestCase):
                         self.assertEqual(code.count('ui = true\\napi_addr'),1)
                         obj['data']['runtime-config.py']=code.replace('ui = true\\napi_addr','ui = true\\ndisable_mlock = true\\napi_addr')
                 raw=yaml.safe_dump_all(objects,sort_keys=False)
+            if relative.endswith('platform/workloads.yaml'):
+                # Project only approved R12 images present in this base render;
+                # its exact occurrence counts reject missing or extra images.
+                for change in image_changes.values():
+                    before=change['before'].rsplit('@',1)[1]
+                    after=change['after'].rsplit('@',1)[1]
+                    expected=original.count(before.encode())
+                    if not expected:continue
+                    self.assertEqual(raw.count(after),expected,relative+': R12 image occurrence count')
+                    raw=raw.replace(after,before)
             self.assertEqual(raw.encode(),original,relative)
         for path in ('00-setup-ubuntu-host.sh','host.env.example','user-data.yaml','user-data-remote.yaml','user-data.yaml.gz',
                      'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json','tools/ci/pr-baselines.json',
