@@ -33,8 +33,12 @@ LICENSES={
 
 def read(path):return json.loads(Path(path).read_text(encoding='utf-8'))
 def save(path,value):
-    path=Path(path);path.parent.mkdir(parents=True,exist_ok=True)
-    path.write_text(json.dumps(value,indent=2)+'\n',encoding='utf-8',newline='\n')
+    path=Path(path).resolve()
+    path.relative_to(ROOT.resolve())
+    path.parent.mkdir(parents=True,exist_ok=True)
+    with path.open('w',encoding='utf-8',newline='\n') as stream:
+        json.dump(value,stream,indent=2)
+        stream.write('\n')
 def base(path):return json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+path]))
 def fetch(url):
     if not url.startswith('https://'):raise ValueError('HTTPS evidence required')
@@ -189,7 +193,7 @@ def register():
         ('dompurify',DOMPURIFY,['CVE-2026-116804'],'3.4.16',DOMPURIFY)]:
         old=next(e for e in original['components'] if e['name']==name)
         identity='|'.join((old['ecosystem'],name,version))
-        if name.startswith('docker.io/'):
+        if name=='docker.io/ministackorg/ministack':
             new=copy.deepcopy(next(e for e in current['components'] if e['id']==identity))
             licence_hash=read(ROOT/'deploy/common/images.lock.json')['images']['ministack']['licenceSHA256']
         else:
@@ -227,18 +231,51 @@ def register():
     log={'version':1,'anchorCommit':BASE,
          'anchorLegacySHA256':hashlib.sha256(json.dumps(base('security/licence-policy.json')['ladder']['legacy'],sort_keys=True).encode()).hexdigest(),'events':events}
     policy['ladder']['carryLog']='security/licence-carry-log.json'
-    save(ROOT/'security/licence-carry-log.json',log)
+    log_path=ROOT/'security/licence-carry-log.json'
+    if log_path.exists() and read(log_path)!=log:
+        raise ValueError('R12 generator cannot rewrite an existing carry log')
+    existing_policy=read(ROOT/'security/licence-policy.json')
+    if any(e.get('carriedFrom') and e.get('approvedBy') for e in existing_policy['ladder']['legacy'].values()):
+        raise ValueError('R12 preparation cannot replace an owner-approved carry')
+    save(log_path,log)
     save(ROOT/'security/licence-policy.json',policy);save(ROOT/'security/licence-register.json',current)
     save(ROOT/'security/security-wave-2026-10-carries.json',{'proposedOn':DATE,'carries':carries,'ownerBatchApproval':'Pending'})
 
 
+def upstream():
+    """Record primary release metadata; an unscanned release is not a proven fix."""
+    projects={
+        'kubernetes':'kubernetes/kubernetes', 'cilium':'cilium/cilium',
+        'openbao':'openbao/openbao', 'cnpg':'cloudnative-pg/cloudnative-pg',
+        'apisix':'apache/apisix', 'valkey':'valkey-io/valkey',
+        'coredns':'coredns/coredns', 'etcd':'etcd-io/etcd',
+        'argocd':'argoproj/argo-cd', 'keycloak':'keycloak/keycloak'}
+    rows={}
+    for name,repo in projects.items():
+        url='https://api.github.com/repos/'+repo+'/releases?per_page=10'
+        records=json.loads(fetch(url))
+        releases=[]
+        for entry in records:
+            if entry['draft'] or entry['prerelease']:continue
+            published=datetime.fromisoformat(entry['published_at'].replace('Z','+00:00'))
+            releases.append({'release':entry['tag_name'],'publishedAt':entry['published_at'],
+                'eligibleAt':(published+timedelta(days=14)).isoformat().replace('+00:00','Z'),
+                'source':entry['html_url'],
+                'releaseNotesSHA256':hashlib.sha256(entry['body'].encode()).hexdigest()})
+        rows[name]={'checkedOn':DATE,'source':url,'releases':releases,
+                    'fixedImageVerified':False}
+    save(ROOT/'security/security-wave-2026-10-upstream.json',{'date':DATE,'projects':rows,
+        'limitation':'Release dates are primary evidence. Only the R12 comparison candidates were scanned; other releases are remediation candidates, not verified fixed images.'})
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command',choices=['pins','dependencies','register'])
+    parser.add_argument('command',choices=['pins','dependencies','register','upstream'])
     parser.add_argument('--evidence',type=Path)
     args=parser.parse_args()
     if args.command=='pins':
         if not args.evidence:parser.error('--evidence is required')
         pins(args.evidence.resolve())
     elif args.command=='dependencies':dependencies()
-    else:register()
+    elif args.command=='register':register()
+    else:upstream()

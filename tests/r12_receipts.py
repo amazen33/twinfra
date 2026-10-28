@@ -10,6 +10,55 @@ BASE = '0d950075a8bf43358d9fd406b80b67d657f804e1'
 sys.path.insert(0, str(ROOT/'tools/ci'))
 
 
+def old(path):
+    return subprocess.check_output(['git', '-C', str(ROOT), 'show', BASE+':'+path])
+
+
+def assert_images(current=None):
+    from security_wave_2026_10 import CASES
+    original=json.loads(old('deploy/common/images.lock.json'))
+    actual=current if current is not None else json.loads((ROOT/'deploy/common/images.lock.json').read_text(encoding='utf-8'))
+    expected=copy.deepcopy(original)
+    allowed={'source','release','digest','canonical','releaseSource','releasePublishedAt','verifiedOn','licenceSHA256'}
+    for component,case in [('argocd','argocd355'),('ministack','ministack1533'),('keycloak','keycloak2681')]:
+        _,release,ref=CASES[case];entry=actual['images'][component]
+        if entry['source']!=ref or entry['digest']!=ref.split('@')[1] or entry['canonical']!='registry.twinfra.example.com/'+ref:
+            raise AssertionError('R12 candidate digest differs from the approved comparison')
+        if not entry['release'].endswith(':'+('v' if component=='argocd' else '')+release):
+            raise AssertionError('R12 release differs')
+        fields=allowed|({'publishedAt','publicationSource','digestSource','expedite'} if component=='ministack' else set())
+        if not set(entry)-set(original['images'][component])<=fields:
+            raise AssertionError('R12 added an unrelated pin property')
+        for field in fields:
+            if field in entry:expected['images'][component][field]=entry[field]
+    if actual!=expected:raise AssertionError('R12 changed an unrelated image or pin property')
+    return original,actual
+
+
+def receipt(path):
+    """Verify exact image substitutions, then expose the frozen original receipt."""
+    original,current=assert_images()
+    raw=old(path);expected=raw.decode()
+    actual=(ROOT/path).read_text(encoding='utf-8')
+    if path=='deploy/common/images.lock.json':
+        return raw
+    if path=='lab/wsl/console/artifacts.lock.json':
+        value=json.loads(raw);entry=copy.deepcopy(current['images']['ministack'])
+        entry['canonical']='registry.vcloud.example.com/'+entry['source']
+        value['images']['ministack']=entry
+        if json.loads(actual)!=value:raise AssertionError('R12 changed unrelated retained WSL pins')
+        return raw
+    if path.startswith('lab/wsl/'):
+        prior=json.loads(old('lab/wsl/console/artifacts.lock.json'))['images']['ministack']['canonical']
+        replacement='registry.vcloud.example.com/'+current['images']['ministack']['source']
+        expected=expected.replace(prior,replacement)
+    else:
+        for name in ('argocd','ministack','keycloak'):
+            expected=expected.replace(original['images'][name]['canonical'],current['images'][name]['canonical'])
+    if actual!=expected:raise AssertionError('R12 render differs beyond the three exact image substitutions: '+path)
+    return raw
+
+
 def assert_current():
     from licence_carry import check
     def old(path):

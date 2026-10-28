@@ -108,6 +108,8 @@ if canonical:
         assert (root/'tools/platform_accept.py').is_file(), 'missing WO-40a acceptance suite'
     if (root/'docs/work-orders/WO-40c-control-plane-maintenance.md').is_file():
         expected_orders.append('WO-40c')
+    if (root/'docs/work-orders/WO-46-post-release-image-refresh-wave.md').is_file():
+        expected_orders.append('WO-46')
     assert [re.match(r'WO-\d{2}[a-z]?(?=-)',file.name)[0] for file in orders] == sorted(expected_orders), orders
     assert (root / 'docs/work-orders/README.md').is_file()
     assert not (root / 'docs/work-orders/CODEX-PROMPTS.md').exists()

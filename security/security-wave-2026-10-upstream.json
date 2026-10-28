@@ -1,0 +1,706 @@
+{
+  "date": "2026-10-28",
+  "projects": {
+    "kubernetes": {
+      "checkedOn": "2026-10-28",
+      "source": "https://api.github.com/repos/kubernetes/kubernetes/releases?per_page=10",
+      "releases": [
+        {
+          "release": "v1.37.2",
+          "publishedAt": "2026-10-28T04:37:53Z",
+          "eligibleAt": "2026-11-11T04:37:53Z",
+          "source": "https://github.com/kubernetes/kubernetes/releases/tag/v1.37.2",
+          "releaseNotesSHA256": "e320c99a1360cda246755b13d681766b40bff4637a0beac254b8a4e404832ed8"
+        },
+        {
+          "release": "v1.36.6",
+          "publishedAt": "2026-10-28T04:56:35Z",
+          "eligibleAt": "2026-11-11T04:56:35Z",
+          "source": "https://github.com/kubernetes/kubernetes/releases/tag/v1.36.6",
+          "releaseNotesSHA256": "78466ccb08d76aaacea846d1b4c87a32bad14614ca7647bb9d4be90880915683"
+        },
+        {
+          "release": "v1.35.10",
+          "publishedAt": "2026-10-28T04:37:28Z",
+          "eligibleAt": "2026-11-11T04:37:28Z",
+          "source": "https://github.com/kubernetes/kubernetes/releases/tag/v1.35.10",
+          "releaseNotesSHA256": "584703da8981abe0ccb86b597ded43f97e8c0ef9d467c0c5457282dc64525ac6"
+        },
+        {
+          "release": "v1.34.13",
+          "publishedAt": "2026-10-28T04:37:39Z",
+          "eligibleAt": "2026-11-11T04:37:39Z",
+          "source": "https://github.com/kubernetes/kubernetes/releases/tag/v1.34.13",
+          "releaseNotesSHA256": "28fcd433c2252e4a58e2a91f334859ea12eb7282131ccabdccf760b8c295da6b"
+        },
+        {
+          "release": "v1.37.1",
+          "publishedAt": "2026-09-23T19:13:17Z",
+          "eligibleAt": "2026-10-07T19:13:17Z",
+          "source": "https://github.com/kubernetes/kubernetes/releases/tag/v1.37.1",
+          "releaseNotesSHA256": "e320c99a1360cda246755b13d681766b40bff4637a0beac254b8a4e404832ed8"
+        },
+        {
+          "release": "v1.36.5",
+          "publishedAt": "2026-09-23T18:58:18Z",
+          "eligibleAt": "2026-10-07T18:58:18Z",
+          "source": "https://github.com/kubernetes/kubernetes/releases/tag/v1.36.5",
+          "releaseNotesSHA256": "78466ccb08d76aaacea846d1b4c87a32bad14614ca7647bb9d4be90880915683"
+        },
+        {
+          "release": "v1.35.9",
+          "publishedAt": "2026-09-23T19:35:01Z",
+          "eligibleAt": "2026-10-07T19:35:01Z",
+          "source": "https://github.com/kubernetes/kubernetes/releases/tag/v1.35.9",
+          "releaseNotesSHA256": "584703da8981abe0ccb86b597ded43f97e8c0ef9d467c0c5457282dc64525ac6"
+        }
+      ],
+      "fixedImageVerified": false
+    },
+    "cilium": {
+      "checkedOn": "2026-10-28",
+      "source": "https://api.github.com/repos/cilium/cilium/releases?per_page=10",
+      "releases": [
+        {
+          "release": "v1.20.4",
+          "publishedAt": "2026-10-23T14:51:39Z",
+          "eligibleAt": "2026-11-06T14:51:39Z",
+          "source": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+          "releaseNotesSHA256": "16fa5d003acdcc3442d51007b854cdcc6ce4ed6cc7c90323d8e33de20b71812f"
+        },
+        {
+          "release": "v1.19.10",
+          "publishedAt": "2026-10-23T14:51:33Z",
+          "eligibleAt": "2026-11-06T14:51:33Z",
+          "source": "https://github.com/cilium/cilium/releases/tag/v1.19.10",
+          "releaseNotesSHA256": "8684b4601692506e4a4c7d03d88cc188ac176cae9033ecd5b0a697a789fea16b"
+        },
+        {
+          "release": "v1.18.16",
+          "publishedAt": "2026-10-23T14:51:27Z",
+          "eligibleAt": "2026-11-06T14:51:27Z",
+          "source": "https://github.com/cilium/cilium/releases/tag/v1.18.16",
+          "releaseNotesSHA256": "3841564b3e63e0649661a754b315cc8d944727fc166bf55a34ded6f6b0dd042a"
+        },
+        {
+          "release": "v1.20.3",
+          "publishedAt": "2026-10-15T15:26:34Z",
+          "eligibleAt": "2026-10-29T15:26:34Z",
+          "source": "https://github.com/cilium/cilium/releases/tag/v1.20.3",
+          "releaseNotesSHA256": "364593a06935e6de1d699406bebe67f2df4422b105d3a7d85adf3f4a483df24a"
+        },
+        {
+          "release": "v1.19.9",
+          "publishedAt": "2026-10-15T15:26:28Z",
+          "eligibleAt": "2026-10-29T15:26:28Z",
+          "source": "https://github.com/cilium/cilium/releases/tag/v1.19.9",
+          "releaseNotesSHA256": "e19730d4c724e913afbf3d788c81ce73169bd68377ad5978d9348db460c7e295"
+        },
+        {
+          "release": "v1.18.15",
+          "publishedAt": "2026-10-15T15:26:26Z",
+          "eligibleAt": "2026-10-29T15:26:26Z",
+          "source": "https://github.com/cilium/cilium/releases/tag/v1.18.15",
+          "releaseNotesSHA256": "97ea8d1724cd43ebfd4baa438c38f9db4a04bf0030e63fcba80c56960bd5e621"
+        },
+        {
+          "release": "v1.20.2",
+          "publishedAt": "2026-09-16T01:53:22Z",
+          "eligibleAt": "2026-09-30T01:53:22Z",
+          "source": "https://github.com/cilium/cilium/releases/tag/v1.20.2",
+          "releaseNotesSHA256": "fb356eae014193bdba8307fcf35d787120ecdc6f6982f42b4472ced44fc5d29d"
+        },
+        {
+          "release": "v1.19.8",
+          "publishedAt": "2026-09-16T01:53:16Z",
+          "eligibleAt": "2026-09-30T01:53:16Z",
+          "source": "https://github.com/cilium/cilium/releases/tag/v1.19.8",
+          "releaseNotesSHA256": "2fdbaef8d9f7e90ff2423ad40b6286e0bd7e7bcf3596eec8ef33364d1c6a831d"
+        },
+        {
+          "release": "v1.18.14",
+          "publishedAt": "2026-09-16T01:53:07Z",
+          "eligibleAt": "2026-09-30T01:53:07Z",
+          "source": "https://github.com/cilium/cilium/releases/tag/v1.18.14",
+          "releaseNotesSHA256": "bd5b3b521d746bbc8368306d725cd0b5c08a8836533286a5edeb5b1da4a3b3ec"
+        }
+      ],
+      "fixedImageVerified": false
+    },
+    "openbao": {
+      "checkedOn": "2026-10-28",
+      "source": "https://api.github.com/repos/openbao/openbao/releases?per_page=10",
+      "releases": [
+        {
+          "release": "v2.7.2",
+          "publishedAt": "2026-10-26T20:24:37Z",
+          "eligibleAt": "2026-11-09T20:24:37Z",
+          "source": "https://github.com/openbao/openbao/releases/tag/v2.7.2",
+          "releaseNotesSHA256": "3ae6d86cf1c642cff8c4220ac9ea69c921444f349a71d5cf60b1d040be5a6f27"
+        },
+        {
+          "release": "v2.6.5",
+          "publishedAt": "2026-10-26T20:23:12Z",
+          "eligibleAt": "2026-11-09T20:23:12Z",
+          "source": "https://github.com/openbao/openbao/releases/tag/v2.6.5",
+          "releaseNotesSHA256": "84ac6c8bdca60473c63004c598a325b6d3ce11f56f19dfb1142384d85c602ec6"
+        },
+        {
+          "release": "v2.7.1",
+          "publishedAt": "2026-10-01T14:03:19Z",
+          "eligibleAt": "2026-10-15T14:03:19Z",
+          "source": "https://github.com/openbao/openbao/releases/tag/v2.7.1",
+          "releaseNotesSHA256": "267f43f2f0d050006224fcbf1a1586d5c0cc84b3db30930783cdc5a2d8127c86"
+        },
+        {
+          "release": "v2.6.4",
+          "publishedAt": "2026-10-01T13:59:14Z",
+          "eligibleAt": "2026-10-15T13:59:14Z",
+          "source": "https://github.com/openbao/openbao/releases/tag/v2.6.4",
+          "releaseNotesSHA256": "93c6e6b44bce546606bdcfb4154419025aefd87ad068888ba96c2eee34656aba"
+        },
+        {
+          "release": "v2.7.0",
+          "publishedAt": "2026-09-23T17:39:54Z",
+          "eligibleAt": "2026-10-07T17:39:54Z",
+          "source": "https://github.com/openbao/openbao/releases/tag/v2.7.0",
+          "releaseNotesSHA256": "64c0ac6b9c4b236a928b85e69b3a373118199aff3b1a1efcd230ea162df43f00"
+        },
+        {
+          "release": "v2.6.3",
+          "publishedAt": "2026-09-23T17:06:02Z",
+          "eligibleAt": "2026-10-07T17:06:02Z",
+          "source": "https://github.com/openbao/openbao/releases/tag/v2.6.3",
+          "releaseNotesSHA256": "7cd064fe6737cdb76383c2fad81915379c7a779928f3801b24fe3182d9c32925"
+        },
+        {
+          "release": "v2.6.2",
+          "publishedAt": "2026-08-18T16:21:00Z",
+          "eligibleAt": "2026-09-01T16:21:00Z",
+          "source": "https://github.com/openbao/openbao/releases/tag/v2.6.2",
+          "releaseNotesSHA256": "b86e784f81575a0a31a66ba0d2e50aba2dc012c805957887d2ff8609fecc0bde"
+        },
+        {
+          "release": "v2.6.1",
+          "publishedAt": "2026-07-22T14:37:36Z",
+          "eligibleAt": "2026-08-05T14:37:36Z",
+          "source": "https://github.com/openbao/openbao/releases/tag/v2.6.1",
+          "releaseNotesSHA256": "0494cf1f282dff214de538a203a1d2e0b08d6f115c84e64b073b0d50b1cb7a5f"
+        },
+        {
+          "release": "v2.6.0",
+          "publishedAt": "2026-07-14T17:06:32Z",
+          "eligibleAt": "2026-07-28T17:06:32Z",
+          "source": "https://github.com/openbao/openbao/releases/tag/v2.6.0",
+          "releaseNotesSHA256": "fcd87387a4aa62cdec59e8c9a3a6fdddaf74b2f83b62d4fad2d1607603ef22e7"
+        }
+      ],
+      "fixedImageVerified": false
+    },
+    "cnpg": {
+      "checkedOn": "2026-10-28",
+      "source": "https://api.github.com/repos/cloudnative-pg/cloudnative-pg/releases?per_page=10",
+      "releases": [
+        {
+          "release": "v1.30.1",
+          "publishedAt": "2026-09-23T13:35:42Z",
+          "eligibleAt": "2026-10-07T13:35:42Z",
+          "source": "https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.30.1",
+          "releaseNotesSHA256": "7bc33dffb8b05d2b2477e9c24051c6b4ff63fb01f7a5b7ff91956b1d9ef69e66"
+        },
+        {
+          "release": "v1.29.3",
+          "publishedAt": "2026-09-23T13:00:24Z",
+          "eligibleAt": "2026-10-07T13:00:24Z",
+          "source": "https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.29.3",
+          "releaseNotesSHA256": "06b95deb28f7f8be7f0674afd48ee113ba7571fef000b177b3a3b790d266df5c"
+        },
+        {
+          "release": "v1.30.0",
+          "publishedAt": "2026-06-29T16:36:13Z",
+          "eligibleAt": "2026-07-13T16:36:13Z",
+          "source": "https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.30.0",
+          "releaseNotesSHA256": "fc2e004c00ce1864b23d05161764cd6638b99040d0da79e46dfbf5c3ca7196e4"
+        },
+        {
+          "release": "v1.29.2",
+          "publishedAt": "2026-06-29T16:06:03Z",
+          "eligibleAt": "2026-07-13T16:06:03Z",
+          "source": "https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.29.2",
+          "releaseNotesSHA256": "34b2859f0d6b6ec43c7906248eb281319904924764535d9e4df282be8c65b8b1"
+        },
+        {
+          "release": "v1.28.4",
+          "publishedAt": "2026-06-29T15:38:44Z",
+          "eligibleAt": "2026-07-13T15:38:44Z",
+          "source": "https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.28.4",
+          "releaseNotesSHA256": "1a2c579194a3a9cabf240c415ec2ed44ac2b7e1b6a64c995742f8e25118b94f4"
+        },
+        {
+          "release": "v1.30.0-rc1",
+          "publishedAt": "2026-06-19T14:46:47Z",
+          "eligibleAt": "2026-07-03T14:46:47Z",
+          "source": "https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.30.0-rc1",
+          "releaseNotesSHA256": "4529fc573899282d5c6ceae386e8be4239926e32a1fec06fd427f77a6da9725b"
+        },
+        {
+          "release": "v1.29.1",
+          "publishedAt": "2026-05-08T14:33:15Z",
+          "eligibleAt": "2026-05-22T14:33:15Z",
+          "source": "https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.29.1",
+          "releaseNotesSHA256": "7dacd79c8e91c3f6cfe487b516c7fb1a0690ebda99bdbf0bc4979fefa88f75c6"
+        },
+        {
+          "release": "v1.28.3",
+          "publishedAt": "2026-05-08T14:06:59Z",
+          "eligibleAt": "2026-05-22T14:06:59Z",
+          "source": "https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.28.3",
+          "releaseNotesSHA256": "045f46ff18cb64993e70161f7977874ba54261e662ff74061e7fad6edd0a8273"
+        },
+        {
+          "release": "v1.29.0",
+          "publishedAt": "2026-04-01T10:26:23Z",
+          "eligibleAt": "2026-04-15T10:26:23Z",
+          "source": "https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.29.0",
+          "releaseNotesSHA256": "6b7ce02a868c7fead5e053d994d8b9813978089e499cf1b07550740c3a6fe6fa"
+        },
+        {
+          "release": "v1.28.2",
+          "publishedAt": "2026-04-01T09:44:03Z",
+          "eligibleAt": "2026-04-15T09:44:03Z",
+          "source": "https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.28.2",
+          "releaseNotesSHA256": "bad50a664e15a2b405fc493ee278f7e8619d3cb7423f35da58f3df461981ab89"
+        }
+      ],
+      "fixedImageVerified": false
+    },
+    "apisix": {
+      "checkedOn": "2026-10-28",
+      "source": "https://api.github.com/repos/apache/apisix/releases?per_page=10",
+      "releases": [
+        {
+          "release": "3.19.0",
+          "publishedAt": "2026-09-28T05:13:59Z",
+          "eligibleAt": "2026-10-12T05:13:59Z",
+          "source": "https://github.com/apache/apisix/releases/tag/3.19.0",
+          "releaseNotesSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "release": "3.18.0",
+          "publishedAt": "2026-08-20T07:57:26Z",
+          "eligibleAt": "2026-09-03T07:57:26Z",
+          "source": "https://github.com/apache/apisix/releases/tag/3.18.0",
+          "releaseNotesSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "release": "3.17.0",
+          "publishedAt": "2026-06-16T07:22:13Z",
+          "eligibleAt": "2026-06-30T07:22:13Z",
+          "source": "https://github.com/apache/apisix/releases/tag/3.17.0",
+          "releaseNotesSHA256": "f9fde6ca9c4be268c315ed4b0359caebfd65b9421b50dbb5b0e35af31ce0f101"
+        },
+        {
+          "release": "3.16.0",
+          "publishedAt": "2026-04-08T01:36:55Z",
+          "eligibleAt": "2026-04-22T01:36:55Z",
+          "source": "https://github.com/apache/apisix/releases/tag/3.16.0",
+          "releaseNotesSHA256": "1994fb5c8522acf459c205d3484c14aa4e37fc2c14ca52a95464ffd0a6496967"
+        },
+        {
+          "release": "3.15.0",
+          "publishedAt": "2026-02-05T13:55:04Z",
+          "eligibleAt": "2026-02-19T13:55:04Z",
+          "source": "https://github.com/apache/apisix/releases/tag/3.15.0",
+          "releaseNotesSHA256": "ba289d783e65d1848d34f1e519a564d23e368736066f7eddfc38e894dc0a54a0"
+        },
+        {
+          "release": "3.14.1",
+          "publishedAt": "2025-10-16T07:54:57Z",
+          "eligibleAt": "2025-10-30T07:54:57Z",
+          "source": "https://github.com/apache/apisix/releases/tag/3.14.1",
+          "releaseNotesSHA256": "43b9c6fe37cf6c18ee98b21d4e56acfd1ae4abeafb77c6db09b2d7ccdfcbccf3"
+        },
+        {
+          "release": "3.14.0",
+          "publishedAt": "2025-10-10T05:53:01Z",
+          "eligibleAt": "2025-10-24T05:53:01Z",
+          "source": "https://github.com/apache/apisix/releases/tag/3.14.0",
+          "releaseNotesSHA256": "95b0f8a5791dd1c39b7a69fad2313de82d18e889bb8dc803ae45ac00079e1a61"
+        },
+        {
+          "release": "3.13.0",
+          "publishedAt": "2025-06-27T07:28:29Z",
+          "eligibleAt": "2025-07-11T07:28:29Z",
+          "source": "https://github.com/apache/apisix/releases/tag/3.13.0",
+          "releaseNotesSHA256": "0a98de20173e12b440cc560a5495528a85cbc03d49abc6ed824fa25036ce296e"
+        },
+        {
+          "release": "3.12.0",
+          "publishedAt": "2025-04-01T07:27:27Z",
+          "eligibleAt": "2025-04-15T07:27:27Z",
+          "source": "https://github.com/apache/apisix/releases/tag/3.12.0",
+          "releaseNotesSHA256": "75f0cbcebf7fa15cb5105b185c0551c2301e81ca5364d9a13ba73a9b70911735"
+        },
+        {
+          "release": "3.11.0",
+          "publishedAt": "2024-10-17T03:20:22Z",
+          "eligibleAt": "2024-10-31T03:20:22Z",
+          "source": "https://github.com/apache/apisix/releases/tag/3.11.0",
+          "releaseNotesSHA256": "63d82623c50c962eab90c4e4969c223cc99458d11e77dd9d103e6cdfde530cba"
+        }
+      ],
+      "fixedImageVerified": false
+    },
+    "valkey": {
+      "checkedOn": "2026-10-28",
+      "source": "https://api.github.com/repos/valkey-io/valkey/releases?per_page=10",
+      "releases": [
+        {
+          "release": "9.1.3",
+          "publishedAt": "2026-10-26T23:21:45Z",
+          "eligibleAt": "2026-11-09T23:21:45Z",
+          "source": "https://github.com/valkey-io/valkey/releases/tag/9.1.3",
+          "releaseNotesSHA256": "b60c6fd5d4d651277b1e068d85620f65113ad177bde8d849a36c575cc8bdbd9a"
+        },
+        {
+          "release": "9.0.7",
+          "publishedAt": "2026-10-27T00:04:13Z",
+          "eligibleAt": "2026-11-10T00:04:13Z",
+          "source": "https://github.com/valkey-io/valkey/releases/tag/9.0.7",
+          "releaseNotesSHA256": "8de579654fdb8b3a23b91568a22968064afb0fd32576d3b71bfe00104954a68f"
+        },
+        {
+          "release": "8.1.11",
+          "publishedAt": "2026-10-26T23:27:52Z",
+          "eligibleAt": "2026-11-09T23:27:52Z",
+          "source": "https://github.com/valkey-io/valkey/releases/tag/8.1.11",
+          "releaseNotesSHA256": "84b5790ecddd8efaa171c1a802ab081161e51428b5f7261cf6fd5faf5c7af0b8"
+        },
+        {
+          "release": "8.0.12",
+          "publishedAt": "2026-10-26T23:37:35Z",
+          "eligibleAt": "2026-11-09T23:37:35Z",
+          "source": "https://github.com/valkey-io/valkey/releases/tag/8.0.12",
+          "releaseNotesSHA256": "06323b951fc7a6a0a0afa6a75c26f4336ecea1bda0702158dd60173dabdf7204"
+        },
+        {
+          "release": "7.2.15",
+          "publishedAt": "2026-10-26T21:43:02Z",
+          "eligibleAt": "2026-11-09T21:43:02Z",
+          "source": "https://github.com/valkey-io/valkey/releases/tag/7.2.15",
+          "releaseNotesSHA256": "4e80b403c31cb1c5898865fe69268968b8b9cd8ba7b3e8a0cf9decd1476e9c37"
+        },
+        {
+          "release": "9.0.6",
+          "publishedAt": "2026-09-01T01:29:49Z",
+          "eligibleAt": "2026-09-15T01:29:49Z",
+          "source": "https://github.com/valkey-io/valkey/releases/tag/9.0.6",
+          "releaseNotesSHA256": "d958b5e234d558ac7fe474acfac73e5aad0305b13baa6c1633c13618a380943e"
+        },
+        {
+          "release": "9.1.2",
+          "publishedAt": "2026-09-01T00:01:31Z",
+          "eligibleAt": "2026-09-15T00:01:31Z",
+          "source": "https://github.com/valkey-io/valkey/releases/tag/9.1.2",
+          "releaseNotesSHA256": "1fc794580bd4143b40724d331e3545b4f65b62953d1b5970a07bf97b202574a0"
+        },
+        {
+          "release": "8.1.10",
+          "publishedAt": "2026-08-31T23:29:53Z",
+          "eligibleAt": "2026-09-14T23:29:53Z",
+          "source": "https://github.com/valkey-io/valkey/releases/tag/8.1.10",
+          "releaseNotesSHA256": "5c433015beb3689d4ce4ea89a2f2ed963af2f4167bfc372eba00ad154aa67a10"
+        },
+        {
+          "release": "8.0.11",
+          "publishedAt": "2026-08-31T23:27:40Z",
+          "eligibleAt": "2026-09-14T23:27:40Z",
+          "source": "https://github.com/valkey-io/valkey/releases/tag/8.0.11",
+          "releaseNotesSHA256": "21bff15e383828a7f93e20e274716f19f380b9c5200c9fae1a118524cf42b320"
+        }
+      ],
+      "fixedImageVerified": false
+    },
+    "coredns": {
+      "checkedOn": "2026-10-28",
+      "source": "https://api.github.com/repos/coredns/coredns/releases?per_page=10",
+      "releases": [
+        {
+          "release": "v1.15.0",
+          "publishedAt": "2026-10-21T03:27:34Z",
+          "eligibleAt": "2026-11-04T03:27:34Z",
+          "source": "https://github.com/coredns/coredns/releases/tag/v1.15.0",
+          "releaseNotesSHA256": "73c7406556287e205a5e34cb10e717a0d326746817da7c5f4132234a14aa4f50"
+        },
+        {
+          "release": "v1.14.7",
+          "publishedAt": "2026-08-19T01:39:14Z",
+          "eligibleAt": "2026-09-02T01:39:14Z",
+          "source": "https://github.com/coredns/coredns/releases/tag/v1.14.7",
+          "releaseNotesSHA256": "42ae7fa6b65c171044f0ee14929e5bcc2ba2e2a5628111b10f31533347dd1188"
+        },
+        {
+          "release": "v1.14.6",
+          "publishedAt": "2026-07-10T05:51:46Z",
+          "eligibleAt": "2026-07-24T05:51:46Z",
+          "source": "https://github.com/coredns/coredns/releases/tag/v1.14.6",
+          "releaseNotesSHA256": "1275d9d697206978f6e143c4bb0d8092e4dfc179e9867460d86094333d40d006"
+        },
+        {
+          "release": "v1.14.5",
+          "publishedAt": "2026-07-10T00:35:45Z",
+          "eligibleAt": "2026-07-24T00:35:45Z",
+          "source": "https://github.com/coredns/coredns/releases/tag/v1.14.5",
+          "releaseNotesSHA256": "19078a82f05436adf3a5ca10ed0a869d89df0dd1e26fd2bc117bf4a274e96e2a"
+        },
+        {
+          "release": "v1.14.4",
+          "publishedAt": "2026-06-09T07:23:24Z",
+          "eligibleAt": "2026-06-23T07:23:24Z",
+          "source": "https://github.com/coredns/coredns/releases/tag/v1.14.4",
+          "releaseNotesSHA256": "0e546caa458d54f19a29e5dcc6de193fb1879984302937d5da535e07b3770814"
+        },
+        {
+          "release": "v1.14.3",
+          "publishedAt": "2026-04-22T12:43:18Z",
+          "eligibleAt": "2026-05-06T12:43:18Z",
+          "source": "https://github.com/coredns/coredns/releases/tag/v1.14.3",
+          "releaseNotesSHA256": "aa680ae503d23ed78df5536ad4fb9e8e439201b7c483a24de21fbd0f034b9542"
+        },
+        {
+          "release": "v1.14.2",
+          "publishedAt": "2026-03-06T06:34:58Z",
+          "eligibleAt": "2026-03-20T06:34:58Z",
+          "source": "https://github.com/coredns/coredns/releases/tag/v1.14.2",
+          "releaseNotesSHA256": "f0b251f25d3c51f850197aed0fdb4e2d73f03bf858c23eb1d51a2234ef46bf7c"
+        },
+        {
+          "release": "v1.14.1",
+          "publishedAt": "2026-01-16T05:35:34Z",
+          "eligibleAt": "2026-01-30T05:35:34Z",
+          "source": "https://github.com/coredns/coredns/releases/tag/v1.14.1",
+          "releaseNotesSHA256": "c5f51624c48c15d39bb6842ee6c6878c72cb1235c115cf2ca7761ecec422699f"
+        },
+        {
+          "release": "v1.14.0",
+          "publishedAt": "2026-01-08T01:10:06Z",
+          "eligibleAt": "2026-01-22T01:10:06Z",
+          "source": "https://github.com/coredns/coredns/releases/tag/v1.14.0",
+          "releaseNotesSHA256": "ec0591cd7e1814b966a5f6a9ce30c4ef0d780375869ae3af5ff429f4fd60ffd7"
+        },
+        {
+          "release": "v1.13.2",
+          "publishedAt": "2025-12-10T03:15:05Z",
+          "eligibleAt": "2025-12-24T03:15:05Z",
+          "source": "https://github.com/coredns/coredns/releases/tag/v1.13.2",
+          "releaseNotesSHA256": "d96d669768ee71e800c533efa625c2ea9ecfc0fba2623238d9681a046fcd2b7c"
+        }
+      ],
+      "fixedImageVerified": false
+    },
+    "etcd": {
+      "checkedOn": "2026-10-28",
+      "source": "https://api.github.com/repos/etcd-io/etcd/releases?per_page=10",
+      "releases": [
+        {
+          "release": "v3.7.3",
+          "publishedAt": "2026-10-22T23:12:51Z",
+          "eligibleAt": "2026-11-05T23:12:51Z",
+          "source": "https://github.com/etcd-io/etcd/releases/tag/v3.7.3",
+          "releaseNotesSHA256": "38a6a23039a2b4662cd46eb4e05d4d5dd663ef1ca5faef84cba83fbd0fb8b016"
+        },
+        {
+          "release": "v3.6.16",
+          "publishedAt": "2026-10-22T23:00:22Z",
+          "eligibleAt": "2026-11-05T23:00:22Z",
+          "source": "https://github.com/etcd-io/etcd/releases/tag/v3.6.16",
+          "releaseNotesSHA256": "20324a421325fc42acadeffd8e456408162c66434bf7067ad21ab33e4707e6de"
+        },
+        {
+          "release": "v3.5.35",
+          "publishedAt": "2026-10-22T21:36:15Z",
+          "eligibleAt": "2026-11-05T21:36:15Z",
+          "source": "https://github.com/etcd-io/etcd/releases/tag/v3.5.35",
+          "releaseNotesSHA256": "6ef505361bfdaa236d715dedcf0aa7e6fa052fc58290d9fee9e0836e73efd4be"
+        },
+        {
+          "release": "v3.7.2",
+          "publishedAt": "2026-09-22T21:22:39Z",
+          "eligibleAt": "2026-10-06T21:22:39Z",
+          "source": "https://github.com/etcd-io/etcd/releases/tag/v3.7.2",
+          "releaseNotesSHA256": "0d81e89a599c56dc047553b5a8eaf4760547496cddf85c08720a50c0bee78f73"
+        },
+        {
+          "release": "v3.6.15",
+          "publishedAt": "2026-09-22T21:06:14Z",
+          "eligibleAt": "2026-10-06T21:06:14Z",
+          "source": "https://github.com/etcd-io/etcd/releases/tag/v3.6.15",
+          "releaseNotesSHA256": "8db80bc9c9577735d9190921d67a0cc22460a8810e28e96fd52608a38a14d5c2"
+        },
+        {
+          "release": "v3.5.34",
+          "publishedAt": "2026-09-22T20:50:57Z",
+          "eligibleAt": "2026-10-06T20:50:57Z",
+          "source": "https://github.com/etcd-io/etcd/releases/tag/v3.5.34",
+          "releaseNotesSHA256": "823577048ea360acb99cffd5ef010d7d9b128840ba49de0efddafffa6536e911"
+        },
+        {
+          "release": "v3.7.1",
+          "publishedAt": "2026-07-23T19:37:53Z",
+          "eligibleAt": "2026-08-06T19:37:53Z",
+          "source": "https://github.com/etcd-io/etcd/releases/tag/v3.7.1",
+          "releaseNotesSHA256": "744616e1918d8f6524ec3e7b22a99e33d1536c64dd40c7e8e169e11bfaeca8a5"
+        },
+        {
+          "release": "v3.6.14",
+          "publishedAt": "2026-07-23T19:29:31Z",
+          "eligibleAt": "2026-08-06T19:29:31Z",
+          "source": "https://github.com/etcd-io/etcd/releases/tag/v3.6.14",
+          "releaseNotesSHA256": "bf420cefa06327fe29c03a7eba4b6e500da4e1e85838b3d3d162fcce2f8c9660"
+        },
+        {
+          "release": "v3.5.33",
+          "publishedAt": "2026-07-23T19:12:21Z",
+          "eligibleAt": "2026-08-06T19:12:21Z",
+          "source": "https://github.com/etcd-io/etcd/releases/tag/v3.5.33",
+          "releaseNotesSHA256": "afee74cab40f1d6ec3797fdab5c40654de479dfb34a3b0b5cad15f42093ded8b"
+        },
+        {
+          "release": "v3.7.0",
+          "publishedAt": "2026-07-08T18:26:53Z",
+          "eligibleAt": "2026-07-22T18:26:53Z",
+          "source": "https://github.com/etcd-io/etcd/releases/tag/v3.7.0",
+          "releaseNotesSHA256": "ab4f7bfa30d31de3bb067c08825c2441c1a222dd568443e3eb93351a7467bbb7"
+        }
+      ],
+      "fixedImageVerified": false
+    },
+    "argocd": {
+      "checkedOn": "2026-10-28",
+      "source": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+      "releases": [
+        {
+          "release": "v3.3.18",
+          "publishedAt": "2026-10-22T14:50:13Z",
+          "eligibleAt": "2026-11-05T14:50:13Z",
+          "source": "https://github.com/argoproj/argo-cd/releases/tag/v3.3.18",
+          "releaseNotesSHA256": "6bae2b2c15ba103fa5e4b9986c703f83bd0272df0085b81832bdb8f9da283891"
+        },
+        {
+          "release": "v3.5.6",
+          "publishedAt": "2026-10-20T19:26:34Z",
+          "eligibleAt": "2026-11-03T19:26:34Z",
+          "source": "https://github.com/argoproj/argo-cd/releases/tag/v3.5.6",
+          "releaseNotesSHA256": "335e625be29d3882cb801c3f650f93cf89ffaae3b4d4f2e92bed402f5f527b50"
+        },
+        {
+          "release": "v3.4.12",
+          "publishedAt": "2026-10-20T21:59:31Z",
+          "eligibleAt": "2026-11-03T21:59:31Z",
+          "source": "https://github.com/argoproj/argo-cd/releases/tag/v3.4.12",
+          "releaseNotesSHA256": "6153fc4e9a0b381f14c100af9bb8cf645a7b28a0766ba6188eb0d6c4f4990e4d"
+        },
+        {
+          "release": "v3.3.17",
+          "publishedAt": "2026-10-21T01:30:56Z",
+          "eligibleAt": "2026-11-04T01:30:56Z",
+          "source": "https://github.com/argoproj/argo-cd/releases/tag/v3.3.17",
+          "releaseNotesSHA256": "7814c75c4786f46be8a13f1422ebe22c5f55611442dd0b4508dd0764ab45d53a"
+        },
+        {
+          "release": "v3.5.5",
+          "publishedAt": "2026-10-12T10:59:41Z",
+          "eligibleAt": "2026-10-26T10:59:41Z",
+          "source": "https://github.com/argoproj/argo-cd/releases/tag/v3.5.5",
+          "releaseNotesSHA256": "60d3fc21e05bf40f492da4cd059f81d8462f8cbd71a71ab7d4aaeb4e3c8a8b6a"
+        },
+        {
+          "release": "v3.4.11",
+          "publishedAt": "2026-10-12T10:45:13Z",
+          "eligibleAt": "2026-10-26T10:45:13Z",
+          "source": "https://github.com/argoproj/argo-cd/releases/tag/v3.4.11",
+          "releaseNotesSHA256": "3aee2362a7bbfb75b1c4215377cd76e5f7955b9769dac4f4dd26e585fa9e12fb"
+        },
+        {
+          "release": "v3.3.16",
+          "publishedAt": "2026-10-12T10:59:23Z",
+          "eligibleAt": "2026-10-26T10:59:23Z",
+          "source": "https://github.com/argoproj/argo-cd/releases/tag/v3.3.16",
+          "releaseNotesSHA256": "6db29db93dbfb92fc88e929d2bc8cebcb8b4a2b10a3884c09ad89b87f7072343"
+        }
+      ],
+      "fixedImageVerified": false
+    },
+    "keycloak": {
+      "checkedOn": "2026-10-28",
+      "source": "https://api.github.com/repos/keycloak/keycloak/releases?per_page=10",
+      "releases": [
+        {
+          "release": "26.8.1",
+          "publishedAt": "2026-10-13T08:58:15Z",
+          "eligibleAt": "2026-10-27T08:58:15Z",
+          "source": "https://github.com/keycloak/keycloak/releases/tag/26.8.1",
+          "releaseNotesSHA256": "26814e0b9721d04fa75a13b4344ebfb38eee22fa2056969c2ed9bc50ef6ef197"
+        },
+        {
+          "release": "26.8.0",
+          "publishedAt": "2026-10-01T05:57:20Z",
+          "eligibleAt": "2026-10-15T05:57:20Z",
+          "source": "https://github.com/keycloak/keycloak/releases/tag/26.8.0",
+          "releaseNotesSHA256": "405785c92061d8bb0a964b0d70b87cf80487067a00dc46ff539f2d5ebb77c84d"
+        },
+        {
+          "release": "26.7.5",
+          "publishedAt": "2026-09-30T17:44:19Z",
+          "eligibleAt": "2026-10-14T17:44:19Z",
+          "source": "https://github.com/keycloak/keycloak/releases/tag/26.7.5",
+          "releaseNotesSHA256": "762d7195648bdaaa684e087b6b4fd0bc5439c302a542c5fcaff56c5dedd5d166"
+        },
+        {
+          "release": "26.7.4",
+          "publishedAt": "2026-09-16T14:44:06Z",
+          "eligibleAt": "2026-09-30T14:44:06Z",
+          "source": "https://github.com/keycloak/keycloak/releases/tag/26.7.4",
+          "releaseNotesSHA256": "7e6f8b30a33ce97472f189def485a7d37c3a046a77d6fe690e64206d4ba5718a"
+        },
+        {
+          "release": "26.7.3",
+          "publishedAt": "2026-08-31T09:29:37Z",
+          "eligibleAt": "2026-09-14T09:29:37Z",
+          "source": "https://github.com/keycloak/keycloak/releases/tag/26.7.3",
+          "releaseNotesSHA256": "fec17402323e952c93aaee1887535d30bbbe91b5d9bf91d201f3176046de64cd"
+        },
+        {
+          "release": "26.7.2",
+          "publishedAt": "2026-08-19T05:26:20Z",
+          "eligibleAt": "2026-09-02T05:26:20Z",
+          "source": "https://github.com/keycloak/keycloak/releases/tag/26.7.2",
+          "releaseNotesSHA256": "e21220e752137ed668247328089c2ec24157d84990e94b295a0c8b7e54efc217"
+        },
+        {
+          "release": "26.7.1",
+          "publishedAt": "2026-08-05T15:54:37Z",
+          "eligibleAt": "2026-08-19T15:54:37Z",
+          "source": "https://github.com/keycloak/keycloak/releases/tag/26.7.1",
+          "releaseNotesSHA256": "b1880342d3ae518ef5ef54a20563268b675c9b7359c01f8d509478d03aacb520"
+        },
+        {
+          "release": "26.7.0",
+          "publishedAt": "2026-07-09T06:58:13Z",
+          "eligibleAt": "2026-07-23T06:58:13Z",
+          "source": "https://github.com/keycloak/keycloak/releases/tag/26.7.0",
+          "releaseNotesSHA256": "9cb0c345751b0430ebee9988cd60bf311fbd1c680e6993e0de1303856557746d"
+        },
+        {
+          "release": "26.6.4",
+          "publishedAt": "2026-06-26T19:19:51Z",
+          "eligibleAt": "2026-07-10T19:19:51Z",
+          "source": "https://github.com/keycloak/keycloak/releases/tag/26.6.4",
+          "releaseNotesSHA256": "b4fe0eb21b57fbc9798c44a8cbb10bc0b81087fe204f8a07f6f36860dee0f1df"
+        }
+      ],
+      "fixedImageVerified": false
+    }
+  },
+  "limitation": "Release dates are primary evidence. Only the R12 comparison candidates were scanned; other releases are remediation candidates, not verified fixed images."
+}

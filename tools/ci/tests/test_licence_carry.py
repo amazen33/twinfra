@@ -4,6 +4,10 @@ from datetime import date
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
+import json
+import hashlib
+import tempfile
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import licence_carry as carry
@@ -71,6 +75,31 @@ class Carry(unittest.TestCase):
         self.add(self.original,'2026.10.18')
         self.policy['ladder']['legacy'][self.original['id']]={}
         with self.assertRaisesRegex(ValueError,'predecessor'):self.validate()
+
+    def test_committed_events_are_append_only(self):
+        self.add(self.original,'2026.10.18')
+        anchor='a'*40
+        original_policy={'ladder':{'legacy':{self.original['id']:{'due':'2027-01-14'}}}}
+        log={'version':1,'anchorCommit':anchor,'events':deepcopy(self.events),
+             'anchorLegacySHA256':hashlib.sha256(json.dumps(original_policy['ladder']['legacy'],sort_keys=True).encode()).hexdigest()}
+        self.policy['ladder']['carryLog']='security/licence-carry-log.json'
+        def git(args,**kwargs):
+            if 'log' in args:return 'b'*40
+            ref=args[-1]
+            if ref==anchor+':security/licence-policy.json':return json.dumps(original_policy)
+            if ref==anchor+':security/licence-register.json':return json.dumps({'components':[self.original]})
+            return json.dumps(log)
+        with tempfile.TemporaryDirectory() as directory, patch.object(carry.subprocess,'check_output',side_effect=git):
+            root=Path(directory);(root/'security').mkdir()
+            file=root/'security/licence-carry-log.json'
+            file.write_text(json.dumps(log),encoding='utf-8')
+            carry.check(root,self.policy)
+            changed=deepcopy(log);changed['events'][0]['licenceSHA256']='b'*64
+            file.write_text(json.dumps(changed),encoding='utf-8')
+            with self.assertRaisesRegex(ValueError,'append-only'):carry.check(root,self.policy)
+            changed['events']=[]
+            file.write_text(json.dumps(changed),encoding='utf-8')
+            with self.assertRaisesRegex(ValueError,'append-only'):carry.check(root,self.policy)
 
 
 if __name__=='__main__':unittest.main()
