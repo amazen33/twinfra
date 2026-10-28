@@ -6,9 +6,14 @@
       "digest": "sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf"
     },
     "keycloak": {
-      "source": "quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
-      "canonical": "registry.twinfra.example.com/quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
-      "digest": "sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc"
+      "source": "quay.io/keycloak/keycloak@sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b",
+      "canonical": "registry.twinfra.example.com/quay.io/keycloak/keycloak@sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b",
+      "digest": "sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b",
+      "release": "quay.io/keycloak/keycloak:26.8.1",
+      "releaseSource": "https://github.com/keycloak/keycloak/releases/tag/26.8.1",
+      "releasePublishedAt": "2026-10-13T08:58:15Z",
+      "verifiedOn": "2026-10-28",
+      "licenceSHA256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
     },
     "apisix": {
       "source": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
@@ -16,22 +21,33 @@
       "digest": "sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141"
     },
     "ministack": {
-      "release": "docker.io/ministackorg/ministack:1.5.17",
-      "source": "docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
-      "canonical": "registry.twinfra.example.com/docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
-      "digest": "sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
-      "digestSource": "https://registry-1.docker.io/v2/ministackorg/ministack/manifests/1.5.17",
-      "publicationSource": "https://hub.docker.com/v2/repositories/ministackorg/ministack/tags/1.5.17",
-      "publishedAt": "2026-09-25T17:23:08.811415Z",
-      "releasePublishedAt": "2026-09-25T17:08:49Z",
-      "releaseSource": "https://github.com/ministackorg/ministack/releases/tag/v1.5.17",
-      "verifiedOn": "2026-10-10"
+      "release": "docker.io/ministackorg/ministack:1.5.33",
+      "source": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "canonical": "registry.twinfra.example.com/docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "digest": "sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "digestSource": "https://registry-1.docker.io/v2/ministackorg/ministack/manifests/1.5.33",
+      "publicationSource": "https://hub.docker.com/v2/repositories/ministackorg/ministack/tags/1.5.33",
+      "publishedAt": "2026-10-26T17:34:12.898199Z",
+      "releasePublishedAt": "2026-10-26T17:15:10Z",
+      "releaseSource": "https://github.com/ministackorg/ministack/releases/tag/v1.5.33",
+      "verifiedOn": "2026-10-28",
+      "licenceSHA256": "53d77ec9ad68650079486272d5bd095724c82a66303a12405edd1c59eb2b5477",
+      "expedite": {
+        "decision": "WO-40 Amendment10a / O-1",
+        "advisory": "CVE-2026-111497",
+        "approvedOn": "2026-10-28"
+      }
     },
     "argocd": {
-      "source": "quay.io/argoproj/argocd:v3.5.3",
-      "digest": "sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
-      "canonical": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
-      "digestSource": "https://quay.io/v2/argoproj/argocd/manifests/v3.5.3"
+      "source": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "digest": "sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "canonical": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "digestSource": "https://quay.io/v2/argoproj/argocd/manifests/v3.5.3",
+      "release": "quay.io/argoproj/argocd:v3.5.5",
+      "releaseSource": "https://github.com/argoproj/argo-cd/releases/tag/v3.5.5",
+      "releasePublishedAt": "2026-10-12T10:59:41Z",
+      "verifiedOn": "2026-10-28",
+      "licenceSHA256": "c996fc213c94f4a4a838407d355b081226caa7b103a4f239bb87fb8f1d8e3a60"
     },
     "valkey": {
       "source": "docker.io/valkey/valkey:8.1.10-alpine@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",

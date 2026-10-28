@@ -81,7 +81,7 @@ immutable evidence of their original revisions, including old paths.
 | [0051: Real DNS names under `twinfra.amazen33.dev`](0051-real-dns-zone-twinfra-amazen33-dev.md) | Accepted (design) | None — no Accepted live receipt | Owner DNS and WO-33 certificate work; no DNS change or public UI exposure in this work order |
 | [0052: Evidence first — the evidence model and the Foundation 1.0 gate](0052-evidence-first-foundation-1-0.md) | Accepted (design) | None — no Accepted live receipt | Foundation 1.0 evidence gate; decision 5 supersedes ADR-0008/0020; provenance verification not yet implemented |
 | [0053: Tenancy model — AWS-style accounts and IAM map to tenants](0053-tenancy-model-accounts-and-iam.md) | Proposed | None — no Accepted live receipt | Design only; tenancy implementation and cross-account denial matrix await Foundation 1.0 and WO-22/Wave 2 |
-| [0054: Licence ladder and enterprise-grade gate](0054-licence-ladder-and-enterprise-grade-gate.md) | Accepted (design) | Owner approval, 2026-10-16; no live acceptance | WO-09a gate and dated legacy backfill; Foundation 1.0 evidence qualification remains due |
+| [0054: Licence ladder and enterprise-grade gate](0054-licence-ladder-and-enterprise-grade-gate.md) | Accepted (design) | Owner approval, 2026-10-16; no live acceptance | WO-09a gate and dated legacy backfill; [Amendment 1: security-fix carry-forward](amendments/0054-amendment-1-security-fix-carry-forward.md), Accepted (design), owner O-5 2026-10-28; original deadlines and individual batch approvals remain required |
 
 ADR numbers **0037** and **0039–0041** are reserved for other approved work orders.
 

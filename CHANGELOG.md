@@ -9,6 +9,13 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Changed
 
+- R12 October security wave: promote digest-pinned Argo CD 3.5.5, MiniStack
+  1.5.33 and Keycloak 26.8.1; refresh the certifi and DOMPurify locks under O-1.
+  Add anchored, append-only security-fix licence carries with unchanged original
+  backfill deadlines under ADR-0054 Amendment 1. Vulnerability exceptions and
+  carry approvals remain proposed for the owner's PR batch; image staging and
+  live acceptance are owner actions.
+
 - Fix Syft cataloging of pinned CI binaries by applying platform selection only
   to image sources. Add a real actionlint extraction/SBOM/Grype CI regression
   and restricted, redacted diagnostics for verified local tool files; pinned-tool

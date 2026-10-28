@@ -252,7 +252,15 @@ class Licences(unittest.TestCase):
             name:{'result':'pass','evidence':'https://example.org/fixture/'+name,'date':'2026-10-09'}
             for name in gate.licence_ladder.CRITERIA}})
         for path in ('licence-policy.json', 'licence-register.schema.json'):
-            self.write('security/' + path, (ROOT / 'security' / path).read_text())
+            raw = (ROOT / 'security' / path).read_text()
+            if path == 'licence-policy.json':
+                value = json.loads(raw)
+                # This isolated alpha fixture has no carried component or Git
+                # approval anchor. Carry history is tested in test_licence_carry.
+                value.get('ladder', {}).pop('carryLog', None)
+                value.get('ladder', {})['legacy'] = {}
+                raw = json.dumps(value)
+            self.write('security/' + path, raw)
         self.write('security/licence-register.json', json.dumps(dict(version=1, components=[self.entry])))
         self.write('security/licence-baseline.json', json.dumps(dict(version=1, findings=[])))
         self.write('security/licences/rag-notices.lock.json', '{}')

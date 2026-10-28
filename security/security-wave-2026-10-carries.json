@@ -1,0 +1,49 @@
+{
+  "proposedOn": "2026-10-28",
+  "carries": [
+    {
+      "from": "oci-image|docker.io/ministackorg/ministack|sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+      "to": "oci-image|docker.io/ministackorg/ministack|sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "fromVersion": "1.5.17",
+      "toVersion": "1.5.33",
+      "originalDue": "2027-04-16",
+      "advisoriesCleared": [
+        "CVE-2026-111497",
+        "GHSA-6q48-6c7w-9gw2"
+      ],
+      "netImprovement": true,
+      "licenceSHA256": "53d77ec9ad68650079486272d5bd095724c82a66303a12405edd1c59eb2b5477",
+      "evidence": "https://github.com/amazen33/twinfra/actions/runs/40754061462",
+      "proposedOn": "2026-10-28"
+    },
+    {
+      "from": "pip|certifi|2026.7.22",
+      "to": "pip|certifi|2026.10.23",
+      "fromVersion": "2026.7.22",
+      "toVersion": "2026.10.23",
+      "originalDue": "2027-01-14",
+      "advisoriesCleared": [
+        "GHSA-6q48-6c7w-9gw2"
+      ],
+      "netImprovement": true,
+      "licenceSHA256": "546ce90e02c152f5ff565baca6bc2a8f43c355855f637756f49a0143e312bdb2",
+      "evidence": "https://github.com/amazen33/twinfra/actions/runs/40754061462",
+      "proposedOn": "2026-10-28"
+    },
+    {
+      "from": "npm|dompurify|3.4.16",
+      "to": "npm|dompurify|3.4.17",
+      "fromVersion": "3.4.16",
+      "toVersion": "3.4.17",
+      "originalDue": "2027-01-14",
+      "advisoriesCleared": [
+        "CVE-2026-116804"
+      ],
+      "netImprovement": true,
+      "licenceSHA256": "dbf5c427950b3c27d67dfbc150a16547188612deee6e98eab47fc871aa7d4f28",
+      "evidence": "https://github.com/amazen33/twinfra/actions/runs/40754061462",
+      "proposedOn": "2026-10-28"
+    }
+  ],
+  "ownerBatchApproval": "Pending"
+}

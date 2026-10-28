@@ -5,6 +5,8 @@
 
 ## Context
 
+Amended by [ADR-0054 Amendment 1: security-fix carry-forward](amendments/0054-amendment-1-security-fix-carry-forward.md), owner O-5, 2026-10-28. This preserves the original legacy backfill deadlines; it does not reclassify components or change OR-tier handling.
+
 ADR-0030 is MIT-first and allows other permissive licences. ADR-0044 added classes for build tools, base OS, weak copyleft and disabled modules. What is missing is a rule for when the most permissive option is **not good enough for an enterprise**.
 WO-09 showed the case: pgBackRest (MIT) is mature, but its CloudNativePG plugin is experimental (v0.0.3). CNPG's mature, official path, Barman, is GPL-3.0.
 

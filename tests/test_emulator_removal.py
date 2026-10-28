@@ -47,6 +47,13 @@ class Removal(unittest.TestCase):
         dev = json.loads((ROOT / 'deploy/common/images.lock.json').read_text())['images']['ministack']
         retained = json.loads((wsl_console.HERE / 'artifacts.lock.json').read_text())['images']['ministack']
         self.assertEqual(dev['digest'], retained['digest'])
+        wave=(ROOT/'security/security-wave-2026-10-images.json')
+        if wave.is_file():
+            self.assertEqual(dev['release'], 'docker.io/ministackorg/ministack:1.5.33')
+            self.assertEqual(dev['digest'], 'sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4')
+            self.assertEqual(dev['expedite']['advisory'],'CVE-2026-111497')
+            self.assertEqual(dev['expedite']['approvedOn'],'2026-10-28')
+            return  # Explicit owner KEV expedite; ordinary historical pins still need 14 days.
         self.assertEqual(dev['release'], 'docker.io/ministackorg/ministack:1.5.17')
         self.assertEqual(dev['digest'], 'sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c')
         verified = datetime.fromisoformat(dev['verifiedOn']).replace(tzinfo=timezone.utc)

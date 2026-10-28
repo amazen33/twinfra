@@ -80,6 +80,8 @@ def validate(entry, policy, identifiers, today):
             raise ValueError('Never licence cannot enter a legacy baseline: ' + term)
     grade = entry.get('enterpriseGrade', {})
     if legacy and grade.get('status') == 'legacy-pending':
+        from licence_carry import approval
+        approval(legacy, today)
         if fingerprint(entry) != legacy['sha256'] or entry.get('tier') != legacy['tier']:
             raise ValueError('Changed legacy runtime requires full ADR-0054 records')
         if grade.get('due') != legacy['due']:

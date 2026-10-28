@@ -308,7 +308,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: keycloak
-        image: registry.twinfra.example.com/quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc
+        image: registry.twinfra.example.com/quay.io/keycloak/keycloak@sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b
         volumeMounts:
         - &id001
           name: auth
@@ -395,7 +395,7 @@ spec:
         imagePullPolicy: IfNotPresent
       initContainers:
       - name: prepare
-        image: registry.twinfra.example.com/quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc
+        image: registry.twinfra.example.com/quay.io/keycloak/keycloak@sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b
         command:
         - sh
         - -ec
@@ -552,7 +552,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: ministack
-        image: registry.twinfra.example.com/docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c
+        image: registry.twinfra.example.com/docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4
         ports:
         - containerPort: 4566
         env:

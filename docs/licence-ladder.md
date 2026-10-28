@@ -39,6 +39,24 @@ Licence approval does not approve vulnerability exceptions. Supply-chain results
 image-staging attestation and live restore acceptance remain independent gates.
 No certification or production-readiness claim follows from the records.
 
+## Security-fix carry-forward
+
+[ADR-0054 Amendment 1](adr/amendments/0054-amendment-1-security-fix-carry-forward.md)
+permits an owner-reviewed, same-line security refresh to carry a legacy-pending
+record with its original tier, SPDX expression, class and due date. Calendar
+versions such as certifi may advance across calendar releases. The primary
+licence is checked again for the exact version. `security/licence-carry-log.json`
+is append-only and anchored to the original committed approvals; a second carry
+cannot move the original deadline. The predecessor leaves the current legacy map.
+The new map records `carriedFrom`, cleared advisories and the actual approval date.
+Empty `approvedBy` and `approvalDate` fields are proposals, not approvals, and
+continue to fail the licence gate until the owner approves the PR batch.
+
+R12 carries MiniStack to 1.5.33 (due 2027-04-16), certifi to 2026.10.23 and
+DOMPurify to 3.4.17 (both due 2027-01-14). The Beta and other unproven enterprise
+criteria remain backfill obligations. Component classification and OR-tier
+selection are unchanged; their corrections are post-release work.
+
 The one-time migration is reproducible with
 `python tools/ci/refresh_licence_ladder.py --check`. It compares all 581 original
 component records; no version, hash, class, expiry or permission is renewed.

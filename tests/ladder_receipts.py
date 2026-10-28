@@ -14,9 +14,20 @@ def old(path):
     return subprocess.check_output(['git', '-C', str(ROOT), 'show', BASE+':'+path])
 
 
+def current_document(path):
+    """Project the separately bounded R12 patch before the older WO-09a receipt."""
+    current = json.loads((ROOT/path).read_text(encoding='utf-8'))
+    marker = ROOT/'security/security-wave-2026-10-images.json'
+    if not marker.is_file():
+        return current
+    from r12_receipts import assert_current
+    anchor = assert_current()
+    return json.loads(subprocess.check_output(['git', '-C', str(ROOT), 'show', anchor+':'+path]))
+
+
 def policy():
     path='security/licence-policy.json'
-    before=json.loads(old(path));current=json.loads((ROOT/path).read_text(encoding='utf-8'))
+    before=json.loads(old(path));current=current_document(path)
     ladder=current.pop('ladder')
     tiers={'1':[x for x in before['permitted'] if x!='Apache-2.0'], '2':['Apache-2.0'],
            '3':['MPL-2.0','LGPL-*','EPL-2.0'], '4':['GPL-*']}
@@ -39,11 +50,11 @@ def policy():
 
 def register():
     path='security/licence-register.json';before=json.loads(old(path))
-    current=json.loads((ROOT/path).read_text(encoding='utf-8'))
+    current=current_document(path)
     original={e['id']:e for e in before['components']};entries={e['id']:e for e in current['components']}
     if entries.keys()!=original.keys():raise AssertionError('WO-09a cannot add/remove runtime components')
     policy()
-    legacy=json.loads((ROOT/'security/licence-policy.json').read_text(encoding='utf-8'))['ladder']['legacy']
+    legacy=current_document('security/licence-policy.json')['ladder']['legacy']
     for key,entry in original.items():
         actual=dict(entries[key])
         if runtime(entry):

@@ -32068,7 +32068,7 @@ spec:
           value: /helm-working-dir
         - name: HELM_DATA_HOME
           value: /helm-working-dir
-        image: registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa
+        image: registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -32134,7 +32134,7 @@ spec:
         command:
         - sh
         - -c
-        image: registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa
+        image: registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518
         name: copyutil
         securityContext:
           runAsNonRoot: true
@@ -32587,7 +32587,7 @@ spec:
               optional: true
         - name: KUBECACHEDIR
           value: /tmp/kubecache
-        image: registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa
+        image: registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518
         imagePullPolicy: IfNotPresent
         name: argocd-application-controller
         ports:
@@ -62131,7 +62131,7 @@ spec:
               key: server.sync.replace.allowed
               name: argocd-cmd-params-cm
               optional: true
-        image: registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa
+        image: registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
