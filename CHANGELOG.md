@@ -14,7 +14,9 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
   Add anchored, append-only security-fix licence carries with unchanged original
   backfill deadlines under ADR-0054 Amendment 1. Vulnerability exceptions and
   carry approvals remain proposed for the owner's PR batch; image staging and
-  live acceptance are owner actions.
+  live acceptance are owner actions. Close three fixed prior exception rows and
+  publish the 420-row replacement proposal, per-image scan ledger, original-date
+  licence carry log and release-window calendar; keep all approval gates blocking.
 
 - Fix Syft cataloging of pinned CI binaries by applying platform selection only
   to image sources. Add a real actionlint extraction/SBOM/Grype CI regression

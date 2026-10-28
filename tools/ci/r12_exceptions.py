@@ -107,7 +107,7 @@ def make_entry(value, component, evidence, upstream, *, merge, on=ON):
             '; image paths '+', '.join(evidence['imagePaths'][:6])+'. No negative reachability claim or image execution.')
     term=30 if value['severity']=='Critical' else 60
     expiry=(on+timedelta(days=term)).isoformat()
-    reason=('Fixed by WO-46; package fix '+fixes+'. Dev exposure: LAN-only APIs, tunnel-only UIs. '+
+    reason=('fixed by WO-46; package fix '+fixes+'. Dev exposure: LAN-only APIs, tunnel-only UIs. '+
             upstream[0]+'. Reachability: '+result+' Upstream: '+evidence['advisorySources'][0])
     if value['kev']:
         if component!='argocd' or value['package']!='libbrotli1' or value['vulnerability']!='CVE-2026-111497':

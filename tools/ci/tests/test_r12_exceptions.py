@@ -42,6 +42,7 @@ class R12(unittest.TestCase):
             span=(date.fromisoformat(entry['expires'])-date.fromisoformat(entry['createdOn'])).days
             self.assertLessEqual(span,30 if entry['severity']=='Critical' else 60)
             self.assertTrue(entry['controls'])
+            self.assertIn('fixed by WO-46',entry['reason'])
             self.assertNotIn('*',entry['vulnerability'])
         for row in self.report['ledger']:
             self.assertTrue(row['fixVersions'])
