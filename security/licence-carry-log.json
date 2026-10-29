@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "anchorCommit": "0d950075a8bf43358d9fd406b80b67d657f804e1",
+  "anchorLegacySHA256": "90c93b9b003f80fcf327578c74cb245654fa74f00d7d986a5520ce2bab288f8f",
+  "events": [
+    {
+      "from": "oci-image|docker.io/ministackorg/ministack|sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+      "to": "oci-image|docker.io/ministackorg/ministack|sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "fromVersion": "1.5.17",
+      "toVersion": "1.5.33",
+      "originalDue": "2027-04-16",
+      "record": {
+        "id": "oci-image|docker.io/ministackorg/ministack|sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+        "ecosystem": "oci-image",
+        "name": "docker.io/ministackorg/ministack",
+        "version": "sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+        "locations": [
+          "deploy/common/images.lock.json",
+          "deploy/environments/dev/cairo-1/services/workloads.yaml",
+          "lab/wsl/console/artifacts.lock.json",
+          "lab/wsl/console/gitops/workloads.yaml",
+          "lab/wsl/console/workloads.yaml"
+        ],
+        "spdx": "MIT",
+        "class": "allowed",
+        "licenceSource": "https://raw.githubusercontent.com/ministackorg/ministack/v1.5.33/LICENSE",
+        "verifiedOn": "2026-10-28",
+        "recordedOn": "2026-10-28",
+        "integrities": [
+          "sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4"
+        ],
+        "tier": 1,
+        "enterpriseGrade": {
+          "status": "legacy-pending",
+          "due": "2027-04-16"
+        },
+        "notes": "Unmodified upstream; primary LICENSE SHA256 53d77ec9ad68650079486272d5bd095724c82a66303a12405edd1c59eb2b5477. R12 scan https://github.com/amazen33/twinfra/actions/runs/40754061462",
+        "imageSBOM": {
+          "path": "deploy/common/vendor/r12-ministack-1.5.33.cdx.json.gz",
+          "sha256": "d0cc80c641df5c4b88e0c7f5b663dc521a28f8b955bcb146bf726f3e0168feb2"
+        }
+      },
+      "advisoriesCleared": [
+        "CVE-2026-111497",
+        "GHSA-6q48-6c7w-9gw2"
+      ],
+      "netImprovement": true,
+      "licenceSHA256": "53d77ec9ad68650079486272d5bd095724c82a66303a12405edd1c59eb2b5477",
+      "evidence": "https://github.com/amazen33/twinfra/actions/runs/40754061462",
+      "proposedOn": "2026-10-28"
+    },
+    {
+      "from": "pip|certifi|2026.7.22",
+      "to": "pip|certifi|2026.10.23",
+      "fromVersion": "2026.7.22",
+      "toVersion": "2026.10.23",
+      "originalDue": "2027-01-14",
+      "record": {
+        "id": "pip|certifi|2026.10.23",
+        "ecosystem": "pip",
+        "name": "certifi",
+        "version": "2026.10.23",
+        "locations": [
+          "module-5a/requirements-runtime.lock.txt",
+          "tools/ci/rag-requirements.txt"
+        ],
+        "spdx": "MPL-2.0",
+        "class": "weak-copyleft",
+        "licenceSource": "https://pypi.org/pypi/certifi/2026.10.23/json",
+        "verifiedOn": "2026-10-28",
+        "recordedOn": "2026-10-28",
+        "integrities": [
+          "sha256:e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1"
+        ],
+        "adr": "0044",
+        "unmodified": true,
+        "separateUnit": true,
+        "notice": "security/licences/rag/NOTICE.md",
+        "tier": 3,
+        "enterpriseGrade": {
+          "status": "legacy-pending",
+          "due": "2027-01-14"
+        }
+      },
+      "advisoriesCleared": [
+        "GHSA-6q48-6c7w-9gw2"
+      ],
+      "netImprovement": true,
+      "licenceSHA256": "546ce90e02c152f5ff565baca6bc2a8f43c355855f637756f49a0143e312bdb2",
+      "evidence": "https://github.com/amazen33/twinfra/actions/runs/40754061462",
+      "proposedOn": "2026-10-28"
+    },
+    {
+      "from": "npm|dompurify|3.4.16",
+      "to": "npm|dompurify|3.4.17",
+      "fromVersion": "3.4.16",
+      "toVersion": "3.4.17",
+      "originalDue": "2027-01-14",
+      "record": {
+        "id": "npm|dompurify|3.4.17",
+        "ecosystem": "npm",
+        "name": "dompurify",
+        "version": "3.4.17",
+        "locations": [
+          "tools/ci/mermaid/package-lock.json"
+        ],
+        "spdx": "(MPL-2.0 OR Apache-2.0)",
+        "class": "allowed",
+        "licenceSource": "https://registry.npmjs.org/dompurify/3.4.17",
+        "verifiedOn": "2026-10-28",
+        "recordedOn": "2026-10-28",
+        "integrities": [
+          "sha512-B/pSlYVHQ58kqISD/yDjuJ1yfzI34m1gF4lAod2bwSRhiN4K5Cl3H8Af7hqB2PmTL911tdEudnnXn5FnhRoz0w=="
+        ],
+        "tier": 3,
+        "enterpriseGrade": {
+          "status": "legacy-pending",
+          "due": "2027-01-14"
+        }
+      },
+      "advisoriesCleared": [
+        "CVE-2026-116804"
+      ],
+      "netImprovement": true,
+      "licenceSHA256": "dbf5c427950b3c27d67dfbc150a16547188612deee6e98eab47fc871aa7d4f28",
+      "evidence": "https://github.com/amazen33/twinfra/actions/runs/40754061462",
+      "proposedOn": "2026-10-28"
+    }
+  ]
+}

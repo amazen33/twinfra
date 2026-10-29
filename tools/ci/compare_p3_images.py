@@ -15,6 +15,26 @@ ROWS=[
  ('pause-after','registry.k8s.io/pause@sha256:f548e0e8e3dc1896ca956272154dde3314e8cc4fde0a57577ee9fa1c63f5baf4')]
 
 
+def promotion(component,pin,before,after,root):
+ blocked=bool(after['counts']['CriticalWithFix'] or after['counts']['HighWithFix'])
+ if pin in (before['reference'].split('@')[1],after['reference'].split('@')[1]):
+  selected=after['reference'].endswith('@'+pin)
+  return dict(promoted=selected,blockedCandidate=blocked), selected and blocked
+ # R12 supersedes the stopped P3 MiniStack candidate. Keep its old comparison
+ # as data, while the full PR scan and R12's exact-digest comparison govern the
+ # new pin. Never treat an unknown pin as an admitted P3 promotion.
+ if component=='ministack' and (root/'security/security-wave-2026-10-images.json').is_file():
+  from security_wave_2026_10 import CASES
+  ref=CASES['ministack1533'][2]
+  row=sc.read(root/'security/security-wave-2026-10-images.json')['images']['ministack']
+  if (ref.split('@')[1]==pin and row['before']==before['reference'] and row['after']==ref and
+      row['comparison']['subset'] is True and row['comparison']['strictImprovement'] is True and
+      row['comparison']['introduced']==[]):
+   return dict(promoted=False,blockedCandidate=blocked,historicalOnly=True,
+               supersededBy=ref,admission='R12 exact-digest comparison and blocking full PR scan'),False
+ raise ValueError('Unexpected P3 rendered pin')
+
+
 def compare(tools,scanner,out):
  out.mkdir(parents=True,exist_ok=True);images=[];bindings={}
  for name,ref in ROWS:
@@ -40,12 +60,9 @@ def compare(tools,scanner,out):
  for component,pin in pins.items():
   before=next(v for v in report['images'] if v['name']==component+'-before')
   after=next(v for v in report['images'] if v['name']==component+'-after')
-  if pin not in (before['reference'].split('@')[1],after['reference'].split('@')[1]):
-   raise ValueError('Unexpected P3 rendered pin')
-  selected=after['reference'].endswith('@'+pin)
-  blocked=bool(after['counts']['CriticalWithFix'] or after['counts']['HighWithFix'])
-  report['promotions'][component]=dict(promoted=selected,blockedCandidate=blocked)
-  failed|=selected and blocked
+  result,blocked=promotion(component,pin,before,after,root)
+  report['promotions'][component]=result
+  failed|=blocked
  sc.write(out/'comparison.json',report)
  return int(failed)
 

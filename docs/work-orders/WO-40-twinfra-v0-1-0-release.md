@@ -173,6 +173,14 @@ The stop rules, CAS patches, no-fallback rule for etcd, backups and dates stand.
 
 Then the owner updates `E:\twinfra-live` to the merge commit and reruns `run-acceptance.ps1`.
 
+## Amendment 7 (2026-10-17, architect): PR #71 (WO-40d) approved; import aliases
+
+- **PR #71 at `0472810` is approved for the owner's merge.**
+  - **Suite:** a runtime reference whose digest equals the locked digest is no longer looked up. A failed canonical or runtime lookup is recorded as a sanitized `deployedImages` problem. A canonical mismatch, which used to abort the run, now fails the check instead; that is stricter, not weaker.
+  - **Generator:** sorted YAML for every ConfigMap value, including rollbacks, with a `config_value` test.
+- **`ctr images import --digests`:** Codex's source analysis says the date-based aliases are unnecessary for fully named archives. **No change during the release window.** Removing the flag is a post-v0.1.0 item, bundled with the next image refresh and proven by a live import test.
+- **What removed the two aliases on the Dell stays unknown.** It is investigated read-only only if it happens again. Canonical names remain protected by the staging check on every `accept` run.
+
 ## Amendment 8 (2026-10-17, architect): fifth baseline; WO-40e (versions step)
 
 **Run at 15:03 UTC on `d9c81f2`.** Every acceptance check passed:
@@ -202,3 +210,241 @@ The run then aborted in the informational `versions` step. Owner-side fixes made
 1. For a component with several replicas, query **every** matching Ready Pod and require them to report the same version. Record it once; disagreement is a failure.
 2. A version probe that fails becomes a recorded, sanitized `versions` check failure, never an exception that aborts the run. The remaining steps (the restart test, the final checks) still run.
 3. Tests: two CoreDNS replicas with equal versions pass, unequal versions fail, a failing exec is recorded and does not abort, and no command output is serialized.
+
+## Amendment 9 (2026-10-17, architect): PR #72 (WO-40e) approved
+
+PR #72 at `fab16e0` is approved for the owner's merge.
+- **Versions:** every Ready replica is queried, and the versions must agree.
+- **Receipt content:** only the parsed version string is recorded, never command output.
+- **Failures:** a failed or unequal probe becomes a `versions` check failure instead of an abort.
+- **Restart test:** an informational `versions` failure does not block the explicitly authorized restart test. Health, security and image failures still refuse it.
+- **Regex:** checked against the live outputs from the fifth run (Cilium, etcd, CoreDNS, Argo CD, CNPG, PostgreSQL, Keycloak, OpenBao, Valkey). Each yields the right version.
+
+Next:
+1. The owner merges, updates `E:\twinfra-live` (Copilot prompt C2), and waits for Argo CD to sync.
+2. The owner runs the full pass with the restart test: `run-acceptance.ps1 -WithRestart`.
+
+## Amendment 10 (2026-10-28, architect): the October security wave; R1 and R2 become one PR (R12)
+
+### Facts
+
+Source: nightly run 40659063932 (2026-10-28), its artifact and `security/vulnerability-exceptions.json` on `main` (`0d95007`).
+
+- **374 findings now block,** not the 6 reported on 10-26. On 10-27, 367 High findings crossed ADR-0049's 14-day rule; all were first seen on 10-13. The rest are 5 Critical findings with a fix, and 2 KEV findings.
+- **The seven Critical and KEV records:**
+
+  | Image or lockfile | Package | Advisory | Why it blocks | Fixed in |
+  | --- | --- | --- | --- | --- |
+  | Keycloak | `ca-certificates` (RPM) | CVE-2026-114406 | Critical | 2026.2.92 |
+  | MiniStack | `brotli-libs` | CVE-2026-111497 | KEV | 1.2.1-r0 |
+  | MiniStack | `certifi` | GHSA-6q48-6c7w-9gw2 | Critical | 2026.10.18 |
+  | Argo CD | `libbrotli1` | CVE-2026-111497 | KEV (Medium) | 1.2.0-3ubuntu0.1 |
+  | `module-5a/requirements-runtime.lock.txt` | `certifi` | GHSA-6q48-6c7w-9gw2 | Critical | 2026.10.18 |
+  | `tools/ci/rag-requirements.txt` | `certifi` | GHSA-6q48-6c7w-9gw2 | Critical | 2026.10.18 |
+  | `tools/ci/mermaid/package-lock.json` | `dompurify` | CVE-2026-116804 | Critical | 3.4.17 |
+
+  **Four of the seven are the eMudhra CA compromise:** the `certifi` and `ca-certificates` bundles still trust the roots whose intermediate keys leaked. It is the same incident as Cloudflare's 10-20 advisory.
+- **The 367 Highs by image:**
+
+  | Image | Highs |
+  | --- | ---: |
+  | Argo CD | 148 |
+  | Cilium | 37 |
+  | kube-apiserver, kube-controller-manager, kube-scheduler, CoreDNS | 22 each |
+  | operator-generic | 19 |
+  | etcd | 15 |
+  | cilium-envoy | 15 |
+  | OpenBao | 14 |
+  | CNPG | 13 |
+  | APISIX | 8 |
+  | Keycloak | 6 |
+  | MiniStack | 3 |
+  | Valkey | 1 |
+
+  - Most are the Go standard library and `golang.org/x/*`.
+  - The rest do not qualify as toolchain-wave findings: grpc, the etcd client, the OpenTelemetry SDK, and OS packages (perl-base, pcre2, zlib, OpenSSL, Python).
+- **Existing exceptions:**
+  - 60 Critical entries expire on **2026-11-12**. From 11-05 they fall inside the acceptance suite's 7-day failure window, which is during the rc window and before stable.
+  - The 2 interim Argo CD entries expire on **2026-11-02**. `accept` has failed on them since 10-26.
+- **`main` has not moved since 10-19.** R1 (due 10-26) was not sent.
+- **Upstream releases:**
+
+  | Component | Release | Published | Eligible under the 14-day rule |
+  | --- | --- | --- | --- |
+  | Argo CD | 3.5.5 | 10-12 | Now |
+  | Argo CD | 3.5.6 | 10-20 | 11-03 |
+  | Keycloak | 26.8.1 | 10-13 | Now |
+  | MiniStack | 1.5.33 | 10-26 | Under the KEV expedite rule only |
+  | Kubernetes | 1.36.6 | 10-28 | 11-11 |
+  | Cilium | 1.20.4 | 10-23 | 11-06 |
+
+### Why one PR
+
+When the exception policy changes, the PR gate scans **all** inputs (`pr-tests.yaml`). An Argo CD-only PR therefore can't pass while 374 findings block. R2 on its own would also write 148 Argo CD entries that R1 then closes. One PR dispositions everything once.
+
+### Decisions
+
+1. **R12 replaces R1 and R2.** Its prompt is in `CODEX-PROMPTS.md`. R3b follows R12 unchanged.
+2. **Scope control: only three images change before v0.1.0.**
+   - **Argo CD**, as planned.
+   - **MiniStack and Keycloak**, because their Critical and KEV findings force it.
+   - **Everything else** is covered by an exception under the existing rules and refreshed after the release by **WO-46**.
+   - **No Kubernetes, Cilium, etcd or CoreDNS change before the release.** Each would be a live maintenance inside the freeze.
+3. **The KEV expedite rule** (ADR-0049) admits a MiniStack or Argo CD release younger than 14 days, but only if:
+   - it fixes the brotli KEV;
+   - it passes the net-improvement rule (WO-34 Amendment 3a): its fixable Critical and High identities are a subset of the current image's.
+4. **Highs:**
+   - Findings that qualify under ADR-0049 Amendment 1/1a get **per-image, per-CVE** entries, 60 days at most.
+   - Findings that don't qualify are **grouped per image and package**, 60 days at most, with the reason "fixed by WO-46". ADR-0049 allows grouping only for a named remediation work order.
+5. **The 60 Critical entries expiring 11-12:**
+   - Close each one a promotion fixes, with evidence.
+   - Renew any that remain **individually**, for 30 days at most, with the upstream fix reference and the reachability result.
+6. **Calendar:** after R12 merges, no exception has expired, and none falls within 7 days of any date up to **2026-11-16**.
+7. **Dates:**
+   - R12 should merge by **10-30**.
+   - The owner stages the images, merges and runs `run-acceptance.ps1 -WithRestart`.
+   - Then R3b by 10-31, the freeze, rc.1 around 11-02 and stable around 11-09.
+   - If R12 merges later, every later date moves by the same number of days.
+   - The Argo CD promotion must be live **before 11-02**, when the two interim entries expire.
+
+### Owner decisions
+
+- **O-1: APPROVED by the owner, 2026-10-28 ("O-1 approved").** Waive the 14-day cooling-off for four fixes. Architect's recommendation: **yes**. They only remove compromised CA roots, or patch a CI-only tool or a disabled module.
+  - `certifi` ≥ 2026.10.18 in the two Python lockfiles;
+  - DOMPurify 3.4.17 in the Mermaid build tool;
+  - the `certifi` fix inside MiniStack;
+  - a Keycloak image whose only change is the CA-bundle fix, if one appears.
+- **O-2:** approve the exception rows in the R12 PR, as always (`approvedBy` stays empty until then).
+- **O-3: APPROVED by the owner, 2026-10-28 ("accept your recommendations").** The date rule in decision 7.
+
+## Amendment 10a (2026-10-28, architect): the Argo CD brotli KEV that no release fixes yet
+
+**Codex's stop report** (branch `codex/security-wave-2026-10`, diagnostic commit `de5e466`, comparison runs 40754061462) is right.
+
+| Candidate | Fixable Critical/High, before → after | Result |
+| --- | --- | --- |
+| Argo CD 3.5.5 | 23/152 → 22/144 | Net improvement passes. `libbrotli1 1.2.0-3build1` (KEV CVE-2026-111497) remains. |
+| Argo CD 3.5.6 | 23/152 → 22/143 | Same KEV remains. The expedite rule therefore doesn't apply, and it isn't eligible until 11-03. |
+| MiniStack 1.5.33 | 3/6 → 0/0 | Removes the KEV and the `certifi` Critical. |
+| Keycloak 26.8.1 | 1/7 → 0/1 | Fixes the eMudhra CA Critical. One Guava High remains. |
+
+No upstream Argo CD image contains the fixed Ubuntu package (`1.2.0-3ubuntu0.1`). R12 authorised no exception for a KEV, so Codex correctly stopped.
+
+### Decisions
+
+1. **Promote Argo CD 3.5.5.** It is eligible under the normal 14-day rule, passes the net-improvement rule and removes 9 identities. Version 3.5.6 is not admissible: the expedite rule needs a release that fixes the KEV.
+2. **Promote MiniStack 1.5.33** under the KEV expedite rule, and **Keycloak 26.8.1** (O-1 covers the CA fix).
+   - Keycloak's remaining Guava High is handled under R12 item 5b: grouped, "fixed by WO-46".
+   - That holds only if Guava is in 26.8.0 too. If 26.8.1 introduces it, the net-improvement rule fails: stop and report.
+3. **The Argo CD brotli KEV gets one individual, short exception, proposed for owner decision O-4.**
+   - **Expiry: 14 days** from the R12 merge. ADR-0049 would allow 90 days for a Medium; the KEV listing is the reason for the shorter term. **Superseded by Amendment 10b: merge date + 25 days.**
+   - **Reason:** "no upstream Argo CD image contains libbrotli1 ≥ 1.2.0-3ubuntu0.1; fixed by WO-46 item 4".
+   - **Reachability, which Codex verifies and records in the entry with evidence:**
+     - which binaries in the image link `libbrotlidec`;
+     - whether any Argo CD process uses them.
+     
+     The expected path is libcurl inside `git` and `helm` in `argocd-repo-server`. The Go binaries don't use the system library.
+   - **Controls on `main`:**
+     - Repo-server egress is limited by Cilium FQDN policy to `github.com:443`, so a malicious brotli stream needs a forged TLS response from GitHub.
+     - The Argo CD server's ingress allows only the `host`, `remote-node` and `health` entities on 8080. It is not routed through the gateway or exposed beyond the node.
+   - **Replacement duty:** WO-46 item 4 now includes promoting the first Argo CD release whose image carries the fixed `libbrotli1`. It is promoted **at once, under the KEV expedite rule**, without waiting 14 days. The weekly watch reports it.
+   - **Renewal:** only by a new owner decision, 14 days at a time, with the watch evidence that no fixed image exists.
+4. **Rejected: a Twinfra-patched Argo CD image** (`apt-get` upgrade on top of the upstream digest).
+   - ADR-0049 Amendment 1 item 5 requires a separate, owner-approved, reproducible rebuild work order.
+   - The nightly gate scans only the pinned inputs of locally built images, so it would still report the upstream base, and the KEV would stay visible.
+   - It would also add a new build and publish path inside the freeze week.
+5. **Everything else in R12 is unchanged.** The PR proposes the KEV row with `approvedBy` empty, and the owner decides O-4 in the PR together with O-2.
+
+### Owner decision
+
+- **O-4: APPROVED in principle by the owner, 2026-10-28 ("accept your recommendations").** Accept the 14-day individual exception for the Argo CD brotli KEV, on the controls above. Architect's recommendation: **accept**.
+  - The row's `approvedBy` is still filled only when the owner approves the R12 exception batch in the PR (O-2).
+  - The approval holds only if Codex's reachability evidence matches the controls above.
+
+## Amendment 10b (2026-10-28, architect): the KEV exception's expiry versus the release calendar
+
+**Codex's question is right: two of the architect's own requirements conflict.**
+- Amendment 10a set a 14-day expiry. For a 10-30 merge, that is **11-13**.
+- R12 item 8 requires no exception to be expired, or within 7 days of expiring, at any date through **11-16** (the stable target 11-09 plus a week of margin). That needs an expiry of **11-24 or later**.
+- `accept` fails on any entry within 7 days of expiry. A 14-day term would therefore fail the acceptance suite from **11-06**, inside the release window.
+
+### Resolution
+
+1. **Expiry = R12 merge date + 25 days.** For a 10-30 merge, that is **2026-11-24**. It is the earliest date that keeps the release window clear.
+   - It stays under the 30-day Critical maximum, stricter than the 90 days ADR-0049 allows for a Medium.
+   - If R12 merges later, the expiry moves with it, like every date under O-3.
+2. **R12 item 8 and the acceptance gate are unchanged.** The calendar is not weakened, and nothing extends any other row.
+3. **The KEV's short leash is kept by duties, not by the expiry date:**
+   - **Immediate replacement (WO-46 item 4):** the first Argo CD image with the fixed `libbrotli1` is promoted under the KEV expedite rule.
+   - **Every weekly watch** reports whether such an image exists.
+   - **Checkpoint on 2026-11-13,** the original 14-day mark. The architect reports the watch evidence.
+     - If a fixed image exists before stable, the owner chooses: promote it before stable, which needs a new release candidate, or promote it immediately after the stable cut.
+     - Either way, the exception is closed by that promotion, not renewed.
+4. **Owner confirmation (O-4b):** the owner confirms the 25-day term when approving the R12 exception batch in the PR (O-2). Codex proposes the row with this expiry and `approvedBy` empty.
+
+## Amendment 10c (2026-10-28, architect): ADR-0054 admission for the three patched components
+
+**Codex's stop is right.** ADR-0054's gate requires full enterprise-grade records for any changed legacy entry, and R12 changes three of them:
+- MiniStack 1.5.33, which declares Beta;
+- `certifi`;
+- DOMPurify.
+
+Neither O-1 nor O-2/O-4b changes ADR-0054.
+
+**Resolution:** [ADR-0054 Amendment 1](../adr/amendments/0054-amendment-1-security-fix-carry-forward.md), security-fix carry-forward (owner decision **O-5**). Under it:
+- each record moves to the patched version with its **original backfill due date unchanged**;
+- the licence is re-verified from the primary source;
+- the tier is unchanged;
+- the net-improvement rule passes;
+- the owner approves each carry-forward in the PR.
+
+The two modelling issues it records (CI-only and disabled-module components treated as runtime, and the `OR` tier) are post-release follow-ups. They do not block R12.
+  - The running Argo CD 3.5.3 already carries the same package, so promoting 3.5.5 adds no risk and removes 9 other identities.
+  - The alternative is holding v0.1.0 until upstream ships a fixed image, on an unknown date.
+
+## Amendment 10d (2026-10-29, architect): review of PR #82 (R12) at `86d4318`
+
+**Verdict: the batch matches Amendments 10 to 10c. The architect recommends that the owner approve the exact batch.** No agent approves its own work: Codex built it, the architect reviewed it, and the owner approves.
+
+**Checked against the PR's files:**
+
+| Item | Proposed | Within the rules |
+| --- | --- | --- |
+| High rows | 360, per image and per CVE (none grouped), all expiring 2026-12-27, `workOrder` WO-46 | ≤ 60 days, and not later than WO-46's due date |
+| Critical renewals | 59, individual, all expiring 2026-11-27, each with the package fix and a reachability statement | ≤ 30 days |
+| Argo CD brotli KEV | 1 Medium row on the 3.5.5 digest, expiring 2026-11-24, with reachability evidence | Amendment 10b |
+| Calendar | Earliest expiry 11-24 | Nothing expired, and nothing within 7 days of expiry, through 11-16 |
+| Approval | Every row has `approvedBy` empty | O-2 not yet given |
+| Images | Only Keycloak 26.8.1, MiniStack 1.5.33 and Argo CD 3.5.5 change | Scope of decision 2 |
+| Lockfiles | `certifi` 2026.10.23 (hash-pinned, both files); DOMPurify 3.4.17 through an npm `overrides` entry | O-1 |
+| Carry-forwards | 3, each keeping its original due date (O-5) | ADR-0054 Amendment 1 |
+
+- **KEV row's reachability:** `libcurl-gnutls` imports `libbrotlidec`; the git HTTP helpers in the repo server use it. The controls match `main`.
+- **Carry-forwards:**
+
+  | Component | Change | Due date kept |
+  | --- | --- | --- |
+  | MiniStack | 1.5.17 → 1.5.33 | 2027-04-16 |
+  | `certifi` | 2026.7.22 → 2026.10.23 | 2027-01-14 |
+  | DOMPurify | 3.4.16 → 3.4.17 | 2027-01-14 |
+
+- **Gate code and tests: only stricter.**
+  - `licence_ladder.py` and `check_licences.py` gain the carry-log and approval checks.
+  - Tests cover: due date equals the original; a second carry can't move it; never licences and class or tier changes are refused; approval is required.
+  - Two historical P2 tests now read the P2 receipt snapshot instead of the moving lock.
+  - One isolated licence fixture drops the carry log, which is tested separately.
+  - None of this weakens a gate.
+- **The new comparison workflow** runs only on pushes to the R12 branch and by manual dispatch, with actions pinned by SHA.
+
+**CI is red as expected before activation:**
+- The supply-chain scan and the licence candidate fail until the approved rows and carry approvals are activated.
+- `staging-check` fails until the owner stages the images.
+
+**After activation, every check must be green.** That includes the six `prior-pr` compatibility tests and the vCloud PR gate. If any fails for another reason, Codex stops and reports.
+
+**Schedule consequence for WO-46:**
+- The 59 Critical renewals expire **2026-11-27**.
+- So WO-46 has a first milestone: promote Kubernetes 1.36.6 (eligible 11-11), Cilium 1.20.4 (eligible 11-06) and every other release that fixes a Critical row **before 11-27**.
+- Any Critical row still open on 11-27 needs a new, individually justified renewal decided by the owner.
+  - The running Argo CD 3.5.3 already carries the same package, so promoting 3.5.5 adds no risk and removes 9 other identities.
+  - The alternative is holding v0.1.0 until upstream ships a fixed image, on an unknown date.

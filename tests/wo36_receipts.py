@@ -24,6 +24,9 @@ def receipt(name):
     old=subprocess.check_output(['git','-C',str(ROOT),'show',BASE+':'+name])
     current=(ROOT/name).read_text(encoding='utf-8')
     if name=='deploy/environments/dev/cairo-1/services/workloads.yaml':
+        if (ROOT/'security/security-wave-2026-10-images.json').is_file():
+            from r12_receipts import receipt as r12_receipt
+            current=r12_receipt(name).decode()
         objects=list(yaml.safe_load_all(current));changed=[]
         for obj in objects:
             if obj['kind']=='Deployment' and obj['metadata']['name'] in ('twinfra-console','twinfra-gateway','twinfra-ministack'):

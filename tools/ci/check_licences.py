@@ -9,6 +9,7 @@ import licence_ladder
 import os
 from pathlib import Path
 import re
+import subprocess
 import sys
 
 import jsonschema
@@ -218,6 +219,12 @@ def audit(root, today=None, rendered=()):
     jsonschema.Draft202012Validator(schema, format_checker=jsonschema.FormatChecker()).validate(register)
     components, findings = enumerate_inputs(root, rendered)
     errors, entries, baseline = [], {}, {}
+    if 'ladder' in policy:
+        from licence_carry import check as check_carry_log
+        try:
+            check_carry_log(root, policy)
+        except (ValueError,KeyError,OSError,subprocess.CalledProcessError) as error:
+            errors.append('Invalid security carry-forward: '+str(error))
     notice_lock = root / 'security/licences/rag-notices.lock.json'
     if notice_lock.exists():
         for path, expected in json.loads(notice_lock.read_text()).items():

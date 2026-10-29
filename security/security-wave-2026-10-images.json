@@ -1,0 +1,456 @@
+{
+  "date": "2026-10-28",
+  "base": "0d950075a8bf43358d9fd406b80b67d657f804e1",
+  "images": {
+    "argocd": {
+      "before": "quay.io/argoproj/argocd@sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
+      "after": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "comparison": {
+        "subset": true,
+        "strictImprovement": true,
+        "closed": [
+          [
+            "github.com/argoproj/argo-cd/v3",
+            "CVE-2026-55797"
+          ],
+          [
+            "github.com/argoproj/argo-cd/v3",
+            "CVE-2026-77459"
+          ],
+          [
+            "github.com/go-git/go-git/v5",
+            "CVE-2026-71556"
+          ],
+          [
+            "google.golang.org/grpc",
+            "CVE-2026-84304"
+          ],
+          [
+            "google.golang.org/grpc",
+            "CVE-2026-84445"
+          ],
+          [
+            "google.golang.org/grpc",
+            "GHSA-hrxh-6v49-42gf"
+          ],
+          [
+            "libssl3t64",
+            "CVE-2026-84782"
+          ],
+          [
+            "openssl",
+            "CVE-2026-84782"
+          ],
+          [
+            "openssl-provider-legacy",
+            "CVE-2026-84782"
+          ]
+        ],
+        "introduced": [],
+        "carried": [
+          [
+            "github.com/go-jose/go-jose/v4",
+            "CVE-2026-116587"
+          ],
+          [
+            "github.com/klauspost/compress",
+            "CVE-2026-63209"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2025-47913"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39829"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39830"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39831"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39832"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39833"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-39834"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-42508"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-46595"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-46597"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-56854"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-56855"
+          ],
+          [
+            "golang.org/x/crypto",
+            "CVE-2026-78662"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-33814"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-39821"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-46600"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-78659"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-78660"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-78663"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-78669"
+          ],
+          [
+            "golang.org/x/net",
+            "CVE-2026-97032"
+          ],
+          [
+            "golang.org/x/text",
+            "CVE-2026-56851"
+          ],
+          [
+            "golang.org/x/text",
+            "CVE-2026-56852"
+          ],
+          [
+            "libcurl3t64-gnutls",
+            "CVE-2026-92392"
+          ],
+          [
+            "oras.land/oras-go/v2",
+            "CVE-2026-50163"
+          ],
+          [
+            "oras.land/oras-go/v2",
+            "CVE-2026-85731"
+          ],
+          [
+            "stdlib",
+            "CVE-2025-22871"
+          ],
+          [
+            "stdlib",
+            "CVE-2025-22874"
+          ],
+          [
+            "stdlib",
+            "CVE-2025-47907"
+          ],
+          [
+            "stdlib",
+            "CVE-2025-58187"
+          ],
+          [
+            "stdlib",
+            "CVE-2025-58188"
+          ],
+          [
+            "stdlib",
+            "CVE-2025-61723"
+          ],
+          [
+            "stdlib",
+            "CVE-2025-61725"
+          ],
+          [
+            "stdlib",
+            "CVE-2025-61726"
+          ],
+          [
+            "stdlib",
+            "CVE-2025-61729"
+          ],
+          [
+            "stdlib",
+            "CVE-2025-68121"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-25679"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-27145"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-32280"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-32281"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-32283"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-33811"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-33814"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-33818"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-39820"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-39821"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-39822"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-39836"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-42499"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-42504"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-46600"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-56853"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-56857"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-56859"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-56862"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-56866"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-78659"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-78660"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-78663"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-78667"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-78669"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-94439"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-94440"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-97031"
+          ],
+          [
+            "stdlib",
+            "CVE-2026-97032"
+          ]
+        ]
+      },
+      "beforeCounts": {
+        "CriticalWithFix": 23,
+        "CriticalWithoutFix": 0,
+        "HighWithFix": 152,
+        "HighWithoutFix": 0
+      },
+      "afterCounts": {
+        "CriticalWithFix": 22,
+        "CriticalWithoutFix": 0,
+        "HighWithFix": 144,
+        "HighWithoutFix": 0
+      },
+      "runURL": "https://github.com/amazen33/twinfra/actions/runs/40754061462"
+    },
+    "ministack": {
+      "before": "docker.io/ministackorg/ministack@sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+      "after": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "comparison": {
+        "subset": true,
+        "strictImprovement": true,
+        "closed": [
+          [
+            "brotli-libs",
+            "CVE-2026-111497"
+          ],
+          [
+            "certifi",
+            "GHSA-6q48-6c7w-9gw2"
+          ],
+          [
+            "nodejs",
+            "CVE-2026-105482"
+          ],
+          [
+            "nodejs",
+            "CVE-2026-105483"
+          ],
+          [
+            "nodejs",
+            "CVE-2026-106069"
+          ],
+          [
+            "python",
+            "CVE-2026-19445"
+          ],
+          [
+            "python",
+            "CVE-2026-19553"
+          ],
+          [
+            "python",
+            "CVE-2026-82049"
+          ],
+          [
+            "zlib",
+            "CVE-2026-85091"
+          ]
+        ],
+        "introduced": [],
+        "carried": []
+      },
+      "beforeCounts": {
+        "CriticalWithFix": 3,
+        "CriticalWithoutFix": 0,
+        "HighWithFix": 6,
+        "HighWithoutFix": 12
+      },
+      "afterCounts": {
+        "CriticalWithFix": 0,
+        "CriticalWithoutFix": 0,
+        "HighWithFix": 0,
+        "HighWithoutFix": 0
+      },
+      "runURL": "https://github.com/amazen33/twinfra/actions/runs/40754061462"
+    },
+    "keycloak": {
+      "before": "quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc",
+      "after": "quay.io/keycloak/keycloak@sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b",
+      "comparison": {
+        "subset": true,
+        "strictImprovement": true,
+        "closed": [
+          [
+            "ca-certificates",
+            "CVE-2026-114406"
+          ],
+          [
+            "pcre2",
+            "CVE-2026-103111"
+          ],
+          [
+            "pcre2",
+            "CVE-2026-86145"
+          ],
+          [
+            "pcre2",
+            "CVE-2026-89161"
+          ],
+          [
+            "pcre2-syntax",
+            "CVE-2026-103111"
+          ],
+          [
+            "pcre2-syntax",
+            "CVE-2026-86145"
+          ],
+          [
+            "pcre2-syntax",
+            "CVE-2026-89161"
+          ]
+        ],
+        "introduced": [],
+        "carried": [
+          [
+            "guava",
+            "CVE-2026-102554"
+          ]
+        ]
+      },
+      "beforeCounts": {
+        "CriticalWithFix": 1,
+        "CriticalWithoutFix": 1,
+        "HighWithFix": 7,
+        "HighWithoutFix": 1
+      },
+      "afterCounts": {
+        "CriticalWithFix": 0,
+        "CriticalWithoutFix": 1,
+        "HighWithFix": 1,
+        "HighWithoutFix": 1
+      },
+      "runURL": "https://github.com/amazen33/twinfra/actions/runs/40754061462"
+    }
+  },
+  "liveAcceptance": "Pending"
+}

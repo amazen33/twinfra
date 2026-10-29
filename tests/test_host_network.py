@@ -469,6 +469,10 @@ class Render(unittest.TestCase):
                      'deploy/common/images.lock.json','deploy/common/bootstrap-images.lock.json','lab/wsl/console/workloads.yaml'):
             before=subprocess.check_output(['git','-C',str(ROOT),'show','7e5d017:'+name])
             actual=(ROOT/name).read_bytes()
+            if (ROOT/'security/security-wave-2026-10-images.json').is_file() and name in (
+                    'deploy/common/images.lock.json','lab/wsl/console/workloads.yaml'):
+                from r12_receipts import receipt as r12_receipt
+                actual=r12_receipt(name)
             if not name.endswith('.gz'):actual=actual.replace(b'\r\n',b'\n')
             self.assertEqual(actual,before,name)
 

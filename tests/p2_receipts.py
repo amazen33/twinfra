@@ -70,6 +70,12 @@ def assert_current_seed(path):
 
 
 def receipt(path):
+    if (ROOT/'security/security-wave-2026-10-images.json').is_file() and path in (
+            'deploy/common/images.lock.json','lab/wsl/console/artifacts.lock.json',
+            'lab/wsl/console/workloads.yaml','lab/wsl/console/gitops/workloads.yaml'):
+        from r12_receipts import receipt as r12_receipt
+        r12_receipt(path)
+        return original(path)
     if path in ('vcloud-ssot.yaml','deploy/common/host-admin.py','tools/platform_host.py') and (ROOT/'deploy/common/host-network.py').is_file():
         from wo36_receipts import receipt as network_receipt
         return network_receipt(path)

@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-28",
+  "authority": "WO-40 Amendment10 O-1 (owner, 2026-10-28)",
+  "certifi": {
+    "version": "2026.10.23",
+    "wheelSHA256": "e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1",
+    "metadata": "https://pypi.org/pypi/certifi/2026.10.23/json"
+  },
+  "dompurify": {
+    "version": "3.4.17",
+    "metadata": "https://registry.npmjs.org/dompurify/3.4.17"
+  }
+}

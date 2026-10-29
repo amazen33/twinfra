@@ -1,0 +1,44 @@
+name: October security wave comparisons
+on:
+  push:
+    branches: [codex/security-wave-2026-10]
+    paths:
+      - tools/ci/security_wave_2026_10.py
+      - .github/workflows/security-wave-2026-10.yaml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        candidate: [argocd355, argocd356, ministack1533, keycloak2681]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.14.5'
+      - run: python tools/ci/stage_tools.py --source . --destination .build/wave-tools --only syft grype osv-scanner
+      - run: python tools/ci/stage_govulncheck.py --destination .build/wave-go-tools
+      - name: Compare complete OCI images and inspect Go binaries as data
+        env:
+          CANDIDATE: ${{ matrix.candidate }}
+        run: python tools/ci/security_wave_2026_10.py --case "$CANDIDATE" --tools .build/wave-tools/bin --scanner .build/wave-go-tools/govulncheck --out ".build/security-wave/$CANDIDATE"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: ${{ always() }}
+        with:
+          name: security-wave-${{ matrix.candidate }}
+          path: |
+            .build/security-wave/**/comparison.json
+            .build/security-wave/**/scan/*.json
+            .build/security-wave/**/scan/sboms/
+            .build/security-wave/**/go-*/*.json
+            .build/security-wave/**/go-*/*.gz
+            .build/security-wave/**/go-*/*.log
+          retention-days: 14

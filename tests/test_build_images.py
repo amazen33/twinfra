@@ -256,7 +256,7 @@ class ImageBuildTests(unittest.TestCase):
             current['images']['pause']=before['images']['pause']
         self.assertEqual(current,before)
         old_lock=json.loads(subprocess.check_output(['git','-C',str(ROOT),'show',BASELINE+':deploy/common/images.lock.json']))
-        current_lock=json.loads((ROOT/'deploy/common/images.lock.json').read_text())
+        current_lock=json.loads(p2_receipt('deploy/common/images.lock.json'))
         for key in ('console','python'):
             for field in ('source','canonical','digest'):
                 old_lock['images'][key][field]=current_lock['images'][key][field]

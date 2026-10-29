@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import sys
 import unittest
+import tempfile
 from unittest.mock import patch
 
 import yaml
@@ -80,6 +81,30 @@ class WorkflowScope(unittest.TestCase):
         self.assertFalse(plan['full'])
         self.assertEqual(plan['images'], [])
         self.assertEqual(plan['lockfiles'], [])
+
+    def test_p3_superseded_pin_is_historical_and_unknown_pins_still_fail(self):
+        from compare_p3_images import promotion,ROWS
+        from security_wave_2026_10 import CASES
+        before={'reference':ROWS[0][1]}
+        after={'reference':ROWS[1][1],'counts':{'CriticalWithFix':1,'HighWithFix':1}}
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'security').mkdir()
+            path=root/'security/security-wave-2026-10-images.json'
+            ref=CASES['ministack1533'][2]
+            data={'images':{'ministack':{'before':before['reference'],'after':ref,
+                'comparison':{'subset':True,'strictImprovement':True,'introduced':[]}}}}
+            path.write_text(json.dumps(data),encoding='utf-8')
+            value,failed=promotion('ministack',ref.split('@')[1],before,after,root)
+            self.assertFalse(failed);self.assertFalse(value['promoted'])
+            self.assertTrue(value['historicalOnly']);self.assertEqual(value['supersededBy'],ref)
+            with self.assertRaisesRegex(ValueError,'Unexpected P3'):
+                promotion('ministack','sha256:'+'a'*64,before,after,root)
+            data['images']['ministack']['comparison']['introduced']=[['bad','CVE-new']]
+            path.write_text(json.dumps(data),encoding='utf-8')
+            with self.assertRaisesRegex(ValueError,'Unexpected P3'):
+                promotion('ministack',ref.split('@')[1],before,after,root)
+            selected,failed=promotion('ministack',after['reference'].split('@')[1],before,after,root)
+            self.assertTrue(selected['promoted']);self.assertTrue(failed)
 
 
 if __name__ == '__main__':

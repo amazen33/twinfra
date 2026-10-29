@@ -6080,20 +6080,20 @@
       }
     },
     {
-      "id": "npm|dompurify|3.4.16",
+      "id": "npm|dompurify|3.4.17",
       "ecosystem": "npm",
       "name": "dompurify",
-      "version": "3.4.16",
+      "version": "3.4.17",
       "locations": [
         "tools/ci/mermaid/package-lock.json"
       ],
       "spdx": "(MPL-2.0 OR Apache-2.0)",
       "class": "allowed",
-      "licenceSource": "https://registry.npmjs.org/dompurify/3.4.16",
-      "verifiedOn": "2026-10-09",
-      "recordedOn": "2026-10-09",
+      "licenceSource": "https://registry.npmjs.org/dompurify/3.4.17",
+      "verifiedOn": "2026-10-28",
+      "recordedOn": "2026-10-28",
       "integrities": [
-        "sha512-sqo+pNp3qRhCIpbgRi1y8Tgk27Bo2Ry7w0dC1NBeNTdZChWjz9Xb/KOoZbRP/R6pQZ80Qw8YhXw13hWWBbMRnQ=="
+        "sha512-B/pSlYVHQ58kqISD/yDjuJ1yfzI34m1gF4lAod2bwSRhiN4K5Cl3H8Af7hqB2PmTL911tdEudnnXn5FnhRoz0w=="
       ],
       "tier": 3,
       "enterpriseGrade": {
@@ -9185,10 +9185,10 @@
       }
     },
     {
-      "id": "oci-image|docker.io/ministackorg/ministack|sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+      "id": "oci-image|docker.io/ministackorg/ministack|sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
       "ecosystem": "oci-image",
       "name": "docker.io/ministackorg/ministack",
-      "version": "sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c",
+      "version": "sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
       "locations": [
         "deploy/common/images.lock.json",
         "deploy/environments/dev/cairo-1/services/workloads.yaml",
@@ -9198,16 +9198,21 @@
       ],
       "spdx": "MIT",
       "class": "allowed",
-      "licenceSource": "https://raw.githubusercontent.com/ministackorg/ministack/v1.5.17/LICENSE",
-      "verifiedOn": "2026-10-10",
-      "recordedOn": "2026-10-10",
+      "licenceSource": "https://raw.githubusercontent.com/ministackorg/ministack/v1.5.33/LICENSE",
+      "verifiedOn": "2026-10-28",
+      "recordedOn": "2026-10-28",
       "integrities": [
-        "sha256:11d7308bfc75029d55625b9525e84a2401431ed1ff2148c6311800ff5009ae9c"
+        "sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4"
       ],
       "tier": 1,
       "enterpriseGrade": {
         "status": "legacy-pending",
         "due": "2027-04-16"
+      },
+      "notes": "Unmodified upstream; primary LICENSE SHA256 53d77ec9ad68650079486272d5bd095724c82a66303a12405edd1c59eb2b5477. R12 scan https://github.com/amazen33/twinfra/actions/runs/40754061462",
+      "imageSBOM": {
+        "path": "deploy/common/vendor/r12-ministack-1.5.33.cdx.json.gz",
+        "sha256": "d0cc80c641df5c4b88e0c7f5b663dc521a28f8b955bcb146bf726f3e0168feb2"
       }
     },
     {
@@ -9673,6 +9678,65 @@
       }
     },
     {
+      "id": "oci-image|quay.io/argoproj/argocd|sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "ecosystem": "oci-image",
+      "name": "quay.io/argoproj/argocd",
+      "version": "sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "locations": [
+        "deploy/common/images.lock.json",
+        "deploy/environments/dev/cairo-1/platform/workloads.yaml"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.5/LICENSE",
+      "verifiedOn": "2026-10-28",
+      "recordedOn": "2026-10-28",
+      "integrities": [
+        "sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518"
+      ],
+      "tier": 2,
+      "enterpriseGrade": {
+        "status": "verified",
+        "criteria": {
+          "maturity": {
+            "result": "pass",
+            "evidence": "https://github.com/argoproj/argo-cd/releases/tag/v3.5.5",
+            "date": "2026-10-28"
+          },
+          "governance": {
+            "result": "pass",
+            "evidence": "https://www.cncf.io/projects/argo/",
+            "date": "2026-10-28"
+          },
+          "activitySupport": {
+            "result": "pass",
+            "evidence": "https://github.com/argoproj/argo-cd/security/policy",
+            "date": "2026-10-28"
+          },
+          "securityProcess": {
+            "result": "pass",
+            "evidence": "https://github.com/argoproj/argo-cd/security/policy",
+            "date": "2026-10-28"
+          },
+          "supplyChain": {
+            "result": "pass",
+            "date": "2026-10-28",
+            "evidence": "https://github.com/amazen33/twinfra/pull/82"
+          },
+          "adoption": {
+            "result": "pass",
+            "evidence": "https://www.cncf.io/projects/argo/",
+            "date": "2026-10-28"
+          }
+        }
+      },
+      "notes": "Unmodified upstream; primary LICENSE SHA256 c996fc213c94f4a4a838407d355b081226caa7b103a4f239bb87fb8f1d8e3a60. R12 scan https://github.com/amazen33/twinfra/actions/runs/40754061462",
+      "imageSBOM": {
+        "path": "deploy/common/vendor/r12-argocd-3.5.5.cdx.json.gz",
+        "sha256": "25d0a6bb71d750e8484d08485f52b361e743a665f18036fd73773b74085876ec"
+      }
+    },
+    {
       "id": "oci-image|quay.io/argoproj/argocd|sha256:dd3f47d5a5e4da563a7a398506e892481b358a7cec50abdf320c71aa55904bfa",
       "ecosystem": "oci-image",
       "name": "quay.io/argoproj/argocd",
@@ -9770,6 +9834,65 @@
       "enterpriseGrade": {
         "status": "legacy-pending",
         "due": "2027-04-16"
+      }
+    },
+    {
+      "id": "oci-image|quay.io/keycloak/keycloak|sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b",
+      "ecosystem": "oci-image",
+      "name": "quay.io/keycloak/keycloak",
+      "version": "sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b",
+      "locations": [
+        "deploy/common/images.lock.json",
+        "deploy/environments/dev/cairo-1/services/workloads.yaml"
+      ],
+      "spdx": "Apache-2.0",
+      "class": "allowed",
+      "licenceSource": "https://raw.githubusercontent.com/keycloak/keycloak/26.8.1/LICENSE.txt",
+      "verifiedOn": "2026-10-28",
+      "recordedOn": "2026-10-28",
+      "integrities": [
+        "sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b"
+      ],
+      "tier": 2,
+      "enterpriseGrade": {
+        "status": "verified",
+        "criteria": {
+          "maturity": {
+            "result": "pass",
+            "evidence": "https://github.com/keycloak/keycloak/releases/tag/26.8.1",
+            "date": "2026-10-28"
+          },
+          "governance": {
+            "result": "pass",
+            "evidence": "https://www.cncf.io/projects/keycloak/",
+            "date": "2026-10-28"
+          },
+          "activitySupport": {
+            "result": "pass",
+            "evidence": "https://www.keycloak.org/security",
+            "date": "2026-10-28"
+          },
+          "securityProcess": {
+            "result": "pass",
+            "evidence": "https://www.keycloak.org/security",
+            "date": "2026-10-28"
+          },
+          "supplyChain": {
+            "result": "pass",
+            "date": "2026-10-28",
+            "evidence": "https://github.com/amazen33/twinfra/pull/82"
+          },
+          "adoption": {
+            "result": "pass",
+            "evidence": "https://www.cncf.io/projects/keycloak/",
+            "date": "2026-10-28"
+          }
+        }
+      },
+      "notes": "Unmodified upstream; primary LICENSE SHA256 cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30. R12 scan https://github.com/amazen33/twinfra/actions/runs/40754061462",
+      "imageSBOM": {
+        "path": "deploy/common/vendor/r12-keycloak-26.8.1.cdx.json.gz",
+        "sha256": "3d9a5ce15de6588dbf67dfbb63b6ddeeb7adf0430ec560468d49c67daf726601"
       }
     },
     {
@@ -10311,21 +10434,21 @@
       }
     },
     {
-      "id": "pip|certifi|2026.7.22",
+      "id": "pip|certifi|2026.10.23",
       "ecosystem": "pip",
       "name": "certifi",
-      "version": "2026.7.22",
+      "version": "2026.10.23",
       "locations": [
         "module-5a/requirements-runtime.lock.txt",
         "tools/ci/rag-requirements.txt"
       ],
       "spdx": "MPL-2.0",
       "class": "weak-copyleft",
-      "licenceSource": "https://pypi.org/pypi/certifi/2026.7.22/json",
-      "verifiedOn": "2026-10-09",
-      "recordedOn": "2026-10-09",
+      "licenceSource": "https://pypi.org/pypi/certifi/2026.10.23/json",
+      "verifiedOn": "2026-10-28",
+      "recordedOn": "2026-10-28",
       "integrities": [
-        "sha256:62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775"
+        "sha256:e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1"
       ],
       "adr": "0044",
       "unmodified": true,
