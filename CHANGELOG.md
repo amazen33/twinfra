@@ -9,6 +9,12 @@ See [RELEASING.md](RELEASING.md) for the release streams. Twinfra has no earlier
 
 ### Changed
 
+- R12c: anchor approval tests to the committed proposal/carry-log SHA-256 and
+  approved scope, retaining row equality, mutation refusal and deadline checks.
+  Reject unreachable Git commit dependencies in tests/tools; retire the one-shot
+  R12 activation entry point under WO-40 Amendments 10g/10h. No approval, policy,
+  image, console or workflow changes.
+
 - R12 October security wave: promote digest-pinned Argo CD 3.5.5, MiniStack
   1.5.33 and Keycloak 26.8.1; refresh the certifi and DOMPurify locks under O-1.
   Add anchored, append-only security-fix licence carries with unchanged original

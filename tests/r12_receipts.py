@@ -1,5 +1,6 @@
 """Bound the R12 delta before projecting frozen pre-R12 historical receipts."""
 import copy
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -12,6 +13,35 @@ sys.path.insert(0, str(ROOT/'tools/ci'))
 
 def old(path):
     return subprocess.check_output(['git', '-C', str(ROOT), 'show', BASE+':'+path])
+
+
+def approved_content(root=ROOT):
+    """WO-40 10g: approval survives squash merges through committed hashes."""
+    record=json.loads((root/'security/security-wave-2026-10-approval.json').read_bytes())
+    content=[]
+    for path,key in (('security/proposals/r12-vulnerability-exceptions.json','proposalSHA256'),
+                     ('security/licence-carry-log.json','carryLogSHA256')):
+        raw=(root/path).read_bytes()
+        if hashlib.sha256(raw).hexdigest()!=record[key]:
+            raise AssertionError('Approved R12 content hash differs: '+path)
+        content.append(json.loads(raw))
+    proposal,log=content
+    rows=proposal['exceptions'];events=log['events']
+    groups={severity:[e for e in rows if e['severity']==severity]
+            for severity in ('High','Critical','Medium')}
+    if sum(map(len,groups.values()))!=len(rows):
+        raise AssertionError('Unexpected R12 severity')
+    def expiry(severity):
+        values={e['expires'] for e in groups[severity]}
+        if len(values)!=1:raise AssertionError('R12 expiry scope differs: '+severity)
+        return values.pop()
+    scope={'vulnerabilityRows':len(rows),'High':len(groups['High']),'HighExpires':expiry('High'),
+           'Critical':len(groups['Critical']),'CriticalExpires':expiry('Critical'),
+           'kevRows':len(groups['Medium']),'kevExpires':expiry('Medium'),'carries':len(events),
+           'dueDatesUnchanged':all(e['record']['enterpriseGrade']['due']==e['originalDue'] for e in events)}
+    if scope!=record['approvedScope'] or scope['dueDatesUnchanged'] is not True:
+        raise AssertionError('Approved R12 scope differs')
+    return record,proposal,log
 
 
 def assert_images(current=None):
@@ -61,6 +91,7 @@ def receipt(path):
 
 def assert_current():
     from licence_carry import check
+    approved_content()
     def old(path):
         return json.loads(subprocess.check_output(['git', '-C', str(ROOT), 'show', BASE+':'+path]))
     def read(path):
