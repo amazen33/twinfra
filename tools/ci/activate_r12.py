@@ -97,7 +97,4 @@ def activate(scan_path):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--scan-report',type=Path,required=True)
-    args=parser.parse_args()
-    activate(args.scan_report.resolve())
+    raise SystemExit('Retired after the R12 activation; see security/security-wave-2026-10-approval.json and WO-40 Amendment 10h. This one-shot tool refuses to run.')
