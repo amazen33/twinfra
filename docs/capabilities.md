@@ -1,6 +1,6 @@
 # Twinfra capability statement
 
-As of 2026-10-16. v0.1.0 is a dev acceptance candidate, not a published release.
+As of 2026-10-30. v0.1.0 is a dev acceptance candidate, not a published release.
 Twinfra implements an **AWS-compatible API subset**, not AWS
 service parity. The deployed MiniStack profile is an emulator with persistence
 disabled (`MINISTACK_PERSIST=0`); an emulated EC2 response does not create a VM.
@@ -69,20 +69,25 @@ also needs ADR-0033's scorecard and tester acceptance.
 ## Platform capabilities
 
 For this table, Planned means **acceptance pending**, even where code and
-owner-reported running services already exist. No receipt currently carries
-Accepted tester sign-off. Historical observations do not advance current status.
+owner-reported running services already exist. Dev-verified rows are restricted
+to the signed WO-04, WO-06, WO-25, WO-31, WO-34 P2 and WO-36/36a scope.
+The consolidated rc receipt remains Pending. Historical observations do not
+advance current status, and a signed host receipt does not accept every
+security, storage, identity or observability feature on that host.
 
 | Platform capability | Status | Evidence / current implementation and missing acceptance | Work order changing it |
 | --- | --- | --- | --- |
-| Ubuntu / kubeadm single-node host | Planned | [WO-31 bootstrap observations](acceptance/dev-environment-2026-10-13.md): Ready node, staging and log caps owner-reported; tester/soak Pending | [WO-31](work-orders/WO-31-bare-metal-cairo-1.md); ADR-0052 evidence work |
+| Ubuntu / kubeadm single-node host | Dev-verified | [Accepted WO-31](acceptance/dev-environment-2026-10-13.md): bootstrap, host checks, manifest contract, two acceptance passes and the owner-approved 12-hour dev soak; the owner confirmed on 2026-10-18 that the later 09:53–09:59 UTC eno1 flaps came from a power problem at the network equipment, with no host change needed; the signed receipt is unchanged | [WO-31](work-orders/WO-31-bare-metal-cairo-1.md); production/HA not claimed |
 | Static address / router-loss resilience | Dev-verified | [Accepted WO-36](acceptance/host-network-2026-10-15.md): `.3` retained during a 40 s router outage; zero DHCP lease loss or post-boot pod/control-plane restarts | [WO-36](work-orders/WO-36-host-network-and-staging-safety.md) |
 | Static-netplan transaction qualification | Dev-verified | [Accepted WO-36a](acceptance/host-network-fix-2026-10-15.md) and [Accepted cairo-1 current-profile check](acceptance/host-network-2026-10-15.md): real Ubuntu VM apply/refusal/rollback, gap 0.245504 s; owned current profile adopted on cairo-1; no new Dell rollback claim | [WO-36 Amendment 1](work-orders/WO-36-host-network-and-staging-safety.md) |
 | Host firewall / image-staging failure recovery | Planned | [WO-31 firewall observations](acceptance/dev-environment-2026-10-13.md), [WO-36 remaining gates](acceptance/host-network-2026-10-15.md); broader signed acceptance still Pending | [WO-31](work-orders/WO-31-bare-metal-cairo-1.md), [WO-36](work-orders/WO-36-host-network-and-staging-safety.md) |
 | Cilium native eBPF / default deny / PSS | Planned | [Bootstrap/policy observations](acceptance/dev-environment-2026-10-13.md); current signed enforcement acceptance Pending | [WO-31](work-orders/WO-31-bare-metal-cairo-1.md), [WO-05](work-orders/WO-05-admission-policies.md) |
-| Local storage / CNPG / pgvector | Planned | [WO-31 PG LV and healthy database observations](acceptance/dev-environment-2026-10-13.md); tester, backups/PITR and growth acceptance Pending | [WO-09](work-orders/WO-09-backups-and-restore-drill.md), WO-33 |
-| Argo CD reconciliation / Valkey cache | Planned | [Owner-reported GitHub fetch and application health](acceptance/dev-environment-2026-10-13.md); [Valkey acceptance](acceptance/valkey-2026-10-09.md) Pending | [WO-31](work-orders/WO-31-bare-metal-cairo-1.md), [WO-25](work-orders/WO-25-redis-to-valkey.md) |
-| APISIX / HTTPS console / Keycloak OIDC | Planned | [Owner-reported trusted HTTPS and TOTP sign-in](acceptance/dev-environment-2026-10-13.md); tester sign-off Pending | [WO-11](work-orders/WO-11-console-roles-csrf-audit.md) |
-| Signed token / console role verification | Planned | [WO-04 unit evidence, live acceptance Pending](acceptance/console-token-verification-2026-10-10.md) | [WO-04](work-orders/WO-04-console-token-verification.md), [WO-11](work-orders/WO-11-console-roles-csrf-audit.md) |
+| Local storage / CNPG / pgvector | Planned | [Accepted WO-31 host/platform baseline](acceptance/dev-environment-2026-10-13.md) includes a 20 GiB PG LV and healthy database observations; it does not accept PITR, growth or the pgvector SQL extension separately | [WO-09](work-orders/WO-09-backups-and-restore-drill.md), WO-33 |
+| Argo CD reconciliation / Valkey cache | Dev-verified | [Accepted WO-25](acceptance/valkey-2026-10-09.md): NOAUTH/PONG, measured cache hits, three clients reconnect after the authorized restart and fresh healthy reconciliation; no upstream Valkey support claim | [WO-25](work-orders/WO-25-redis-to-valkey.md) |
+| APISIX / HTTPS console / Keycloak OIDC | Dev-verified | [Accepted WO-04 browser witness](acceptance/console-token-verification-2026-10-10.md): trusted HTTPS, TOTP sign-in/out and role denial; complete RBAC, CSRF and audit acceptance remains separate | [WO-11](work-orders/WO-11-console-roles-csrf-audit.md) |
+| Signed token / console role verification | Dev-verified | [Accepted WO-04](acceptance/console-token-verification-2026-10-10.md): missing/unsigned/duplicate headers return 401; roleless BFF token returns 403; manual browser witness recorded | [WO-04](work-orders/WO-04-console-token-verification.md), [WO-11](work-orders/WO-11-console-roles-csrf-audit.md) |
+| LocalStack removal / MiniStack read views | Dev-verified | [Accepted WO-06](acceptance/localstack-removal-2026-10-10.md): no LocalStack resources/images, sole MiniStack emulator, health and S3/EC2/DynamoDB read views; no Real AWS capability | [WO-06](work-orders/WO-06-remove-localstack.md) |
+| CoreDNS / etcd maintenance | Dev-verified | [Accepted WO-34 P2 live receipt](acceptance/wo34-p2-2026-10-15.json) and [Accepted WO-31 runtime checks](acceptance/dev-environment-2026-10-13.md): CoreDNS 1.14.7 / etcd 3.6.15 and locked digests; no backup/DR claim | [WO-34](work-orders/WO-34-image-patch-refresh.md), [WO-40c](work-orders/WO-40c-control-plane-maintenance.md) |
 | OpenBao / dynamic secrets / certificate automation | Planned | [Running/transport observations](acceptance/dev-environment-2026-10-13.md) do not establish initialization, unseal or leases | [WO-08](work-orders/WO-08-openbao-eso-cert-manager.md), [Module 4a reference](../module-4a/README.md) |
 | Knative CPU serving | Planned | [Historical (retired environment)](acceptance/wsl-2026-10-07.md); no current cairo-1 acceptance | ADR-0052 evidence work |
 | Prometheus metrics | Planned | [Historical (retired environment)](acceptance/wsl-2026-10-07.md); durable metrics acceptance Pending | [WO-10](work-orders/WO-10-observability-stack-v1.md) |
@@ -102,6 +107,13 @@ Accepted tester sign-off. Historical observations do not advance current status.
 | Multiple regions | Planned | [cairo-2 cold seed](dev-environment.md#part-2-cairo-2-cold-standby-on-hyper-v); no running second region or failover claim | [WO-23](work-orders/WO-23-dr-drill.md) / [WO-24](work-orders/WO-24-second-host-warm-dr.md) |
 
 ## Blocking evidence check
+
+The owner's [post-R12 acceptance](release-notes/0.1.0.md#evidence-and-actual-running-versions)
+on 2026-10-29 at `7cf2ba8` passed all 17 checks, including `valkeyRestart`,
+with the promoted Argo CD 3.5.5, Keycloak 26.8.1 and MiniStack 1.5.33 images.
+It supplements the dated Accepted scopes above; it creates no new capability
+status or consolidated rc sign-off. Console development-dependency maintenance
+is deferred to post-release WO-47 under WO-40 Amendment 10f.
 
 `python tools/ci/check_capabilities.py` checks current ADR index statuses and
 status-labelled rows in the README/docs, plus any ADR live-status header. Each

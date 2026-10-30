@@ -4,7 +4,7 @@
 
 - Work order: [WO-04](../work-orders/WO-04-console-token-verification.md).
 - Repository / branch: Twinfra (`amazen33/vCloud`), `codex/wo-04-console-jwt`.
-- Environment: static local unit fixtures and hosted CI only. No retired WSL
+- Environment: static local unit fixtures and hosted CI only. No retired-lab
   cluster deployment, live browser test, image import or GitHub settings change.
 - Owner authorization: implement WO-04 statically; defer live acceptance to VM
   `lab-1` after WO-21. This receipt does not authorize that deployment.
