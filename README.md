@@ -22,11 +22,13 @@ running versions, Accepted scope, known limitations and the remaining rc gates.
 These signed results do not establish Dell rollback, staging-failure recovery,
 Foundation 1.0 or whole-platform/production acceptance. WO-31 accepts a
 **12-hour dev soak by owner exception**, not a 24-hour or rc-window soak.
-The subsequent eno1 link-flap warning is tracked separately in that receipt.
 The [17:08 UTC baseline](docs/acceptance/release-0.1.0-2026-10-17.md) and
 [22:24 UTC post-reboot pass](docs/acceptance/dev-environment-2026-10-13.md#live-verification-and-soak-2026-10-17-and-2026-10-18-recorded-by-the-architect)
 are distinct from the still-Pending
 [consolidated rc receipt](docs/acceptance/release-0.1.0-2026-10-16.md).
+The [release notes](docs/release-notes/0.1.0.md#evidence-and-actual-running-versions)
+also record the owner's October 29 post-R12 acceptance: all 17 checks passed,
+including `valkeyRestart`, at `7cf2ba8`. This does not complete the rc window.
 The owner-run [acceptance procedure](docs/runbooks/release-acceptance.md) governs
 that window. This release-readiness PR runs no live suite.
 

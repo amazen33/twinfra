@@ -1,6 +1,6 @@
 # Twinfra capability statement
 
-As of 2026-10-18. v0.1.0 is a dev acceptance candidate, not a published release.
+As of 2026-10-30. v0.1.0 is a dev acceptance candidate, not a published release.
 Twinfra implements an **AWS-compatible API subset**, not AWS
 service parity. The deployed MiniStack profile is an emulator with persistence
 disabled (`MINISTACK_PERSIST=0`); an emulated EC2 response does not create a VM.
@@ -77,7 +77,7 @@ security, storage, identity or observability feature on that host.
 
 | Platform capability | Status | Evidence / current implementation and missing acceptance | Work order changing it |
 | --- | --- | --- | --- |
-| Ubuntu / kubeadm single-node host | Dev-verified | [Accepted WO-31](acceptance/dev-environment-2026-10-13.md): bootstrap, host checks, manifest contract, two acceptance passes and the owner-approved 12-hour dev soak; later eno1 link-flap warning is separate | [WO-31](work-orders/WO-31-bare-metal-cairo-1.md); production/HA not claimed |
+| Ubuntu / kubeadm single-node host | Dev-verified | [Accepted WO-31](acceptance/dev-environment-2026-10-13.md): bootstrap, host checks, manifest contract, two acceptance passes and the owner-approved 12-hour dev soak; the owner confirmed on 2026-10-18 that the later 09:53–09:59 UTC eno1 flaps came from a power problem at the network equipment, with no host change needed; the signed receipt is unchanged | [WO-31](work-orders/WO-31-bare-metal-cairo-1.md); production/HA not claimed |
 | Static address / router-loss resilience | Dev-verified | [Accepted WO-36](acceptance/host-network-2026-10-15.md): `.3` retained during a 40 s router outage; zero DHCP lease loss or post-boot pod/control-plane restarts | [WO-36](work-orders/WO-36-host-network-and-staging-safety.md) |
 | Static-netplan transaction qualification | Dev-verified | [Accepted WO-36a](acceptance/host-network-fix-2026-10-15.md) and [Accepted cairo-1 current-profile check](acceptance/host-network-2026-10-15.md): real Ubuntu VM apply/refusal/rollback, gap 0.245504 s; owned current profile adopted on cairo-1; no new Dell rollback claim | [WO-36 Amendment 1](work-orders/WO-36-host-network-and-staging-safety.md) |
 | Host firewall / image-staging failure recovery | Planned | [WO-31 firewall observations](acceptance/dev-environment-2026-10-13.md), [WO-36 remaining gates](acceptance/host-network-2026-10-15.md); broader signed acceptance still Pending | [WO-31](work-orders/WO-31-bare-metal-cairo-1.md), [WO-36](work-orders/WO-36-host-network-and-staging-safety.md) |
@@ -107,6 +107,13 @@ security, storage, identity or observability feature on that host.
 | Multiple regions | Planned | [cairo-2 cold seed](dev-environment.md#part-2-cairo-2-cold-standby-on-hyper-v); no running second region or failover claim | [WO-23](work-orders/WO-23-dr-drill.md) / [WO-24](work-orders/WO-24-second-host-warm-dr.md) |
 
 ## Blocking evidence check
+
+The owner's [post-R12 acceptance](release-notes/0.1.0.md#evidence-and-actual-running-versions)
+on 2026-10-29 at `7cf2ba8` passed all 17 checks, including `valkeyRestart`,
+with the promoted Argo CD 3.5.5, Keycloak 26.8.1 and MiniStack 1.5.33 images.
+It supplements the dated Accepted scopes above; it creates no new capability
+status or consolidated rc sign-off. Console development-dependency maintenance
+is deferred to post-release WO-47 under WO-40 Amendment 10f.
 
 `python tools/ci/check_capabilities.py` checks current ADR index statuses and
 status-labelled rows in the README/docs, plus any ADR live-status header. Each
