@@ -105,6 +105,27 @@ scope is in the [capability statement](docs/capabilities.md).
 
 ### Security
 
+- WO-40 Amendment 11c / O-12 proposal: append exactly three individual,
+  content-hash-anchored exceptions, all expiring 2026-11-27: MiniStack 1.5.33
+  Python 3.13.17 and console-base Python 3.14.8 / CVE-2026-115557 (Critical),
+  and Mermaid's build-only lodash-es 4.17.21 / CVE-2026-4800 (High).
+  Fixes are Python 3.13.18 in eligible MiniStack (2026-11-12), the official
+  Python 3.14.10 base (2026-11-08), and lodash-es >=4.18.1 (eligible 2026-04-15).
+  WO-46 replaces all three after stable, before 2026-11-20. Static reachability
+  and controls are recorded; live enforcement and trust Secrets not verified.
+  Owner O-11/O-12 decisions are approved (2026-10-31); attribution activation
+  remains a separate owner-committed step. All four proposal rows stay blank,
+  existing rows and O-11 anchors are unchanged, and pending proposals cannot
+  pass the active gate. No image, dependency, workflow or live change.
+
+- WO-40 Amendment 11a / O-11 proposal: correct the single Argo CD 3.5.5
+  libbrotli1 CVE-2026-111497 KEV exception from Medium to Grype's High.
+  Clear its approval for owner re-review, anchored to new content SHA-256
+  records; preserve the original R12 evidence and every other risk field/row.
+  Expiry remains 2026-11-24, checkpoint 2026-11-13. No fixed upstream image
+  exists as of 2026-10-31; immediate replacement remains WO-46 item 4.
+  O-11 is Pending; this proposal is not an active gate pass or a release.
+
 - Record two owner-approved, per-CVE interim Argo CD 3.5.3 exceptions through
   2026-11-02 (WO-34e / WO-40 Amendment 1); preserve all other risk clocks and
   require the scheduled 3.5.5 remediation. No image or live configuration changes.

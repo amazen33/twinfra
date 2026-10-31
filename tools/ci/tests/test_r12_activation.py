@@ -12,7 +12,7 @@ sys.path.insert(0,str(ROOT/'tools/ci'))
 sys.path.insert(0,str(ROOT/'tests'))
 import activate_r12 as activation
 import supply_chain as sc
-from r12_receipts import approved_content
+from r12_receipts import approved_content, current_exceptions
 
 
 class Activation(unittest.TestCase):
@@ -26,9 +26,12 @@ class Activation(unittest.TestCase):
                          self.record['proposalSHA256'])
         self.assertEqual(current,self.proposal)
         expected=activation.approved_batch(current,self.proposal)
-        self.assertEqual(sc.read(ROOT/'security/vulnerability-exceptions.json'),expected)
         self.assertTrue(all(e['approvedBy']=='' for e in current['exceptions']))
         sc.validate_exceptions(expected,ROOT)
+        # The original R12 batch remains immutable; only the separately anchored
+        # O-11 projection may change its KEV severity and attribution.
+        _,amended=current_exceptions()
+        self.assertEqual(sc.read(ROOT/'security/vulnerability-exceptions.json'),amended)
 
     def test_changed_reason_expiry_identity_or_controls_needs_new_approval(self):
         for field,value in [('expires','2026-12-28'),('reason','changed reason'),

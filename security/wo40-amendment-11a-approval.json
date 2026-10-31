@@ -1,0 +1,18 @@
+{
+  "authority": "WO-40 Amendment 11a",
+  "decision": "O-11",
+  "approvedBy": "amazen33",
+  "r12ProposalSHA256": "46229f85c1bf7d29920ea8bcaf770b42d44ee014a8d3f4d19966db8c0db27052",
+  "proposalSHA256": "44e443768f2f1ea78c56d4afdfca98d17fff4f88ab17d3d16bfddc7bd4c555a0",
+  "proposedRegistrySHA256": "e36760d08565223930a46cfaec09ad1240f254eab60973b931153a54a0c72754",
+  "approvedRegistrySHA256": "07a483119155bee63ec166a2949bb2dc5957bfd64f4912e743a4fafe883d8214",
+  "scope": {
+    "target": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+    "package": "libbrotli1",
+    "version": "1.2.0-3build1",
+    "vulnerability": "CVE-2026-111497",
+    "fromSeverity": "Medium",
+    "toSeverity": "High",
+    "expires": "2026-11-24"
+  }
+}
