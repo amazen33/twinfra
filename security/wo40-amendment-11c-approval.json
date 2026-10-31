@@ -1,0 +1,44 @@
+{
+  "authority": "WO-40 Amendment 11c",
+  "decision": "O-12",
+  "approvedBy": "",
+  "amendment11aProposalSHA256": "44e443768f2f1ea78c56d4afdfca98d17fff4f88ab17d3d16bfddc7bd4c555a0",
+  "baseProposedRegistrySHA256": "e36760d08565223930a46cfaec09ad1240f254eab60973b931153a54a0c72754",
+  "baseApprovedRegistrySHA256": "07a483119155bee63ec166a2949bb2dc5957bfd64f4912e743a4fafe883d8214",
+  "proposalSHA256": "a97eece69797068a7bf4f3677fba1bf6170f30428741da42a62e2e7fb7585955",
+  "proposedRegistrySHA256": "273811cbb89bc0265f264dc12f1814b7d673af64bcdd2ccf35a4387963e765e5",
+  "approvedRegistrySHA256": "486047c43ea6926245929f4e06fcda91f03cbbac74ca7e3776cb8a252702395f",
+  "scope": [
+    {
+      "id": "B-3",
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "python",
+      "version": "3.13.17",
+      "vulnerability": "CVE-2026-115557",
+      "severity": "Critical",
+      "fixedVersion": "3.13.18",
+      "eligibleOn": "2026-11-12"
+    },
+    {
+      "id": "B-4",
+      "target": "docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "package": "python",
+      "version": "3.14.8",
+      "vulnerability": "CVE-2026-115557",
+      "severity": "Critical",
+      "fixedVersion": "3.14.10",
+      "eligibleOn": "2026-11-08"
+    },
+    {
+      "id": "B-5",
+      "target": "lockfile:tools/ci/mermaid/package-lock.json",
+      "package": "lodash-es",
+      "version": "4.17.21",
+      "vulnerability": "CVE-2026-4800",
+      "severity": "High",
+      "fixedVersion": "4.18.1",
+      "eligibleOn": "2026-04-15",
+      "scope": "build"
+    }
+  ]
+}

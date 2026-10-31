@@ -26,13 +26,16 @@ class Reapproval(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.original_record,cls.original,_=approved_content()
-        cls.record,cls.current=current_exceptions()
+        cls.record=sc.read(ROOT/RECORD)
         cls.proposal=sc.read(ROOT/PROPOSAL)
+        cls.current=r12.amendment_11a_batch(cls.original,cls.proposal,cls.record)
 
     def scratch(self,root):
         for filename in FILES:
             path=root/filename;path.parent.mkdir(parents=True,exist_ok=True)
             path.write_bytes((ROOT/filename).read_bytes())
+        # Isolate O-11's original 420-row projection from the later O-12 batch.
+        (root/ACTIVE).write_text(json.dumps(self.current,indent=2)+'\n',encoding='utf-8',newline='\n')
 
     def test_original_r12_anchor_and_scope_still_hold(self):
         self.assertEqual(r12.content_sha256(self.original),self.original_record['proposalSHA256'])
