@@ -105,6 +105,14 @@ scope is in the [capability statement](docs/capabilities.md).
 
 ### Security
 
+- WO-40 Amendment 11a / O-11 proposal: correct the single Argo CD 3.5.5
+  libbrotli1 CVE-2026-111497 KEV exception from Medium to Grype's High.
+  Clear its approval for owner re-review, anchored to new content SHA-256
+  records; preserve the original R12 evidence and every other risk field/row.
+  Expiry remains 2026-11-24, checkpoint 2026-11-13. No fixed upstream image
+  exists as of 2026-10-31; immediate replacement remains WO-46 item 4.
+  O-11 is Pending; this proposal is not an active gate pass or a release.
+
 - Record two owner-approved, per-CVE interim Argo CD 3.5.3 exceptions through
   2026-11-02 (WO-34e / WO-40 Amendment 1); preserve all other risk clocks and
   require the scheduled 3.5.5 remediation. No image or live configuration changes.

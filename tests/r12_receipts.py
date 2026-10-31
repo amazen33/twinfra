@@ -44,6 +44,23 @@ def approved_content(root=ROOT):
     return record,proposal,log
 
 
+def current_exceptions(root=ROOT):
+    """Preserve the R12 anchor and require O-11 for the single KEV correction."""
+    from r12_exceptions import amendment_11a_batch
+    original,proposal,_=approved_content(root)
+    record=json.loads((root/'security/wo40-amendment-11a-approval.json').read_bytes())
+    raw=(root/'security/proposals/wo40-amendment-11a-kev.json').read_bytes()
+    if (hashlib.sha256(raw).hexdigest()!=record['proposalSHA256']
+            or record['r12ProposalSHA256']!=original['proposalSHA256']):
+        raise AssertionError('Amendment 11a approved content hash differs')
+    expected=amendment_11a_batch(proposal,json.loads(raw),record)
+    active=(root/'security/vulnerability-exceptions.json').read_bytes()
+    key='approvedRegistrySHA256' if record['approvedBy'] else 'proposedRegistrySHA256'
+    if hashlib.sha256(active).hexdigest()!=record[key] or json.loads(active)!=expected:
+        raise AssertionError('Active registry differs from Amendment 11a content/approval')
+    return record,expected
+
+
 def assert_images(current=None):
     from security_wave_2026_10 import CASES
     original=json.loads(old('deploy/common/images.lock.json'))
@@ -91,7 +108,7 @@ def receipt(path):
 
 def assert_current():
     from licence_carry import check
-    approved_content()
+    current_exceptions()
     def old(path):
         return json.loads(subprocess.check_output(['git', '-C', str(ROOT), 'show', BASE+':'+path]))
     def read(path):

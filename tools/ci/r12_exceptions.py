@@ -36,6 +36,48 @@ def identity(value):
     return tuple(value[k] for k in KEYS)
 
 
+def content_sha256(value):
+    """Hash the same UTF-8/LF JSON bytes written by save()."""
+    return hashlib.sha256((json.dumps(value, indent=2)+'\n').encode()).hexdigest()
+
+
+def amendment_11a_batch(original, proposal, record):
+    """Project only the O-11 severity re-review; blank approval stays blocking."""
+    fields={'authority','decision','approvedBy','r12ProposalSHA256',
+            'proposalSHA256','proposedRegistrySHA256','approvedRegistrySHA256','scope'}
+    if (set(record)!=fields or record['authority']!='WO-40 Amendment 11a'
+            or record['decision']!='O-11' or record['approvedBy'] not in ('','amazen33')
+            or record['r12ProposalSHA256']!=content_sha256(original)):
+        raise ValueError('Exact Amendment 11a approval record required')
+    rows=original['exceptions']
+    matches=[i for i,e in enumerate(rows) if e['vulnerability']=='CVE-2026-111497']
+    if len(matches)!=1:
+        raise ValueError('Amendment 11a requires exactly one original KEV row')
+    index=matches[0];before=rows[index]
+    scope={k:before[k] for k in KEYS}
+    scope.update(fromSeverity='Medium',toSeverity='High',expires='2026-11-24')
+    if (record['scope']!=scope or before['severity']!='Medium'
+            or before['expires']!='2026-11-24' or before['approvedBy']!=''
+            or before['package']!='libbrotli1'
+            or before['target'].split('@')[0]!='quay.io/argoproj/argocd'):
+        raise ValueError('Amendment 11a scope differs from the original KEV row')
+    changed=deepcopy(before);changed['severity']='High'
+    if (proposal!={'version':1,'exceptions':[changed]}
+            or record['proposalSHA256']!=content_sha256(proposal)):
+        raise ValueError('Amendment 11a proposal differs beyond the severity correction')
+    candidate=deepcopy(original)
+    for row in candidate['exceptions']:
+        if row['approvedBy']!='':
+            raise ValueError('Original R12 proposal contains attribution')
+        row['approvedBy']='amazen33'
+    candidate['exceptions'][index]=deepcopy(changed)
+    approved=deepcopy(candidate);approved['exceptions'][index]['approvedBy']='amazen33'
+    if (record['proposedRegistrySHA256']!=content_sha256(candidate)
+            or record['approvedRegistrySHA256']!=content_sha256(approved)):
+        raise ValueError('Amendment 11a registry content hash differs')
+    return approved if record['approvedBy']=='amazen33' else candidate
+
+
 def component_identity(value):
     return value['target'].split('@')[0], value['package'], value['vulnerability']
 
