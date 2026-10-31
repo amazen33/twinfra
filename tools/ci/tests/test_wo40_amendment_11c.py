@@ -143,10 +143,11 @@ class Reapproval(unittest.TestCase):
             bad=deepcopy(self.record);bad[field]='tampered'
             with self.subTest(field=field),self.assertRaises(ValueError):
                 r12.amendment_11c_batch(self.base,self.proposal,bad,self.previous)
-        for approval in ('previous','new'):
+        for previous_by,record_by in (('amazen33',''),('','amazen33')):
             previous=deepcopy(self.previous);record=deepcopy(self.record)
-            (previous if approval=='previous' else record)['approvedBy']='amazen33'
-            with self.assertRaises(ValueError):r12.amendment_11c_batch(self.base,self.proposal,record,previous)
+            previous['approvedBy']=previous_by;record['approvedBy']=record_by
+            with self.assertRaisesRegex(ValueError,'Exact Amendment 11c approval record required'):
+                r12.amendment_11c_batch(self.base,self.proposal,record,previous)
 
     def test_risk_gaps_fixes_eligibility_and_build_scope_are_explicit(self):
         for row,scope in zip(self.proposal['exceptions'],r12.AMENDMENT_11C_SCOPE,strict=True):
