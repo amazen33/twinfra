@@ -1,0 +1,90 @@
+{
+  "authority": "WO-40 Amendment 11d",
+  "decision": "O-14",
+  "approvedBy": "",
+  "supersedesProposalSHA256": [
+    "8a520720318564e6d90094374cadebf0b3caebacc8af9a9e235269731dd1de6a",
+    "5266bf549dce120f71fd5fb1dd6457669f3f6c09c6d4c61b8735b37f63cec1e1"
+  ],
+  "previousApprovalPath": "security/wo40-amendment-11c-approval.json",
+  "previousApprovalSHA256": "540800652bb045638e6dda5e8a31cc20a6b9220b7b34cd6d4c9a5f4303b068fa",
+  "baseApprovedRegistrySHA256": "486047c43ea6926245929f4e06fcda91f03cbbac74ca7e3776cb8a252702395f",
+  "proposalSHA256": "3af549ac9aa6697ec153816acfb74c26aaefd4d37f74dc4e1df2eb579abbd5a6",
+  "proposedRegistrySHA256": "aa7c248fc69334cc4f0d72d18e4a9f65a1971ec598a84b5ad4ea2ae76f95ddcd",
+  "approvedRegistrySHA256": "ff3d79442bef8ea9fcb0dc67daa8331550b70c3d3ca1092dd2c8f86094277f4b",
+  "replacementBefore": "2026-11-20",
+  "scope": [
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "libsasl2-2",
+      "version": "2.1.28+dfsg-10",
+      "vulnerability": "CVE-2026-107161",
+      "severity": "High",
+      "expires": "2026-11-27"
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "libsasl2-modules-db",
+      "version": "2.1.28+dfsg-10",
+      "vulnerability": "CVE-2026-107161",
+      "severity": "High",
+      "expires": "2026-11-27"
+    },
+    {
+      "target": "quay.io/keycloak/keycloak@sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b",
+      "package": "java-21-openjdk-headless",
+      "version": "1:21.0.12.1.1-1.2.el9",
+      "vulnerability": "CVE-2026-91415",
+      "severity": "High",
+      "expires": "2026-11-27"
+    },
+    {
+      "target": "lockfile:console/package-lock.json",
+      "package": "undici",
+      "version": "8.11.2",
+      "vulnerability": "CVE-2026-109869",
+      "severity": "High",
+      "expires": "2026-11-27"
+    },
+    {
+      "target": "lockfile:module-5a/requirements-runtime.lock.txt",
+      "package": "filelock",
+      "version": "4.0.12",
+      "vulnerability": "CVE-2026-112940",
+      "severity": "High",
+      "expires": "2026-11-27"
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "musl",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "severity": "High",
+      "expires": "2026-11-27"
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "musl-utils",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "severity": "High",
+      "expires": "2026-11-27"
+    },
+    {
+      "target": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "package": "musl",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "severity": "High",
+      "expires": "2026-11-27"
+    },
+    {
+      "target": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "package": "musl-utils",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "severity": "High",
+      "expires": "2026-11-27"
+    }
+  ]
+}

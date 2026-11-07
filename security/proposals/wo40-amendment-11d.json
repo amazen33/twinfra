@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "exceptions": [
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "libsasl2-2",
+      "version": "2.1.28+dfsg-10",
+      "vulnerability": "CVE-2026-107161",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-05",
+      "expires": "2026-11-27",
+      "reason": "WO-40 Amendment 11d/O-14: CVE-2026-107161, fixed Debian package 2.1.28+dfsg-10+deb12u1 (https://security-tracker.debian.org/tracker/CVE-2026-107161). First seen 2026-10-13; High with fix aged 14 days, not KEV. No fixed image exists: on 2026-11-05 the Docker Hub tags API lists only 3.19.0-debian, 3.19.0-ubuntu and 3.19.0-redhat for 3.19.x, all pushed 2026-09-29, and 3.19.0-debian is still this digest. Static reachability (report of 2026-11-03): the OpenResty ELF closure does not import libsasl2; native libldap imports it, but no ELF consumer of libldap was found; APISIX LDAP uses Lua cosockets; no LDAP or SASL plugin is configured on the two rendered gateway routes; default LDAP plugin loading remains enabled; no DIGEST-MD5 mechanism file was found in this image. No claim of non-exploitability. Cilium enforcement was observed once (read-only diagnostic, 2026-10-31); trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote an eligible fixed upstream image with a full scan and close this row. An image pushed after 2026-11-05 cannot clear the 14-day cool-off before 2026-11-20, so the owner decides renewal or a recorded waiver by 2026-11-19. No automatic renewal.",
+      "controls": [
+        "The gateway keeps the recorded OIDC, TLS and network-policy configuration of the candidate.",
+        "Do not enable LDAP or SASL, or change gateway exposure, without a new owner review of this exception.",
+        "The owner stages any promoted image and performs acceptance. Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "libsasl2-modules-db",
+      "version": "2.1.28+dfsg-10",
+      "vulnerability": "CVE-2026-107161",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-05",
+      "expires": "2026-11-27",
+      "reason": "WO-40 Amendment 11d/O-14: CVE-2026-107161, fixed Debian package 2.1.28+dfsg-10+deb12u1 (https://security-tracker.debian.org/tracker/CVE-2026-107161). First seen 2026-10-13; High with fix aged 14 days, not KEV. No fixed image exists: on 2026-11-05 the Docker Hub tags API lists only 3.19.0-debian, 3.19.0-ubuntu and 3.19.0-redhat for 3.19.x, all pushed 2026-09-29, and 3.19.0-debian is still this digest. Static reachability (report of 2026-11-03): the OpenResty ELF closure does not import libsasl2; native libldap imports it, but no ELF consumer of libldap was found; APISIX LDAP uses Lua cosockets; no LDAP or SASL plugin is configured on the two rendered gateway routes; default LDAP plugin loading remains enabled; no DIGEST-MD5 mechanism file was found in this image. No claim of non-exploitability. Cilium enforcement was observed once (read-only diagnostic, 2026-10-31); trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote an eligible fixed upstream image with a full scan and close this row. An image pushed after 2026-11-05 cannot clear the 14-day cool-off before 2026-11-20, so the owner decides renewal or a recorded waiver by 2026-11-19. No automatic renewal.",
+      "controls": [
+        "The gateway keeps the recorded OIDC, TLS and network-policy configuration of the candidate.",
+        "Do not enable LDAP or SASL, or change gateway exposure, without a new owner review of this exception.",
+        "The owner stages any promoted image and performs acceptance. Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "quay.io/keycloak/keycloak@sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b",
+      "package": "java-21-openjdk-headless",
+      "version": "1:21.0.12.1.1-1.2.el9",
+      "vulnerability": "CVE-2026-91415",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-05",
+      "expires": "2026-11-27",
+      "reason": "WO-40 Amendment 11d/O-14: CVE-2026-91415 (Oracle CPU 2026-10, OpenJDK 2D component; Red Hat severity Important), fixed in java-21-openjdk-headless 1:21.0.13.0.9-1.2.el9. First seen 2026-10-23; High with fix reaching 14 days on 2026-11-06, not KEV. Fixed image: quay.io/keycloak/keycloak@sha256:3f3c5f8e03c614774b4bd9173b88391fefa4153bfc010d8012d59ad825377332 (26.8.1 rebuild, pushed 2026-10-31T10:46:19Z). The weekly scan of 2026-11-02 shows this CVE absent, 69 findings against 107 and 0 new. Its normal cool-off ends 2026-11-14 by push time, after the last compliant stable date (2026-11-09); no expedite applies to a non-KEV High. Reachability of the 2D code path in Keycloak was not analysed. No claim of non-exploitability. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote the eligible fixed Keycloak digest with staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. No automatic renewal.",
+      "controls": [
+        "The recorded twinfra-keycloak-network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance, including sign-in and token negatives.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "lockfile:console/package-lock.json",
+      "package": "undici",
+      "version": "8.11.2",
+      "vulnerability": "CVE-2026-109869",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-05",
+      "expires": "2026-11-27",
+      "scope": "build",
+      "reason": "WO-40 Amendment 11d/O-14: CVE-2026-109869 (GHSA-xjj6-f33q-929c): a malicious server can crash a Node.js process through undici fetch. Fixed in 8.12.2, published 2026-10-15; cool-off ended 2026-10-29. First seen 2026-10-24; High with fix reaching 14 days on 2026-11-07, not KEV. Build scope: a dev dependency through jsdom only; console/Dockerfile copies only dist/ from the frontend stage, so undici is not in the final image. The fix changes console/package-lock.json, a pinned input of the console image receipt, so it needs a console rebuild, staging and acceptance; it is deferred to keep the candidate's running images unchanged. No claim of non-exploitability in build or test jobs. Replacement duty: after stable, before 2026-11-20, move to undici 8.12.2 or later, which also clears CVE-2026-109383, CVE-2026-109829 and CVE-2026-87018, then close this row. No automatic renewal.",
+      "controls": [
+        "Hash-locked dev dependency, installed with npm ci --ignore-scripts; not copied into the final console image.",
+        "No build or test step may fetch from untrusted servers without a new owner review of this exception.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "lockfile:module-5a/requirements-runtime.lock.txt",
+      "package": "filelock",
+      "version": "4.0.12",
+      "vulnerability": "CVE-2026-112940",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-05",
+      "expires": "2026-11-27",
+      "reason": "WO-40 Amendment 11d/O-14: CVE-2026-112940 (GHSA-v4x8-3wr5-3wq8): filelock ReadWriteLock reopens its SQLite lock database by name, so a planted symlink or journal file can make the lock user overwrite or unlink its own files. Fixed in 4.2.1, published 2026-10-17; cool-off ended 2026-10-31. First seen 2026-10-24; High with fix reaching 14 days on 2026-11-07, not KEV. The lock belongs to module-5a, a disabled reference (module-5a/config/rag.yaml enabled: false); neither the rendered cairo-1 manifests nor deploy/common/images.lock.json reference it. Use of ReadWriteLock by that graph was not analysed. No claim of non-exploitability. Replacement duty: after stable, before 2026-11-20, move to filelock 4.2.1 or later with its new licence record, then close this row. No automatic renewal.",
+      "controls": [
+        "module-5a stays enabled: false until this row is closed; enabling it needs a new owner review of this exception.",
+        "The lock stays hash-pinned; the replacement needs a licence record for the new version.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "musl",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-06",
+      "expires": "2026-11-27",
+      "reason": "WO-40 Amendment 11d/O-14: CVE-2026-107891 (NVD, published 2026-11-05, CVSS 8.1): musl before 1.2.7 has integer overflows when regcomp handles an untrusted regular expression, possibly leading to out-of-bounds heap writes. Fixed Alpine package 1.2.6-r3. First seen 2026-10-22 with Unknown severity; the scanner re-rated it High on 2026-11-06, so it blocks at once as a High with fix aged 14 days. Not KEV. Fixed image: OpenBao 2.7.2, docker.io/openbao/openbao@sha256:5046911075e137e154ce49ab051502f4ec7cf367d484ae4a4dce665d9b90561f, pushed 2026-10-26T20:28:10Z; its package list, read statically, has musl 1.2.6-r3. Its normal cool-off ends 2026-11-09T20:28Z, after the release window must start (2026-11-07); no expedite applies to a non-KEV High. Whether any process passes untrusted patterns to regcomp was not analysed. No claim of non-exploitability. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote the eligible fixed image with a full scan, staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. No automatic renewal.",
+      "controls": [
+        "The recorded network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "musl-utils",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-06",
+      "expires": "2026-11-27",
+      "reason": "WO-40 Amendment 11d/O-14: CVE-2026-107891 (NVD, published 2026-11-05, CVSS 8.1): musl before 1.2.7 has integer overflows when regcomp handles an untrusted regular expression, possibly leading to out-of-bounds heap writes. Fixed Alpine package 1.2.6-r3. First seen 2026-10-22 with Unknown severity; the scanner re-rated it High on 2026-11-06, so it blocks at once as a High with fix aged 14 days. Not KEV. Fixed image: OpenBao 2.7.2, docker.io/openbao/openbao@sha256:5046911075e137e154ce49ab051502f4ec7cf367d484ae4a4dce665d9b90561f, pushed 2026-10-26T20:28:10Z; its package list, read statically, has musl 1.2.6-r3. Its normal cool-off ends 2026-11-09T20:28Z, after the release window must start (2026-11-07); no expedite applies to a non-KEV High. Whether any process passes untrusted patterns to regcomp was not analysed. No claim of non-exploitability. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote the eligible fixed image with a full scan, staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. No automatic renewal.",
+      "controls": [
+        "The recorded network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "package": "musl",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-06",
+      "expires": "2026-11-27",
+      "reason": "WO-40 Amendment 11d/O-14: CVE-2026-107891 (NVD, published 2026-11-05, CVSS 8.1): musl before 1.2.7 has integer overflows when regcomp handles an untrusted regular expression, possibly leading to out-of-bounds heap writes. Fixed Alpine package 1.2.6-r3. First seen 2026-10-22 with Unknown severity; the scanner re-rated it High on 2026-11-06, so it blocks at once as a High with fix aged 14 days. Not KEV. Fixed image: Valkey 8.1.11-alpine, docker.io/valkey/valkey@sha256:2602ace2be6569bc2bbb06f873776516ab9089821525be34f4305c67eb9db02a, pushed 2026-10-27T01:54:22Z; its package list, read statically, has musl 1.2.6-r3. Its normal cool-off ends 2026-11-10T01:54Z, after the release window must start (2026-11-07); no expedite applies to a non-KEV High. Whether any process passes untrusted patterns to regcomp was not analysed. No claim of non-exploitability. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote the eligible fixed image with a full scan, staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. No automatic renewal.",
+      "controls": [
+        "The recorded network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "package": "musl-utils",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-06",
+      "expires": "2026-11-27",
+      "reason": "WO-40 Amendment 11d/O-14: CVE-2026-107891 (NVD, published 2026-11-05, CVSS 8.1): musl before 1.2.7 has integer overflows when regcomp handles an untrusted regular expression, possibly leading to out-of-bounds heap writes. Fixed Alpine package 1.2.6-r3. First seen 2026-10-22 with Unknown severity; the scanner re-rated it High on 2026-11-06, so it blocks at once as a High with fix aged 14 days. Not KEV. Fixed image: Valkey 8.1.11-alpine, docker.io/valkey/valkey@sha256:2602ace2be6569bc2bbb06f873776516ab9089821525be34f4305c67eb9db02a, pushed 2026-10-27T01:54:22Z; its package list, read statically, has musl 1.2.6-r3. Its normal cool-off ends 2026-11-10T01:54Z, after the release window must start (2026-11-07); no expedite applies to a non-KEV High. Whether any process passes untrusted patterns to regcomp was not analysed. No claim of non-exploitability. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote the eligible fixed image with a full scan, staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. No automatic renewal.",
+      "controls": [
+        "The recorded network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    }
+  ]
+}

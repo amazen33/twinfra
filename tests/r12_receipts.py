@@ -45,8 +45,9 @@ def approved_content(root=ROOT):
 
 
 def current_exceptions(root=ROOT):
-    """Preserve R12/O-11 anchors and require O-12 for the three appended risks."""
-    from r12_exceptions import amendment_11a_batch, amendment_11c_batch
+    """Preserve earlier anchors and require each exact, chained risk approval."""
+    from r12_exceptions import (AMENDMENT_11D_RECORD_HASHES, amendment_11a_batch,
+                               amendment_11c_batch, amendment_11d_batch)
     original,proposal,_=approved_content(root)
     record=json.loads((root/'security/wo40-amendment-11a-approval.json').read_bytes())
     raw=(root/'security/proposals/wo40-amendment-11a-kev.json').read_bytes()
@@ -66,10 +67,24 @@ def current_exceptions(root=ROOT):
             raise AssertionError('Amendment 11c approved content hash differs')
         expected=amendment_11c_batch(expected,json.loads(proposed),amended,record)
         anchor=amended
+    latest_paths=(root/'security/wo40-amendment-11d-approval.json',
+                  root/'security/proposals/wo40-amendment-11d.json')
+    if any(path.exists() for path in latest_paths):
+        if not all(path.is_file() for path in (*amendment_paths,*latest_paths)):
+            raise AssertionError('Incomplete Amendment 11d approval bundle or predecessor')
+        latest_raw=latest_paths[0].read_bytes()
+        latest=json.loads(latest_raw)
+        proposed=latest_paths[1].read_bytes()
+        if (hashlib.sha256(latest_raw).hexdigest()!=AMENDMENT_11D_RECORD_HASHES.get(latest.get('approvedBy'))
+                or hashlib.sha256(proposed).hexdigest()!=latest['proposalSHA256']
+                or hashlib.sha256(amendment_paths[0].read_bytes()).hexdigest()!=latest['previousApprovalSHA256']):
+            raise AssertionError('Amendment 11d approved content hash differs')
+        expected=amendment_11d_batch(expected,json.loads(proposed),latest,anchor)
+        anchor=latest
     active=(root/'security/vulnerability-exceptions.json').read_bytes()
     key='approvedRegistrySHA256' if anchor['approvedBy'] else 'proposedRegistrySHA256'
     if hashlib.sha256(active).hexdigest()!=anchor[key] or json.loads(active)!=expected:
-        raise AssertionError('Active registry differs from Amendment 11a/11c content/approval')
+        raise AssertionError('Active registry differs from Amendment 11a/11c/11d content/approval')
     return record,expected
 
 

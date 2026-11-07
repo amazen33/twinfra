@@ -145,6 +145,41 @@ def amendment_11c_batch(original, proposal, record, previous):
     return approved if record['approvedBy'] else pending
 
 
+AMENDMENT_11D_RECORD_HASHES = {
+    '': '4e5038e284c1653439ff223d668deaa8d1bd1c86c5bb77fa360e69eef82836be',
+    'amazen33': '540f21f3b31927b012d45029909f3d85e0b940e66fefd7ad405da7305ff5a5a9',
+}
+
+
+def amendment_11d_batch(original, proposal, record, previous):
+    """Append only O-14's nine anchored risks after the activated O-12 batch."""
+    if (record.get('approvedBy') not in AMENDMENT_11D_RECORD_HASHES
+            or content_sha256(record)!=AMENDMENT_11D_RECORD_HASHES[record['approvedBy']]):
+        raise ValueError('Exact Amendment 11d approval record required')
+    if (previous.get('approvedBy')!='amazen33'
+            or content_sha256(previous)!=record['previousApprovalSHA256']
+            or previous.get('approvedRegistrySHA256')!=record['baseApprovedRegistrySHA256']):
+        raise ValueError('Amendment 11d requires the activated, unchanged O-12 predecessor')
+    if content_sha256(original)!=record['baseApprovedRegistrySHA256']:
+        raise ValueError('Amendment 11d cannot change an existing row')
+    if (set(proposal)!={'version','exceptions'} or proposal['version']!=1
+            or len(proposal['exceptions'])!=9
+            or content_sha256(proposal)!=record['proposalSHA256']):
+        raise ValueError('Amendment 11d requires exactly the nine anchored proposal rows')
+    scope=[{k:row[k] for k in (*KEYS,'severity','expires')} for row in proposal['exceptions']]
+    if (scope!=record['scope'] or any(row['approvedBy']!='' for row in proposal['exceptions'])):
+        raise ValueError('Amendment 11d proposal scope or approval differs')
+    pending=deepcopy(original)
+    pending['exceptions'].extend(deepcopy(proposal['exceptions']))
+    approved=deepcopy(pending)
+    for row in approved['exceptions'][len(original['exceptions']):]:
+        row['approvedBy']='amazen33'
+    if (content_sha256(pending)!=record['proposedRegistrySHA256']
+            or content_sha256(approved)!=record['approvedRegistrySHA256']):
+        raise ValueError('Amendment 11d registry content hash differs')
+    return approved if record['approvedBy'] else pending
+
+
 def component_identity(value):
     return value['target'].split('@')[0], value['package'], value['vulnerability']
 

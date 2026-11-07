@@ -105,6 +105,28 @@ scope is in the [capability statement](docs/capabilities.md).
 
 ### Security
 
+- WO-40 Amendment 11d / O-14: append only the nine individual High rows in
+  [the approved proposal](security/proposals/wo40-amendment-11d.json), chained
+  to the already activated O-12 record. The 423 earlier rows stay unchanged;
+  the registry contains 432 rows. O-14 approved proposal SHA-256
+  `3af549ac9aa6697ec153816acfb74c26aaefd4d37f74dc4e1df2eb579abbd5a6`.
+  Activation is a separate owner-committed attribution-only step; pending
+  rows cannot pass the gate. Every new row expires 2026-11-27, references
+  WO-46, and requires replacement after stable, before 2026-11-20, with no
+  automatic renewal. No image, dependency, policy, workflow or live change.
+
+  | Component | Package/version | Advisory | Replacement duty (WO-46) |
+  | --- | --- | --- | --- |
+  | APISIX | libsasl2-2 2.1.28+dfsg-10 | CVE-2026-107161 | Fixed package 2.1.28+dfsg-10+deb12u1; no fixed upstream image as of 2026-11-07; owner decides renewal or a recorded waiver by 2026-11-19 |
+  | APISIX | libsasl2-modules-db 2.1.28+dfsg-10 | CVE-2026-107161 | Same fixed package and upstream-image gap; owner decision by 2026-11-19 |
+  | Keycloak | java-21-openjdk-headless 1:21.0.12.1.1-1.2.el9 | CVE-2026-91415 | Fixed 1:21.0.13.0.9-1.2.el9; eligible Keycloak rebuild from 2026-11-14, then staging and acceptance |
+  | Console CI (build only) | undici 8.11.2 | CVE-2026-109869 | Move to >=8.12.2, rebuild, scan, stage and accept the console |
+  | Disabled Module 5a | filelock 4.0.12 | CVE-2026-112940 | Move to >=4.2.1 with a new licence record; keep the module disabled |
+  | OpenBao | musl 1.2.6-r2 | CVE-2026-107891 | Fixed 1.2.6-r3 in OpenBao 2.7.2, eligible 2026-11-09T20:28Z; full scan, staging and acceptance |
+  | OpenBao | musl-utils 1.2.6-r2 | CVE-2026-107891 | Same OpenBao replacement and verification duty |
+  | Valkey | musl 1.2.6-r2 | CVE-2026-107891 | Fixed 1.2.6-r3 in Valkey 8.1.11-alpine, eligible 2026-11-10T01:54Z; full scan, staging and acceptance |
+  | Valkey | musl-utils 1.2.6-r2 | CVE-2026-107891 | Same Valkey replacement and verification duty |
+
 - WO-40 Amendment 11c / O-12 proposal: append exactly three individual,
   content-hash-anchored exceptions, all expiring 2026-11-27: MiniStack 1.5.33
   Python 3.13.17 and console-base Python 3.14.8 / CVE-2026-115557 (Critical),
