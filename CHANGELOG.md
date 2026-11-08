@@ -105,12 +105,41 @@ scope is in the [capability statement](docs/capabilities.md).
 
 ### Security
 
+- WO-40 Amendment 11e / O-17: append exactly three individual Critical
+  exceptions for zlib / CVE-2026-4738, chained to the activated O-14 record.
+  [Approved proposal](security/proposals/wo40-amendment-11e.json) SHA-256:
+  `a08c6176e36f5578a43ea1506cb9b12617a868528c0df3f3d45c6c1840e03f47`.
+  The 432 earlier rows stay unchanged; the resulting registry contains
+  435 rows (64 Critical and 371 High). Activation is recorded by a separate
+  owner-committed, attribution-only commit; pending rows cannot pass the gate.
+
+  | Component | Package/version | Advisory | Expires | Replacement duty |
+  | --- | --- | --- | --- | --- |
+  | OpenBao | zlib 1.3.2-r0 | CVE-2026-4738 | 2026-11-27 | WO-46, after stable and before 2026-11-20 |
+  | MiniStack | zlib 1.3.2-r1 | CVE-2026-4738 | 2026-11-27 | WO-46, after stable and before 2026-11-20 |
+  | Valkey | zlib 1.3.2-r0 | CVE-2026-4738 | 2026-11-27 | WO-46, after stable and before 2026-11-20 |
+
+  NVD names contrib/infback9 in the zlib copy bundled with GDAL before
+  3.11.0. The architect's static search of the three pinned images found
+  no infback9 strings in any file; this is evidence only, with no
+  non-exploitability claim. None of the seven inspected images carried the
+  fixed Alpine zlib 1.4-r0 on 2026-11-07; no fixed published image was
+  verified. If no eligible replacement exists by 2026-11-19, the owner
+  decides renewal. No automatic renewal, image, dependency or live change.
+
+- O-18, owner-approved 2026-11-08: waive only one day of R12 item 8 / Gate 0
+  item 3's planning margin for the KEV row, for a planned stable cut on
+  2026-11-10. Its expiry stays 2026-11-24 (stable +14 days); the 2026-11-13
+  checkpoint and replacement or owner-approved renewal before 2026-11-17
+  remain. The 48-hour window, fresh scan and acceptance rules are unchanged;
+  this is no waiver of new blockers or the <=7-day acceptance failure.
+
 - WO-40 Amendment 11d / O-14: append only the nine individual High rows in
   [the approved proposal](security/proposals/wo40-amendment-11d.json), chained
   to the already activated O-12 record. The 423 earlier rows stay unchanged;
-  the registry contains 432 rows. O-14 approved proposal SHA-256
+  its projection contains 432 rows. O-14 approved proposal SHA-256
   `3af549ac9aa6697ec153816acfb74c26aaefd4d37f74dc4e1df2eb579abbd5a6`.
-  Activation is a separate owner-committed attribution-only step; pending
+  Activation is recorded by a separate owner-committed attribution-only commit; pending
   rows cannot pass the gate. Every new row expires 2026-11-27, references
   WO-46, and requires replacement after stable, before 2026-11-20, with no
   automatic renewal. No image, dependency, policy, workflow or live change.
@@ -658,7 +687,8 @@ The owner's October 29 post-promotion acceptance passed all 17 checks at
 ### Exception calendar
 
 Acceptance fails for expired entries or **<=7 days** remaining; **8–21 days**
-is a warning. Counts below cover every active exception row. The target
+is a warning. The original R3b table below is retained as a historical
+420-row snapshot; the current 435-row approved projection follows it. The target
 release dates are a plan, not completed acceptance or permission to ignore a
 new scan finding. Every calendar date through **2026-11-16** has zero failing
 exceptions under the current approved expiries. Warnings are retained.
@@ -673,6 +703,19 @@ exceptions under the current approved expiries. Warnings are retained.
 | 2026-11-13 / WO-46 KEV checkpoint | 11 | 14 | 44 | 0 | 60 |
 | 2026-11-16 / release-window bound | 8 | 11 | 41 | 0 | 60 |
 | 2026-11-17 / first KEV calendar failure if unchanged | 7 | 10 | 40 | 1 | 59 |
+
+With O-14 and O-17, the 2026-11-27 group contains **74 rows**: 64 Critical
+and 10 High, including the three new O-17 Critical rows. The KEV row and
+the 360 High rows expiring 2026-12-27 are unchanged. This projection does
+not activate a pending batch or override a scan finding.
+
+| UTC date / checkpoint | Days to Nov 24 (1 KEV) | Days to Nov 27 (74 rows) | Days to Dec 27 (360 High) | Failing rows | Warning rows |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 2026-11-08 / O-17 proposal | 16 | 19 | 49 | 0 | 75 |
+| 2026-11-10 / planned Stable, O-18 margin waiver | 14 | 17 | 47 | 0 | 75 |
+| 2026-11-13 / unchanged KEV checkpoint | 11 | 14 | 44 | 0 | 75 |
+| 2026-11-16 / last passing KEV calendar date | 8 | 11 | 41 | 0 | 75 |
+| 2026-11-17 / unchanged KEV calendar failure | 7 | 10 | 40 | 1 | 74 |
 
 A fresh full scan, owner acceptance and the consolidated rc sign-off still
 precede release. Resolve or individually re-approve any remaining risk before
