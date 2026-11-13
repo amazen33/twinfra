@@ -222,9 +222,12 @@ class Reapproval(unittest.TestCase):
             with self.assertRaisesRegex(AssertionError,'Active registry differs'):current_exceptions(root)
 
     def test_repository_bundle_remains_bound_to_its_current_approval_state(self):
-        _,actual=current_exceptions()
-        self.assertEqual(actual,sc.read(ROOT/ACTIVE))
-        self.assertEqual(len(actual['exceptions']),435)
+        # Isolate 11e's 435-row projection from the subsequent O-20 batch.
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);self.scratch(root,True)
+            _,actual=current_exceptions(root)
+            self.assertEqual(actual,sc.read(root/ACTIVE))
+            self.assertEqual(len(actual['exceptions']),435)
 
 
 if __name__=='__main__':unittest.main()
