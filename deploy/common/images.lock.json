@@ -39,14 +39,14 @@
       }
     },
     "argocd": {
-      "source": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
-      "digest": "sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
-      "canonical": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
-      "digestSource": "https://quay.io/v2/argoproj/argocd/manifests/v3.5.3",
-      "release": "quay.io/argoproj/argocd:v3.5.5",
-      "releaseSource": "https://github.com/argoproj/argo-cd/releases/tag/v3.5.5",
-      "releasePublishedAt": "2026-10-12T10:59:41Z",
-      "verifiedOn": "2026-10-28",
+      "source": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "digest": "sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "canonical": "registry.twinfra.example.com/quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "digestSource": "https://quay.io/v2/argoproj/argocd/manifests/v3.5.7",
+      "release": "quay.io/argoproj/argocd:v3.5.7",
+      "releaseSource": "https://github.com/argoproj/argo-cd/releases/tag/v3.5.7",
+      "releasePublishedAt": "2026-11-02T20:14:51Z",
+      "verifiedOn": "2026-11-14",
       "licenceSHA256": "c996fc213c94f4a4a838407d355b081226caa7b103a4f239bb87fb8f1d8e3a60"
     },
     "valkey": {
