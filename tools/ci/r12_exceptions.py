@@ -253,6 +253,51 @@ def amendment_11f_batch(original, proposal, record, previous):
     return projections[attribution]
 
 
+WO46_ARGOCD_RECORD_HASHES = {
+    '': 'e63575592c3e693bd5dba0d198c63f1abf6eaefd7600b087f7b03cb43efd6a5c',
+    'amazen33': '7cfb6f7f9a6e08b2ffe47d540ac11780cce10061b545f3392169b1b1db602137',
+}
+
+
+def wo46_argocd_batch(original, proposal, record, previous):
+    """Apply only the reviewed closures and digest-bound carries to activated R13a."""
+    owner = record.get('approvedBy')
+    if owner not in WO46_ARGOCD_RECORD_HASHES or content_sha256(record) != WO46_ARGOCD_RECORD_HASHES[owner]:
+        raise ValueError('Exact WO-46 Argo CD approval record required')
+    if (previous.get('approvedBy') != 'amazen33'
+            or content_sha256(previous) != record['previousApprovalSHA256']
+            or previous.get('approvedRegistrySHA256') != record['baseApprovedRegistrySHA256']
+            or content_sha256(original) != record['baseApprovedRegistrySHA256']):
+        raise ValueError('WO-46 requires the activated, unchanged R13a registry and record')
+    if content_sha256(proposal) != record['proposalSHA256']:
+        raise ValueError('Exact WO-46 Argo CD proposal required')
+
+    closed = {identity(row) for row in proposal['closed']}
+    old_target = proposal['closed'][0]['target']
+    new_target = proposal['exceptions'][0]['target']
+    prior_rows = [row for row in original['exceptions']
+                  if row['target'] == old_target and identity(row) not in closed]
+    for prior, carried in zip(prior_rows, proposal['exceptions'], strict=True):
+        expected = prior | {'target': new_target, 'approvedBy': ''}
+        if prior['vulnerability'] == 'CVE-2026-123158':
+            # Rebind the currently unmatched OpenSSH identity to the shipped client version.
+            expected['version'] = carried['version']
+        if carried != expected:
+            raise ValueError('WO-46 carry changes more than the reviewed image or client version')
+
+    projections = {}
+    for approval, key in (('', 'proposedRegistrySHA256'), ('amazen33', 'approvedRegistrySHA256')):
+        carries = iter(proposal['exceptions'])
+        projected = original | {'exceptions': [
+            row if row['target'] != old_target else next(carries) | {'approvedBy': approval}
+            for row in original['exceptions'] if identity(row) not in closed
+        ]}
+        if content_sha256(projected) != record[key]:
+            raise ValueError('WO-46 registry content hash differs')
+        projections[approval] = projected
+    return projections[owner]
+
+
 def component_identity(value):
     return value['target'].split('@')[0], value['package'], value['vulnerability']
 

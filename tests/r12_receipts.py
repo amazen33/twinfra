@@ -8,6 +8,10 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = '0d950075a8bf43358d9fd406b80b67d657f804e1'
+WO46_OLD_IMAGE_SHA256 = 'bb41191d06463aac08e225cdf2b8e8d8d9d9f158fc01bf038c22e750b39c8cb8'
+WO46_NEW_IMAGE_SHA256 = '07e13f1bc8d310a8f7411d6fdfc80d29d5c40662423c17896d9d2ee348dce9ff'
+WO46_BEFORE = 'sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518'
+WO46_AFTER = 'sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db'
 sys.path.insert(0, str(ROOT/'tools/ci'))
 
 
@@ -44,12 +48,13 @@ def approved_content(root=ROOT):
     return record,proposal,log
 
 
-def current_exceptions(root=ROOT):
+def current_exceptions(root=ROOT, *, previous_r13a=False):
     """Preserve earlier anchors and require each exact, chained risk approval."""
     from r12_exceptions import (AMENDMENT_11D_RECORD_HASHES, AMENDMENT_11E_RECORD_HASHES,
                                AMENDMENT_11F_RECORD_HASHES, amendment_11a_batch,
                                amendment_11c_batch, amendment_11d_batch,
-                               amendment_11e_batch, amendment_11f_batch)
+                               amendment_11e_batch, amendment_11f_batch,
+                               WO46_ARGOCD_RECORD_HASHES, wo46_argocd_batch)
     original,proposal,_=approved_content(root)
     record=json.loads((root/'security/wo40-amendment-11a-approval.json').read_bytes())
     raw=(root/'security/proposals/wo40-amendment-11a-kev.json').read_bytes()
@@ -112,21 +117,62 @@ def current_exceptions(root=ROOT):
             raise AssertionError('Amendment 11f approved content hash differs')
         expected=amendment_11f_batch(expected,json.loads(proposal_bytes),o20,anchor)
         anchor=o20
+    wo46_record=root/'security/wo46-argocd-3.5.7-approval.json'
+    wo46_proposal=root/'security/proposals/wo46-argocd-3.5.7.json'
+    if wo46_record.exists() or wo46_proposal.exists():
+        if not all(path.is_file() for path in (o20_record,o20_proposal,wo46_record,wo46_proposal)):
+            raise AssertionError('Incomplete WO-46 Argo CD approval bundle or predecessor')
+        record_bytes=wo46_record.read_bytes()
+        wo46=json.loads(record_bytes)
+        proposal_bytes=wo46_proposal.read_bytes()
+        checks=((record_bytes, WO46_ARGOCD_RECORD_HASHES.get(wo46.get('approvedBy'))),
+                (proposal_bytes, wo46['proposalSHA256']),
+                (o20_record.read_bytes(), wo46['previousApprovalSHA256']))
+        if any(hashlib.sha256(raw).hexdigest()!=digest for raw,digest in checks):
+            raise AssertionError('WO-46 Argo CD approved content hash differs')
+        r13a=expected
+        expected=wo46_argocd_batch(expected,json.loads(proposal_bytes),wo46,anchor)
+        anchor=wo46
     active=(root/'security/vulnerability-exceptions.json').read_bytes()
     key='approvedRegistrySHA256' if anchor['approvedBy'] else 'proposedRegistrySHA256'
     if hashlib.sha256(active).hexdigest()!=anchor[key] or json.loads(active)!=expected:
-        raise AssertionError('Active registry differs from Amendment 11a/11c/11d/11e/11f content/approval')
+        raise AssertionError('Active registry differs from the chained content/approval')
+    if previous_r13a and wo46_record.is_file():
+        return record,r13a
     return record,expected
+
+
+def wo46_image(current):
+    """Recognize the exact promoted image before applying historical projections."""
+    from r12_exceptions import content_sha256
+    entry=current['images']['argocd']
+    if entry['digest'] == WO46_BEFORE:
+        return current
+    if content_sha256(entry) != WO46_NEW_IMAGE_SHA256:
+        raise AssertionError('WO-46 Argo CD image differs from the verified promotion')
+    before=entry | {
+        'source': 'quay.io/argoproj/argocd@'+WO46_BEFORE, 'digest': WO46_BEFORE,
+        'canonical': 'registry.twinfra.example.com/quay.io/argoproj/argocd@'+WO46_BEFORE,
+        'digestSource': 'https://quay.io/v2/argoproj/argocd/manifests/v3.5.3',
+        'release': 'quay.io/argoproj/argocd:v3.5.5',
+        'releaseSource': 'https://github.com/argoproj/argo-cd/releases/tag/v3.5.5',
+        'releasePublishedAt': '2026-10-12T10:59:41Z', 'verifiedOn': '2026-10-28',
+        'licenceSHA256': entry['licenceSHA256'],
+    }
+    if content_sha256(before)!=WO46_OLD_IMAGE_SHA256:
+        raise AssertionError('WO-46 R12 image projection differs')
+    return current | {'images': current['images'] | {'argocd': before}}
 
 
 def assert_images(current=None):
     from security_wave_2026_10 import CASES
     original=json.loads(old('deploy/common/images.lock.json'))
     actual=current if current is not None else json.loads((ROOT/'deploy/common/images.lock.json').read_text(encoding='utf-8'))
+    historical=wo46_image(actual)
     expected=copy.deepcopy(original)
     allowed={'source','release','digest','canonical','releaseSource','releasePublishedAt','verifiedOn','licenceSHA256'}
     for component,case in [('argocd','argocd355'),('ministack','ministack1533'),('keycloak','keycloak2681')]:
-        _,release,ref=CASES[case];entry=actual['images'][component]
+        _,release,ref=CASES[case];entry=historical['images'][component]
         if entry['source']!=ref or entry['digest']!=ref.split('@')[1] or entry['canonical']!='registry.twinfra.example.com/'+ref:
             raise AssertionError('R12 candidate digest differs from the approved comparison')
         if not entry['release'].endswith(':'+('v' if component=='argocd' else '')+release):
@@ -136,7 +182,7 @@ def assert_images(current=None):
             raise AssertionError('R12 added an unrelated pin property')
         for field in fields:
             if field in entry:expected['images'][component][field]=entry[field]
-    if actual!=expected:raise AssertionError('R12 changed an unrelated image or pin property')
+    if historical!=expected:raise AssertionError('R12 changed an unrelated image or pin property')
     return original,actual
 
 
@@ -199,6 +245,10 @@ def assert_current():
         row = images[component]
         before = 'oci-image|' + row['before'].replace('@', '|')
         after = 'oci-image|' + row['after'].replace('@', '|')
+        if component=='argocd' and after not in records:
+            lock=read('deploy/common/images.lock.json')
+            wo46_image(lock)
+            after='oci-image|'+lock['images']['argocd']['source'].replace('@','|')
         # Production and retained reference sources still use the old pin.
         # Their exact approvals remain byte-for-byte unchanged.
         added.add(after)

@@ -105,6 +105,14 @@ scope is in the [capability statement](docs/capabilities.md).
 
 ### Security
 
+- WO-46 item 4: pin the dev Argo CD image to v3.5.7 under the KEV expedite
+  rule. The complete Linux amd64 scan confirms Ubuntu's fixed Brotli
+  package and closes the libcurl finding as well. It finds no new fixable
+  Critical/High identity or KEV. The exact approval proposal removes the two
+  closed rows and carries 173 rows with their original expiries. The registry's
+  earliest expiry moves to 2026-11-27. See the [release notes](docs/release-notes/0.1.0.md)
+  for the scan, unmatched OpenSSH carry and remaining release duties.
+
 - WO-40 Amendment 11f (R13a) / O-20: append 44 exact High exceptions under
   O-19 path A, for findings that block from 2026-11-12 through 2026-11-24.
   The [approved proposal](security/proposals/wo40-amendment-11f.json) is

@@ -9678,21 +9678,21 @@
       }
     },
     {
-      "id": "oci-image|quay.io/argoproj/argocd|sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "id": "oci-image|quay.io/argoproj/argocd|sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
       "ecosystem": "oci-image",
       "name": "quay.io/argoproj/argocd",
-      "version": "sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "version": "sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
       "locations": [
         "deploy/common/images.lock.json",
         "deploy/environments/dev/cairo-1/platform/workloads.yaml"
       ],
       "spdx": "Apache-2.0",
       "class": "allowed",
-      "licenceSource": "https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.5/LICENSE",
-      "verifiedOn": "2026-10-28",
-      "recordedOn": "2026-10-28",
+      "licenceSource": "https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.7/LICENSE",
+      "verifiedOn": "2026-11-14",
+      "recordedOn": "2026-11-14",
       "integrities": [
-        "sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518"
+        "sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db"
       ],
       "tier": 2,
       "enterpriseGrade": {
@@ -9700,40 +9700,40 @@
         "criteria": {
           "maturity": {
             "result": "pass",
-            "evidence": "https://github.com/argoproj/argo-cd/releases/tag/v3.5.5",
-            "date": "2026-10-28"
+            "evidence": "https://github.com/argoproj/argo-cd/releases/tag/v3.5.7",
+            "date": "2026-11-14"
           },
           "governance": {
             "result": "pass",
             "evidence": "https://www.cncf.io/projects/argo/",
-            "date": "2026-10-28"
+            "date": "2026-11-14"
           },
           "activitySupport": {
             "result": "pass",
-            "evidence": "https://github.com/argoproj/argo-cd/security/policy",
-            "date": "2026-10-28"
+            "evidence": "https://argo-cd.readthedocs.io/en/stable/developer-guide/release-process-and-cadence/",
+            "date": "2026-11-14"
           },
           "securityProcess": {
             "result": "pass",
             "evidence": "https://github.com/argoproj/argo-cd/security/policy",
-            "date": "2026-10-28"
+            "date": "2026-11-14"
           },
           "supplyChain": {
             "result": "pass",
-            "date": "2026-10-28",
-            "evidence": "https://github.com/amazen33/twinfra/pull/82"
+            "date": "2026-11-14",
+            "evidence": "https://github.com/argoproj/argo-cd/releases/tag/v3.5.7#release-signatures-and-provenance"
           },
           "adoption": {
             "result": "pass",
             "evidence": "https://www.cncf.io/projects/argo/",
-            "date": "2026-10-28"
+            "date": "2026-11-14"
           }
         }
       },
-      "notes": "Unmodified upstream; primary LICENSE SHA256 c996fc213c94f4a4a838407d355b081226caa7b103a4f239bb87fb8f1d8e3a60. R12 scan https://github.com/amazen33/twinfra/actions/runs/40754061462",
+      "notes": "Unmodified upstream; primary LICENSE SHA256 c996fc213c94f4a4a838407d355b081226caa7b103a4f239bb87fb8f1d8e3a60. WO-46 complete amd64 Syft/Grype comparison and approved-projection replay on the 2026-11-13 database; risk approval recorded in security/wo46-argocd-3.5.7-approval.json.",
       "imageSBOM": {
-        "path": "deploy/common/vendor/r12-argocd-3.5.5.cdx.json.gz",
-        "sha256": "25d0a6bb71d750e8484d08485f52b361e743a665f18036fd73773b74085876ec"
+        "path": "deploy/common/vendor/wo46-argocd-3.5.7.cdx.json.gz",
+        "sha256": "0adc95830169a63494f663e9ba4f2d2def85a2f1d3a9b3ac63c92fbbba327115"
       }
     },
     {
