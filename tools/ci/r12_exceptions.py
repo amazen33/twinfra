@@ -215,6 +215,44 @@ def amendment_11e_batch(original, proposal, record, previous):
     return approved if record['approvedBy'] else pending
 
 
+AMENDMENT_11F_RECORD_HASHES = {
+    '': '1c2d464f17a736812b07f5a66bed0d656375b8068535eb998bf6dafdd4918aaf',
+    'amazen33': '34e00b1db1066b7ca09ff7098bebd1566a2b6c5437006f31bc0122470a919f2e',
+}
+
+
+def amendment_11f_batch(original, proposal, record, previous):
+    """Project the exact O-20 batch after the activated O-17 registry."""
+    attribution = record.get('approvedBy')
+    if (attribution not in ('', 'amazen33')
+            or content_sha256(record) != AMENDMENT_11F_RECORD_HASHES[attribution]):
+        raise ValueError('Exact Amendment 11f approval record required')
+    if (previous.get('approvedBy') != 'amazen33'
+            or content_sha256(previous) != record['previousApprovalSHA256']
+            or previous.get('approvedRegistrySHA256') != record['baseApprovedRegistrySHA256']):
+        raise ValueError('Amendment 11f requires the activated, unchanged O-17 predecessor')
+    if content_sha256(original) != record['baseApprovedRegistrySHA256']:
+        raise ValueError('Amendment 11f cannot change an existing row')
+
+    rows = proposal.get('exceptions')
+    if (not isinstance(rows, list) or len(rows) != 44
+            or content_sha256(proposal) != record['proposalSHA256']):
+        raise ValueError('Amendment 11f requires exactly the 44 anchored proposal rows')
+    fields = (*KEYS, 'severity', 'expires')
+    if any({key: row[key] for key in fields} != scope or row['approvedBy'] != ''
+           for row, scope in zip(rows, record['scope'], strict=True)):
+        raise ValueError('Amendment 11f proposal scope or approval differs')
+
+    projections = {}
+    for owner, digest_key in (('', 'proposedRegistrySHA256'), ('amazen33', 'approvedRegistrySHA256')):
+        registry = deepcopy(original)
+        registry['exceptions'].extend(row | {'approvedBy': owner} for row in deepcopy(rows))
+        if content_sha256(registry) != record[digest_key]:
+            raise ValueError('Amendment 11f registry content hash differs')
+        projections[owner] = registry
+    return projections[attribution]
+
+
 def component_identity(value):
     return value['target'].split('@')[0], value['package'], value['vulnerability']
 
