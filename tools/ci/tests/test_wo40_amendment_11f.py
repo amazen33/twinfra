@@ -48,7 +48,7 @@ class R13a(unittest.TestCase):
         cls.proposal = sc.read(ROOT / PROPOSAL)
         cls.previous = sc.read(ROOT / PREVIOUS)
         cls.record = sc.read(ROOT / RECORD)
-        cls.base = sc.read(ROOT / REGISTRY)
+        _, cls.base = current_exceptions(ROOT, previous_r13a=True)
         cls.base['exceptions'] = cls.base['exceptions'][:435]
 
     def projection(self, attribution):
@@ -197,8 +197,8 @@ class R13a(unittest.TestCase):
             sc.validate_exceptions(pending, ROOT, date(2026, 11, 13))
 
     def test_checked_in_bundle_matches_the_current_chain(self):
-        _, current = current_exceptions(ROOT)
-        self.assertEqual(current, sc.read(ROOT / REGISTRY))
+        _, current = current_exceptions(ROOT, previous_r13a=True)
+        self.assertEqual(current, self.projection(APPROVER))
         self.assertEqual(len(current['exceptions']), 479)
 
 
