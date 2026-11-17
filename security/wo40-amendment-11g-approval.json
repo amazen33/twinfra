@@ -1,7 +1,7 @@
 {
   "authority": "WO-40 Amendment 11g (R13b) / O-22",
   "decision": "O-22",
-  "approvedBy": "",
+  "approvedBy": "amazen33",
   "previousApprovalPath": "security/wo46-argocd-3.5.7-approval.json",
   "previousApprovalSHA256": "7cfb6f7f9a6e08b2ffe47d540ac11780cce10061b545f3392169b1b1db602137",
   "baseApprovedRegistrySHA256": "65129cdeee79d97369412ae22b10b18b7a361ee7bf00b36511d1fe83ed03f866",
