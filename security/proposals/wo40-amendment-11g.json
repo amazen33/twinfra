@@ -1,0 +1,2329 @@
+{
+  "version": 1,
+  "renewed": [
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-12087",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 5.36.0-7+deb12u4. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 5.36.0-7+deb12u4. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies perl-base in apisix; image paths /usr/share/doc/perl-base/copyright, /var/lib/dpkg/info/perl-base.list, /var/lib/dpkg/info/perl-base.md5sums, /var/lib/dpkg/info/perl-base.postinst, /var/lib/dpkg/info/perl-base.postrm, /var/lib/dpkg/info/perl-base.preinst. No negative reachability claim or image execution. Upstream: https://security-tracker.debian.org/tracker/CVE-2026-12087",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-13221",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 5.36.0-7+deb12u4. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 5.36.0-7+deb12u4. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies perl-base in apisix; image paths /usr/share/doc/perl-base/copyright, /var/lib/dpkg/info/perl-base.list, /var/lib/dpkg/info/perl-base.md5sums, /var/lib/dpkg/info/perl-base.postinst, /var/lib/dpkg/info/perl-base.postrm, /var/lib/dpkg/info/perl-base.preinst. No negative reachability claim or image execution. Upstream: https://security-tracker.debian.org/tracker/CVE-2026-13221",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-42496",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 5.36.0-7+deb12u4. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 5.36.0-7+deb12u4. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies perl-base in apisix; image paths /usr/share/doc/perl-base/copyright, /var/lib/dpkg/info/perl-base.list, /var/lib/dpkg/info/perl-base.md5sums, /var/lib/dpkg/info/perl-base.postinst, /var/lib/dpkg/info/perl-base.postrm, /var/lib/dpkg/info/perl-base.preinst. No negative reachability claim or image execution. Upstream: https://security-tracker.debian.org/tracker/CVE-2026-42496",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-57433",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 5.36.0-7+deb12u4. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 5.36.0-7+deb12u4. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies perl-base in apisix; image paths /usr/share/doc/perl-base/copyright, /var/lib/dpkg/info/perl-base.list, /var/lib/dpkg/info/perl-base.md5sums, /var/lib/dpkg/info/perl-base.postinst, /var/lib/dpkg/info/perl-base.postrm, /var/lib/dpkg/info/perl-base.preinst. No negative reachability claim or image execution. Upstream: https://security-tracker.debian.org/tracker/CVE-2026-57433",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-8376",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 5.36.0-7+deb12u4. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 5.36.0-7+deb12u4. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies perl-base in apisix; image paths /usr/share/doc/perl-base/copyright, /var/lib/dpkg/info/perl-base.list, /var/lib/dpkg/info/perl-base.md5sums, /var/lib/dpkg/info/perl-base.postinst, /var/lib/dpkg/info/perl-base.postrm, /var/lib/dpkg/info/perl-base.preinst. No negative reachability claim or image execution. Upstream: https://security-tracker.debian.org/tracker/CVE-2026-8376",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v2.7.2, eligible 2026-11-09T20:24:37Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies golang.org/x/net in openbao; image paths /usr/bin/bao. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/openbao/openbao/releases/tag/v2.7.2",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v2.7.2, eligible 2026-11-09T20:24:37Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in openbao; image paths /usr/bin/bao. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/openbao/openbao/releases/tag/v2.7.2",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v2.7.2, eligible 2026-11-09T20:24:37Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in openbao; image paths /usr/bin/bao. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/openbao/openbao/releases/tag/v2.7.2",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/net in cnpg; image paths /operator/manager_amd64, /operator/manager_arm64. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/cloudnative-pg/cloudnative-pg/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in cnpg; image paths /operator/manager_amd64, /operator/manager_arm64. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/cloudnative-pg/cloudnative-pg/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in cnpg; image paths /operator/manager_amd64, /operator/manager_arm64. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/cloudnative-pg/cloudnative-pg/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39830",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.52.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/crypto in argocd; image paths /usr/local/bin/git-lfs. No negative reachability claim or image execution. Upstream: https://go.dev/cl/781640",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.52.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39831",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.52.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/crypto in argocd; image paths /usr/local/bin/git-lfs. No negative reachability claim or image execution. Upstream: https://go.dev/cl/781662",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.52.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39832",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.52.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/crypto in argocd; image paths /usr/local/bin/git-lfs. No negative reachability claim or image execution. Upstream: https://go.dev/cl/778642",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.52.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39833",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.52.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/crypto in argocd; image paths /usr/local/bin/git-lfs. No negative reachability claim or image execution. Upstream: https://go.dev/cl/778640",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.52.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39834",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.52.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/crypto in argocd; image paths /usr/local/bin/git-lfs. No negative reachability claim or image execution. Upstream: https://go.dev/cl/781663",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.52.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-42508",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.52.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/crypto in argocd; image paths /usr/local/bin/git-lfs. No negative reachability claim or image execution. Upstream: https://go.dev/cl/781220",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.52.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-46595",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.52.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.52.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/crypto in argocd; image paths /usr/local/bin/git-lfs. No negative reachability claim or image execution. Upstream: https://go.dev/cl/781642",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.52.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/net",
+      "version": "v0.38.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/net in argocd; image paths /usr/local/bin/git-lfs. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/net",
+      "version": "v0.40.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/net in argocd; image paths /usr/bin/pebble. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/net",
+      "version": "v0.55.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/net in argocd; image paths /usr/local/bin/helm. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/net",
+      "version": "v0.59.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/net in argocd; image paths /usr/local/bin/argocd. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.24.0",
+      "vulnerability": "CVE-2025-22871",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.23.8, 1.24.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.23.8, 1.24.2. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in argocd; image paths /usr/local/bin/kustomize. No negative reachability claim or image execution. Upstream: https://go.dev/cl/652998",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.24.0",
+      "vulnerability": "CVE-2025-68121",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.24.13, 1.25.7, 1.26.0-rc.3. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.24.13, 1.25.7, 1.26.0-rc.3. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in argocd; image paths /usr/local/bin/kustomize. No negative reachability claim or image execution. Upstream: https://go.dev/cl/737700",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.24.0",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in argocd; image paths /usr/local/bin/kustomize. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.24.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in argocd; image paths /usr/local/bin/kustomize. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.25.3",
+      "vulnerability": "CVE-2025-68121",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.24.13, 1.25.7, 1.26.0-rc.3. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.24.13, 1.25.7, 1.26.0-rc.3. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in argocd; image paths /usr/local/bin/git-lfs. No negative reachability claim or image execution. Upstream: https://go.dev/cl/737700",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.25.3",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in argocd; image paths /usr/local/bin/git-lfs. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.25.3",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in argocd; image paths /usr/local/bin/git-lfs. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.26.2",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in argocd; image paths /usr/bin/pebble. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.26.2",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in argocd; image paths /usr/bin/pebble. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.26.4",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in argocd; image paths /usr/local/bin/helm. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.26.4",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in argocd; image paths /usr/local/bin/helm. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/argoproj/argo-cd/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.20.4, eligible 2026-11-06T14:51:39Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies golang.org/x/net in envoy; image paths /usr/lib/libcilium.so. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.20.4, eligible 2026-11-06T14:51:39Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in envoy; image paths /usr/lib/libcilium.so. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.20.4, eligible 2026-11-06T14:51:39Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in envoy; image paths /usr/lib/libcilium.so. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.20.4, eligible 2026-11-06T14:51:39Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies golang.org/x/net in cilium; image paths /opt/cni/bin/cilium-cni, /usr/bin/cilium-agent, /usr/bin/cilium-bugtool, /usr/bin/cilium-dbg, /usr/bin/cilium-envoy-bootstrap-locality, /usr/bin/cilium-health. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "stdlib",
+      "version": "go1.26.5",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.20.4, eligible 2026-11-06T14:51:39Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in cilium; image paths /usr/bin/pebble. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "stdlib",
+      "version": "go1.26.5",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.20.4, eligible 2026-11-06T14:51:39Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in cilium; image paths /usr/bin/pebble. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.20.4, eligible 2026-11-06T14:51:39Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in cilium; image paths /cni/loopback, /opt/cni/bin/cilium-cni, /usr/bin/cilium-agent, /usr/bin/cilium-bugtool, /usr/bin/cilium-dbg, /usr/bin/cilium-envoy-bootstrap-locality. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.20.4, eligible 2026-11-06T14:51:39Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in cilium; image paths /cni/loopback, /opt/cni/bin/cilium-cni, /usr/bin/cilium-agent, /usr/bin/cilium-bugtool, /usr/bin/cilium-dbg, /usr/bin/cilium-envoy-bootstrap-locality. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.20.4, eligible 2026-11-06T14:51:39Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies golang.org/x/net in operator; image paths /usr/bin/cilium-operator-generic. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.20.4, eligible 2026-11-06T14:51:39Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in operator; image paths /usr/bin/cilium-operator-generic, /usr/bin/gops. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.20.4, eligible 2026-11-06T14:51:39Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in operator; image paths /usr/bin/cilium-operator-generic, /usr/bin/gops. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "package": "golang.org/x/net",
+      "version": "v0.57.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies golang.org/x/net in coredns; image paths /coredns. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/coredns/coredns/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "package": "stdlib",
+      "version": "go1.26.6",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in coredns; image paths /coredns. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/coredns/coredns/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "package": "stdlib",
+      "version": "go1.26.6",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs. No verified fixed same-line image release or eligibility date; WO-46 must track upstream and rescan before promotion. Reachability: Potentially reachable: scanner identifies stdlib in coredns; image paths /coredns. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://api.github.com/repos/coredns/coredns/releases?per_page=10",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v3.6.16, eligible 2026-11-05T23:00:22Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies golang.org/x/net in etcd; image paths /usr/local/bin/etcd, /usr/local/bin/etcdctl, /usr/local/bin/etcdutl. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/etcd-io/etcd/releases/tag/v3.6.16",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v3.6.16, eligible 2026-11-05T23:00:22Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in etcd; image paths /usr/local/bin/etcd, /usr/local/bin/etcdctl, /usr/local/bin/etcdutl. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/etcd-io/etcd/releases/tag/v3.6.16",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v3.6.16, eligible 2026-11-05T23:00:22Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in etcd; image paths /usr/local/bin/etcd, /usr/local/bin/etcdctl, /usr/local/bin/etcdutl. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/etcd-io/etcd/releases/tag/v3.6.16",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.36.6, eligible 2026-11-11T04:56:35Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies golang.org/x/net in apiserver; image paths /usr/local/bin/kube-apiserver. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/kubernetes/kubernetes/releases/tag/v1.36.6",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.36.6, eligible 2026-11-11T04:56:35Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in apiserver; image paths /go-runner, /usr/local/bin/kube-apiserver. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/kubernetes/kubernetes/releases/tag/v1.36.6",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.36.6, eligible 2026-11-11T04:56:35Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in apiserver; image paths /go-runner, /usr/local/bin/kube-apiserver. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/kubernetes/kubernetes/releases/tag/v1.36.6",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.36.6, eligible 2026-11-11T04:56:35Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies golang.org/x/net in controller; image paths /usr/local/bin/kube-controller-manager. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/kubernetes/kubernetes/releases/tag/v1.36.6",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.36.6, eligible 2026-11-11T04:56:35Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in controller; image paths /go-runner, /usr/local/bin/kube-controller-manager, /usr/local/bin/kube-log-runner. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/kubernetes/kubernetes/releases/tag/v1.36.6",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.36.6, eligible 2026-11-11T04:56:35Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in controller; image paths /go-runner, /usr/local/bin/kube-controller-manager, /usr/local/bin/kube-log-runner. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/kubernetes/kubernetes/releases/tag/v1.36.6",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 0.60.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 0.60.0. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.36.6, eligible 2026-11-11T04:56:35Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies golang.org/x/net in scheduler; image paths /usr/local/bin/kube-scheduler. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "0.60.0"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/kubernetes/kubernetes/releases/tag/v1.36.6",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9, 1.27.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9, 1.27.2. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.36.6, eligible 2026-11-11T04:56:35Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in scheduler; image paths /go-runner, /usr/local/bin/kube-log-runner, /usr/local/bin/kube-scheduler. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847305",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9",
+          "1.27.2"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/kubernetes/kubernetes/releases/tag/v1.36.6",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.26.9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-28, expiring 2026-11-27): fixed by WO-46; package fix 1.26.9. Dev exposure: LAN-only APIs, tunnel-only UIs. WO-46 remediation candidate v1.36.6, eligible 2026-11-11T04:56:35Z; fixed package/build still requires a full rescan. Reachability: Potentially reachable: scanner identifies stdlib in scheduler; image paths /go-runner, /usr/local/bin/kube-log-runner, /usr/local/bin/kube-scheduler. No negative reachability claim or image execution. Upstream: https://go.dev/cl/847187",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ],
+      "toolchainWave": {
+        "fixVersions": [
+          "1.26.9"
+        ],
+        "noEligibleFixedRelease": true,
+        "checkedOn": "2026-10-28",
+        "upstreamEvidence": "https://github.com/kubernetes/kubernetes/releases/tag/v1.36.6",
+        "isolation": {
+          "clusterOrLanOnly": true,
+          "noExternalService": true,
+          "externalEgress": "github.com:443 only for repo-server; other components use the documented dev node/LAN or in-cluster paths"
+        },
+        "requiredScanner": {
+          "name": "grype",
+          "version": "0.119.0",
+          "binarySHA256": "e02ba25615668c6bae03473e3c6493b6dfffc2e4e419f65f9bd62555ac10cd0e"
+        }
+      }
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "python",
+      "version": "3.13.17",
+      "vulnerability": "CVE-2026-115557",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 3.11.18, 3.12.16, 3.13.18, 3.14.10, 3.15.2, 3.16.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-31, expiring 2026-11-27): B-3, WO-40 Amendment 11c/O-12: CPython ssl lacks the compromised eMudhra intermediate-key denylist; fixed in Python 3.13.18. MiniStack 1.5.34 includes 3.13.18 and is eligible 2026-11-12 (https://github.com/ministackorg/ministack/releases/tag/v1.5.34). SNS delivery can make outbound HTTPS to subscription endpoints, but the shipped twinfra-ministack-network Cilium policy allows DNS-only egress. Dev-only LAN/node access and loopback tunnel UIs; no public service; restricted Pod and read-only emulator views. Gap: live enforcement and trust Secrets not verified. No claim of non-exploitability. WO-46 must promote an eligible scanned same-line upstream image with ADR-0054 Amendment 1 carry-forward after stable, before 2026-11-20.",
+      "controls": [
+        "Dev-only; no public ingress; restricted workload and default-deny policies unchanged.",
+        "Shipped twinfra-ministack-network permits DNS-only egress; optional SNS HTTPS delivery remains denied if enforced.",
+        "Owner saves live Cilium policies at rc-window start for architect comparison; live enforcement and trust Secrets not verified.",
+        "WO-46 replacement after stable, before 2026-11-20; full scans, licence carry and owner staging/acceptance required."
+      ]
+    },
+    {
+      "target": "docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "package": "python",
+      "version": "3.14.8",
+      "vulnerability": "CVE-2026-115557",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 3.11.18, 3.12.16, 3.13.18, 3.14.10, 3.15.2, 3.16.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-31, expiring 2026-11-27): B-4, WO-40 Amendment 11c/O-12: CPython ssl lacks the compromised eMudhra intermediate-key denylist; fixed in Python 3.14.10. Official python:3.14.10-slim-trixie is eligible 2026-11-08 from the 2026-10-25 software release (https://www.python.org/downloads/release/python-31410/). Console HTTPS uses fixed JWKS and Kubernetes API destinations, explicit CA files and no redirects; shipped Cilium policy permits no public HTTPS egress. MiniStack is reached over internal HTTP. Gap: live enforcement and trust Secrets not verified. No claim of non-exploitability. WO-46 must rebuild on the eligible scanned official base, refresh locks/receipts, stage and accept the new digest after stable, before 2026-11-20.",
+      "controls": [
+        "Fixed internal JWKS and Kubernetes API HTTPS destinations with explicit CA files and redirect refusal.",
+        "Shipped twinfra-console-network allows DNS, Keycloak, MiniStack and Kubernetes API only; no public HTTPS egress.",
+        "Owner saves live Cilium policies at rc-window start for architect comparison; live enforcement and trust Secrets not verified.",
+        "WO-46 rebuild after stable, before 2026-11-20; new digest, generated receipts, full scans and owner staging/acceptance required."
+      ]
+    },
+    {
+      "target": "lockfile:tools/ci/mermaid/package-lock.json",
+      "package": "lodash-es",
+      "version": "4.17.21",
+      "vulnerability": "CVE-2026-4800",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 4.18.0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-10-31, expiring 2026-11-27): B-5, WO-40 Amendment 11c/O-12: build scope only; lodash-es 4.17.21 in the Mermaid documentation tool is not shipped in the console image. Untrusted _.template options.imports key names can reach a Function constructor; this task did not establish a reachable template path or claim non-exploitability. Fixed version is lodash-es >= 4.18.1 per https://github.com/lodash/lodash/security/advisories/GHSA-r5fr-rjxr-66jc, not the scanner minimum 4.18.0. npm published 4.18.1 on 2026-04-01T21:04:15.518Z (https://registry.npmjs.org/lodash-es); eligible 2026-04-15. Controls: hash-locked CI-only dependency, npm ci --ignore-scripts, repository documentation inputs and existing CI permissions; the vulnerability gate stays blocking without approval. Gap: live enforcement and trust Secrets not verified; neither is relied on to assert build-only isolation. WO-46 must refresh this documentation dependency and rerun Mermaid rendering after stable, before 2026-11-20.",
+      "controls": [
+        "Build/CI-only Mermaid documentation dependency; not a runtime image package.",
+        "Keep npm integrity locks, npm ci --ignore-scripts, repository documentation inputs and current CI permissions.",
+        "No exploitability exemption; live enforcement and trust Secrets not verified.",
+        "WO-46 must install lodash-es >= 4.18.1 and rerun Mermaid rendering after stable, before 2026-11-20."
+      ],
+      "scope": "build"
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "libsasl2-2",
+      "version": "2.1.28+dfsg-10",
+      "vulnerability": "CVE-2026-107161",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 2.1.28+dfsg-10+deb12u1. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-11-05, expiring 2026-11-27): WO-40 Amendment 11d/O-14: CVE-2026-107161, fixed Debian package 2.1.28+dfsg-10+deb12u1 (https://security-tracker.debian.org/tracker/CVE-2026-107161). First seen 2026-10-13; High with fix aged 14 days, not KEV. No fixed image exists: on 2026-11-05 the Docker Hub tags API lists only 3.19.0-debian, 3.19.0-ubuntu and 3.19.0-redhat for 3.19.x, all pushed 2026-09-29, and 3.19.0-debian is still this digest. Static reachability (report of 2026-11-03): the OpenResty ELF closure does not import libsasl2; native libldap imports it, but no ELF consumer of libldap was found; APISIX LDAP uses Lua cosockets; no LDAP or SASL plugin is configured on the two rendered gateway routes; default LDAP plugin loading remains enabled; no DIGEST-MD5 mechanism file was found in this image. No claim of non-exploitability. Cilium enforcement was observed once (read-only diagnostic, 2026-10-31); trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote an eligible fixed upstream image with a full scan and close this row. An image pushed after 2026-11-05 cannot clear the 14-day cool-off before 2026-11-20, so the owner decides renewal or a recorded waiver by 2026-11-19. No automatic renewal.",
+      "controls": [
+        "The gateway keeps the recorded OIDC, TLS and network-policy configuration of the candidate.",
+        "Do not enable LDAP or SASL, or change gateway exposure, without a new owner review of this exception.",
+        "The owner stages any promoted image and performs acceptance. Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "libsasl2-modules-db",
+      "version": "2.1.28+dfsg-10",
+      "vulnerability": "CVE-2026-107161",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 2.1.28+dfsg-10+deb12u1. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-11-05, expiring 2026-11-27): WO-40 Amendment 11d/O-14: CVE-2026-107161, fixed Debian package 2.1.28+dfsg-10+deb12u1 (https://security-tracker.debian.org/tracker/CVE-2026-107161). First seen 2026-10-13; High with fix aged 14 days, not KEV. No fixed image exists: on 2026-11-05 the Docker Hub tags API lists only 3.19.0-debian, 3.19.0-ubuntu and 3.19.0-redhat for 3.19.x, all pushed 2026-09-29, and 3.19.0-debian is still this digest. Static reachability (report of 2026-11-03): the OpenResty ELF closure does not import libsasl2; native libldap imports it, but no ELF consumer of libldap was found; APISIX LDAP uses Lua cosockets; no LDAP or SASL plugin is configured on the two rendered gateway routes; default LDAP plugin loading remains enabled; no DIGEST-MD5 mechanism file was found in this image. No claim of non-exploitability. Cilium enforcement was observed once (read-only diagnostic, 2026-10-31); trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote an eligible fixed upstream image with a full scan and close this row. An image pushed after 2026-11-05 cannot clear the 14-day cool-off before 2026-11-20, so the owner decides renewal or a recorded waiver by 2026-11-19. No automatic renewal.",
+      "controls": [
+        "The gateway keeps the recorded OIDC, TLS and network-policy configuration of the candidate.",
+        "Do not enable LDAP or SASL, or change gateway exposure, without a new owner review of this exception.",
+        "The owner stages any promoted image and performs acceptance. Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "quay.io/keycloak/keycloak@sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b",
+      "package": "java-21-openjdk-headless",
+      "version": "1:21.0.12.1.1-1.2.el9",
+      "vulnerability": "CVE-2026-91415",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1:21.0.13.0.9-1.2.el9. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-11-05, expiring 2026-11-27): WO-40 Amendment 11d/O-14: CVE-2026-91415 (Oracle CPU 2026-10, OpenJDK 2D component; Red Hat severity Important), fixed in java-21-openjdk-headless 1:21.0.13.0.9-1.2.el9. First seen 2026-10-23; High with fix reaching 14 days on 2026-11-06, not KEV. Fixed image: quay.io/keycloak/keycloak@sha256:3f3c5f8e03c614774b4bd9173b88391fefa4153bfc010d8012d59ad825377332 (26.8.1 rebuild, pushed 2026-10-31T10:46:19Z). The weekly scan of 2026-11-02 shows this CVE absent, 69 findings against 107 and 0 new. Its normal cool-off ends 2026-11-14 by push time, after the last compliant stable date (2026-11-09); no expedite applies to a non-KEV High. Reachability of the 2D code path in Keycloak was not analysed. No claim of non-exploitability. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote the eligible fixed Keycloak digest with staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. No automatic renewal.",
+      "controls": [
+        "The recorded twinfra-keycloak-network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance, including sign-in and token negatives.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "lockfile:console/package-lock.json",
+      "package": "undici",
+      "version": "8.11.2",
+      "vulnerability": "CVE-2026-109869",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "scope": "build",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 6.29.1, 7.30.1, 8.12.2. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-11-05, expiring 2026-11-27): WO-40 Amendment 11d/O-14: CVE-2026-109869 (GHSA-xjj6-f33q-929c): a malicious server can crash a Node.js process through undici fetch. Fixed in 8.12.2, published 2026-10-15; cool-off ended 2026-10-29. First seen 2026-10-24; High with fix reaching 14 days on 2026-11-07, not KEV. Build scope: a dev dependency through jsdom only; console/Dockerfile copies only dist/ from the frontend stage, so undici is not in the final image. The fix changes console/package-lock.json, a pinned input of the console image receipt, so it needs a console rebuild, staging and acceptance; it is deferred to keep the candidate's running images unchanged. No claim of non-exploitability in build or test jobs. Replacement duty: after stable, before 2026-11-20, move to undici 8.12.2 or later, which also clears CVE-2026-109383, CVE-2026-109829 and CVE-2026-87018, then close this row. No automatic renewal.",
+      "controls": [
+        "Hash-locked dev dependency, installed with npm ci --ignore-scripts; not copied into the final console image.",
+        "No build or test step may fetch from untrusted servers without a new owner review of this exception.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "lockfile:module-5a/requirements-runtime.lock.txt",
+      "package": "filelock",
+      "version": "4.0.12",
+      "vulnerability": "CVE-2026-112940",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 4.2.1. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-11-05, expiring 2026-11-27): WO-40 Amendment 11d/O-14: CVE-2026-112940 (GHSA-v4x8-3wr5-3wq8): filelock ReadWriteLock reopens its SQLite lock database by name, so a planted symlink or journal file can make the lock user overwrite or unlink its own files. Fixed in 4.2.1, published 2026-10-17; cool-off ended 2026-10-31. First seen 2026-10-24; High with fix reaching 14 days on 2026-11-07, not KEV. The lock belongs to module-5a, a disabled reference (module-5a/config/rag.yaml enabled: false); neither the rendered cairo-1 manifests nor deploy/common/images.lock.json reference it. Use of ReadWriteLock by that graph was not analysed. No claim of non-exploitability. Replacement duty: after stable, before 2026-11-20, move to filelock 4.2.1 or later with its new licence record, then close this row. No automatic renewal.",
+      "controls": [
+        "module-5a stays enabled: false until this row is closed; enabling it needs a new owner review of this exception.",
+        "The lock stays hash-pinned; the replacement needs a licence record for the new version.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "musl",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.2.6-r3. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-11-06, expiring 2026-11-27): WO-40 Amendment 11d/O-14: CVE-2026-107891 (NVD, published 2026-11-05, CVSS 8.1): musl before 1.2.7 has integer overflows when regcomp handles an untrusted regular expression, possibly leading to out-of-bounds heap writes. Fixed Alpine package 1.2.6-r3. First seen 2026-10-22 with Unknown severity; the scanner re-rated it High on 2026-11-06, so it blocks at once as a High with fix aged 14 days. Not KEV. Fixed image: OpenBao 2.7.2, docker.io/openbao/openbao@sha256:5046911075e137e154ce49ab051502f4ec7cf367d484ae4a4dce665d9b90561f, pushed 2026-10-26T20:28:10Z; its package list, read statically, has musl 1.2.6-r3. Its normal cool-off ends 2026-11-09T20:28Z, after the release window must start (2026-11-07); no expedite applies to a non-KEV High. Whether any process passes untrusted patterns to regcomp was not analysed. No claim of non-exploitability. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote the eligible fixed image with a full scan, staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. No automatic renewal.",
+      "controls": [
+        "The recorded network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "musl-utils",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.2.6-r3. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-11-06, expiring 2026-11-27): WO-40 Amendment 11d/O-14: CVE-2026-107891 (NVD, published 2026-11-05, CVSS 8.1): musl before 1.2.7 has integer overflows when regcomp handles an untrusted regular expression, possibly leading to out-of-bounds heap writes. Fixed Alpine package 1.2.6-r3. First seen 2026-10-22 with Unknown severity; the scanner re-rated it High on 2026-11-06, so it blocks at once as a High with fix aged 14 days. Not KEV. Fixed image: OpenBao 2.7.2, docker.io/openbao/openbao@sha256:5046911075e137e154ce49ab051502f4ec7cf367d484ae4a4dce665d9b90561f, pushed 2026-10-26T20:28:10Z; its package list, read statically, has musl 1.2.6-r3. Its normal cool-off ends 2026-11-09T20:28Z, after the release window must start (2026-11-07); no expedite applies to a non-KEV High. Whether any process passes untrusted patterns to regcomp was not analysed. No claim of non-exploitability. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote the eligible fixed image with a full scan, staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. No automatic renewal.",
+      "controls": [
+        "The recorded network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "package": "musl",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.2.6-r3. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-11-06, expiring 2026-11-27): WO-40 Amendment 11d/O-14: CVE-2026-107891 (NVD, published 2026-11-05, CVSS 8.1): musl before 1.2.7 has integer overflows when regcomp handles an untrusted regular expression, possibly leading to out-of-bounds heap writes. Fixed Alpine package 1.2.6-r3. First seen 2026-10-22 with Unknown severity; the scanner re-rated it High on 2026-11-06, so it blocks at once as a High with fix aged 14 days. Not KEV. Fixed image: Valkey 8.1.11-alpine, docker.io/valkey/valkey@sha256:2602ace2be6569bc2bbb06f873776516ab9089821525be34f4305c67eb9db02a, pushed 2026-10-27T01:54:22Z; its package list, read statically, has musl 1.2.6-r3. Its normal cool-off ends 2026-11-10T01:54Z, after the release window must start (2026-11-07); no expedite applies to a non-KEV High. Whether any process passes untrusted patterns to regcomp was not analysed. No claim of non-exploitability. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote the eligible fixed image with a full scan, staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. No automatic renewal.",
+      "controls": [
+        "The recorded network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "package": "musl-utils",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.2.6-r3. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-11-06, expiring 2026-11-27): WO-40 Amendment 11d/O-14: CVE-2026-107891 (NVD, published 2026-11-05, CVSS 8.1): musl before 1.2.7 has integer overflows when regcomp handles an untrusted regular expression, possibly leading to out-of-bounds heap writes. Fixed Alpine package 1.2.6-r3. First seen 2026-10-22 with Unknown severity; the scanner re-rated it High on 2026-11-06, so it blocks at once as a High with fix aged 14 days. Not KEV. Fixed image: Valkey 8.1.11-alpine, docker.io/valkey/valkey@sha256:2602ace2be6569bc2bbb06f873776516ab9089821525be34f4305c67eb9db02a, pushed 2026-10-27T01:54:22Z; its package list, read statically, has musl 1.2.6-r3. Its normal cool-off ends 2026-11-10T01:54Z, after the release window must start (2026-11-07); no expedite applies to a non-KEV High. Whether any process passes untrusted patterns to regcomp was not analysed. No claim of non-exploitability. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote the eligible fixed image with a full scan, staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. No automatic renewal.",
+      "controls": [
+        "The recorded network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "zlib",
+      "version": "1.3.2-r0",
+      "vulnerability": "CVE-2026-4738",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.4-r0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-11-07, expiring 2026-11-27): WO-40 Amendment 11e/O-17: CVE-2026-4738 (NVD published 2026-03-24, status Awaiting Analysis; CNA CVSS 4.0 base score 9.4): improper restriction of operations within a memory buffer in the zlib contrib/infback9 module (inftree9.c); NVD names the copy bundled in OSGeo GDAL before 3.11.0. The scanner matches it to the Alpine zlib package, fixed in 1.4-r0, through Alpine security data. First seen 2026-11-07 as Critical with fix, so it blocks at once. Not KEV. Static evidence (architect, 2026-11-07): in the amd64 image, libz.so.1.3.2 and every other file in its layers contain none of the strings inflateBack9, inftree9 or inflate9, so the infback9 module appears absent. This is evidence only, not a full non-exploitability analysis. No published OpenBao image has zlib 1.4-r0 or later on 2026-11-07. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote an eligible image with zlib 1.4-r0 or later with a full scan, staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. If no such image is eligible by 2026-11-19, the owner decides renewal. No automatic renewal.",
+      "controls": [
+        "The recorded network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "zlib",
+      "version": "1.3.2-r1",
+      "vulnerability": "CVE-2026-4738",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.4-r0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-11-07, expiring 2026-11-27): WO-40 Amendment 11e/O-17: CVE-2026-4738 (NVD published 2026-03-24, status Awaiting Analysis; CNA CVSS 4.0 base score 9.4): improper restriction of operations within a memory buffer in the zlib contrib/infback9 module (inftree9.c); NVD names the copy bundled in OSGeo GDAL before 3.11.0. The scanner matches it to the Alpine zlib package, fixed in 1.4-r0, through Alpine security data. First seen 2026-11-07 as Critical with fix, so it blocks at once. Not KEV. Static evidence (architect, 2026-11-07): in the amd64 image, libz.so.1.3.2 and every other file in its layers contain none of the strings inflateBack9, inftree9 or inflate9, so the infback9 module appears absent. This is evidence only, not a full non-exploitability analysis. No published MiniStack image has zlib 1.4-r0 or later on 2026-11-07. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote an eligible image with zlib 1.4-r0 or later with a full scan, staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. If no such image is eligible by 2026-11-19, the owner decides renewal. No automatic renewal.",
+      "controls": [
+        "The recorded network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    },
+    {
+      "target": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "package": "zlib",
+      "version": "1.3.2-r0",
+      "vulnerability": "CVE-2026-4738",
+      "severity": "Critical",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22 renewal: renewed once, individually, by owner decision O-22 (2026-11-17) for the v0.1.0 release window; no image is promoted before stable. Still matched by the 2026-11-17 nightly (Grype DB built 2026-11-17T06:20:58Z); the scanner lists the fix as 1.4-r0. Replacement: WO-46 milestone 2 (v0.1.1) promotes the eligible fixed release, closes this row and must land by 2026-12-09. The ADR-0049 Amendment 1 item 4 duty to open the refresh PR within 14 days of eligibility is unchanged. No further renewal without a new owner decision. Prior entry (created 2026-11-07, expiring 2026-11-27): WO-40 Amendment 11e/O-17: CVE-2026-4738 (NVD published 2026-03-24, status Awaiting Analysis; CNA CVSS 4.0 base score 9.4): improper restriction of operations within a memory buffer in the zlib contrib/infback9 module (inftree9.c); NVD names the copy bundled in OSGeo GDAL before 3.11.0. The scanner matches it to the Alpine zlib package, fixed in 1.4-r0, through Alpine security data. First seen 2026-11-07 as Critical with fix, so it blocks at once. Not KEV. Static evidence (architect, 2026-11-07): in the amd64 image, libz.so.1.3.2 and every other file in its layers contain none of the strings inflateBack9, inftree9 or inflate9, so the infback9 module appears absent. This is evidence only, not a full non-exploitability analysis. No published Valkey image has zlib 1.4-r0 or later on 2026-11-07. Trust Secrets not verified. Replacement duty: after stable, before 2026-11-20, promote an eligible image with zlib 1.4-r0 or later with a full scan, staging, acceptance and a fresh exact row for any finding carried to the new digest, then close this row. If no such image is eligible by 2026-11-19, the owner decides renewal. No automatic renewal.",
+      "controls": [
+        "The recorded network policy of the candidate stays in force; any exposure change needs a new owner review of this exception.",
+        "The owner stages the replacement image and performs acceptance.",
+        "Replacement is due before 2026-11-20; expiry 2026-11-27 is fixed."
+      ]
+    }
+  ],
+  "exceptions": [
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-123863",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22: CVE-2026-123863 (High). MiniStack ships Alpine nodejs 24.22.1-r0; the scanner lists the fix as 24.22.3-r0 (2026-11-17 nightly, Grype DB built 2026-11-17T06:20:58Z). No eligible MiniStack image with the fix is promoted before stable, by owner decision O-22. Whether any MiniStack process runs Node.js on untrusted input was not analysed. No claim of non-exploitability. First seen 2026-11-12; blocks from 2026-11-26 as a High with fix aged 14 days. Replacement duty (WO-46 milestone 2, v0.1.1): promote an eligible scanned MiniStack image with the fix, with staging, acceptance and a fresh exact row for anything carried, then close this row by 2026-12-09. No automatic renewal.",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-123864",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22: CVE-2026-123864 (High). MiniStack ships Alpine nodejs 24.22.1-r0; the scanner lists the fix as 24.22.3-r0 (2026-11-17 nightly, Grype DB built 2026-11-17T06:20:58Z). No eligible MiniStack image with the fix is promoted before stable, by owner decision O-22. Whether any MiniStack process runs Node.js on untrusted input was not analysed. No claim of non-exploitability. First seen 2026-11-12; blocks from 2026-11-26 as a High with fix aged 14 days. Replacement duty (WO-46 milestone 2, v0.1.1): promote an eligible scanned MiniStack image with the fix, with staging, acceptance and a fresh exact row for anything carried, then close this row by 2026-12-09. No automatic renewal.",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-123865",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22: CVE-2026-123865 (High). MiniStack ships Alpine nodejs 24.22.1-r0; the scanner lists the fix as 24.22.3-r0 (2026-11-17 nightly, Grype DB built 2026-11-17T06:20:58Z). No eligible MiniStack image with the fix is promoted before stable, by owner decision O-22. Whether any MiniStack process runs Node.js on untrusted input was not analysed. No claim of non-exploitability. First seen 2026-11-12; blocks from 2026-11-26 as a High with fix aged 14 days. Replacement duty (WO-46 milestone 2, v0.1.1): promote an eligible scanned MiniStack image with the fix, with staging, acceptance and a fresh exact row for anything carried, then close this row by 2026-12-09. No automatic renewal.",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-123866",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22: CVE-2026-123866 (High). MiniStack ships Alpine nodejs 24.22.1-r0; the scanner lists the fix as 24.22.3-r0 (2026-11-17 nightly, Grype DB built 2026-11-17T06:20:58Z). No eligible MiniStack image with the fix is promoted before stable, by owner decision O-22. Whether any MiniStack process runs Node.js on untrusted input was not analysed. No claim of non-exploitability. First seen 2026-11-12; blocks from 2026-11-26 as a High with fix aged 14 days. Replacement duty (WO-46 milestone 2, v0.1.1): promote an eligible scanned MiniStack image with the fix, with staging, acceptance and a fresh exact row for anything carried, then close this row by 2026-12-09. No automatic renewal.",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-123872",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22: CVE-2026-123872 (High). MiniStack ships Alpine nodejs 24.22.1-r0; the scanner lists the fix as 24.22.3-r0 (2026-11-17 nightly, Grype DB built 2026-11-17T06:20:58Z). No eligible MiniStack image with the fix is promoted before stable, by owner decision O-22. Whether any MiniStack process runs Node.js on untrusted input was not analysed. No claim of non-exploitability. First seen 2026-11-12; blocks from 2026-11-26 as a High with fix aged 14 days. Replacement duty (WO-46 milestone 2, v0.1.1): promote an eligible scanned MiniStack image with the fix, with staging, acceptance and a fresh exact row for anything carried, then close this row by 2026-12-09. No automatic renewal.",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-123874",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22: CVE-2026-123874 (High). MiniStack ships Alpine nodejs 24.22.1-r0; the scanner lists the fix as 24.22.3-r0 (2026-11-17 nightly, Grype DB built 2026-11-17T06:20:58Z). No eligible MiniStack image with the fix is promoted before stable, by owner decision O-22. Whether any MiniStack process runs Node.js on untrusted input was not analysed. No claim of non-exploitability. First seen 2026-11-12; blocks from 2026-11-26 as a High with fix aged 14 days. Replacement duty (WO-46 milestone 2, v0.1.1): promote an eligible scanned MiniStack image with the fix, with staging, acceptance and a fresh exact row for anything carried, then close this row by 2026-12-09. No automatic renewal.",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-126051",
+      "severity": "High",
+      "owner": "amazen33",
+      "workOrder": "WO-46",
+      "approvedBy": "",
+      "createdOn": "2026-11-17",
+      "expires": "2026-12-17",
+      "reason": "WO-40 Amendment 11g (R13b)/O-22: CVE-2026-126051 (High). MiniStack ships Alpine nodejs 24.22.1-r0; the scanner lists the fix as 24.22.3-r0 (2026-11-17 nightly, Grype DB built 2026-11-17T06:20:58Z). No eligible MiniStack image with the fix is promoted before stable, by owner decision O-22. Whether any MiniStack process runs Node.js on untrusted input was not analysed. No claim of non-exploitability. First seen 2026-11-12; blocks from 2026-11-26 as a High with fix aged 14 days. Replacement duty (WO-46 milestone 2, v0.1.1): promote an eligible scanned MiniStack image with the fix, with staging, acceptance and a fresh exact row for anything carried, then close this row by 2026-12-09. No automatic renewal.",
+      "controls": [
+        "Dev-only; node/LAN APIs and laptop-loopback tunnel UIs; no public ingress.",
+        "Restricted workload profile and default-deny network policies remain unchanged.",
+        "Owner performs staging and live acceptance; refresh tracked by WO-46."
+      ]
+    }
+  ]
+}

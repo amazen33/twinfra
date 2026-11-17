@@ -48,13 +48,14 @@ def approved_content(root=ROOT):
     return record,proposal,log
 
 
-def current_exceptions(root=ROOT, *, previous_r13a=False):
+def current_exceptions(root=ROOT, *, previous_r13a=False, previous_wo46=False):
     """Preserve earlier anchors and require each exact, chained risk approval."""
     from r12_exceptions import (AMENDMENT_11D_RECORD_HASHES, AMENDMENT_11E_RECORD_HASHES,
                                AMENDMENT_11F_RECORD_HASHES, amendment_11a_batch,
                                amendment_11c_batch, amendment_11d_batch,
                                amendment_11e_batch, amendment_11f_batch,
-                               WO46_ARGOCD_RECORD_HASHES, wo46_argocd_batch)
+                               WO46_ARGOCD_RECORD_HASHES, wo46_argocd_batch,
+                               AMENDMENT_11G_RECORD_HASHES, amendment_11g_batch)
     original,proposal,_=approved_content(root)
     record=json.loads((root/'security/wo40-amendment-11a-approval.json').read_bytes())
     raw=(root/'security/proposals/wo40-amendment-11a-kev.json').read_bytes()
@@ -133,12 +134,30 @@ def current_exceptions(root=ROOT, *, previous_r13a=False):
         r13a=expected
         expected=wo46_argocd_batch(expected,json.loads(proposal_bytes),wo46,anchor)
         anchor=wo46
+        wo46_registry=expected
+    o22_record=root/'security/wo40-amendment-11g-approval.json'
+    o22_proposal=root/'security/proposals/wo40-amendment-11g.json'
+    if o22_record.exists() or o22_proposal.exists():
+        if not all(path.is_file() for path in (wo46_record,wo46_proposal,o22_record,o22_proposal)):
+            raise AssertionError('Incomplete Amendment 11g approval bundle or predecessor')
+        record_bytes=o22_record.read_bytes()
+        o22=json.loads(record_bytes)
+        proposal_bytes=o22_proposal.read_bytes()
+        checks=((record_bytes, AMENDMENT_11G_RECORD_HASHES.get(o22.get('approvedBy'))),
+                (proposal_bytes, o22['proposalSHA256']),
+                (wo46_record.read_bytes(), o22['previousApprovalSHA256']))
+        if any(hashlib.sha256(raw).hexdigest()!=digest for raw,digest in checks):
+            raise AssertionError('Amendment 11g approved content hash differs')
+        expected=amendment_11g_batch(expected,json.loads(proposal_bytes),o22,anchor)
+        anchor=o22
     active=(root/'security/vulnerability-exceptions.json').read_bytes()
     key='approvedRegistrySHA256' if anchor['approvedBy'] else 'proposedRegistrySHA256'
     if hashlib.sha256(active).hexdigest()!=anchor[key] or json.loads(active)!=expected:
         raise AssertionError('Active registry differs from the chained content/approval')
     if previous_r13a and wo46_record.is_file():
         return record,r13a
+    if previous_wo46 and wo46_record.is_file():
+        return record,wo46_registry
     return record,expected
 
 

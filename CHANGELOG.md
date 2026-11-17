@@ -105,6 +105,28 @@ scope is in the [capability statement](docs/capabilities.md).
 
 ### Security
 
+- WO-40 Amendment 11g (R13b) / O-22 A: renew 74 individual November 27
+  exceptions once for the v0.1.0 release window and append seven MiniStack
+  `nodejs` 24.22.1-r0 High exceptions. The [exact proposal](security/proposals/wo40-amendment-11g.json)
+  and [approval record](security/wo40-amendment-11g-approval.json) bind both
+  registry projections. Renewals retain their positions, identities, controls
+  and full prior reasons; separate owner activation sets attribution.
+  The 484-row projection contains 64 Critical and 420 High rows.
+
+  | Expiry (UTC) | Rows | Duty |
+  | --- | ---: | --- |
+  | 2026-12-13 | 1, unused OpenSSH KEV | WO-46 milestone 2 decides by 2026-12-05 |
+  | 2026-12-17 | 81, the 74 renewals and seven additions | v0.1.1 replaces the renewed rows and the MiniStack findings by 2026-12-09 |
+  | 2026-12-27 | 402 | Existing WO-46 replacement duties |
+
+  O-22 separately approves the renewal of rows with an eligible fixed
+  release under ADR-0049 Amendment 1a item 2. The 14-day refresh-PR duty
+  remains: Cilium 1.20.4 by 2026-11-20 and Kubernetes 1.36.6 by 2026-11-25,
+  as drafts merging after stable. No image promotion before stable.
+  Stable stays planned for no later than 2026-11-28. No further renewal
+  follows without a new owner decision. See the [release notes](docs/release-notes/0.1.0.md)
+  for each new advisory and the replay/acceptance distinction.
+
 - WO-46 item 4: pin the dev Argo CD image to v3.5.7 under the KEV expedite
   rule. The complete Linux amd64 scan confirms Ubuntu's fixed Brotli
   package and closes the libcurl finding as well. It finds no new fixable
