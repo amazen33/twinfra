@@ -1,0 +1,1566 @@
+{
+  "source": {
+    "runURL": "https://github.com/amazen33/twinfra/actions/runs/44068946282/attempts/2",
+    "artifactId": 14365254648,
+    "reportSHA256": "927b55b0e6b387304b4fdcfedc5d7f40e88b9c6a7d26d890d271851782059a6d",
+    "databaseBuilt": "2026-11-17T06:20:58Z",
+    "fullFindingCount": 2476
+  },
+  "kev": {
+    "catalogVersion": "2026.11.17",
+    "vulnerabilities": [
+      {
+        "cveID": "CVE-2026-123158"
+      }
+    ]
+  },
+  "findings": [
+    {
+      "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "c7ad85190516bf0c63acf11169bd9c4a75d7286cd633b05ce2f5f6789abd80c1",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "key": "1524ce4037466b4adbe8ac4aba5e96685179056ac5ac85d9e1ef5b1b7d55c74d",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "b657c0095b3f594ab278e25c39c413d1e6e8513658b7878ca8e44df60571e70c",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "cef6432aba3e54016a9a96ae6474d67dcd14fe8c977ebfa43cda99720ede7671",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "key": "c85765a9c22cf7df59a9c995a026bf30546ad80212c1f4c4fab0253199e60314",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "b3d79ea1d6fd94a71f98da90b8bfdf2c6354d73fb53713029e942e7e4d8e630e",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "36cce990b150b41af4a2eeb0b1434b91d87b700f804e53ce247d7e3c02a0005e",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "key": "9e3a94fa4a1b91f367ee977ef5f9cda82bca3a825df19c2fa7cc6e6debea97cc",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "15959510e5af7b71a53bbe3d7daec91023c6f5371d59f14ce533b156b399bc65",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "ec4a817773b6a46d800f03556480b79abdb423d64cf5fc4535fea00c25f5b15a",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "key": "68eee7d78056f2a3e6f5bdd0894da3c6bc54c0e9621aada55229590ddb403885",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "1b8e07322963375a3c8ce916cf2d3c63ded8425d86344058eeedf658e5c25759",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "package": "golang.org/x/net",
+      "version": "v0.57.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "4d000f58ad95b569ed3b44a84b60d27cc340f7ac50f3141708dc444ec9d49624",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "package": "stdlib",
+      "version": "go1.26.6",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "key": "206077824d544b087eb4a98bfb6ac80836151b0f5e482f9df9f95bb4539a48e0",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "package": "stdlib",
+      "version": "go1.26.6",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "f2ad64699b608e9f7082bb539a07ea6aef2618b39e3deb1a033551837916c535",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "b6f4a10fcf042ca069c9f65988298fef3ac9a87676e4e2f6fa5c363f35bc7f35",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "stdlib",
+      "version": "go1.26.5",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "key": "78b723ad82e0875c1eebb5bdf563601d4513f505fd52ed9a344931a353cc65ea",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "key": "8072ce53283773b04c16ca55f1a0687ecb3e5b455a09c6e0b2a9ae875d3c9f4f",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "stdlib",
+      "version": "go1.26.5",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "ce5532848fc703709e7a514f5509a4aabcd52f36a3567b58134a65d5af475fa9",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "c800c2142872560987fe76aed1bd1fb95f0a9befcfa6fe4a9798056c52e1db21",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "6fcf62e261d4a3c28304d2532b10ff6448ea7c8b9044c910702c2b5b13b2a225",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.27.2"
+      ],
+      "key": "ab5aca94713cfb2abb8731808a5207a03a082e8eec9d27b304937373fc9d0928",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "383379aa7ccdc145686ec0eb7b37334e75d577d7fcde75f8029dd1e7133ac6e6",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "85e080ba2f69bd7f870ab14eb7e91178dc3359f84358b046c746870f4e33af86",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "key": "8478f2e81e3d582a3d50fb6c75d3fabe156b0a770f6bb818d36024204e357997",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "package": "stdlib",
+      "version": "go1.26.8",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "8aff123d34be3420bc699069addf4479439f9f487ecbb8ab3e2956839037b8ce",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "3bc4002d74438eccb7a3b580c381b413426926d852a186d3bc1826ef4e2b409c",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.27.2"
+      ],
+      "key": "d4c7f4afbe05e16278433e15b4f6d067a9a7be7ee152f227a3f0490923ae0f3d",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "04fbe9ba4e02639630d8d011670cda941e7f7038c456f26045df3a3ae37d21d6",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "musl",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "aliases": [
+        "CVE-2026-107891"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.2.6-r3"
+      ],
+      "key": "1c85af9e951b137fd0c706fa3f10d23f50f348a8860bee3d28e99f845f9d7bdb",
+      "introduced": false,
+      "firstSeen": "2026-10-22",
+      "kev": false
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "musl-utils",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "aliases": [
+        "CVE-2026-107891"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.2.6-r3"
+      ],
+      "key": "642491c583220d882a476dce4a56cd0b70de2129cd73f86a6b862a78445c84ef",
+      "introduced": false,
+      "firstSeen": "2026-10-22",
+      "kev": false
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "zlib",
+      "version": "1.3.2-r0",
+      "vulnerability": "CVE-2026-4738",
+      "aliases": [
+        "CVE-2026-4738"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.4-r0"
+      ],
+      "key": "b64c95a106cbfb375bfb462a82af5a17727775119b0a7158f7af93cebc2cdc0f",
+      "introduced": false,
+      "firstSeen": "2026-11-07",
+      "kev": false
+    },
+    {
+      "target": "quay.io/keycloak/keycloak@sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b",
+      "package": "java-21-openjdk-headless",
+      "version": "1:21.0.12.1.1-1.2.el9",
+      "vulnerability": "CVE-2026-91415",
+      "aliases": [
+        "CVE-2026-91415"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1:21.0.13.0.9-1.2.el9"
+      ],
+      "key": "259c454f0b8c2c005eb998207804d25f9fcc69cbb551968f8bb0ca2ce7c6935a",
+      "introduced": false,
+      "firstSeen": "2026-10-23",
+      "kev": false
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-8376",
+      "aliases": [
+        "CVE-2026-8376"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "5.36.0-7+deb12u4"
+      ],
+      "key": "720639e42efedb64c1b3005e4cfcd7c6484382a41d70f15f0fc0dccac159e4ab",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-12087",
+      "aliases": [
+        "CVE-2026-12087"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "5.36.0-7+deb12u4"
+      ],
+      "key": "f1abf3c1861ca30049f7ae639654dfc99a1ef16f557dc5b5fa444857c789a794",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-57433",
+      "aliases": [
+        "CVE-2026-57433"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "5.36.0-7+deb12u4"
+      ],
+      "key": "f3d1ed0181ee1ffae967476fc6b2511b9de17292fe83ce7d08b6bd0c612bc64b",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-13221",
+      "aliases": [
+        "CVE-2026-13221"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "5.36.0-7+deb12u4"
+      ],
+      "key": "51ef534394f89fc791dcc8a31c73a2bad0bf69e17c396ba69afada6c174a3c4b",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "perl-base",
+      "version": "5.36.0-7+deb12u3",
+      "vulnerability": "CVE-2026-42496",
+      "aliases": [
+        "CVE-2026-42496"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "5.36.0-7+deb12u4"
+      ],
+      "key": "424854bb1dfafaf8a01b830f256867bb3e741de1f01267cd5cf062e635e94c90",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "libsasl2-2",
+      "version": "2.1.28+dfsg-10",
+      "vulnerability": "CVE-2026-107161",
+      "aliases": [
+        "CVE-2026-107161"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "2.1.28+dfsg-10+deb12u1"
+      ],
+      "key": "191511f9453c1c20f9edf6312fbd06fbbe6d5dd3115f6243cd116d00b2ac5454",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "libsasl2-modules-db",
+      "version": "2.1.28+dfsg-10",
+      "vulnerability": "CVE-2026-107161",
+      "aliases": [
+        "CVE-2026-107161"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "2.1.28+dfsg-10+deb12u1"
+      ],
+      "key": "5f1ba6cd29a83b3a4642cdfbaba4dffd82983246535c3e517c8ac06f0bf3a0bd",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-126051",
+      "aliases": [
+        "CVE-2026-126051"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "24.22.3-r0"
+      ],
+      "key": "ea1771ed0c66ada6f3684bd4d80b2058ee841e2c72dd707f1b4ee35958a9c49c",
+      "introduced": false,
+      "firstSeen": "2026-11-12",
+      "kev": false
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "python",
+      "version": "3.13.17",
+      "vulnerability": "CVE-2026-115557",
+      "aliases": [
+        "CVE-2026-115557"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "3.11.18",
+        "3.12.16",
+        "3.13.18",
+        "3.14.10",
+        "3.15.2",
+        "3.16.0"
+      ],
+      "key": "82973d4b294186ae14f3ce2c13893323c08613c27399baf5dd2659c1e90d9bef",
+      "introduced": false,
+      "firstSeen": "2026-10-31",
+      "kev": false
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-123865",
+      "aliases": [
+        "CVE-2026-123865"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "24.22.3-r0"
+      ],
+      "key": "1c8aa41cbc5b1be319a5fc2b41b53df58cb469c39b93c377d817135160175058",
+      "introduced": false,
+      "firstSeen": "2026-11-12",
+      "kev": false
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-123863",
+      "aliases": [
+        "CVE-2026-123863"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "24.22.3-r0"
+      ],
+      "key": "ca713f47274211b7464bc83000a6f0b583c853bc7c052ca231e2369792ebc797",
+      "introduced": false,
+      "firstSeen": "2026-11-12",
+      "kev": false
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-123866",
+      "aliases": [
+        "CVE-2026-123866"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "24.22.3-r0"
+      ],
+      "key": "550eb231cb037f35a175554568376ec055f7cea58adfae19758c9fa99b473bd7",
+      "introduced": false,
+      "firstSeen": "2026-11-12",
+      "kev": false
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-123874",
+      "aliases": [
+        "CVE-2026-123874"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "24.22.3-r0"
+      ],
+      "key": "e4863815ddbcde051c498c455566f839dce9f46f1b715b31ffdcebc380f1047c",
+      "introduced": false,
+      "firstSeen": "2026-11-12",
+      "kev": false
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-123872",
+      "aliases": [
+        "CVE-2026-123872"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "24.22.3-r0"
+      ],
+      "key": "9cba2ad896450fc5ede9bcd9a47c3ffe70db283c323dddbba5f141b35a5e0b67",
+      "introduced": false,
+      "firstSeen": "2026-11-12",
+      "kev": false
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "nodejs",
+      "version": "24.22.1-r0",
+      "vulnerability": "CVE-2026-123864",
+      "aliases": [
+        "CVE-2026-123864"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "24.22.3-r0"
+      ],
+      "key": "e0ac0058768540cbde8199c107e7afb1cdfe82606aa63be91faf38c4df86e4e7",
+      "introduced": false,
+      "firstSeen": "2026-11-12",
+      "kev": false
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "zlib",
+      "version": "1.3.2-r1",
+      "vulnerability": "CVE-2026-4738",
+      "aliases": [
+        "CVE-2026-4738"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.4-r0"
+      ],
+      "key": "413a27d5d7abfdfc2bd3abc7bb4c95ab393a4964790984e772f113d8cf0456e3",
+      "introduced": false,
+      "firstSeen": "2026-11-07",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-42508",
+      "aliases": [
+        "CVE-2026-42508",
+        "GHSA-5cgq-3rg8-m6cv"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.52.0"
+      ],
+      "key": "4f4b80590b0dbea2fd46437b0d6917c3cd5297f8e08d735d0de568a63dbfb673",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.24.0",
+      "vulnerability": "CVE-2025-68121",
+      "aliases": [
+        "CVE-2025-68121",
+        "GO-2026-4337"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.24.13",
+        "1.25.7",
+        "1.26.0-rc.3"
+      ],
+      "key": "1a07bc7d3d63be2d9b714dbebc63858b026c8a5aca2228add297af9e6b49b3dc",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.25.3",
+      "vulnerability": "CVE-2025-68121",
+      "aliases": [
+        "CVE-2025-68121",
+        "GO-2026-4337"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.24.13",
+        "1.25.7",
+        "1.26.0-rc.3"
+      ],
+      "key": "132c03b446002335c069e6028ef3aff8f8c07624e32e772c81ba7b42b67a6e48",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/net",
+      "version": "v0.38.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "00073a3c3986aa8efb2b45a843bc1dd8418ad9cc7533925d1693838cfa7cb874",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/net",
+      "version": "v0.40.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "43a55117b7c67436ee8b0eb848225f0686b8bbade55e5bd1aeefb240f21a211f",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/net",
+      "version": "v0.55.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "b560b2161c023d0ea2dcc4511ca0ace809bd879bef0b382406fa37f4961df464",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/net",
+      "version": "v0.59.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "80c280e9bdf3541e1abdc64fea6312f999b57f4002a5bb44ef569a4f2a110588",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.24.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "key": "1acac84f80de6ac5f989f406d181570b61517a159e1618d7a87d1c26cd2c323c",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.25.3",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "key": "876defa86f51d217397c40af84ab3ace54ed4a6ef43263ec0d1055cc082553b6",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.26.2",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "key": "4d37262c2408c5fc54517ef2812bf54bc188d08dd8959a162dac0495c8702123",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.26.4",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9"
+      ],
+      "key": "71dc3ee72ee4ec844e973c5ca95eb1d7014d678f022289207edf7c82554331ad",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.24.0",
+      "vulnerability": "CVE-2025-22871",
+      "aliases": [
+        "CVE-2025-22871",
+        "GO-2025-3563"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.23.8",
+        "1.24.2"
+      ],
+      "key": "7e9d87d1f055449b2db7ae330281a1fd553c0b8e0d61d0d11182f1ca882022dc",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39832",
+      "aliases": [
+        "CVE-2026-39832",
+        "GHSA-f5wc-c3c7-36mc"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.52.0"
+      ],
+      "key": "70360172b87ba09eb23497cca348643d60653689f36be9baa8a3f5320c3c34d6",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39830",
+      "aliases": [
+        "CVE-2026-39830",
+        "GHSA-vgwf-h737-ff37"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.52.0"
+      ],
+      "key": "18c43cbe01bcf701208708fa90c51ef8dba524f683e6164568f83961ca429ec6",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39834",
+      "aliases": [
+        "CVE-2026-39834",
+        "GHSA-rm3j-f69w-wqmq"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.52.0"
+      ],
+      "key": "7cefc0bfa645af68358a7eea91c99dd07a5eb4383bbd90d5d66bbeac3b70495c",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-46595",
+      "aliases": [
+        "CVE-2026-46595",
+        "GHSA-x527-x647-q7gg"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.52.0"
+      ],
+      "key": "f3e3c7b4a365e6eaa80b7f75369e36e41eb3e65d7804ec4c7d54085c867c8cec",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.24.0",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "677bc1911c94f5b15f345d0a09ba5551ef30a0afb61722701b68c7e591a24a75",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.25.3",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "0efd33c0940fd7e209abbac872d16b50539e03c249a9e05f25ef7eeb503cddee",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.26.2",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "80f5c79ec39e21c5270f52430c15898b05693046f6b7caf5a6bd9513921c3bcf",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "stdlib",
+      "version": "go1.26.4",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "c7496c4d1998237a799617acf2afdb2a658be25ca800ecb5ffdeb2ff75593276",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39831",
+      "aliases": [
+        "CVE-2026-39831",
+        "GHSA-89gr-r52h-f8rx"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.52.0"
+      ],
+      "key": "03f6a74e88bc8792d0f363496344003d0775bf5e280082b2e1c9cc000e93abff",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/crypto",
+      "version": "v0.36.0",
+      "vulnerability": "CVE-2026-39833",
+      "aliases": [
+        "CVE-2026-39833",
+        "GHSA-jppx-rxg9-jmrx"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.52.0"
+      ],
+      "key": "f1ef52f9b3fc840273fb4ddb58b61f0e613cdd77e910a36f54a716f5c45b2ed6",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "package": "musl",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "aliases": [
+        "CVE-2026-107891"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.2.6-r3"
+      ],
+      "key": "c7bb8e2c8187984b0b0e74306e5fd16a193da4ef47c84afcbbbff86d176f19f4",
+      "introduced": false,
+      "firstSeen": "2026-10-22",
+      "kev": false
+    },
+    {
+      "target": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "package": "musl-utils",
+      "version": "1.2.6-r2",
+      "vulnerability": "CVE-2026-107891",
+      "aliases": [
+        "CVE-2026-107891"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.2.6-r3"
+      ],
+      "key": "7c73b598bc0817064ccb5d094b54b201ba40d4cd4053b6dcbf72c776aed5999a",
+      "introduced": false,
+      "firstSeen": "2026-10-22",
+      "kev": false
+    },
+    {
+      "target": "docker.io/valkey/valkey@sha256:081c2f5cb575efc901aa80ff9cdbd1ec6a301682fd35e1ebb4b0990a4a4a8507",
+      "package": "zlib",
+      "version": "1.3.2-r0",
+      "vulnerability": "CVE-2026-4738",
+      "aliases": [
+        "CVE-2026-4738"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.4-r0"
+      ],
+      "key": "b5220652666b3c347b1f430bbecd12d5e91fa64bbb71afd97ae88389e06210fd",
+      "introduced": false,
+      "firstSeen": "2026-11-07",
+      "kev": false
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "0.60.0"
+      ],
+      "key": "5b2395edcf576a8c13f1dd926d960555057ee275241c70ebfe00ecddc8ba87bc",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-78663",
+      "aliases": [
+        "CVE-2026-78663",
+        "GO-2026-6612"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.27.2"
+      ],
+      "key": "e5036fcc127731a9a6bf002185d4f794a97c934b287bca5c1bb39c3ca9cfca5b",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+      "package": "stdlib",
+      "version": "go1.27.1",
+      "vulnerability": "CVE-2026-56857",
+      "aliases": [
+        "CVE-2026-56857",
+        "GO-2026-6604"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "1.26.9",
+        "1.27.2"
+      ],
+      "key": "ba3aa14bbab6fd0b9c063b44c7ad312ca8434f2f8b22a6dd8526b496ca8161cb",
+      "introduced": false,
+      "firstSeen": "2026-10-13",
+      "kev": false
+    },
+    {
+      "target": "docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "package": "python",
+      "version": "3.14.8",
+      "vulnerability": "CVE-2026-115557",
+      "aliases": [
+        "CVE-2026-115557"
+      ],
+      "severity": "Critical",
+      "fixAvailable": true,
+      "fixVersions": [
+        "3.11.18",
+        "3.12.16",
+        "3.13.18",
+        "3.14.10",
+        "3.15.2",
+        "3.16.0"
+      ],
+      "key": "4e90133130904f9abec65b4267be695a7e71fb25d33c39eb798e835ae22c4201",
+      "introduced": false,
+      "firstSeen": "2026-10-31",
+      "kev": false
+    },
+    {
+      "target": "lockfile:console/package-lock.json",
+      "package": "undici",
+      "version": "8.11.2",
+      "vulnerability": "CVE-2026-109869",
+      "aliases": [
+        "CVE-2026-109869",
+        "GHSA-xjj6-f33q-929c"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "6.29.1",
+        "7.30.1",
+        "8.12.2"
+      ],
+      "key": "fb9276721ed6bf939c631ae38990d4ae16dc1cfc9e1d10a71c66a7d9d2e39411",
+      "introduced": false,
+      "firstSeen": "2026-10-24",
+      "kev": false
+    },
+    {
+      "target": "lockfile:module-5a/requirements-runtime.lock.txt",
+      "package": "filelock",
+      "version": "4.0.12",
+      "vulnerability": "CVE-2026-112940",
+      "aliases": [
+        "CVE-2026-112940",
+        "GHSA-v4x8-3wr5-3wq8"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "4.2.1"
+      ],
+      "key": "65918e9cb76cd039b719b8c92f2f619af5430817aa04e7862592e424ca888abc",
+      "introduced": false,
+      "firstSeen": "2026-10-24",
+      "kev": false
+    },
+    {
+      "target": "lockfile:tools/ci/mermaid/package-lock.json",
+      "package": "lodash-es",
+      "version": "4.17.21",
+      "vulnerability": "CVE-2026-4800",
+      "aliases": [
+        "CVE-2026-4800",
+        "GHSA-r5fr-rjxr-66jc"
+      ],
+      "severity": "High",
+      "fixAvailable": true,
+      "fixVersions": [
+        "4.18.0"
+      ],
+      "key": "aa376f2e51eb48b116f673cd4254764b9146c5b88a45741ed8168916f1168f75",
+      "introduced": false,
+      "firstSeen": "2026-10-17",
+      "kev": false
+    }
+  ]
+}

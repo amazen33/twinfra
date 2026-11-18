@@ -298,6 +298,61 @@ def wo46_argocd_batch(original, proposal, record, previous):
     return projections[owner]
 
 
+AMENDMENT_11G_RECORD_HASHES = {
+    '': '0634f9d1b2cdd2bfdc594f48715108c886533f7fe78c1560a3cce0365aa58a00',
+    'amazen33': '37e8639415f73901a4d2ba96f6224475d7ca5e4aa4bb62d4ad26854449b6326f',
+}
+
+
+def amendment_11g_batch(original, proposal, record, previous):
+    """Renew only O-22's November group in place, then append its seven risks."""
+    owner = record.get('approvedBy')
+    if owner not in AMENDMENT_11G_RECORD_HASHES or content_sha256(record) != AMENDMENT_11G_RECORD_HASHES[owner]:
+        raise ValueError('Exact Amendment 11g approval record required')
+    if (previous.get('approvedBy') != 'amazen33'
+            or content_sha256(previous) != record['previousApprovalSHA256']
+            or previous.get('approvedRegistrySHA256') != record['baseApprovedRegistrySHA256']
+            or content_sha256(original) != record['baseApprovedRegistrySHA256']):
+        raise ValueError('Amendment 11g requires the activated, unchanged WO-46 predecessor and registry')
+    if (set(proposal) != {'version', 'renewed', 'exceptions'} or proposal['version'] != 1
+            or not isinstance(proposal['renewed'], list) or len(proposal['renewed']) != 74
+            or not isinstance(proposal['exceptions'], list) or len(proposal['exceptions']) != 7
+            or content_sha256(proposal) != record['proposalSHA256']):
+        raise ValueError('Amendment 11g requires exactly the anchored 74 renewals and seven additions')
+
+    fields = (*KEYS, 'severity', 'expires')
+    renewed_scope = [{key: row[key] for key in (*fields, 'createdOn')} for row in proposal['renewed']]
+    added_scope = [{key: row[key] for key in fields} for row in proposal['exceptions']]
+    if renewed_scope != record['renewedScope'] or added_scope != record['addedScope']:
+        raise ValueError('Amendment 11g renewal or addition scope differs')
+    positions = {identity(row): index for index, row in enumerate(original['exceptions'])}
+    group = [index for index, row in enumerate(original['exceptions']) if row['expires'] == '2026-11-27']
+    indices = [positions.get(identity(row)) for row in proposal['renewed']]
+    if indices != group:
+        raise ValueError('Amendment 11g renewals must preserve the November 27 group and its positions')
+    pending = deepcopy(original)
+    for index, renewed in zip(indices, proposal['renewed'], strict=True):
+        prior = original['exceptions'][index]
+        reason = renewed.get('reason')
+        if (not isinstance(reason, str)
+                or not reason.startswith('WO-40 Amendment 11g (R13b)/O-22 renewal: ')
+                or not reason.endswith(prior['reason'])
+                or renewed != prior | {'approvedBy': '', 'createdOn': '2026-11-17',
+                                       'expires': '2026-12-17', 'reason': reason}):
+            raise ValueError('Amendment 11g renewal changes fields beyond the approved dates, reason and attribution')
+        pending['exceptions'][index] = deepcopy(renewed)
+    if any(row['approvedBy'] != '' or identity(row) in positions for row in proposal['exceptions']):
+        raise ValueError('Amendment 11g additions must be new, pending identities')
+    pending['exceptions'].extend(deepcopy(proposal['exceptions']))
+    approved = deepcopy(pending)
+    for index in [*indices, *range(len(original['exceptions']), len(approved['exceptions']))]:
+        approved['exceptions'][index]['approvedBy'] = 'amazen33'
+    if (content_sha256(pending) != record['proposedRegistrySHA256']
+            or content_sha256(approved) != record['approvedRegistrySHA256']):
+        raise ValueError('Amendment 11g registry content hash differs')
+    return approved if owner else pending
+
+
 def component_identity(value):
     return value['target'].split('@')[0], value['package'], value['vulnerability']
 

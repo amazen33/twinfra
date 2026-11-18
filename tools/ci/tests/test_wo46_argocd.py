@@ -1,8 +1,10 @@
 """The WO-46 promotion closes or carries only the exact R13a risks."""
 from copy import deepcopy
 from datetime import date
+import json
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -17,6 +19,12 @@ PROPOSAL = 'security/proposals/wo46-argocd-3.5.7.json'
 OLD_RECORD = 'security/wo40-amendment-11f-approval.json'
 REGISTRY = 'security/vulnerability-exceptions.json'
 APPROVER = 'amazen33'
+BUNDLE = tuple('security/' + name for name in (
+    'security-wave-2026-10-approval.json', 'licence-carry-log.json',
+    'proposals/r12-vulnerability-exceptions.json', 'proposals/wo40-amendment-11a-kev.json',
+    *(f'wo40-amendment-11{letter}-approval.json' for letter in 'acdef'),
+    *(f'proposals/wo40-amendment-11{letter}.json' for letter in 'cdef'),
+)) + (RECORD, PROPOSAL)
 
 
 class ArgoCDPromotion(unittest.TestCase):
@@ -75,9 +83,19 @@ class ArgoCDPromotion(unittest.TestCase):
                     r12.wo46_argocd_batch(self.base, self.proposal | {'closed': []}, record, self.previous)
 
     def test_checked_in_bundle_and_exact_image(self):
-        _, actual = current_exceptions(ROOT)
-        self.assertEqual(actual, self.project(self.record['approvedBy']))
-        self.assertEqual(actual, sc.read(ROOT / REGISTRY))
+        # Keep WO-46's own registry fixture at its exact 477-row projection.
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            for name in BUNDLE:
+                path = directory / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes((ROOT / name).read_bytes())
+            expected = self.project(self.record['approvedBy'])
+            (directory / REGISTRY).write_bytes((json.dumps(expected, indent=2) + '\n').encode())
+            _, actual = current_exceptions(directory)
+            self.assertEqual(actual, expected)
+            self.assertEqual(actual, sc.read(directory / REGISTRY))
+            self.assertEqual(len(actual['exceptions']), 477)
         _, lock = assert_images()
         target = self.proposal['exceptions'][0]['target']
         self.assertEqual(lock['images']['argocd']['source'], target)
