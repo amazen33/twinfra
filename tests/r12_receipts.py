@@ -48,14 +48,15 @@ def approved_content(root=ROOT):
     return record,proposal,log
 
 
-def current_exceptions(root=ROOT, *, previous_r13a=False, previous_wo46=False):
+def current_exceptions(root=ROOT, *, previous_r13a=False, previous_wo46=False, previous_r13b=False):
     """Preserve earlier anchors and require each exact, chained risk approval."""
     from r12_exceptions import (AMENDMENT_11D_RECORD_HASHES, AMENDMENT_11E_RECORD_HASHES,
                                AMENDMENT_11F_RECORD_HASHES, amendment_11a_batch,
                                amendment_11c_batch, amendment_11d_batch,
                                amendment_11e_batch, amendment_11f_batch,
                                WO46_ARGOCD_RECORD_HASHES, wo46_argocd_batch,
-                               AMENDMENT_11G_RECORD_HASHES, amendment_11g_batch)
+                               AMENDMENT_11G_RECORD_HASHES, amendment_11g_batch,
+                               AMENDMENT_11H_RECORD_HASHES, amendment_11h_batch)
     original,proposal,_=approved_content(root)
     record=json.loads((root/'security/wo40-amendment-11a-approval.json').read_bytes())
     raw=(root/'security/proposals/wo40-amendment-11a-kev.json').read_bytes()
@@ -150,6 +151,22 @@ def current_exceptions(root=ROOT, *, previous_r13a=False, previous_wo46=False):
             raise AssertionError('Amendment 11g approved content hash differs')
         expected=amendment_11g_batch(expected,json.loads(proposal_bytes),o22,anchor)
         anchor=o22
+    r13b=expected
+    o23_record=root/'security/wo40-amendment-11h-approval.json'
+    o23_proposal=root/'security/proposals/wo40-amendment-11h.json'
+    if o23_record.exists() or o23_proposal.exists():
+        if not all(path.is_file() for path in (o22_record,o22_proposal,o23_record,o23_proposal)):
+            raise AssertionError('Incomplete Amendment 11h approval bundle or predecessor')
+        record_bytes=o23_record.read_bytes()
+        o23=json.loads(record_bytes)
+        proposal_bytes=o23_proposal.read_bytes()
+        checks=((record_bytes, AMENDMENT_11H_RECORD_HASHES.get(o23.get('approvedBy'))),
+                (proposal_bytes, o23['proposalSHA256']),
+                (o22_record.read_bytes(), o23['previousApprovalSHA256']))
+        if any(hashlib.sha256(raw).hexdigest()!=digest for raw,digest in checks):
+            raise AssertionError('Amendment 11h approved content hash differs')
+        expected=amendment_11h_batch(expected,json.loads(proposal_bytes),o23,anchor)
+        anchor=o23
     active=(root/'security/vulnerability-exceptions.json').read_bytes()
     key='approvedRegistrySHA256' if anchor['approvedBy'] else 'proposedRegistrySHA256'
     if hashlib.sha256(active).hexdigest()!=anchor[key] or json.loads(active)!=expected:
@@ -158,6 +175,8 @@ def current_exceptions(root=ROOT, *, previous_r13a=False, previous_wo46=False):
         return record,r13a
     if previous_wo46 and wo46_record.is_file():
         return record,wo46_registry
+    if previous_r13b:
+        return record,r13b
     return record,expected
 
 
@@ -225,6 +244,35 @@ def receipt(path):
     else:
         for name in ('argocd','ministack','keycloak'):
             expected=expected.replace(original['images'][name]['canonical'],current['images'][name]['canonical'])
+    control_path=ROOT/'security/wo40-amendment-11h-approval.json'
+    if path=='deploy/environments/dev/cairo-1/services/workloads.yaml' and control_path.is_file():
+        # O-23 adds only the record's env at the main container's rendered
+        # position. Insert into the expected bytes; never normalize the actual
+        # receipt or permit unrelated YAML/whitespace differences.
+        import yaml
+        from r12_exceptions import AMENDMENT_11H_RECORD_HASHES
+        control_raw=control_path.read_bytes()
+        control_record=json.loads(control_raw)
+        if hashlib.sha256(control_raw).hexdigest()!=AMENDMENT_11H_RECORD_HASHES.get(control_record.get('approvedBy')):
+            raise AssertionError('Amendment 11h control record hash differs')
+        controls=control_record['requiredControls']
+        if len(controls)!=1:raise AssertionError('Exactly one Amendment 11h control required')
+        control=controls[0]
+        def field(node,name):
+            return next(value for key,value in node.value if key.value==name)
+        workload=next(node for node in yaml.compose_all(expected)
+                      if field(node,'kind').value=='Deployment'
+                      and field(field(node,'metadata'),'name').value==control['workload'])
+        pod=field(field(field(workload,'spec'),'template'),'spec')
+        container=next(node for node in field(pod,'containers').value
+                       if field(node,'name').value==control['container'])
+        keys=[key.value for key,_ in container.value]
+        if 'env' in keys or keys[keys.index('resources')-1]!='args':
+            raise AssertionError('Amendment 11h control rendered position differs')
+        mark=next(key.start_mark for key,_ in container.value if key.value=='resources')
+        insertion=mark.index-mark.column
+        block=yaml.safe_dump({'env':[{'name':control['env'],'value':control['value']}]},sort_keys=False)
+        expected=expected[:insertion]+''.join(' '*mark.column+line for line in block.splitlines(True))+expected[insertion:]
     if actual!=expected:raise AssertionError('R12 render differs beyond the three exact image substitutions: '+path)
     return raw
 
