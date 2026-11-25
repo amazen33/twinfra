@@ -1,0 +1,366 @@
+{
+  "authority": "WO-40 Amendment 11f",
+  "decision": "O-20",
+  "approvedBy": "amazen33",
+  "previousApprovalPath": "security/wo40-amendment-11e-approval.json",
+  "previousApprovalSHA256": "c9a871a07ebb0744c52a27a2b55ea6b66f0d42aebc09c0ac170c49704641eb68",
+  "baseApprovedRegistrySHA256": "e702ee14add747638d0a75faf5241c93e22dc83b7a0acd023c5e87599b09b1aa",
+  "proposalSHA256": "f90ade429a5aa439928c31f342dd5fcaf37079043d83e9b1122ad7fb010223aa",
+  "proposedRegistrySHA256": "6cb2d950fe4b903ac5982a4899f236909364d9249b3656e1301e1bc1e8085c22",
+  "approvedRegistrySHA256": "a04df246df321f6610e701b9c3c537e6e98aa388c59bf7e9127975f085f3e546",
+  "replacementBefore": "2026-12-27",
+  "scope": [
+    {
+      "target": "registry.k8s.io/kube-apiserver@sha256:4b3e69973a1d58d3c1f670d3477a9b9f14a03a271823113e8e0c9a333eb84f48",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "registry.k8s.io/kube-controller-manager@sha256:2d717af134451db77ea053c3426bc82edc0e55415eb36e1260313c636ebe9a4d",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "registry.k8s.io/kube-scheduler@sha256:3804f66442962cefbe11fcd5330d5e7a797bfb3dc8535c322d005637b404a85f",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "package": "golang.org/x/net",
+      "version": "v0.57.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "package": "golang.org/x/net",
+      "version": "v0.56.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "package": "openssh-client",
+      "version": "1:10.2p1-2ubuntu3.7",
+      "vulnerability": "CVE-2026-123158",
+      "severity": "High",
+      "expires": "2026-12-13"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "package": "golang.org/x/net",
+      "version": "v0.38.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "package": "golang.org/x/net",
+      "version": "v0.40.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "package": "golang.org/x/net",
+      "version": "v0.55.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "package": "golang.org/x/net",
+      "version": "v0.59.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/cloudnative-pg@sha256:923c267ec29636db3bee20f993d0ec4973fa22998e1adad37da79e4d32b5bc07",
+      "package": "golang.org/x/net",
+      "version": "v0.58.0",
+      "vulnerability": "CVE-2026-78661",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "package": "zlib1g",
+      "version": "1:1.3.dfsg+really1.3.1-1+b1",
+      "vulnerability": "CVE-2026-85091",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "zlib1g",
+      "version": "1:1.3.dfsg+really1.3.1-1+b1",
+      "vulnerability": "CVE-2026-85091",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "lockfile:console/package-lock.json",
+      "package": "undici",
+      "version": "8.11.2",
+      "vulnerability": "CVE-2026-109383",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "lockfile:console/package-lock.json",
+      "package": "undici",
+      "version": "8.11.2",
+      "vulnerability": "CVE-2026-109829",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "lockfile:console/package-lock.json",
+      "package": "undici",
+      "version": "8.11.2",
+      "vulnerability": "CVE-2026-87018",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "pyasn1",
+      "version": "0.6.4",
+      "vulnerability": "CVE-2026-119195",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "pyasn1",
+      "version": "0.6.4",
+      "vulnerability": "CVE-2026-119196",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "pyasn1",
+      "version": "0.6.4",
+      "vulnerability": "CVE-2026-119194",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "docker.io/ministackorg/ministack@sha256:b58186186515a372798ccf0ca9975c295db219b5a811975337d6967b968e07b4",
+      "package": "pyasn1",
+      "version": "0.6.4",
+      "vulnerability": "CVE-2026-119197",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "apt",
+      "version": "2.6.1",
+      "vulnerability": "CVE-2026-109518",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "docker.io/apache/apisix@sha256:9a7e45dc943fbf10ec916d1232bae4cda9302ae28a4696cfb83c2da01d261141",
+      "package": "libapt-pkg6.0",
+      "version": "2.6.1",
+      "vulnerability": "CVE-2026-109518",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "package": "apt",
+      "version": "3.0.3",
+      "vulnerability": "CVE-2026-109518",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "package": "libapt-pkg7.0",
+      "version": "3.0.3",
+      "vulnerability": "CVE-2026-109518",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "apt",
+      "version": "3.0.3",
+      "vulnerability": "CVE-2026-109518",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libapt-pkg7.0",
+      "version": "3.0.3",
+      "vulnerability": "CVE-2026-109518",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "registry.k8s.io/etcd@sha256:5ed4e32061aa061f970d6500629213e8579ef17571dcf9789074966acb9afad1",
+      "package": "github.com/klauspost/compress",
+      "version": "v1.17.9",
+      "vulnerability": "CVE-2026-116591",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "registry.k8s.io/coredns/coredns@sha256:7efd3c635b03efd68c4e8398fc45f0d993d0e9ab016f72c1cefb0fd6d01aa286",
+      "package": "github.com/klauspost/compress",
+      "version": "v1.19.1",
+      "vulnerability": "CVE-2026-116591",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "apt",
+      "version": "3.2.0",
+      "vulnerability": "CVE-2026-109518",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "libapt-pkg7.0",
+      "version": "3.2.0",
+      "vulnerability": "CVE-2026-109518",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/cilium/cilium@sha256:2939231d0d3e3ebddcd80fffa168b7ddcc78fdf0dc864d1c8c126ff523c54f01",
+      "package": "github.com/klauspost/compress",
+      "version": "v1.18.6",
+      "vulnerability": "CVE-2026-116591",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "package": "apt",
+      "version": "2.8.3",
+      "vulnerability": "CVE-2026-109518",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/cilium/cilium-envoy@sha256:af7382699576b9e65e9184efa52eeca0b58aea70ad6e511bf260c91d9f740463",
+      "package": "libapt-pkg6.0t64",
+      "version": "2.8.3",
+      "vulnerability": "CVE-2026-109518",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/cilium/operator-generic@sha256:64d8798350e8569b8e7622563fed6e44dce2625f311e4651b774816516c744fc",
+      "package": "github.com/klauspost/compress",
+      "version": "v1.18.6",
+      "vulnerability": "CVE-2026-116591",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "docker.io/openbao/openbao@sha256:6d2b93856e3fcf7b18ad855a0b51eaba474dc8b79cf554379ea32034797d2acf",
+      "package": "github.com/klauspost/compress",
+      "version": "v1.19.2",
+      "vulnerability": "CVE-2026-116591",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "package": "apt",
+      "version": "3.2.0",
+      "vulnerability": "CVE-2026-109518",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "package": "libapt-pkg7.0",
+      "version": "3.2.0",
+      "vulnerability": "CVE-2026-109518",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518",
+      "package": "github.com/klauspost/compress",
+      "version": "v1.18.0",
+      "vulnerability": "CVE-2026-116591",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "package": "zlib1g",
+      "version": "1:1.3.dfsg+really1.3.1-1+b1",
+      "vulnerability": "CVE-2026-76844",
+      "severity": "High",
+      "expires": "2026-12-27"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "zlib1g",
+      "version": "1:1.3.dfsg+really1.3.1-1+b1",
+      "vulnerability": "CVE-2026-76844",
+      "severity": "High",
+      "expires": "2026-12-27"
+    }
+  ]
+}

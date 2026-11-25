@@ -10,6 +10,7 @@ import unittest
 
 import yaml
 from p2_receipts import receipt as p2_receipt
+from r12_receipts import WO46_AFTER, WO46_BEFORE, assert_images
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'tools'))
@@ -205,6 +206,9 @@ class Hygiene(unittest.TestCase):
                     after=change['after'].rsplit('@',1)[1]
                     expected=original.count(before.encode())
                     if not expected:continue
+                    if after==WO46_BEFORE and WO46_AFTER in raw:
+                        assert_images()
+                        after=WO46_AFTER
                     self.assertEqual(raw.count(after),expected,relative+': R12 image occurrence count')
                     raw=raw.replace(after,before)
             self.assertEqual(raw.encode(),original,relative)

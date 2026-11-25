@@ -50,6 +50,8 @@ class Reapproval(unittest.TestCase):
         for filename in FILES:
             target=root/filename;target.parent.mkdir(parents=True,exist_ok=True)
             target.write_bytes((ROOT/filename).read_bytes())
+        # Isolate O-12's 423-row projection from the later O-14 batch.
+        save(root/ACTIVE,self.project(True))
 
     def test_exact_three_individual_rows_and_unchanged_420_row_prefix(self):
         pending=self.project(False)

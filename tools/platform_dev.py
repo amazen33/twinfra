@@ -173,6 +173,7 @@ def endpoints():
             init.insert(0,{'name':'prepare','image':image('keycloak'),'command':['sh','-ec','cp -R /opt/keycloak/lib/quarkus/. /built/'],'volumeMounts':[{'name':'quarkus','mountPath':'/built'}]})
             c['volumeMounts']=mounts+[{'name':'import','mountPath':'/opt/keycloak/data/import','readOnly':True},{'name':'data','mountPath':'/opt/keycloak/data'},{'name':'quarkus','mountPath':'/opt/keycloak/lib/quarkus'}]
             c.update(command=['/opt/keycloak/bin/kc.sh'],args=['--config-file=/runtime/keycloak.conf','start','--import-realm'],
+                env=[{'name':'JAVA_OPTS_APPEND','value':'-XX:-UseBASE64Intrinsics'}],
                 resources={'requests':{'cpu':'250m','memory':'768Mi'},'limits':{'cpu':'2','memory':'2Gi'}},
                 startupProbe={'httpGet':{'path':'/health/started','port':9000,'scheme':'HTTPS'},'failureThreshold':90,'periodSeconds':5},
                 readinessProbe={'httpGet':{'path':'/health/ready','port':9000,'scheme':'HTTPS'}})

@@ -8,6 +8,10 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = '0d950075a8bf43358d9fd406b80b67d657f804e1'
+WO46_OLD_IMAGE_SHA256 = 'bb41191d06463aac08e225cdf2b8e8d8d9d9f158fc01bf038c22e750b39c8cb8'
+WO46_NEW_IMAGE_SHA256 = '07e13f1bc8d310a8f7411d6fdfc80d29d5c40662423c17896d9d2ee348dce9ff'
+WO46_BEFORE = 'sha256:13db7b10db23283b1b36f855046602e18539a8a8204c9f6f039e8896c8897518'
+WO46_AFTER = 'sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db'
 sys.path.insert(0, str(ROOT/'tools/ci'))
 
 
@@ -44,9 +48,15 @@ def approved_content(root=ROOT):
     return record,proposal,log
 
 
-def current_exceptions(root=ROOT):
-    """Preserve R12/O-11 anchors and require O-12 for the three appended risks."""
-    from r12_exceptions import amendment_11a_batch, amendment_11c_batch
+def current_exceptions(root=ROOT, *, previous_r13a=False, previous_wo46=False, previous_r13b=False):
+    """Preserve earlier anchors and require each exact, chained risk approval."""
+    from r12_exceptions import (AMENDMENT_11D_RECORD_HASHES, AMENDMENT_11E_RECORD_HASHES,
+                               AMENDMENT_11F_RECORD_HASHES, amendment_11a_batch,
+                               amendment_11c_batch, amendment_11d_batch,
+                               amendment_11e_batch, amendment_11f_batch,
+                               WO46_ARGOCD_RECORD_HASHES, wo46_argocd_batch,
+                               AMENDMENT_11G_RECORD_HASHES, amendment_11g_batch,
+                               AMENDMENT_11H_RECORD_HASHES, amendment_11h_batch)
     original,proposal,_=approved_content(root)
     record=json.loads((root/'security/wo40-amendment-11a-approval.json').read_bytes())
     raw=(root/'security/proposals/wo40-amendment-11a-kev.json').read_bytes()
@@ -66,21 +76,141 @@ def current_exceptions(root=ROOT):
             raise AssertionError('Amendment 11c approved content hash differs')
         expected=amendment_11c_batch(expected,json.loads(proposed),amended,record)
         anchor=amended
+    latest_paths=(root/'security/wo40-amendment-11d-approval.json',
+                  root/'security/proposals/wo40-amendment-11d.json')
+    if any(path.exists() for path in latest_paths):
+        if not all(path.is_file() for path in (*amendment_paths,*latest_paths)):
+            raise AssertionError('Incomplete Amendment 11d approval bundle or predecessor')
+        latest_raw=latest_paths[0].read_bytes()
+        latest=json.loads(latest_raw)
+        proposed=latest_paths[1].read_bytes()
+        if (hashlib.sha256(latest_raw).hexdigest()!=AMENDMENT_11D_RECORD_HASHES.get(latest.get('approvedBy'))
+                or hashlib.sha256(proposed).hexdigest()!=latest['proposalSHA256']
+                or hashlib.sha256(amendment_paths[0].read_bytes()).hexdigest()!=latest['previousApprovalSHA256']):
+            raise AssertionError('Amendment 11d approved content hash differs')
+        expected=amendment_11d_batch(expected,json.loads(proposed),latest,anchor)
+        anchor=latest
+    o17_paths=(root/'security/wo40-amendment-11e-approval.json',
+               root/'security/proposals/wo40-amendment-11e.json')
+    if any(path.exists() for path in o17_paths):
+        if not all(path.is_file() for path in (*latest_paths,*o17_paths)):
+            raise AssertionError('Incomplete Amendment 11e approval bundle or predecessor')
+        o17_raw=o17_paths[0].read_bytes()
+        o17=json.loads(o17_raw)
+        proposed=o17_paths[1].read_bytes()
+        if (hashlib.sha256(o17_raw).hexdigest()!=AMENDMENT_11E_RECORD_HASHES.get(o17.get('approvedBy'))
+                or hashlib.sha256(proposed).hexdigest()!=o17['proposalSHA256']
+                or hashlib.sha256(latest_paths[0].read_bytes()).hexdigest()!=o17['previousApprovalSHA256']):
+            raise AssertionError('Amendment 11e approved content hash differs')
+        expected=amendment_11e_batch(expected,json.loads(proposed),o17,anchor)
+        anchor=o17
+    o20_record=root/'security/wo40-amendment-11f-approval.json'
+    o20_proposal=root/'security/proposals/wo40-amendment-11f.json'
+    if o20_record.exists() or o20_proposal.exists():
+        if not all(path.is_file() for path in (*o17_paths, o20_record, o20_proposal)):
+            raise AssertionError('Incomplete Amendment 11f approval bundle or predecessor')
+        record_bytes=o20_record.read_bytes()
+        o20=json.loads(record_bytes)
+        proposal_bytes=o20_proposal.read_bytes()
+        checks=((record_bytes, AMENDMENT_11F_RECORD_HASHES.get(o20.get('approvedBy'))),
+                (proposal_bytes, o20['proposalSHA256']),
+                (o17_paths[0].read_bytes(), o20['previousApprovalSHA256']))
+        if any(hashlib.sha256(raw).hexdigest()!=digest for raw,digest in checks):
+            raise AssertionError('Amendment 11f approved content hash differs')
+        expected=amendment_11f_batch(expected,json.loads(proposal_bytes),o20,anchor)
+        anchor=o20
+    wo46_record=root/'security/wo46-argocd-3.5.7-approval.json'
+    wo46_proposal=root/'security/proposals/wo46-argocd-3.5.7.json'
+    if wo46_record.exists() or wo46_proposal.exists():
+        if not all(path.is_file() for path in (o20_record,o20_proposal,wo46_record,wo46_proposal)):
+            raise AssertionError('Incomplete WO-46 Argo CD approval bundle or predecessor')
+        record_bytes=wo46_record.read_bytes()
+        wo46=json.loads(record_bytes)
+        proposal_bytes=wo46_proposal.read_bytes()
+        checks=((record_bytes, WO46_ARGOCD_RECORD_HASHES.get(wo46.get('approvedBy'))),
+                (proposal_bytes, wo46['proposalSHA256']),
+                (o20_record.read_bytes(), wo46['previousApprovalSHA256']))
+        if any(hashlib.sha256(raw).hexdigest()!=digest for raw,digest in checks):
+            raise AssertionError('WO-46 Argo CD approved content hash differs')
+        r13a=expected
+        expected=wo46_argocd_batch(expected,json.loads(proposal_bytes),wo46,anchor)
+        anchor=wo46
+        wo46_registry=expected
+    o22_record=root/'security/wo40-amendment-11g-approval.json'
+    o22_proposal=root/'security/proposals/wo40-amendment-11g.json'
+    if o22_record.exists() or o22_proposal.exists():
+        if not all(path.is_file() for path in (wo46_record,wo46_proposal,o22_record,o22_proposal)):
+            raise AssertionError('Incomplete Amendment 11g approval bundle or predecessor')
+        record_bytes=o22_record.read_bytes()
+        o22=json.loads(record_bytes)
+        proposal_bytes=o22_proposal.read_bytes()
+        checks=((record_bytes, AMENDMENT_11G_RECORD_HASHES.get(o22.get('approvedBy'))),
+                (proposal_bytes, o22['proposalSHA256']),
+                (wo46_record.read_bytes(), o22['previousApprovalSHA256']))
+        if any(hashlib.sha256(raw).hexdigest()!=digest for raw,digest in checks):
+            raise AssertionError('Amendment 11g approved content hash differs')
+        expected=amendment_11g_batch(expected,json.loads(proposal_bytes),o22,anchor)
+        anchor=o22
+    r13b=expected
+    o23_record=root/'security/wo40-amendment-11h-approval.json'
+    o23_proposal=root/'security/proposals/wo40-amendment-11h.json'
+    if o23_record.exists() or o23_proposal.exists():
+        if not all(path.is_file() for path in (o22_record,o22_proposal,o23_record,o23_proposal)):
+            raise AssertionError('Incomplete Amendment 11h approval bundle or predecessor')
+        record_bytes=o23_record.read_bytes()
+        o23=json.loads(record_bytes)
+        proposal_bytes=o23_proposal.read_bytes()
+        checks=((record_bytes, AMENDMENT_11H_RECORD_HASHES.get(o23.get('approvedBy'))),
+                (proposal_bytes, o23['proposalSHA256']),
+                (o22_record.read_bytes(), o23['previousApprovalSHA256']))
+        if any(hashlib.sha256(raw).hexdigest()!=digest for raw,digest in checks):
+            raise AssertionError('Amendment 11h approved content hash differs')
+        expected=amendment_11h_batch(expected,json.loads(proposal_bytes),o23,anchor)
+        anchor=o23
     active=(root/'security/vulnerability-exceptions.json').read_bytes()
     key='approvedRegistrySHA256' if anchor['approvedBy'] else 'proposedRegistrySHA256'
     if hashlib.sha256(active).hexdigest()!=anchor[key] or json.loads(active)!=expected:
-        raise AssertionError('Active registry differs from Amendment 11a/11c content/approval')
+        raise AssertionError('Active registry differs from the chained content/approval')
+    if previous_r13a and wo46_record.is_file():
+        return record,r13a
+    if previous_wo46 and wo46_record.is_file():
+        return record,wo46_registry
+    if previous_r13b:
+        return record,r13b
     return record,expected
+
+
+def wo46_image(current):
+    """Recognize the exact promoted image before applying historical projections."""
+    from r12_exceptions import content_sha256
+    entry=current['images']['argocd']
+    if entry['digest'] == WO46_BEFORE:
+        return current
+    if content_sha256(entry) != WO46_NEW_IMAGE_SHA256:
+        raise AssertionError('WO-46 Argo CD image differs from the verified promotion')
+    before=entry | {
+        'source': 'quay.io/argoproj/argocd@'+WO46_BEFORE, 'digest': WO46_BEFORE,
+        'canonical': 'registry.twinfra.example.com/quay.io/argoproj/argocd@'+WO46_BEFORE,
+        'digestSource': 'https://quay.io/v2/argoproj/argocd/manifests/v3.5.3',
+        'release': 'quay.io/argoproj/argocd:v3.5.5',
+        'releaseSource': 'https://github.com/argoproj/argo-cd/releases/tag/v3.5.5',
+        'releasePublishedAt': '2026-10-12T10:59:41Z', 'verifiedOn': '2026-10-28',
+        'licenceSHA256': entry['licenceSHA256'],
+    }
+    if content_sha256(before)!=WO46_OLD_IMAGE_SHA256:
+        raise AssertionError('WO-46 R12 image projection differs')
+    return current | {'images': current['images'] | {'argocd': before}}
 
 
 def assert_images(current=None):
     from security_wave_2026_10 import CASES
     original=json.loads(old('deploy/common/images.lock.json'))
     actual=current if current is not None else json.loads((ROOT/'deploy/common/images.lock.json').read_text(encoding='utf-8'))
+    historical=wo46_image(actual)
     expected=copy.deepcopy(original)
     allowed={'source','release','digest','canonical','releaseSource','releasePublishedAt','verifiedOn','licenceSHA256'}
     for component,case in [('argocd','argocd355'),('ministack','ministack1533'),('keycloak','keycloak2681')]:
-        _,release,ref=CASES[case];entry=actual['images'][component]
+        _,release,ref=CASES[case];entry=historical['images'][component]
         if entry['source']!=ref or entry['digest']!=ref.split('@')[1] or entry['canonical']!='registry.twinfra.example.com/'+ref:
             raise AssertionError('R12 candidate digest differs from the approved comparison')
         if not entry['release'].endswith(':'+('v' if component=='argocd' else '')+release):
@@ -90,7 +220,7 @@ def assert_images(current=None):
             raise AssertionError('R12 added an unrelated pin property')
         for field in fields:
             if field in entry:expected['images'][component][field]=entry[field]
-    if actual!=expected:raise AssertionError('R12 changed an unrelated image or pin property')
+    if historical!=expected:raise AssertionError('R12 changed an unrelated image or pin property')
     return original,actual
 
 
@@ -114,6 +244,35 @@ def receipt(path):
     else:
         for name in ('argocd','ministack','keycloak'):
             expected=expected.replace(original['images'][name]['canonical'],current['images'][name]['canonical'])
+    control_path=ROOT/'security/wo40-amendment-11h-approval.json'
+    if path=='deploy/environments/dev/cairo-1/services/workloads.yaml' and control_path.is_file():
+        # O-23 adds only the record's env at the main container's rendered
+        # position. Insert into the expected bytes; never normalize the actual
+        # receipt or permit unrelated YAML/whitespace differences.
+        import yaml
+        from r12_exceptions import AMENDMENT_11H_RECORD_HASHES
+        control_raw=control_path.read_bytes()
+        control_record=json.loads(control_raw)
+        if hashlib.sha256(control_raw).hexdigest()!=AMENDMENT_11H_RECORD_HASHES.get(control_record.get('approvedBy')):
+            raise AssertionError('Amendment 11h control record hash differs')
+        controls=control_record['requiredControls']
+        if len(controls)!=1:raise AssertionError('Exactly one Amendment 11h control required')
+        control=controls[0]
+        def field(node,name):
+            return next(value for key,value in node.value if key.value==name)
+        workload=next(node for node in yaml.compose_all(expected)
+                      if field(node,'kind').value=='Deployment'
+                      and field(field(node,'metadata'),'name').value==control['workload'])
+        pod=field(field(field(workload,'spec'),'template'),'spec')
+        container=next(node for node in field(pod,'containers').value
+                       if field(node,'name').value==control['container'])
+        keys=[key.value for key,_ in container.value]
+        if 'env' in keys or keys[keys.index('resources')-1]!='args':
+            raise AssertionError('Amendment 11h control rendered position differs')
+        mark=next(key.start_mark for key,_ in container.value if key.value=='resources')
+        insertion=mark.index-mark.column
+        block=yaml.safe_dump({'env':[{'name':control['env'],'value':control['value']}]},sort_keys=False)
+        expected=expected[:insertion]+''.join(' '*mark.column+line for line in block.splitlines(True))+expected[insertion:]
     if actual!=expected:raise AssertionError('R12 render differs beyond the three exact image substitutions: '+path)
     return raw
 
@@ -153,6 +312,10 @@ def assert_current():
         row = images[component]
         before = 'oci-image|' + row['before'].replace('@', '|')
         after = 'oci-image|' + row['after'].replace('@', '|')
+        if component=='argocd' and after not in records:
+            lock=read('deploy/common/images.lock.json')
+            wo46_image(lock)
+            after='oci-image|'+lock['images']['argocd']['source'].replace('@','|')
         # Production and retained reference sources still use the old pin.
         # Their exact approvals remain byte-for-byte unchanged.
         added.add(after)

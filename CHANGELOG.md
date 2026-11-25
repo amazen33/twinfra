@@ -105,6 +105,139 @@ scope is in the [capability statement](docs/capabilities.md).
 
 ### Security
 
+- WO-40 Amendment 11h (R13c) / O-23 A: record the exact exceptions for
+  findings blocking the rc.2 candidate, without promoting any image before
+  stable. The [proposal](security/proposals/wo40-amendment-11h.json) and
+  [chained approval record](security/wo40-amendment-11h-approval.json) bind
+  two in-place Argo CD `golang.org/x/net` CVE-2026-39821 evidence refreshes
+  (scanner fix 0.57.0; original expiries unchanged), removal of the unused
+  OpenSSH CVE-2026-123158 row, and 38 additions: Keycloak one Critical,
+  PostgreSQL 32 High, Python base four High and Argo CD one High.
+  Keycloak CVE-2026-114938 requires `JAVA_OPTS_APPEND=-XX:-UseBASE64Intrinsics`
+  on the main container only. The 521-row projection contains 65 Critical
+  and 456 High rows and takes effect only on owner activation.
+  Its superseding calendar is 119 rows on 2026-12-17 and 402 on 2026-12-27.
+  WO-46 milestone 2 (v0.1.1) must replace the December 17 group by
+  2026-12-09 and deliver the MiniStack, Valkey and OpenBao OpenSSL refreshes
+  by 2026-12-01. Stable is planned no later than 2026-12-01.
+  The Cilium 1.20.4 and Kubernetes 1.36.6 draft refresh PRs are behind the
+  ADR-0049 Amendment 1 item 4 duty dates (2026-11-20 and 2026-11-25);
+  open them after this PR. The November 24 nightly replay passes through
+  December 1 with approved rows; it is not a fresh scan or live acceptance.
+- WO-40 Amendment 11g (R13b) / O-22 A: renew 74 individual November 27
+  exceptions once for the v0.1.0 release window and append seven MiniStack
+  `nodejs` 24.22.1-r0 High exceptions. The [exact proposal](security/proposals/wo40-amendment-11g.json)
+  and [approval record](security/wo40-amendment-11g-approval.json) bind both
+  registry projections. Renewals retain their positions, identities, controls
+  and full prior reasons; separate owner activation sets attribution.
+  The 484-row projection contains 64 Critical and 420 High rows.
+
+  | Expiry (UTC) | Rows | Duty |
+  | --- | ---: | --- |
+  | 2026-12-13 | 1, unused OpenSSH KEV | WO-46 milestone 2 decides by 2026-12-05 |
+  | 2026-12-17 | 81, the 74 renewals and seven additions | v0.1.1 replaces the renewed rows and the MiniStack findings by 2026-12-09 |
+  | 2026-12-27 | 402 | Existing WO-46 replacement duties |
+
+  O-22 separately approves the renewal of rows with an eligible fixed
+  release under ADR-0049 Amendment 1a item 2. The 14-day refresh-PR duty
+  remains: Cilium 1.20.4 by 2026-11-20 and Kubernetes 1.36.6 by 2026-11-25,
+  as drafts merging after stable. No image promotion before stable.
+  Stable stays planned for no later than 2026-11-28. No further renewal
+  follows without a new owner decision. See the [release notes](docs/release-notes/0.1.0.md)
+  for each new advisory and the replay/acceptance distinction.
+
+- WO-46 item 4: pin the dev Argo CD image to v3.5.7 under the KEV expedite
+  rule. The complete Linux amd64 scan confirms Ubuntu's fixed Brotli
+  package and closes the libcurl finding as well. It finds no new fixable
+  Critical/High identity or KEV. The exact approval proposal removes the two
+  closed rows and carries 173 rows with their original expiries. The registry's
+  earliest expiry moves to 2026-11-27. See the [release notes](docs/release-notes/0.1.0.md)
+  for the scan, unmatched OpenSSH carry and remaining release duties.
+
+- WO-40 Amendment 11f (R13a) / O-20: append 44 exact High exceptions under
+  O-19 path A, for findings that block from 2026-11-12 through 2026-11-24.
+  The [approved proposal](security/proposals/wo40-amendment-11f.json) is
+  chained to the activated O-17 record. The resulting 479-row registry has
+  64 Critical and 415 High; the 435 earlier rows and all image pins stay
+  unchanged. Activation is a separate owner commit.
+
+  | Finding group | Rows | Targets | Blocks from (UTC) | Expires |
+  | --- | ---: | --- | --- | --- |
+  | `golang.org/x/net` CVE-2026-78661 | 14 | Kubernetes control plane, etcd, CoreDNS, Cilium agent/Envoy/operator, OpenBao, CNPG operator, Argo CD | 2026-11-12 | 2026-12-27 |
+  | `zlib1g` CVE-2026-85091 | 2 | Console Python base, CNPG PostgreSQL | 2026-11-12 | 2026-12-27 |
+  | `undici` CVE-2026-109383, CVE-2026-109829, CVE-2026-87018 (build only) | 3 | Console lockfile | 2026-11-12 | 2026-12-27 |
+  | `openssh-client` CVE-2026-123158 (KEV) | 1 | Argo CD | 2026-11-12 | 2026-12-13 |
+  | `pyasn1` CVE-2026-119194 through CVE-2026-119197 | 4 | MiniStack | 2026-11-14 | 2026-12-27 |
+  | `apt` / `libapt-pkg*` CVE-2026-109518 | 12 | APISIX, console Python base, PostgreSQL (6); Cilium agent/Envoy, Argo CD (6) | 2026-11-19 / 2026-11-20 | 2026-12-27 |
+  | `github.com/klauspost/compress` CVE-2026-116591 | 6 | etcd, CoreDNS, Cilium agent/operator, OpenBao, Argo CD | 2026-11-20 | 2026-12-27 |
+  | `zlib1g` CVE-2026-76844 | 2 | Console Python base, CNPG PostgreSQL | 2026-11-20 | 2026-12-27 |
+
+  The OpenSSH flaw concerns `sshd` on musl without PAM. The architect's
+  scan SBOM and digest-verified static inspection found only the client,
+  with no `sshd` or server package, in the Ubuntu 26.04 Argo CD image with
+  glibc and PAM. The Git source uses HTTPS only. Adding SSH sources or
+  credentials requires new owner review. This is bounded evidence, with
+  no non-exploitability claim. Recheck the KEV at each weekly watch;
+  close it with an eligible replacement under the KEV expedite rule.
+  WO-46 tracks eligible fixes, full scans, staging and acceptance; ordinary
+  fixes are due within 14 days of eligibility. No automatic renewals.
+
+  O-18 has lapsed. O-19 path A requires R13a, the WO-46 image refresh and
+  R13b expiry decisions before stable. Stable is planned no earlier than
+  rc.2 + 48 hours and no later than 2026-11-28. The earlier KEV and November
+  expiry duties below still apply; a passing scan replay is not release approval.
+
+- WO-40 Amendment 11e / O-17: append exactly three individual Critical
+  exceptions for zlib / CVE-2026-4738, chained to the activated O-14 record.
+  [Approved proposal](security/proposals/wo40-amendment-11e.json) SHA-256:
+  `a08c6176e36f5578a43ea1506cb9b12617a868528c0df3f3d45c6c1840e03f47`.
+  The 432 earlier rows stay unchanged; the resulting registry contains
+  435 rows (64 Critical and 371 High). Activation is recorded by a separate
+  owner-committed, attribution-only commit; pending rows cannot pass the gate.
+
+  | Component | Package/version | Advisory | Expires | Replacement duty |
+  | --- | --- | --- | --- | --- |
+  | OpenBao | zlib 1.3.2-r0 | CVE-2026-4738 | 2026-11-27 | WO-46, after stable and before 2026-11-20 |
+  | MiniStack | zlib 1.3.2-r1 | CVE-2026-4738 | 2026-11-27 | WO-46, after stable and before 2026-11-20 |
+  | Valkey | zlib 1.3.2-r0 | CVE-2026-4738 | 2026-11-27 | WO-46, after stable and before 2026-11-20 |
+
+  NVD names contrib/infback9 in the zlib copy bundled with GDAL before
+  3.11.0. The architect's static search of the three pinned images found
+  no infback9 strings in any file; this is evidence only, with no
+  non-exploitability claim. None of the seven inspected images carried the
+  fixed Alpine zlib 1.4-r0 on 2026-11-07; no fixed published image was
+  verified. If no eligible replacement exists by 2026-11-19, the owner
+  decides renewal. No automatic renewal, image, dependency or live change.
+
+- O-18 (historical; lapsed), owner-approved 2026-11-08: waived one day of R12 item 8 / Gate 0
+  item 3's planning margin for the KEV row, for a planned stable cut on
+  2026-11-10. Its expiry stays 2026-11-24 (stable +14 days); the 2026-11-13
+  checkpoint and replacement or owner-approved renewal before 2026-11-17
+  remain. The 48-hour window, fresh scan and acceptance rules are unchanged;
+  this is no waiver of new blockers or the <=7-day acceptance failure.
+
+- WO-40 Amendment 11d / O-14: append only the nine individual High rows in
+  [the approved proposal](security/proposals/wo40-amendment-11d.json), chained
+  to the already activated O-12 record. The 423 earlier rows stay unchanged;
+  its projection contains 432 rows. O-14 approved proposal SHA-256
+  `3af549ac9aa6697ec153816acfb74c26aaefd4d37f74dc4e1df2eb579abbd5a6`.
+  Activation is recorded by a separate owner-committed attribution-only commit; pending
+  rows cannot pass the gate. Every new row expires 2026-11-27, references
+  WO-46, and requires replacement after stable, before 2026-11-20, with no
+  automatic renewal. No image, dependency, policy, workflow or live change.
+
+  | Component | Package/version | Advisory | Replacement duty (WO-46) |
+  | --- | --- | --- | --- |
+  | APISIX | libsasl2-2 2.1.28+dfsg-10 | CVE-2026-107161 | Fixed package 2.1.28+dfsg-10+deb12u1; no fixed upstream image as of 2026-11-07; owner decides renewal or a recorded waiver by 2026-11-19 |
+  | APISIX | libsasl2-modules-db 2.1.28+dfsg-10 | CVE-2026-107161 | Same fixed package and upstream-image gap; owner decision by 2026-11-19 |
+  | Keycloak | java-21-openjdk-headless 1:21.0.12.1.1-1.2.el9 | CVE-2026-91415 | Fixed 1:21.0.13.0.9-1.2.el9; eligible Keycloak rebuild from 2026-11-14, then staging and acceptance |
+  | Console CI (build only) | undici 8.11.2 | CVE-2026-109869 | Move to >=8.12.2, rebuild, scan, stage and accept the console |
+  | Disabled Module 5a | filelock 4.0.12 | CVE-2026-112940 | Move to >=4.2.1 with a new licence record; keep the module disabled |
+  | OpenBao | musl 1.2.6-r2 | CVE-2026-107891 | Fixed 1.2.6-r3 in OpenBao 2.7.2, eligible 2026-11-09T20:28Z; full scan, staging and acceptance |
+  | OpenBao | musl-utils 1.2.6-r2 | CVE-2026-107891 | Same OpenBao replacement and verification duty |
+  | Valkey | musl 1.2.6-r2 | CVE-2026-107891 | Fixed 1.2.6-r3 in Valkey 8.1.11-alpine, eligible 2026-11-10T01:54Z; full scan, staging and acceptance |
+  | Valkey | musl-utils 1.2.6-r2 | CVE-2026-107891 | Same Valkey replacement and verification duty |
+
 - WO-40 Amendment 11c / O-12 proposal: append exactly three individual,
   content-hash-anchored exceptions, all expiring 2026-11-27: MiniStack 1.5.33
   Python 3.13.17 and console-base Python 3.14.8 / CVE-2026-115557 (Critical),
@@ -636,10 +769,9 @@ The owner's October 29 post-promotion acceptance passed all 17 checks at
 ### Exception calendar
 
 Acceptance fails for expired entries or **<=7 days** remaining; **8–21 days**
-is a warning. Counts below cover every active exception row. The target
-release dates are a plan, not completed acceptance or permission to ignore a
-new scan finding. Every calendar date through **2026-11-16** has zero failing
-exceptions under the current approved expiries. Warnings are retained.
+is a warning. The R3b and O-14/O-17 tables are historical snapshots; the
+R13a expiry calendar follows them. A passing vulnerability replay does not
+override the acceptance calendar or a fresh scan finding.
 
 | UTC date / checkpoint | Days to Nov 24 (1 KEV) | Days to Nov 27 (59 Critical) | Days to Dec 27 (360 High) | Failing rows | Warning rows |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -651,6 +783,28 @@ exceptions under the current approved expiries. Warnings are retained.
 | 2026-11-13 / WO-46 KEV checkpoint | 11 | 14 | 44 | 0 | 60 |
 | 2026-11-16 / release-window bound | 8 | 11 | 41 | 0 | 60 |
 | 2026-11-17 / first KEV calendar failure if unchanged | 7 | 10 | 40 | 1 | 59 |
+
+In the historical O-14/O-17 projection, the 2026-11-27 group contains **74 rows**: 64 Critical
+and 10 High, including the three new O-17 Critical rows. The KEV row and
+the 360 High rows expiring 2026-12-27 are unchanged. This projection does
+not activate a pending batch or override a scan finding.
+
+| UTC date / checkpoint | Days to Nov 24 (1 KEV) | Days to Nov 27 (74 rows) | Days to Dec 27 (360 High) | Failing rows | Warning rows |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 2026-11-08 / O-17 proposal | 16 | 19 | 49 | 0 | 75 |
+| 2026-11-10 / planned Stable, O-18 margin waiver | 14 | 17 | 47 | 0 | 75 |
+| 2026-11-13 / unchanged KEV checkpoint | 11 | 14 | 44 | 0 | 75 |
+| 2026-11-16 / last passing KEV calendar date | 8 | 11 | 41 | 0 | 75 |
+| 2026-11-17 / unchanged KEV calendar failure | 7 | 10 | 40 | 1 | 74 |
+
+The 479-row R13a projection preserves the earlier dates:
+
+| UTC expiry | Rows | Duty |
+| --- | ---: | --- |
+| 2026-11-24 | 1 High KEV: Argo CD `libbrotli1`, CVE-2026-111497 | Replace under WO-46 item 4 before the 2026-11-17 acceptance failure |
+| 2026-11-27 | 74: 64 Critical, 10 High | R13b replaces or obtains individual renewals on evidence by 2026-11-19, before the 2026-11-20 acceptance failure |
+| 2026-12-13 | 1 High KEV: Argo CD `openssh-client`, CVE-2026-123158 | Weekly recheck; the 15-day margin makes 2026-11-28 the latest planned stable date while this row remains |
+| 2026-12-27 | 403 High | WO-46 tracks and closes the applicable rows on replacement |
 
 A fresh full scan, owner acceptance and the consolidated rc sign-off still
 precede release. Resolve or individually re-approve any remaining risk before
