@@ -105,6 +105,25 @@ scope is in the [capability statement](docs/capabilities.md).
 
 ### Security
 
+- WO-40 Amendment 11h (R13c) / O-23 A: record the exact exceptions for
+  findings blocking the rc.2 candidate, without promoting any image before
+  stable. The [proposal](security/proposals/wo40-amendment-11h.json) and
+  [chained approval record](security/wo40-amendment-11h-approval.json) bind
+  two in-place Argo CD `golang.org/x/net` CVE-2026-39821 evidence refreshes
+  (scanner fix 0.57.0; original expiries unchanged), removal of the unused
+  OpenSSH CVE-2026-123158 row, and 38 additions: Keycloak one Critical,
+  PostgreSQL 32 High, Python base four High and Argo CD one High.
+  Keycloak CVE-2026-114938 requires `JAVA_OPTS_APPEND=-XX:-UseBASE64Intrinsics`
+  on the main container only. The 521-row projection contains 65 Critical
+  and 456 High rows and takes effect only on owner activation.
+  Its superseding calendar is 119 rows on 2026-12-17 and 402 on 2026-12-27.
+  WO-46 milestone 2 (v0.1.1) must replace the December 17 group by
+  2026-12-09 and deliver the MiniStack, Valkey and OpenBao OpenSSL refreshes
+  by 2026-12-01. Stable is planned no later than 2026-12-01.
+  The Cilium 1.20.4 and Kubernetes 1.36.6 draft refresh PRs are behind the
+  ADR-0049 Amendment 1 item 4 duty dates (2026-11-20 and 2026-11-25);
+  open them after this PR. The November 24 nightly replay passes through
+  December 1 with approved rows; it is not a fresh scan or live acceptance.
 - WO-40 Amendment 11g (R13b) / O-22 A: renew 74 individual November 27
   exceptions once for the v0.1.0 release window and append seven MiniStack
   `nodejs` 24.22.1-r0 High exceptions. The [exact proposal](security/proposals/wo40-amendment-11g.json)

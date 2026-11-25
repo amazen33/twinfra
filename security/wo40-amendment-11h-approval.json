@@ -1,0 +1,362 @@
+{
+  "authority": "WO-40 Amendment 11h (R13c) / O-23",
+  "decision": "O-23",
+  "approvedBy": "",
+  "previousApprovalPath": "security/wo40-amendment-11g-approval.json",
+  "previousApprovalSHA256": "37e8639415f73901a4d2ba96f6224475d7ca5e4aa4bb62d4ad26854449b6326f",
+  "baseApprovedRegistrySHA256": "38250277c5032803a018ec15580186fccb1bd94ae731d5b71710f07a5b4b8aa1",
+  "proposalSHA256": "284a8af5103e66ee90e162e60f7965ed74a4c6db1be8417dd4e2c6ba389f7231",
+  "proposedRegistrySHA256": "163e45ab9bfb128b046f5294477813ce014025eedb0d46d99b23ae633f15e61c",
+  "approvedRegistrySHA256": "0dfdd2a6ba8f92db24574d9b41b5532d7470581e55a9b3b11056c07af914d132",
+  "replacementBefore": "2026-12-09",
+  "requiredControls": [
+    {
+      "workload": "twinfra-keycloak",
+      "container": "keycloak",
+      "env": "JAVA_OPTS_APPEND",
+      "value": "-XX:-UseBASE64Intrinsics"
+    }
+  ],
+  "refreshedScope": [
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/net",
+      "version": "v0.38.0",
+      "vulnerability": "CVE-2026-39821",
+      "severity": "High",
+      "expires": "2026-12-27",
+      "fixVersions": [
+        "0.57.0"
+      ],
+      "checkedOn": "2026-11-25"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/net",
+      "version": "v0.40.0",
+      "vulnerability": "CVE-2026-39821",
+      "severity": "High",
+      "expires": "2026-12-27",
+      "fixVersions": [
+        "0.57.0"
+      ],
+      "checkedOn": "2026-11-25"
+    }
+  ],
+  "removedScope": [
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "openssh-client",
+      "version": "1:10.2p1-2ubuntu3.8",
+      "vulnerability": "CVE-2026-123158",
+      "severity": "High",
+      "expires": "2026-12-13"
+    }
+  ],
+  "addedScope": [
+    {
+      "target": "docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "package": "libc-bin",
+      "version": "2.41-12+deb13u4",
+      "vulnerability": "CVE-2026-19499",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "package": "libc6",
+      "version": "2.41-12+deb13u4",
+      "vulnerability": "CVE-2026-19499",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "package": "libc-bin",
+      "version": "2.41-12+deb13u4",
+      "vulnerability": "CVE-2026-5435",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "docker.io/library/python@sha256:a2b82f3c48559aa0a8446d9af49826b6e2b2016f4cd2afabfe6013ec53729170",
+      "package": "libc6",
+      "version": "2.41-12+deb13u4",
+      "vulnerability": "CVE-2026-5435",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libgssapi-krb5-2",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112314",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libk5crypto3",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112314",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libkrb5-3",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112314",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libkrb5support0",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112314",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libgssapi-krb5-2",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112320",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libk5crypto3",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112320",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libkrb5-3",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112320",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libkrb5support0",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112320",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libgssapi-krb5-2",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112321",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libk5crypto3",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112321",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libkrb5-3",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112321",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libkrb5support0",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112321",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libgssapi-krb5-2",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112322",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libk5crypto3",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112322",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libkrb5-3",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112322",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libkrb5support0",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112322",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libgssapi-krb5-2",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112323",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libk5crypto3",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112323",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libkrb5-3",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112323",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libkrb5support0",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-112323",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libgssapi-krb5-2",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-119079",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libk5crypto3",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-119079",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libkrb5-3",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-119079",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libkrb5support0",
+      "version": "1.21.3-5+deb13u1",
+      "vulnerability": "CVE-2026-119079",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libc-bin",
+      "version": "2.41-12+deb13u4",
+      "vulnerability": "CVE-2026-19499",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libc-l10n",
+      "version": "2.41-12+deb13u4",
+      "vulnerability": "CVE-2026-19499",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libc6",
+      "version": "2.41-12+deb13u4",
+      "vulnerability": "CVE-2026-19499",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "locales",
+      "version": "2.41-12+deb13u4",
+      "vulnerability": "CVE-2026-19499",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libc-bin",
+      "version": "2.41-12+deb13u4",
+      "vulnerability": "CVE-2026-5435",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libc-l10n",
+      "version": "2.41-12+deb13u4",
+      "vulnerability": "CVE-2026-5435",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "libc6",
+      "version": "2.41-12+deb13u4",
+      "vulnerability": "CVE-2026-5435",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "ghcr.io/cloudnative-pg/postgresql@sha256:37ade18dbdddba430858c72725aceeec66f33fa5333e82ea1df4942f6c1c83a3",
+      "package": "locales",
+      "version": "2.41-12+deb13u4",
+      "vulnerability": "CVE-2026-5435",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "quay.io/argoproj/argocd@sha256:16df57da6f223808d204cd94c67c929b931fa01670b91b0b3a2298c4647de0db",
+      "package": "golang.org/x/net",
+      "version": "v0.55.0",
+      "vulnerability": "CVE-2026-39821",
+      "severity": "High",
+      "expires": "2026-12-17"
+    },
+    {
+      "target": "quay.io/keycloak/keycloak@sha256:a78d6b79572168cb25886b80a8b5b8d4ed4390743e3eecb810538683e209dd6b",
+      "package": "java-21-openjdk-headless",
+      "version": "1:21.0.12.1.1-1.2.el9",
+      "vulnerability": "CVE-2026-114938",
+      "severity": "Critical",
+      "expires": "2026-12-17"
+    }
+  ]
+}

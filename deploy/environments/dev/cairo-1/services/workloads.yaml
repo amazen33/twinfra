@@ -362,6 +362,9 @@ spec:
         - --config-file=/runtime/keycloak.conf
         - start
         - --import-realm
+        env:
+        - name: JAVA_OPTS_APPEND
+          value: -XX:-UseBASE64Intrinsics
         resources:
           requests:
             cpu: 250m

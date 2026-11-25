@@ -1,5 +1,6 @@
 """The owner's approval changes attribution only, never the approved risk rows."""
 from copy import deepcopy
+from datetime import date, timedelta
 import hashlib
 import json
 from pathlib import Path
@@ -12,6 +13,7 @@ sys.path.insert(0,str(ROOT/'tools/ci'))
 sys.path.insert(0,str(ROOT/'tests'))
 import activate_r12 as activation
 import supply_chain as sc
+import r12_exceptions as r12
 from r12_receipts import approved_content, current_exceptions
 
 
@@ -27,11 +29,17 @@ class Activation(unittest.TestCase):
         self.assertEqual(current,self.proposal)
         expected=activation.approved_batch(current,self.proposal)
         self.assertTrue(all(e['approvedBy']=='' for e in current['exceptions']))
-        sc.validate_exceptions(expected,ROOT)
+        sc.validate_exceptions(expected,ROOT,r12.ON)
         # The original R12 batch remains immutable; only the separately anchored
         # O-11 projection may change its KEV severity and attribution.
         _,amended=current_exceptions()
         self.assertEqual(sc.read(ROOT/'security/vulnerability-exceptions.json'),amended)
+
+    def test_original_batch_fails_after_its_earliest_expiry(self):
+        expected=activation.approved_batch(self.proposal,self.proposal)
+        after=min(date.fromisoformat(row['expires']) for row in expected['exceptions'])+timedelta(days=1)
+        with self.assertRaisesRegex(ValueError,'Expired/invalid exception lifetime'):
+            sc.validate_exceptions(expected,ROOT,after)
 
     def test_changed_reason_expiry_identity_or_controls_needs_new_approval(self):
         for field,value in [('expires','2026-12-28'),('reason','changed reason'),

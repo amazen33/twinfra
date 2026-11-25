@@ -248,13 +248,18 @@ class R13b(unittest.TestCase):
             sc.evaluate(result, self.project(''), self.fixture['kev'], first_seen, root=ROOT, on=date(2026, 11, 17))
 
     def test_checked_in_bundle_preserves_both_historical_projections(self):
-        _, current = current_exceptions(ROOT)
-        self.assertEqual(current, sc.read(ROOT / REGISTRY))
-        self.assertEqual(current, self.project(self.record['approvedBy']))
-        _, prior = current_exceptions(ROOT, previous_wo46=True)
-        self.assertEqual(prior, self.base)
-        _, r13a = current_exceptions(ROOT, previous_r13a=True)
-        self.assertEqual(len(r13a['exceptions']), 479)
+        # Freeze this test at its own 484-row projection as later batches append.
+        for owner in ('', APPROVER):
+            with self.subTest(owner=owner), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                self.populate(root, owner)
+                _, current = current_exceptions(root)
+                self.assertEqual(current, sc.read(root / REGISTRY))
+                self.assertEqual(current, self.project(owner))
+                _, prior = current_exceptions(root, previous_wo46=True)
+                self.assertEqual(prior, self.base)
+                _, r13a = current_exceptions(root, previous_r13a=True)
+                self.assertEqual(len(r13a['exceptions']), 479)
 
 
 if __name__ == '__main__':
